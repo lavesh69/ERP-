@@ -246,12 +246,13 @@ export async function POST(req: NextRequest) {
         const sessionUser: SessionUser = {
           id: body.uid,
           email: fallbackEmail,
+          firstName: fallbackName.split(" ")[0] || "Academic",
+          lastName: fallbackName.split(" ").slice(1).join(" ") || "Scholar",
           fullName: fallbackName,
           role: fallbackRole,
           institutionId: "inst-default",
           institutionName: "Apex Autonomous University",
-          status: "ACTIVE",
-          avatarUrl: body.photoURL,
+          avatarUrl: body.photoURL || undefined,
         };
 
         const token = await signJwt(

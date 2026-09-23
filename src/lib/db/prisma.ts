@@ -6,17 +6,13 @@ const globalForPrisma = global as unknown as {
   prismaWalInitialized?: boolean;
 };
 
-const databaseUrl = process.env.DATABASE_URL || "file:./dev.db";
-
 // 1. Primary Writer Client (AWS RDS Primary / Master PgBouncer Node)
 export const prisma =
   globalForPrisma.prisma ||
   new PrismaClient({
-    datasources: {
-      db: {
-        url: databaseUrl,
-      },
-    },
+    ...(process.env.DATABASE_URL
+      ? { datasources: { db: { url: process.env.DATABASE_URL } } }
+      : {}),
     log: process.env.NODE_ENV === "development" ? ["warn", "error"] : ["error"],
   });
 
@@ -46,18 +42,6 @@ export function getReadClient(): PrismaClient {
  */
 export function getWriteClient(): PrismaClient {
   return prisma;
-}
-
-// 3. Configure SQLite Concurrency & Write-Ahead Logging (WAL) Mode when running on SQLite
-if (!globalForPrisma.prismaWalInitialized) {
-  globalForPrisma.prismaWalInitialized = true;
-  if (!process.env.DATABASE_URL || process.env.DATABASE_URL.startsWith("file:")) {
-    prisma
-      .$queryRawUnsafe("PRAGMA journal_mode = WAL;")
-      .then(() => prisma.$queryRawUnsafe("PRAGMA busy_timeout = 5000;"))
-      .then(() => prisma.$queryRawUnsafe("PRAGMA synchronous = NORMAL;"))
-      .catch(() => {});
-  }
 }
 
 export default prisma;
