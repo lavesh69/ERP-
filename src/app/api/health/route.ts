@@ -33,7 +33,7 @@ export async function GET() {
         responseTimeMs: totalResponseTimeMs,
         database: {
           status: "UP",
-          engine: "SQLite (WAL Mode Enabled)",
+          engine: (process.env.DATABASE_URL || "").includes("postgres") ? "PostgreSQL (Neon Cloud)" : "PostgreSQL",
           latencyMs: dbLatencyMs,
           counts: {
             students: studentsCount,

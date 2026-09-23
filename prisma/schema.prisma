@@ -6,8 +6,8 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = "file:./dev.db"
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 // ==========================================
@@ -105,8 +105,8 @@ model User {
   failedLoginAttempts Int   @default(0)
   lockedUntil      DateTime?
   mustChangePassword Boolean @default(false)
-  createdAt        DateTime  @default(now())
-  updatedAt        DateTime  @updatedAt
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
 
   institution    Institution @relation(fields: [institutionId], references: [id], onDelete: Cascade)
   roles          UserRole[]
@@ -135,6 +135,7 @@ model UserSession {
 
   @@index([userId])
 }
+
 
 model Role {
   id          String   @id @default(uuid())

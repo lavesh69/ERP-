@@ -11,10 +11,19 @@ export const DEFAULT_DEMO_PASSWORD = "Classroom@2026";
  */
 export async function ensureDbUsers() {
   try {
-    const institution = await prisma.institution.findFirst();
+    let institution = await prisma.institution.findFirst();
     if (!institution) {
-      logger.warn("ensureDbUsers: No institution found in database, skipping.");
-      return;
+      institution = await prisma.institution.create({
+        data: {
+          id: "inst-apex-001",
+          name: "Apex Institute of Technology & Management",
+          code: "AITM",
+          legalName: "Apex Institute of Technology & Management Foundation",
+          website: "https://apex.edu",
+          status: "ACTIVE",
+        },
+      });
+      logger.info("Auto-initialized default institution for fresh database");
     }
 
     const defaultPasswordHash = await hashPassword(DEFAULT_DEMO_PASSWORD);
