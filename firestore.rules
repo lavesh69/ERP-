@@ -12,48 +12,78 @@ service cloud.firestore {
       return isAuthenticated() && request.auth.uid == userId;
     }
     
-    // Helper function to check user role from their profile document
+    // Helper function to fetch user role safely from users collection
     function getUserRole() {
       return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role;
     }
     
+    // Helper function to check if user has admin privileges
     function isAdmin() {
       return isAuthenticated() && (getUserRole() == 'SUPER_ADMIN' || getUserRole() == 'INSTITUTION_ADMIN');
     }
     
+    // Helper function to check if user is verified faculty
     function isFaculty() {
       return isAuthenticated() && (getUserRole() == 'FACULTY' || isAdmin());
     }
 
-    // 1. Users collection: users can read and write only their own profile
+    // Anti-Privilege Escalation: prevent normal users from modifying their own 'role' or 'status'
+    function doesNotChangePrivileges() {
+      return !request.resource.data.diff(resource.data).affectedKeys().hasAny(['role', 'status']);
+    }
+
+    // 1. Users collection
     match /users/{userId} {
       allow read: if isAuthenticated();
-      allow create, update: if isOwner(userId) || isAdmin();
+      // On creation, normal users can only create with PENDING_APPROVAL status or default STUDENT
+      allow create: if isOwner(userId) && (
+        isAdmin() || 
+        (request.resource.data.role == 'STUDENT' && request.resource.data.status in ['PENDING_APPROVAL', 'APPROVED'])
+      );
+      // On update, users can only edit their safe fields (name, phone, photo) - privilege changes require Admin
+      allow update: if isAdmin() || (isOwner(userId) && doesNotChangePrivileges());
       allow delete: if isAdmin();
     }
+
+    // 2. Registration Applications collection
+    match /registration_applications/{applicationId} {
+      // Admins can read all; applicants can read only their own application
+      allow read: if isAdmin() || (isAuthenticated() && resource.data.uid == request.auth.uid);
+      // Anyone authenticated can submit an application with initial PENDING_APPROVAL status
+      allow create: if isAuthenticated() && request.resource.data.status == 'PENDING_APPROVAL';
+      // ONLY Administrators can approve, decline, or modify applications
+      allow update, delete: if isAdmin();
+    }
     
-    // 2. Courses collection: all authenticated users can view, faculty & admin can manage
+    // 3. Courses collection: all authenticated users can view, faculty & admin can manage
     match /courses/{courseId} {
       allow read: if isAuthenticated();
       allow create, update, delete: if isFaculty();
     }
     
-    // 3. Attendance collection: students read their own records, faculty create/manage
+    // 4. Attendance collection: students read records, faculty manage
     match /attendance/{sessionId} {
       allow read: if isAuthenticated();
       allow create, update, delete: if isFaculty();
     }
     
-    // 4. Announcements collection: public institutional noticeboard
+    // 5. Announcements collection: public institutional noticeboard
     match /announcements/{announcementId} {
       allow read: if isAuthenticated();
       allow create, update, delete: if isFaculty();
     }
     
-    // 5. Timetable collection: readable by all authenticated scholars & staff
+    // 6. Timetable collection: readable by all authenticated scholars & staff
     match /timetable/{slotId} {
       allow read: if isAuthenticated();
-      allow create, update, delete: if isAdmin() || isFaculty();
+      allow create, update, delete: if isFaculty();
+    }
+
+    // 7. Audit Logs collection: immutable write-only / admin-only
+    match /audit_logs/{logId} {
+      allow read: if isAdmin();
+      allow create: if isAuthenticated();
+      allow update, delete: if false; // Audit logs can NEVER be updated or deleted
     }
   }
 }

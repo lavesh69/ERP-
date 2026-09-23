@@ -12,17 +12,24 @@ import {
 } from "lucide-react";
 import { UserRole } from "@/types";
 
+import { sanitizeRedirectPath, checkClientRateLimit, recordSecurityAudit } from "@/lib/security";
+
 export function LoginPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, signInWithGoogle, selectedRole, setSelectedRole, isLoading, error, clearError } = useAuth();
 
   const [authInProgress, setAuthInProgress] = useState(false);
+  const [rateLimitError, setRateLimitError] = useState<string | null>(null);
 
-  // Determine redirect destination (default: /dashboard)
-  const from = (location.state as any)?.from?.pathname || "/dashboard";
+  // 1. Sanitize redirect destination against Open-Redirect attacks
+  const rawTarget = (location.state as any)?.from?.pathname || "/dashboard";
+  const from = sanitizeRedirectPath(rawTarget, "/dashboard");
 
-  // If already authenticated, redirect to destination
+  // Check for inactivity timeout query parameter
+  const isTimeout = new URLSearchParams(location.search).get("timeout") === "inactivity";
+
+  // If already authenticated, redirect to safe destination
   React.useEffect(() => {
     if (user && !isLoading) {
       navigate(from, { replace: true });
@@ -30,13 +37,26 @@ export function LoginPage() {
   }, [user, isLoading, navigate, from]);
 
   const handleGoogleLogin = async () => {
+    // 2. Anti-Brute-Force & Flood Rate Limiter
+    const rateCheck = checkClientRateLimit("google_sign_in", 5, 60000, 120000);
+    if (!rateCheck.allowed) {
+      setRateLimitError(`Security lock active: Too many authentication requests. Please wait ${rateCheck.retryAfterSeconds} seconds.`);
+      recordSecurityAudit("LOGIN_RATE_LIMITED", { retryAfter: rateCheck.retryAfterSeconds });
+      return;
+    }
+
+    setRateLimitError(null);
     setAuthInProgress(true);
     clearError();
+
     try {
       const profile = await signInWithGoogle();
       if (profile) {
+        recordSecurityAudit("LOGIN_SUCCESS", { uid: profile.uid, role: profile.role });
         navigate(from, { replace: true });
       }
+    } catch (err: any) {
+      recordSecurityAudit("LOGIN_ERROR", { message: err?.message });
     } finally {
       setAuthInProgress(false);
     }
@@ -81,6 +101,26 @@ export function LoginPage() {
               </p>
             </div>
           </div>
+
+          {/* Inactivity Auto-Logout Banner */}
+          {isTimeout && (
+            <div className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-800 dark:text-amber-300 text-xs flex items-start gap-2.5">
+              <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5 text-amber-600" />
+              <div className="flex-1 leading-relaxed">
+                <span className="font-bold">Session Timed Out:</span> You have been securely signed out due to inactivity on a shared campus workstation. Please sign in again.
+              </div>
+            </div>
+          )}
+
+          {/* Rate Limiting Protection Banner */}
+          {rateLimitError && (
+            <div className="p-3.5 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-700 dark:text-rose-300 text-xs flex items-start gap-2.5">
+              <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5 text-rose-600" />
+              <div className="flex-1 leading-relaxed">
+                <span className="font-bold">Rate Limit Enforced:</span> {rateLimitError}
+              </div>
+            </div>
+          )}
 
           {/* Error Banner */}
           {error && (

@@ -11,9 +11,15 @@ import { TimetablePage } from '@/pages/TimetablePage';
 import { ProfilePage } from '@/pages/ProfilePage';
 import { AdminApprovalsPage } from '@/pages/AdminApprovalsPage';
 
+import { IdleSessionGuard } from '@/components/auth/IdleSessionGuard';
+
 export const App: React.FC = () => {
   return (
-    <Routes>
+    <>
+      {/* FERPA/SOC-2 Inactivity Auto-Logout Guard (15 minutes idle timeout) */}
+      <IdleSessionGuard idleTimeoutMinutes={15} warningDurationSeconds={60} />
+
+      <Routes>
       {/* Public Routes */}
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
@@ -46,6 +52,7 @@ export const App: React.FC = () => {
       {/* Fallback */}
       <Route path="*" element={<Navigate to="/dashboard" replace />} />
     </Routes>
+    </>
   );
 };
 

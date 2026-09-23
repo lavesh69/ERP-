@@ -19,6 +19,8 @@ import {
   Sparkles
 } from 'lucide-react';
 
+import { sanitizeInput, checkClientRateLimit, recordSecurityAudit } from '@/lib/security';
+
 export const RegisterPage: React.FC = () => {
   const navigate = useNavigate();
   const { user, profile, signInWithGoogle } = useAuth();
@@ -32,6 +34,7 @@ export const RegisterPage: React.FC = () => {
   const [notes, setNotes] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submittedAppId, setSubmittedAppId] = useState<string | null>(null);
+  const [formSecurityError, setFormSecurityError] = useState<string | null>(null);
 
   const departments = [
     'Computer Science & Engineering',
@@ -45,8 +48,26 @@ export const RegisterPage: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!fullName || !email || !idNumber) {
-      alert('Please fill in your Full Name, Email, and Roll Number / Employee ID.');
+
+    // 1. Anti-Bot / Anti-Spam Rate Limit
+    const rateCheck = checkClientRateLimit('register_submit', 3, 60000, 300000);
+    if (!rateCheck.allowed) {
+      setFormSecurityError(`Registration request rate limit exceeded. Please wait ${rateCheck.retryAfterSeconds} seconds.`);
+      recordSecurityAudit('REGISTER_RATE_LIMITED', { retryAfter: rateCheck.retryAfterSeconds });
+      return;
+    }
+
+    setFormSecurityError(null);
+
+    // 2. Strict Input Sanitization against XSS & script injection
+    const cleanFullName = sanitizeInput(fullName);
+    const cleanEmail = sanitizeInput(email).toLowerCase();
+    const cleanIdNumber = sanitizeInput(idNumber);
+    const cleanPhone = sanitizeInput(phone);
+    const cleanNotes = sanitizeInput(notes);
+
+    if (!cleanFullName || !cleanEmail || !cleanIdNumber) {
+      setFormSecurityError('Please fill in your Full Name, Email, and Roll Number / Employee ID.');
       return;
     }
 
@@ -55,21 +76,28 @@ export const RegisterPage: React.FC = () => {
       const applicantUid = user?.uid || `applicant_${Date.now()}`;
       const app = await submitRegistrationApplication({
         uid: applicantUid,
-        fullName,
-        email,
+        fullName: cleanFullName,
+        email: cleanEmail,
         requestedRole,
         department,
-        idNumber,
-        phone,
-        notes,
+        idNumber: cleanIdNumber,
+        phone: cleanPhone,
+        notes: cleanNotes,
+      });
+
+      recordSecurityAudit('APPLICATION_SUBMITTED', {
+        appId: app.id,
+        role: requestedRole,
+        dept: department,
       });
 
       setSubmittedAppId(app.id);
       setTimeout(() => {
         navigate('/pending-approval', { state: { application: app } });
       }, 1500);
-    } catch (err) {
-      console.error('Registration submission error:', err);
+    } catch (err: any) {
+      recordSecurityAudit('APPLICATION_SUBMIT_FAILED', { error: err?.message });
+      setFormSecurityError('Registration submission encountered an error. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -131,6 +159,13 @@ export const RegisterPage: React.FC = () => {
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-5">
+              {formSecurityError && (
+                <div className="rounded-xl bg-rose-50 border border-rose-200 p-3.5 text-xs text-rose-800 dark:bg-rose-950/40 dark:border-rose-900 dark:text-rose-300 flex items-center gap-2">
+                  <AlertCircle className="h-4 w-4 shrink-0 text-rose-600" />
+                  <span>{formSecurityError}</span>
+                </div>
+              )}
+
               {/* Optional Google Auto-fill */}
               {!user && (
                 <div className="pb-4 border-b border-stone-100 dark:border-stone-800">
