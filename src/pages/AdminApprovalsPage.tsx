@@ -3,6 +3,7 @@ import {
   fetchRegistrationApplications, 
   reviewRegistrationApplication 
 } from '@/lib/firebase';
+import { sendDecisionEmail } from '@/lib/email';
 import { RegistrationApplication, UserRole } from '@/types';
 import { 
   ShieldCheck, 
@@ -59,8 +60,17 @@ export const AdminApprovalsPage: React.FC = () => {
         undefined,
         'Registrar Office'
       );
-      setNotification(`Approved ${app.fullName} as ${app.requestedRole}!`);
-      setTimeout(() => setNotification(null), 4000);
+
+      // Automated decision email notification
+      const emailResult = await sendDecisionEmail({
+        to: app.email,
+        recipientName: app.fullName,
+        type: 'APPROVED',
+        role: app.requestedRole,
+      });
+
+      setNotification(`Approved ${app.fullName} as ${app.requestedRole}! Official admission email dispatched to ${app.email}.`);
+      setTimeout(() => setNotification(null), 5000);
       await loadData();
     } catch (e) {
       console.error(e);
@@ -82,8 +92,17 @@ export const AdminApprovalsPage: React.FC = () => {
         rejectionReason || 'Institutional records mismatch.',
         'Registrar Office'
       );
-      setNotification(`Rejected application for ${rejectionModalApp.fullName}.`);
-      setTimeout(() => setNotification(null), 4000);
+
+      // Automated rejection update email notification
+      await sendDecisionEmail({
+        to: rejectionModalApp.email,
+        recipientName: rejectionModalApp.fullName,
+        type: 'REJECTED',
+        rejectionReason: rejectionReason || 'Institutional records mismatch.',
+      });
+
+      setNotification(`Declined application for ${rejectionModalApp.fullName}. Status update email dispatched.`);
+      setTimeout(() => setNotification(null), 5000);
       setRejectionModalApp(null);
       setRejectionReason('');
       await loadData();
