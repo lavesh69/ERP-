@@ -227,16 +227,7 @@ export async function POST(req: NextRequest) {
   } catch (error: any) {
     console.error("Firebase session bridge error:", error);
 
-    const errorMessage = String(error?.message || error || "");
-    const isDbConfigError =
-      errorMessage.includes("DATABASE_URL") ||
-      errorMessage.includes("datasource 'db'") ||
-      errorMessage.includes("Can't reach database server") ||
-      errorMessage.includes("does not exist") ||
-      errorMessage.includes("PrismaClientInitializationError") ||
-      errorMessage.includes("Empty string");
-
-    if (isDbConfigError && body?.uid) {
+    if (body?.uid) {
       try {
         const fallbackEmail = body.email || `scholar.${body.uid.substring(0, 8)}@trial.classroom.edu`;
         const fallbackName = body.displayName || "Academic User";
