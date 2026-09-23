@@ -16,7 +16,10 @@ import {
   AlertCircle,
   CheckCircle2,
   Clock,
-  Sparkles
+  Sparkles,
+  Upload,
+  X,
+  FileCheck
 } from 'lucide-react';
 
 import { sanitizeInput, checkClientRateLimit, recordSecurityAudit } from '@/lib/security';
@@ -32,9 +35,31 @@ export const RegisterPage: React.FC = () => {
   const [idNumber, setIdNumber] = useState('');
   const [phone, setPhone] = useState('');
   const [notes, setNotes] = useState('');
+  const [documentName, setDocumentName] = useState('');
+  const [documentUrl, setDocumentUrl] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submittedAppId, setSubmittedAppId] = useState<string | null>(null);
   const [formSecurityError, setFormSecurityError] = useState<string | null>(null);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Security check: Max file size 5MB
+    if (file.size > 5 * 1024 * 1024) {
+      setFormSecurityError('File size exceeds the 5MB institutional limit.');
+      return;
+    }
+
+    setDocumentName(file.name);
+    setFormSecurityError(null);
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      setDocumentUrl(event.target?.result as string);
+    };
+    reader.readAsDataURL(file);
+  };
 
   const departments = [
     'Computer Science & Engineering',
@@ -83,6 +108,8 @@ export const RegisterPage: React.FC = () => {
         idNumber: cleanIdNumber,
         phone: cleanPhone,
         notes: cleanNotes,
+        documentUrl: documentUrl || undefined,
+        documentName: documentName || undefined,
       });
 
       recordSecurityAudit('APPLICATION_SUBMITTED', {
@@ -215,13 +242,16 @@ export const RegisterPage: React.FC = () => {
               {/* Full Name & Email */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-medium text-stone-700 dark:text-stone-300 mb-1">
+                  <label htmlFor="fullName" className="block text-xs font-medium text-stone-700 dark:text-stone-300 mb-1">
                     Full Legal Name *
                   </label>
                   <div className="relative">
                     <User className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-stone-400" />
                     <input
+                      id="fullName"
+                      name="fullName"
                       type="text"
+                      autoComplete="name"
                       required
                       placeholder="e.g. Rahul Sharma"
                       value={fullName}
@@ -232,13 +262,16 @@ export const RegisterPage: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-medium text-stone-700 dark:text-stone-300 mb-1">
+                  <label htmlFor="email" className="block text-xs font-medium text-stone-700 dark:text-stone-300 mb-1">
                     Email Address *
                   </label>
                   <div className="relative">
                     <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-stone-400" />
                     <input
+                      id="email"
+                      name="email"
                       type="email"
+                      autoComplete="email"
                       required
                       placeholder="name@college.edu or gmail"
                       value={email}
@@ -252,12 +285,14 @@ export const RegisterPage: React.FC = () => {
               {/* Department & ID Number */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-medium text-stone-700 dark:text-stone-300 mb-1">
+                  <label htmlFor="department" className="block text-xs font-medium text-stone-700 dark:text-stone-300 mb-1">
                     Department / Discipline *
                   </label>
                   <div className="relative">
                     <Building2 className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-stone-400 pointer-events-none" />
                     <select
+                      id="department"
+                      name="department"
                       value={department}
                       onChange={(e) => setDepartment(e.target.value)}
                       className="w-full rounded-xl border border-stone-200 bg-white pl-10 pr-3.5 py-2.5 text-xs text-stone-900 focus:border-rose-600 focus:outline-none focus:ring-1 focus:ring-rose-600 dark:border-stone-800 dark:bg-stone-900 dark:text-white"
@@ -272,12 +307,14 @@ export const RegisterPage: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-medium text-stone-700 dark:text-stone-300 mb-1">
+                  <label htmlFor="idNumber" className="block text-xs font-medium text-stone-700 dark:text-stone-300 mb-1">
                     {requestedRole === 'FACULTY' ? 'Employee ID / Staff Code *' : 'Roll Number / Admission No *'}
                   </label>
                   <div className="relative">
                     <CreditCard className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-stone-400" />
                     <input
+                      id="idNumber"
+                      name="idNumber"
                       type="text"
                       required
                       placeholder={requestedRole === 'FACULTY' ? 'FAC-CSE-09' : '2026-CS-104'}
@@ -291,13 +328,16 @@ export const RegisterPage: React.FC = () => {
 
               {/* Phone & Application Notes */}
               <div>
-                <label className="block text-xs font-medium text-stone-700 dark:text-stone-300 mb-1">
+                <label htmlFor="phone" className="block text-xs font-medium text-stone-700 dark:text-stone-300 mb-1">
                   Contact Phone Number
                 </label>
                 <div className="relative">
                   <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-stone-400" />
                   <input
+                    id="phone"
+                    name="phone"
                     type="tel"
+                    autoComplete="tel"
                     placeholder="+91 98765 43210"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
@@ -307,12 +347,14 @@ export const RegisterPage: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-stone-700 dark:text-stone-300 mb-1">
+                <label htmlFor="notes" className="block text-xs font-medium text-stone-700 dark:text-stone-300 mb-1">
                   Admission / Appointment Notes (Optional)
                 </label>
                 <div className="relative">
                   <FileText className="absolute left-3.5 top-3 h-4 w-4 text-stone-400" />
                   <textarea
+                    id="notes"
+                    name="notes"
                     rows={2}
                     placeholder="Mention batch, merit rank, or appointment letter reference..."
                     value={notes}
@@ -320,6 +362,53 @@ export const RegisterPage: React.FC = () => {
                     className="w-full rounded-xl border border-stone-200 bg-white pl-10 pr-3.5 py-2.5 text-xs text-stone-900 focus:border-rose-600 focus:outline-none focus:ring-1 focus:ring-rose-600 dark:border-stone-800 dark:bg-stone-900 dark:text-white"
                   />
                 </div>
+              </div>
+
+              {/* Document Proof / ID Card Upload */}
+              <div>
+                <span className="block text-xs font-medium text-stone-700 dark:text-stone-300 mb-1">
+                  Verification Proof (College ID, Admission Slip, or Appointment Letter)
+                </span>
+                {documentName ? (
+                  <div className="flex items-center justify-between rounded-xl bg-stone-50 border border-stone-200 dark:bg-stone-800/80 dark:border-stone-700 p-3 text-xs">
+                    <div className="flex items-center gap-2 truncate">
+                      <FileCheck className="h-4 w-4 text-emerald-600 flex-shrink-0" />
+                      <span className="font-medium text-stone-800 dark:text-stone-200 truncate">
+                        {documentName}
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setDocumentName('');
+                        setDocumentUrl('');
+                      }}
+                      className="p-1 text-stone-400 hover:text-rose-600 transition-colors"
+                      title="Remove file"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
+                ) : (
+                  <label htmlFor="documentProof" className="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-stone-300 dark:border-stone-700 p-4 text-center cursor-pointer hover:border-rose-500 hover:bg-rose-50/20 dark:hover:border-rose-500/50 transition-all">
+                    <Upload className="h-6 w-6 text-stone-400 mb-1" />
+                    <span className="text-xs font-semibold text-stone-700 dark:text-stone-300">
+                      Click to upload verification document
+                    </span>
+                    <span className="text-[11px] text-stone-400 mt-0.5">
+                      PDF, PNG, JPG (Max 5MB)
+                    </span>
+                    <input
+                      id="documentProof"
+                      name="documentProof"
+                      type="file"
+                      aria-label="Upload verification document"
+                      accept=".pdf,image/png,image/jpeg,image/webp"
+                      onChange={handleFileChange}
+                      className="hidden"
+                    />
+                  </label>
+                )}
               </div>
 
               {/* Submit Button */}

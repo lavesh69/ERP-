@@ -52,6 +52,7 @@ export const TimetablePage: React.FC = () => {
 
         <button
           onClick={handlePrint}
+          aria-label="Print weekly schedule"
           className="inline-flex items-center gap-2 rounded-xl border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 px-4 py-2.5 text-sm font-semibold text-stone-700 dark:text-stone-200 shadow-sm hover:bg-stone-50 dark:hover:bg-stone-700 transition-colors self-start sm:self-auto"
         >
           <Printer className="h-4 w-4" />

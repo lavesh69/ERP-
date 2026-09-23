@@ -88,13 +88,14 @@ export const ProfilePage: React.FC = () => {
               {user?.email}
             </p>
             <p className="text-xs text-stone-400 dark:text-stone-500 pt-1">
-              Provider: <span className="font-mono text-stone-700 dark:text-stone-300">{user?.providerData[0]?.providerId || 'google.com'}</span>
+              Provider: <span className="font-mono text-stone-700 dark:text-stone-300">{user?.providerData?.[0]?.providerId || profile?.providerId || 'google.com'}</span>
             </p>
           </div>
 
           <div>
             <button
               onClick={() => logout()}
+              aria-label="Sign Out"
               className="inline-flex items-center gap-2 rounded-xl border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 px-4 py-2.5 text-sm font-semibold text-rose-600 dark:text-rose-400 shadow-sm hover:bg-rose-50 dark:hover:bg-stone-700 transition-colors"
             >
               <LogOut className="h-4 w-4" />
@@ -111,7 +112,7 @@ export const ProfilePage: React.FC = () => {
               <span>Firebase Unique UID</span>
             </div>
             <p className="font-mono text-xs text-stone-800 dark:text-stone-200 break-all select-all">
-              {user?.uid}
+              {user?.uid || profile?.uid}
             </p>
           </div>
 
@@ -121,7 +122,7 @@ export const ProfilePage: React.FC = () => {
               <span>Session Initialized</span>
             </div>
             <p className="text-xs text-stone-800 dark:text-stone-200">
-              {user?.metadata.lastSignInTime || 'Live Session active'}
+              {user?.metadata?.lastSignInTime || profile?.lastLoginAt || 'Live Session active'}
             </p>
           </div>
         </div>

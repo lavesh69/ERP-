@@ -65,6 +65,9 @@ export const CoursesPage: React.FC = () => {
         <div className="relative flex-1">
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-stone-400" />
           <input
+            id="courseSearch"
+            name="courseSearch"
+            aria-label="Search courses by code, title, or instructor"
             type="text"
             placeholder="Search by course code, title, or instructor..."
             value={search}
@@ -76,6 +79,9 @@ export const CoursesPage: React.FC = () => {
         <div className="flex items-center gap-2">
           <Filter className="h-4 w-4 text-stone-400" />
           <select
+            id="departmentFilter"
+            name="departmentFilter"
+            aria-label="Filter courses by department"
             value={departmentFilter}
             onChange={(e) => setDepartmentFilter(e.target.value)}
             className="rounded-xl border border-stone-200 bg-white px-3.5 py-2.5 text-sm text-stone-900 focus:border-rose-600 focus:outline-none focus:ring-1 focus:ring-rose-600 dark:border-stone-800 dark:bg-stone-900 dark:text-white"

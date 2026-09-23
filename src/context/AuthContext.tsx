@@ -40,7 +40,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (savedTrialUser) {
         try {
           const parsed = JSON.parse(savedTrialUser);
-          setProfile(parsed);
+          const savedCustomProfile = localStorage.getItem(`classroom_user_profile_${parsed.uid}`);
+          if (savedCustomProfile) {
+            setProfile(JSON.parse(savedCustomProfile));
+          } else {
+            setProfile(parsed);
+          }
           setUser({
             uid: parsed.uid,
             email: parsed.email,
@@ -163,6 +168,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const updatedProfile: UserProfile = { ...profile, role: newRole };
       setProfile(updatedProfile);
       localStorage.setItem(`classroom_user_profile_${user.uid}`, JSON.stringify(updatedProfile));
+      localStorage.setItem("classroom_trial_session", JSON.stringify(updatedProfile));
       await createOrUpdateFirestoreProfile(user, newRole).catch(() => {});
     }
   };

@@ -17,7 +17,9 @@ import {
   Filter, 
   Search, 
   AlertTriangle,
-  RefreshCw
+  RefreshCw,
+  FileText,
+  ExternalLink
 } from 'lucide-react';
 
 export const AdminApprovalsPage: React.FC = () => {
@@ -208,6 +210,9 @@ export const AdminApprovalsPage: React.FC = () => {
         <div className="relative flex-1">
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-stone-400" />
           <input
+            id="approvalsSearch"
+            name="approvalsSearch"
+            aria-label="Search applicants by name, email, roll/emp ID, or department"
             type="text"
             placeholder="Search applicants by name, email, roll/emp ID, or department..."
             value={search}
@@ -306,6 +311,27 @@ export const AdminApprovalsPage: React.FC = () => {
                     </p>
                   )}
 
+                  {/* Verification Document Proof */}
+                  {app.documentName && (
+                    <div className="flex items-center gap-2 pt-0.5">
+                      <div className="inline-flex items-center gap-1.5 rounded-lg bg-stone-100 dark:bg-stone-800 px-3 py-1.5 text-xs text-stone-700 dark:text-stone-300 border border-stone-200 dark:border-stone-700">
+                        <FileText className="h-3.5 w-3.5 text-rose-600" />
+                        <span className="font-medium max-w-[200px] truncate">{app.documentName}</span>
+                        {app.documentUrl && (
+                          <a
+                            href={app.documentUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="ml-2 font-bold text-rose-600 dark:text-rose-400 hover:underline inline-flex items-center gap-0.5"
+                          >
+                            <span>View Proof</span>
+                            <ExternalLink className="h-3 w-3" />
+                          </a>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
                   {app.rejectionReason && (
                     <p className="text-xs text-rose-600 dark:text-rose-400 font-medium">
                       Rejection Reason: {app.rejectionReason}
@@ -362,10 +388,12 @@ export const AdminApprovalsPage: React.FC = () => {
             </p>
 
             <div>
-              <label className="block text-xs font-medium text-stone-700 dark:text-stone-300 mb-1">
+              <label htmlFor="rejectionReason" className="block text-xs font-medium text-stone-700 dark:text-stone-300 mb-1">
                 Reason for Rejection *
               </label>
               <textarea
+                id="rejectionReason"
+                name="rejectionReason"
                 rows={3}
                 required
                 placeholder="e.g. Roll number not found in admission roster. Fee receipt missing."

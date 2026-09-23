@@ -38,6 +38,8 @@ export interface RegistrationApplication {
   idNumber: string;
   phone?: string;
   notes?: string;
+  documentUrl?: string;
+  documentName?: string;
   status: AccountStatus;
   submittedAt: string;
   reviewedAt?: string;

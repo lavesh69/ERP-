@@ -151,13 +151,13 @@ export const DashboardPage: React.FC = () => {
                       {course.title}
                     </h3>
                     <p className="text-xs text-stone-500 dark:text-stone-400 mt-0.5">
-                      Instructor: {course.instructor} • Room: {course.room}
+                      Instructor: {course.instructor || course.facultyName || 'Faculty Assigned'} • Room: {course.room || 'Main Academic Hall'}
                     </p>
                   </div>
                   <div className="flex items-center gap-2 sm:self-center">
                     <span className="inline-flex items-center gap-1 text-xs text-stone-600 dark:text-stone-300 bg-stone-100 dark:bg-stone-800 px-2.5 py-1 rounded-full">
                       <Clock className="h-3 w-3" />
-                      {course.schedule}
+                      {course.schedule || 'Mon, Wed 10:00 AM'}
                     </span>
                   </div>
                 </div>

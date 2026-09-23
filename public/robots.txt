@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://classroom.apex.edu/sitemap.xml

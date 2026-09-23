@@ -28,14 +28,27 @@ export function AppLayout({ children }: AppLayoutProps) {
 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isRoleDropdownOpen, setIsRoleDropdownOpen] = useState(false);
-  const [isDarkMode, setIsDarkMode] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    if (typeof window !== "undefined") {
+      return (
+        document.documentElement.classList.contains("dark") ||
+        localStorage.getItem("theme") === "dark" ||
+        (!localStorage.getItem("theme") &&
+          window.matchMedia("(prefers-color-scheme: dark)").matches)
+      );
+    }
+    return false;
+  });
 
   const toggleDarkMode = () => {
-    setIsDarkMode(!isDarkMode);
-    if (!isDarkMode) {
+    const nextMode = !isDarkMode;
+    setIsDarkMode(nextMode);
+    if (nextMode) {
       document.documentElement.classList.add("dark");
+      localStorage.setItem("theme", "dark");
     } else {
       document.documentElement.classList.remove("dark");
+      localStorage.setItem("theme", "light");
     }
   };
 
@@ -112,6 +125,7 @@ export function AppLayout({ children }: AppLayoutProps) {
               onClick={toggleDarkMode}
               className="p-2 rounded-xl text-charcoal-600 dark:text-charcoal-300 hover:bg-ivory-200 dark:hover:bg-charcoal-800 transition-colors"
               title="Toggle Theme"
+              aria-label="Toggle Theme"
             >
               {isDarkMode ? <Sun className="h-4 w-4 text-amber-400" /> : <Moon className="h-4 w-4" />}
             </button>
@@ -120,6 +134,8 @@ export function AppLayout({ children }: AppLayoutProps) {
             <div className="relative hidden sm:block">
               <button
                 onClick={() => setIsRoleDropdownOpen(!isRoleDropdownOpen)}
+                aria-label="Change academic role perspective"
+                aria-expanded={isRoleDropdownOpen}
                 className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border border-rose-light dark:border-charcoal-700 bg-ivory-50 dark:bg-charcoal-800 text-xs font-semibold text-charcoal-700 dark:text-ivory-200 hover:bg-white transition-all"
               >
                 <span className="h-2 w-2 rounded-full bg-academic-success animate-pulse" />
@@ -184,6 +200,7 @@ export function AppLayout({ children }: AppLayoutProps) {
               onClick={handleLogout}
               className="p-2 rounded-xl text-charcoal-600 dark:text-charcoal-300 hover:text-academic-danger hover:bg-rose-50 dark:hover:bg-charcoal-800 transition-colors"
               title="Sign Out"
+              aria-label="Sign Out"
             >
               <LogOut className="h-4 w-4" />
             </button>
@@ -192,6 +209,7 @@ export function AppLayout({ children }: AppLayoutProps) {
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               className="md:hidden p-2 rounded-xl text-charcoal-600 dark:text-charcoal-300 hover:bg-ivory-200 dark:hover:bg-charcoal-800"
+              aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
             >
               {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </button>
@@ -220,6 +238,31 @@ export function AppLayout({ children }: AppLayoutProps) {
                 </Link>
               );
             })}
+
+            {/* Mobile Perspective Switcher */}
+            <div className="pt-3 mt-2 border-t border-rose-light/40 dark:border-charcoal-800">
+              <span className="block px-3 text-[10px] font-bold text-charcoal-400 uppercase tracking-wider mb-2">
+                Active Perspective
+              </span>
+              <div className="grid grid-cols-2 gap-1.5 px-1">
+                {roles.map((r) => (
+                  <button
+                    key={r.role}
+                    onClick={() => {
+                      updateRole(r.role);
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-semibold text-center transition-colors ${
+                      profile?.role === r.role
+                        ? "bg-rose-container text-rose-primary dark:bg-rose-dark/40 dark:text-rose-accent border border-rose-accent/30"
+                        : "text-charcoal-600 dark:text-charcoal-400 hover:bg-ivory-100 dark:hover:bg-charcoal-800 border border-transparent"
+                    }`}
+                  >
+                    {r.label}
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
         )}
       </header>
