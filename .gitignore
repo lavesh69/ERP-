@@ -28,6 +28,7 @@ lerna-debug.log*
 *.sqlite
 *.sqlite3
 *.db
+!prisma/dev.db
 
 # OS files
 .DS_Store
