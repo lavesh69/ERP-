@@ -3,16 +3,21 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { LoginPage } from '@/pages/LoginPage';
+import { RegisterPage } from '@/pages/RegisterPage';
+import { PendingApprovalPage } from '@/pages/PendingApprovalPage';
 import { DashboardPage } from '@/pages/DashboardPage';
 import { CoursesPage } from '@/pages/CoursesPage';
 import { TimetablePage } from '@/pages/TimetablePage';
 import { ProfilePage } from '@/pages/ProfilePage';
+import { AdminApprovalsPage } from '@/pages/AdminApprovalsPage';
 
 export const App: React.FC = () => {
   return (
     <Routes>
-      {/* Public Route */}
+      {/* Public Routes */}
       <Route path="/login" element={<LoginPage />} />
+      <Route path="/register" element={<RegisterPage />} />
+      <Route path="/pending-approval" element={<PendingApprovalPage />} />
 
       {/* Protected Academic Routes wrapped in AppLayout */}
       <Route
@@ -28,6 +33,14 @@ export const App: React.FC = () => {
         <Route path="courses" element={<CoursesPage />} />
         <Route path="timetable" element={<TimetablePage />} />
         <Route path="profile" element={<ProfilePage />} />
+        <Route
+          path="admin/approvals"
+          element={
+            <ProtectedRoute allowedRoles={['INSTITUTION_ADMIN', 'SUPER_ADMIN']}>
+              <AdminApprovalsPage />
+            </ProtectedRoute>
+          }
+        />
       </Route>
 
       {/* Fallback */}

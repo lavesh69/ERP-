@@ -13,6 +13,7 @@ import {
   Sun,
   Moon,
   ChevronDown,
+  ShieldCheck,
 } from "lucide-react";
 import { UserRole } from "@/types";
 
@@ -38,10 +39,13 @@ export function AppLayout({ children }: AppLayoutProps) {
     }
   };
 
+  const isAdmin = profile?.role === "INSTITUTION_ADMIN" || profile?.role === "SUPER_ADMIN";
+
   const navLinks = [
     { label: "Dashboard", path: "/dashboard", icon: LayoutDashboard },
     { label: "Courses", path: "/courses", icon: BookOpen },
     { label: "Timetable", path: "/timetable", icon: Calendar },
+    ...(isAdmin ? [{ label: "Approvals", path: "/admin/approvals", icon: ShieldCheck }] : []),
     { label: "Profile", path: "/profile", icon: User },
   ];
 

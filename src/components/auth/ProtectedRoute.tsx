@@ -40,7 +40,12 @@ export function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) 
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  // 3. Role-Based Access Control check (if roles are restricted)
+  // 3. Holding screen redirect if account is awaiting administrative approval
+  if (profile?.status === "PENDING_APPROVAL" && location.pathname !== "/pending-approval") {
+    return <Navigate to="/pending-approval" replace />;
+  }
+
+  // 4. Role-Based Access Control check (if roles are restricted)
   if (allowedRoles && profile && !allowedRoles.includes(profile.role)) {
     return (
       <div className="min-h-screen bg-ivory-100 dark:bg-charcoal-950 flex items-center justify-center p-4">

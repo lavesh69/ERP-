@@ -6,18 +6,43 @@ export type UserRole =
   | "PARENT" 
   | "GUEST";
 
+export type AccountStatus = "PENDING_APPROVAL" | "APPROVED" | "REJECTED";
+
 export interface UserProfile {
   uid: string;
   email: string | null;
   displayName: string | null;
   photoURL: string | null;
   role: UserRole;
+  requestedRole?: UserRole;
+  status: AccountStatus;
+  department?: string;
+  idNumber?: string; // Roll number or Employee ID
+  phone?: string;
+  rejectionReason?: string;
   providerId: string;
   institutionId: string;
   institutionName: string;
   createdAt: string;
   lastLoginAt: string;
   isTestUser?: boolean;
+}
+
+export interface RegistrationApplication {
+  id: string;
+  uid: string;
+  fullName: string;
+  email: string;
+  requestedRole: UserRole;
+  department: string;
+  idNumber: string;
+  phone?: string;
+  notes?: string;
+  status: AccountStatus;
+  submittedAt: string;
+  reviewedAt?: string;
+  reviewedBy?: string;
+  rejectionReason?: string;
 }
 
 export interface Course {

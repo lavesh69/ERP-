@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, Link } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import {
   GraduationCap,
@@ -154,6 +154,16 @@ export function LoginPage() {
               </span>
               <ArrowRight className="h-4 w-4 ml-auto text-charcoal-400" />
             </button>
+          </div>
+
+          {/* Self-Registration Notice & Link */}
+          <div className="pt-2 text-center border-t border-stone-100 dark:border-stone-800">
+            <p className="text-xs text-stone-500 dark:text-stone-400">
+              New Scholar, Faculty or Staff member?{" "}
+              <Link to="/register" className="font-bold text-rose-600 hover:text-rose-700 dark:text-rose-400">
+                Self-Register for Approval →
+              </Link>
+            </p>
           </div>
 
           {/* Privacy & Compliance Assurance */}

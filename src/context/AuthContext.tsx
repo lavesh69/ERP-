@@ -90,6 +90,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         displayName: "Ada Lovelace",
         photoURL: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop",
         role: selectedRole,
+        status: "APPROVED",
         providerId: "google.com",
         institutionId: "APEX-MAIN",
         institutionName: "Apex Institute of Science & Technology",

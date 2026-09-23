@@ -19,7 +19,7 @@ import {
   orderBy,
   limit,
 } from "firebase/firestore";
-import { UserProfile, Course, Announcement } from "@/types";
+import { UserProfile, Course, Announcement, RegistrationApplication, AccountStatus, UserRole } from "@/types";
 
 /**
  * Production Firebase Configuration
@@ -108,6 +108,7 @@ export async function createOrUpdateFirestoreProfile(
     displayName: user.displayName || "Academic Scholar",
     photoURL: user.photoURL,
     role: existingProfile.role || role,
+    status: (existingProfile.status || "APPROVED") as AccountStatus,
     providerId: user.providerData?.[0]?.providerId || "google.com",
     institutionId: "APEX-MAIN",
     institutionName: import.meta.env.VITE_APP_INSTITUTION_NAME || "Apex Institute of Science & Technology",
@@ -125,6 +126,7 @@ export async function createOrUpdateFirestoreProfile(
       if (snapshot.exists()) {
         const remoteData = snapshot.data() as UserProfile;
         profilePayload.role = remoteData.role || profilePayload.role;
+        profilePayload.status = remoteData.status || profilePayload.status;
         profilePayload.createdAt = remoteData.createdAt || profilePayload.createdAt;
       }
       await setDoc(userRef, profilePayload, { merge: true });
@@ -242,4 +244,219 @@ export async function fetchAnnouncements(): Promise<Announcement[]> {
   ];
 }
 
+const LOCAL_STORAGE_APPS_KEY = "classroom_registration_applications";
+
+/**
+ * Submit a new self-registration application
+ */
+export async function submitRegistrationApplication(
+  data: Omit<RegistrationApplication, "id" | "status" | "submittedAt">
+): Promise<RegistrationApplication> {
+  const firestore = getFirebaseDb();
+  const appId = `app_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+  const application: RegistrationApplication = {
+    ...data,
+    id: appId,
+    status: "PENDING_APPROVAL",
+    submittedAt: new Date().toISOString(),
+  };
+
+  // Local storage caching for instant trial testing
+  const existingRaw = localStorage.getItem(LOCAL_STORAGE_APPS_KEY);
+  let applications: RegistrationApplication[] = [];
+  if (existingRaw) {
+    try {
+      applications = JSON.parse(existingRaw);
+    } catch {}
+  }
+  applications.unshift(application);
+  localStorage.setItem(LOCAL_STORAGE_APPS_KEY, JSON.stringify(applications));
+
+  // Sync to Firestore if configured
+  if (firestore) {
+    try {
+      await setDoc(doc(firestore, "registration_applications", appId), application);
+      // Also update or mark user doc status as PENDING_APPROVAL
+      await setDoc(
+        doc(firestore, "users", data.uid),
+        {
+          status: "PENDING_APPROVAL",
+          requestedRole: data.requestedRole,
+          department: data.department,
+          idNumber: data.idNumber,
+        },
+        { merge: true }
+      );
+    } catch (e) {
+      console.warn("[Firestore] Registration application offline save:", e);
+    }
+  }
+
+  // Update cached profile
+  const cachedUserKey = `classroom_user_profile_${data.uid}`;
+  const cachedUserRaw = localStorage.getItem(cachedUserKey);
+  if (cachedUserRaw) {
+    try {
+      const u = JSON.parse(cachedUserRaw);
+      u.status = "PENDING_APPROVAL";
+      u.requestedRole = data.requestedRole;
+      u.department = data.department;
+      u.idNumber = data.idNumber;
+      localStorage.setItem(cachedUserKey, JSON.stringify(u));
+    } catch {}
+  }
+
+  return application;
+}
+
+/**
+ * Fetch all registration applications (with mock seed for testing)
+ */
+export async function fetchRegistrationApplications(): Promise<RegistrationApplication[]> {
+  const firestore = getFirebaseDb();
+  if (firestore) {
+    try {
+      const appsRef = collection(firestore, "registration_applications");
+      const snap = await getDocs(appsRef);
+      if (!snap.empty) {
+        return snap.docs.map((d) => ({ id: d.id, ...d.data() } as RegistrationApplication));
+      }
+    } catch (e) {
+      console.info("[Firestore] Reading local registration queue");
+    }
+  }
+
+  const existingRaw = localStorage.getItem(LOCAL_STORAGE_APPS_KEY);
+  if (existingRaw) {
+    try {
+      const list = JSON.parse(existingRaw);
+      if (Array.isArray(list) && list.length > 0) return list;
+    } catch {}
+  }
+
+  // Default seed applications for immediate admin demo
+  const defaultSeeds: RegistrationApplication[] = [
+    {
+      id: "app_seed_1",
+      uid: "user_applicant_1",
+      fullName: "Ananya Sharma",
+      email: "ananya.sharma26@gmail.com",
+      requestedRole: "STUDENT",
+      department: "Computer Science & Engineering",
+      idNumber: "2026-CSE-042",
+      phone: "+91 98765 43210",
+      notes: "Admitted via Merit Quota Round 1. Fee receipt attached.",
+      status: "PENDING_APPROVAL",
+      submittedAt: new Date(Date.now() - 3600000 * 4).toISOString(),
+    },
+    {
+      id: "app_seed_2",
+      uid: "user_applicant_2",
+      fullName: "Dr. Rajeshwar Kulkarni",
+      email: "rajeshwar.kulkarni@univ.ac.in",
+      requestedRole: "FACULTY",
+      department: "Artificial Intelligence",
+      idNumber: "FAC-AI-88",
+      phone: "+91 98111 22334",
+      notes: "Appointed as Associate Professor, Joining Letter Ref #AP-2026-09.",
+      status: "PENDING_APPROVAL",
+      submittedAt: new Date(Date.now() - 3600000 * 12).toISOString(),
+    },
+    {
+      id: "app_seed_3",
+      uid: "user_applicant_3",
+      fullName: "Vikram Malhotra",
+      email: "vikram.malhotra@parent.net",
+      requestedRole: "PARENT",
+      department: "Mechanical Engineering",
+      idNumber: "WARD-ME-119",
+      phone: "+91 98222 33445",
+      notes: "Father of Rohan Malhotra (Roll: ME-119).",
+      status: "PENDING_APPROVAL",
+      submittedAt: new Date(Date.now() - 3600000 * 24).toISOString(),
+    },
+  ];
+
+  localStorage.setItem(LOCAL_STORAGE_APPS_KEY, JSON.stringify(defaultSeeds));
+  return defaultSeeds;
+}
+
+/**
+ * Review an application (Approve or Reject)
+ */
+export async function reviewRegistrationApplication(
+  applicationId: string,
+  uid: string,
+  decision: "APPROVED" | "REJECTED",
+  role: UserRole,
+  reason?: string,
+  reviewerName: string = "Institution Administrator"
+): Promise<void> {
+  const firestore = getFirebaseDb();
+  const reviewedAt = new Date().toISOString();
+
+  // Update local storage queue
+  const existingRaw = localStorage.getItem(LOCAL_STORAGE_APPS_KEY);
+  if (existingRaw) {
+    try {
+      const list: RegistrationApplication[] = JSON.parse(existingRaw);
+      const updated = list.map((a) =>
+        a.id === applicationId
+          ? {
+              ...a,
+              status: decision,
+              reviewedAt,
+              reviewedBy: reviewerName,
+              rejectionReason: reason || undefined,
+            }
+          : a
+      );
+      localStorage.setItem(LOCAL_STORAGE_APPS_KEY, JSON.stringify(updated));
+    } catch {}
+  }
+
+  // Update user's profile in local storage if present
+  const userProfileKey = `classroom_user_profile_${uid}`;
+  const userProfileRaw = localStorage.getItem(userProfileKey);
+  if (userProfileRaw) {
+    try {
+      const p: UserProfile = JSON.parse(userProfileRaw);
+      p.status = decision;
+      if (decision === "APPROVED") {
+        p.role = role;
+      } else {
+        p.rejectionReason = reason;
+      }
+      localStorage.setItem(userProfileKey, JSON.stringify(p));
+    } catch {}
+  }
+
+  // Update Firestore
+  if (firestore) {
+    try {
+      await setDoc(
+        doc(firestore, "registration_applications", applicationId),
+        {
+          status: decision,
+          reviewedAt,
+          reviewedBy: reviewerName,
+          rejectionReason: reason || null,
+        },
+        { merge: true }
+      );
+
+      await setDoc(
+        doc(firestore, "users", uid),
+        decision === "APPROVED"
+          ? { status: "APPROVED", role }
+          : { status: "REJECTED", rejectionReason: reason || null },
+        { merge: true }
+      );
+    } catch (e) {
+      console.warn("[Firestore] Review update offline:", e);
+    }
+  }
+}
+
 export { signInWithPopup, firebaseSignOut };
+
