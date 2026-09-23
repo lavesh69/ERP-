@@ -1,0 +1,639 @@
+{
+  "metadata": {
+    "system": "CLASSROOM Education Operating System",
+    "schemaVersion": "1.0.0",
+    "createdAt": "2026-09-22T05:14:30.882Z",
+    "totalRecords": 45,
+    "tableCounts": {
+      "institutions": 1,
+      "campuses": 1,
+      "departments": 2,
+      "programs": 1,
+      "users": 5,
+      "students": 2,
+      "faculty": 1,
+      "courses": 2,
+      "attendanceSessions": 1,
+      "attendanceRecords": 1,
+      "feeStructures": 1,
+      "studentFees": 1,
+      "paymentTransactions": 1,
+      "assignments": 1,
+      "submissions": 1,
+      "exams": 1,
+      "examResults": 1,
+      "books": 1,
+      "bookLoans": 1,
+      "announcements": 1,
+      "notifications": 2,
+      "documents": 0,
+      "auditLogs": 16
+    }
+  },
+  "tables": {
+    "institutions": [
+      {
+        "id": "inst-apex-01",
+        "code": "APEX-UNIV",
+        "name": "Apex University of Science & Technology",
+        "legalName": "Apex University of Science & Technology Higher Education Trust",
+        "motto": "Veritas, Scientia, Progressus",
+        "logoUrl": "/branding/logo.png",
+        "website": null,
+        "primaryColor": "#8E5368",
+        "status": "ACTIVE",
+        "createdAt": "2026-09-22T02:57:32.725Z",
+        "updatedAt": "2026-09-22T02:57:32.725Z"
+      }
+    ],
+    "campuses": [
+      {
+        "id": "cmp-main-01",
+        "institutionId": "inst-apex-01",
+        "code": "MAIN-CAMPUS",
+        "name": "Main Research Campus",
+        "location": "Innovation Corridor, Building 4",
+        "timezone": "UTC",
+        "isMainCampus": true,
+        "createdAt": "2026-09-22T02:57:32.731Z",
+        "updatedAt": "2026-09-22T02:57:32.731Z"
+      }
+    ],
+    "departments": [
+      {
+        "id": "dept-cs-01",
+        "institutionId": "inst-apex-01",
+        "campusId": "cmp-main-01",
+        "code": "CSE",
+        "name": "Computer Science & Engineering",
+        "description": "Department of AI, Software Architecture & High-Performance Computing",
+        "hodId": null,
+        "createdAt": "2026-09-22T02:57:32.737Z",
+        "updatedAt": "2026-09-22T02:57:32.737Z"
+      },
+      {
+        "id": "dept-bio-01",
+        "institutionId": "inst-apex-01",
+        "campusId": "cmp-main-01",
+        "code": "BIO",
+        "name": "Biotechnology & Genomics",
+        "description": "Computational Biology, Proteomics and CRISPR Technology",
+        "hodId": null,
+        "createdAt": "2026-09-22T02:57:32.742Z",
+        "updatedAt": "2026-09-22T02:57:32.742Z"
+      }
+    ],
+    "programs": [
+      {
+        "id": "prog-cs-01",
+        "departmentId": "dept-cs-01",
+        "code": "BTECH-CSE",
+        "name": "Bachelor of Technology in Computer Science",
+        "degree": "B.Tech",
+        "durationYears": 4,
+        "totalCredits": 160,
+        "createdAt": "2026-09-22T02:57:32.747Z",
+        "updatedAt": "2026-09-22T02:57:32.747Z"
+      }
+    ],
+    "users": [
+      {
+        "id": "usr-admin-01",
+        "institutionId": "inst-apex-01",
+        "email": "provost.evans@classroom.edu",
+        "passwordHash": "pbkdf2_sha256_mock_hash",
+        "firstName": "Elena",
+        "lastName": "Evans",
+        "phone": null,
+        "avatarUrl": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
+        "role": "SUPER_ADMIN",
+        "isActive": true,
+        "lastLoginAt": null,
+        "twoFactorEnabled": false,
+        "createdAt": "2026-09-22T02:57:32.786Z",
+        "updatedAt": "2026-09-22T02:57:32.786Z"
+      },
+      {
+        "id": "usr-fac-01",
+        "institutionId": "inst-apex-01",
+        "email": "sarah.chen@apex.edu",
+        "passwordHash": "pbkdf2_sha256_mock_hash",
+        "firstName": "Sarah",
+        "lastName": "Chen",
+        "phone": null,
+        "avatarUrl": "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&auto=format&fit=crop&q=80",
+        "role": "FACULTY",
+        "isActive": true,
+        "lastLoginAt": null,
+        "twoFactorEnabled": false,
+        "createdAt": "2026-09-22T02:57:32.790Z",
+        "updatedAt": "2026-09-22T02:57:32.790Z"
+      },
+      {
+        "id": "usr-stu-01",
+        "institutionId": "inst-apex-01",
+        "email": "alex.mercer@apex.edu",
+        "passwordHash": "pbkdf2_sha256_mock_hash",
+        "firstName": "Alex",
+        "lastName": "Mercer",
+        "phone": null,
+        "avatarUrl": "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=150&auto=format&fit=crop&q=80",
+        "role": "STUDENT",
+        "isActive": true,
+        "lastLoginAt": null,
+        "twoFactorEnabled": false,
+        "createdAt": "2026-09-22T02:57:32.804Z",
+        "updatedAt": "2026-09-22T02:57:32.804Z"
+      },
+      {
+        "id": "usr-stu-02",
+        "institutionId": "inst-apex-01",
+        "email": "ethan.hunt@apex.edu",
+        "passwordHash": "pbkdf2_sha256_mock_hash",
+        "firstName": "Ethan",
+        "lastName": "Hunt",
+        "phone": null,
+        "avatarUrl": null,
+        "role": "STUDENT",
+        "isActive": true,
+        "lastLoginAt": null,
+        "twoFactorEnabled": false,
+        "createdAt": "2026-09-22T02:57:32.816Z",
+        "updatedAt": "2026-09-22T02:57:32.816Z"
+      },
+      {
+        "id": "usr-parent-01",
+        "institutionId": "inst-apex-01",
+        "email": "katherine.mercer@gmail.com",
+        "passwordHash": "pbkdf2_sha256_mock_hash",
+        "firstName": "Katherine",
+        "lastName": "Mercer",
+        "phone": null,
+        "avatarUrl": null,
+        "role": "PARENT",
+        "isActive": true,
+        "lastLoginAt": null,
+        "twoFactorEnabled": false,
+        "createdAt": "2026-09-22T02:57:32.826Z",
+        "updatedAt": "2026-09-22T02:57:32.826Z"
+      }
+    ],
+    "students": [
+      {
+        "id": "stu-mercer-01",
+        "userId": "usr-stu-01",
+        "programId": "prog-cs-01",
+        "sectionId": "sec-cs-5a",
+        "rollNumber": "2024-CSE-042",
+        "admissionNumber": "ADM-2024-890",
+        "admissionDate": "2024-08-01T00:00:00.000Z",
+        "currentSemester": 5,
+        "cgpa": 3.88,
+        "attendanceRate": 100,
+        "status": "ACTIVE",
+        "createdAt": "2026-09-22T02:57:32.809Z",
+        "updatedAt": "2026-09-22T03:52:36.326Z"
+      },
+      {
+        "id": "stu-hunt-02",
+        "userId": "usr-stu-02",
+        "programId": "prog-cs-01",
+        "sectionId": "sec-cs-5a",
+        "rollNumber": "2024-CSE-099",
+        "admissionNumber": "ADM-2024-911",
+        "admissionDate": "2024-08-01T00:00:00.000Z",
+        "currentSemester": 5,
+        "cgpa": 2.95,
+        "attendanceRate": 64.2,
+        "status": "DEFAULTER_ALERT",
+        "createdAt": "2026-09-22T02:57:32.821Z",
+        "updatedAt": "2026-09-22T03:52:36.331Z"
+      }
+    ],
+    "faculty": [
+      {
+        "id": "fac-chen-01",
+        "userId": "usr-fac-01",
+        "departmentId": "dept-cs-01",
+        "employeeCode": "FAC-CS-108",
+        "designation": "Associate Professor",
+        "specialization": "Deep Neural Architectures & Transformer Systems",
+        "joiningDate": "2021-06-01T00:00:00.000Z",
+        "qualification": "Ph.D. in Computer Science (Stanford)",
+        "officeRoom": "Room 304, CSE Block",
+        "weeklyHours": 16,
+        "createdAt": "2026-09-22T02:57:32.798Z",
+        "updatedAt": "2026-09-22T02:57:32.798Z"
+      }
+    ],
+    "courses": [
+      {
+        "id": "crs-cs402",
+        "departmentId": "dept-cs-01",
+        "semesterId": "sem-fall-2026",
+        "code": "CS-402",
+        "title": "Advanced Neural Networks",
+        "description": "Mathematical foundations of deep learning, transformer self-attention, and agentic workflows.",
+        "credits": 4,
+        "lectureHours": 3,
+        "labHours": 2,
+        "syllabusUrl": null,
+        "isActive": true,
+        "createdAt": "2026-09-22T02:57:32.841Z",
+        "updatedAt": "2026-09-22T02:57:32.841Z"
+      },
+      {
+        "id": "crs-cs301",
+        "departmentId": "dept-cs-01",
+        "semesterId": "sem-fall-2026",
+        "code": "CS-301",
+        "title": "Distributed Systems & Cloud Computing",
+        "description": "Consensus algorithms, Raft, Paxos, distributed transaction sagas, and microservices.",
+        "credits": 4,
+        "lectureHours": 3,
+        "labHours": 2,
+        "syllabusUrl": null,
+        "isActive": true,
+        "createdAt": "2026-09-22T02:57:32.848Z",
+        "updatedAt": "2026-09-22T02:57:32.848Z"
+      }
+    ],
+    "attendanceSessions": [
+      {
+        "id": "att-sess-01",
+        "courseId": "crs-cs402",
+        "facultyId": "fac-chen-01",
+        "sectionId": "sec-cs-5a",
+        "date": "2026-09-22T02:57:32.889Z",
+        "startTime": "09:00",
+        "endTime": "10:30",
+        "method": "QR",
+        "qrCodeToken": null,
+        "qrExpiresAt": null,
+        "status": "SUBMITTED",
+        "createdAt": "2026-09-22T02:57:32.891Z"
+      }
+    ],
+    "attendanceRecords": [
+      {
+        "id": "94205458-5ffc-4f36-92c8-cf657757561b",
+        "sessionId": "att-sess-01",
+        "studentId": "stu-mercer-01",
+        "status": "PRESENT",
+        "remarks": "Scanned IoT QR terminal at 08:58 AM",
+        "timestamp": "2026-09-22T02:57:32.896Z"
+      }
+    ],
+    "feeStructures": [
+      {
+        "id": "fee-btech-f26",
+        "code": "FEE-BTECH-F26",
+        "title": "Fall 2026 B.Tech Tuition & Lab Ledger",
+        "totalAmount": 4850,
+        "currency": "USD",
+        "dueDate": "2026-10-30T00:00:00.000Z",
+        "breakdownJson": "{\"tuition\":3800,\"labFacilities\":650,\"libraryAndTechnology\":300,\"healthInsurance\":100}",
+        "createdAt": "2026-09-22T02:57:32.931Z"
+      }
+    ],
+    "studentFees": [
+      {
+        "id": "sfee-mercer-01",
+        "studentId": "stu-mercer-01",
+        "feeStructureId": "fee-btech-f26",
+        "totalAmount": 4850,
+        "paidAmount": 4850,
+        "discountAmount": 0,
+        "status": "PAID",
+        "dueDate": "2026-10-30T00:00:00.000Z",
+        "createdAt": "2026-09-22T02:57:32.935Z",
+        "updatedAt": "2026-09-22T02:57:32.935Z"
+      }
+    ],
+    "paymentTransactions": [
+      {
+        "id": "2a37fa96-b1d7-42a1-9a2b-a0d55279d948",
+        "studentFeeId": "sfee-mercer-01",
+        "amount": 4850,
+        "paymentMethod": "WIRE_TRANSFER",
+        "referenceNumber": "TXN-APX-98273941",
+        "status": "SUCCESS",
+        "gatewayResponse": "APPROVED_AUTH_2026",
+        "receiptUrl": null,
+        "transactedAt": "2026-09-22T02:57:32.939Z"
+      }
+    ],
+    "assignments": [
+      {
+        "id": "asg-nn-01",
+        "courseId": "crs-cs402",
+        "facultyId": "fac-chen-01",
+        "title": "Implement Multi-Head Scaled Dot-Product Attention from Scratch",
+        "description": "Write a clean PyTorch/NumPy implementation of scaled dot-product attention with dimension assertions and causal masking.",
+        "maxPoints": 100,
+        "dueDate": "2026-09-27T02:57:32.900Z",
+        "allowLate": true,
+        "rubricJson": "{\"tensorMath\":40,\"causalMask\":30,\"unitTests\":30}",
+        "createdAt": "2026-09-22T02:57:32.901Z",
+        "updatedAt": "2026-09-22T02:57:32.901Z"
+      }
+    ],
+    "submissions": [
+      {
+        "id": "bfa31a74-1e12-4d65-8011-8779a976134f",
+        "assignmentId": "asg-nn-01",
+        "studentId": "stu-mercer-01",
+        "submittedAt": "2026-09-22T02:57:32.908Z",
+        "content": "Submitted attention.py implementation with full assert checks and causal test suite.",
+        "fileUrl": null,
+        "gradePoints": 95,
+        "feedback": "Exceptional numerical stability checks on softmax scaling factor.",
+        "gradedAt": "2026-09-22T02:57:32.907Z",
+        "gradedById": "usr-fac-01",
+        "isLate": false,
+        "plagiarismScore": null
+      }
+    ],
+    "exams": [
+      {
+        "id": "exam-mid-cs402",
+        "courseId": "crs-cs402",
+        "title": "Mid-Term Examination: Deep Learning & Transformers",
+        "type": "MID_TERM",
+        "totalMarks": 100,
+        "weightage": 30,
+        "examDate": "2026-10-15T00:00:00.000Z",
+        "durationMins": 120,
+        "status": "PUBLISHED",
+        "createdAt": "2026-09-22T02:57:32.920Z"
+      }
+    ],
+    "examResults": [
+      {
+        "id": "ee9b71de-5b0d-4257-a484-26719458ba91",
+        "examId": "exam-mid-cs402",
+        "studentId": "stu-mercer-01",
+        "marksObtained": 92.5,
+        "gradeLetter": "A+",
+        "remarks": "Top 5% percentile performance.",
+        "isVerified": true,
+        "verifiedById": null,
+        "publishedAt": null
+      }
+    ],
+    "books": [
+      {
+        "id": "41f6c5e4-4a07-4d49-9070-5e55fd57daa2",
+        "isbn": "978-0262035613",
+        "title": "Deep Learning (Adaptive Computation and Machine Learning series)",
+        "author": "Ian Goodfellow, Yoshua Bengio, Aaron Courville",
+        "category": "Computer Science",
+        "publisher": "MIT Press",
+        "totalCopies": 12,
+        "availableCopies": 12,
+        "shelfLocation": "Stack 4, Row B, Shelf 3",
+        "createdAt": "2026-09-22T02:57:32.945Z"
+      }
+    ],
+    "bookLoans": [
+      {
+        "id": "10682578-02d3-4f8a-816f-8c46a53321bc",
+        "bookId": "41f6c5e4-4a07-4d49-9070-5e55fd57daa2",
+        "studentId": "stu-mercer-01",
+        "issuedAt": "2026-09-22T02:57:32.949Z",
+        "dueDate": "2026-10-06T02:57:32.948Z",
+        "returnedAt": "2026-09-22T03:42:42.515Z",
+        "fineAmount": 0,
+        "status": "RETURNED"
+      }
+    ],
+    "announcements": [
+      {
+        "id": "122d3f45-25e4-4385-9a21-4f00ab8b84b1",
+        "institutionId": "inst-apex-01",
+        "title": "Mid-Term Examination Schedules Released & AI Review Hub Open",
+        "content": "All Mid-Term Examination schedules for Semester V have been published. Students can consult the CLASSROOM AI Revision Assistant for personalized practice question sets.",
+        "targetAudience": "ALL",
+        "priority": "HIGH",
+        "createdAt": "2026-09-22T02:57:32.974Z"
+      }
+    ],
+    "notifications": [
+      {
+        "id": "c08d59db-ddd6-44fd-9129-11372f9d80f0",
+        "userId": "usr-stu-01",
+        "title": "Assignment Graded: CS-402 Attention",
+        "message": "Prof. Sarah Chen scored your submission 95/100.",
+        "type": "ACADEMIC",
+        "isRead": false,
+        "linkUrl": null,
+        "createdAt": "2026-09-22T02:57:32.979Z"
+      },
+      {
+        "id": "e302e10e-d8d9-40b9-bfbc-ee07982fa5fb",
+        "userId": "usr-stu-02",
+        "title": "Urgent: Attendance Defaulter Warning (<75%)",
+        "message": "Your aggregate attendance of 64.2% has fallen below the mandatory 75% institutional threshold. Please contact your academic advisor immediately.",
+        "type": "ATTENDANCE",
+        "isRead": false,
+        "linkUrl": "/attendance",
+        "createdAt": "2026-09-22T03:52:36.336Z"
+      }
+    ],
+    "documents": [],
+    "auditLogs": [
+      {
+        "id": "29c5799b-147e-43ad-8471-0007e3a8bf58",
+        "institutionId": "inst-apex-01",
+        "actorUserId": "usr-admin-01",
+        "action": "LOGIN",
+        "targetEntity": "SuperAdminConsole",
+        "targetId": null,
+        "detailsJson": "{\"ip\":\"10.0.4.12\",\"session\":\"provost-secure-auth\"}",
+        "ipAddress": null,
+        "userAgent": null,
+        "timestamp": "2026-09-22T02:57:32.983Z"
+      },
+      {
+        "id": "3e706a14-6559-471d-89ac-60ab4429d741",
+        "institutionId": "inst-apex-01",
+        "actorUserId": "usr-stu-01",
+        "action": "AI_AGENT_EXECUTION",
+        "targetEntity": "OfficialRecordGuardrail",
+        "targetId": null,
+        "detailsJson": "{\"agentId\":\"examination\",\"actionAttempted\":\"ALTER_GRADE_RECORD\",\"outcome\":\"BLOCKED_BY_GUARDRAIL\"}",
+        "ipAddress": "127.0.0.1",
+        "userAgent": "CLASSROOM-Internal-Client",
+        "timestamp": "2026-09-22T03:02:50.729Z"
+      },
+      {
+        "id": "16d62793-911e-41b6-a2c0-3c43cbf07a83",
+        "institutionId": "inst-apex-01",
+        "actorUserId": "usr-stu-01",
+        "action": "AI_AGENT_EXECUTION",
+        "targetEntity": "OfficialRecordGuardrail",
+        "targetId": null,
+        "detailsJson": "{\"agentId\":\"examination\",\"actionAttempted\":\"ALTER_GRADE_RECORD\",\"outcome\":\"BLOCKED_BY_GUARDRAIL\"}",
+        "ipAddress": "127.0.0.1",
+        "userAgent": "CLASSROOM-Internal-Client",
+        "timestamp": "2026-09-22T03:11:03.439Z"
+      },
+      {
+        "id": "d80d0449-6d09-45b3-beac-f8d646de630c",
+        "institutionId": "inst-apex-01",
+        "actorUserId": "usr-admin-01",
+        "action": "AI_AGENT_EXECUTION",
+        "targetEntity": "Agent:student-support",
+        "targetId": null,
+        "detailsJson": "{\"prompt\":\"What is the mandatory attendance requirement?\",\"status\":\"COMPLETED\"}",
+        "ipAddress": "127.0.0.1",
+        "userAgent": "CLASSROOM-Internal-Client",
+        "timestamp": "2026-09-22T03:11:38.019Z"
+      },
+      {
+        "id": "1ea8bb7f-87a4-4115-a6cf-442c33313125",
+        "institutionId": "inst-apex-01",
+        "actorUserId": "usr-stu-01",
+        "action": "AI_AGENT_EXECUTION",
+        "targetEntity": "OfficialRecordGuardrail",
+        "targetId": null,
+        "detailsJson": "{\"agentId\":\"examination\",\"actionAttempted\":\"ALTER_GRADE_RECORD\",\"outcome\":\"BLOCKED_BY_GUARDRAIL\"}",
+        "ipAddress": "127.0.0.1",
+        "userAgent": "CLASSROOM-Internal-Client",
+        "timestamp": "2026-09-22T03:30:57.816Z"
+      },
+      {
+        "id": "8b961002-ffad-43a1-b4d3-adcba098bd3b",
+        "institutionId": "inst-apex-01",
+        "actorUserId": "usr-stu-01",
+        "action": "AI_AGENT_EXECUTION",
+        "targetEntity": "OfficialRecordGuardrail",
+        "targetId": null,
+        "detailsJson": "{\"agentId\":\"examination\",\"actionAttempted\":\"ALTER_GRADE_RECORD\",\"outcome\":\"BLOCKED_BY_GUARDRAIL\"}",
+        "ipAddress": "127.0.0.1",
+        "userAgent": "CLASSROOM-Internal-Client",
+        "timestamp": "2026-09-22T03:31:52.628Z"
+      },
+      {
+        "id": "d133415f-cece-401b-a89a-d5e11abe73bf",
+        "institutionId": "inst-apex-01",
+        "actorUserId": "usr-stu-01",
+        "action": "AI_AGENT_EXECUTION",
+        "targetEntity": "OfficialRecordGuardrail",
+        "targetId": null,
+        "detailsJson": "{\"agentId\":\"examination\",\"actionAttempted\":\"ALTER_GRADE_RECORD\",\"outcome\":\"BLOCKED_BY_GUARDRAIL\"}",
+        "ipAddress": "127.0.0.1",
+        "userAgent": "CLASSROOM-Internal-Client",
+        "timestamp": "2026-09-22T03:32:11.626Z"
+      },
+      {
+        "id": "e112006b-4167-43d6-b2cd-dc978e0c67c2",
+        "institutionId": "inst-apex-01",
+        "actorUserId": "usr-stu-01",
+        "action": "AI_AGENT_EXECUTION",
+        "targetEntity": "OfficialRecordGuardrail",
+        "targetId": null,
+        "detailsJson": "{\"agentId\":\"examination\",\"actionAttempted\":\"ALTER_GRADE_RECORD\",\"outcome\":\"BLOCKED_BY_GUARDRAIL\"}",
+        "ipAddress": "127.0.0.1",
+        "userAgent": "CLASSROOM-Internal-Client",
+        "timestamp": "2026-09-22T03:41:30.079Z"
+      },
+      {
+        "id": "b6dc86a6-242d-417c-9455-0f675b704161",
+        "institutionId": "inst-apex-01",
+        "actorUserId": "usr-stu-01",
+        "action": "AI_AGENT_EXECUTION",
+        "targetEntity": "OfficialRecordGuardrail",
+        "targetId": null,
+        "detailsJson": "{\"agentId\":\"examination\",\"actionAttempted\":\"ALTER_GRADE_RECORD\",\"outcome\":\"BLOCKED_BY_GUARDRAIL\"}",
+        "ipAddress": "127.0.0.1",
+        "userAgent": "CLASSROOM-Internal-Client",
+        "timestamp": "2026-09-22T03:52:36.272Z"
+      },
+      {
+        "id": "4ec72411-3d04-4d3d-bd7f-67557b0e0c75",
+        "institutionId": "inst-apex-01",
+        "actorUserId": "usr-admin-01",
+        "action": "AI_ACTION",
+        "targetEntity": "SystemScheduler",
+        "targetId": null,
+        "detailsJson": "{\"cycle\":\"Scheduled Institutional Maintenance\",\"results\":[{\"job\":\"Biometric Attendance Aggregation\",\"success\":true,\"durationMs\":2,\"timestamp\":\"2026-09-22T03:52:36.342Z\",\"details\":{\"totalStudentsEvaluated\":2,\"ratesUpdated\":0}},{\"job\":\"Defaulter Risk Screening & Alerts\",\"success\":true,\"durationMs\":2,\"timestamp\":\"2026-09-22T03:52:36.344Z\",\"details\":{\"defaultersIdentified\":1,\"statusUpdated\":0,\"notificationsSent\":0}},{\"job\":\"Fee Ledger Reconciliation & Overdue Screening\",\"success\":true,\"durationMs\":2,\"timestamp\":\"2026-09-22T03:52:36.346Z\",\"details\":{\"totalLedgersInspected\":1,\"overdueMarked\":0,\"clearedMarked\":0,\"remindersDispatched\":0}}],\"totalDurationMs\":6}",
+        "ipAddress": null,
+        "userAgent": null,
+        "timestamp": "2026-09-22T03:52:36.350Z"
+      },
+      {
+        "id": "447a9705-370e-43a4-8c79-facb3b508984",
+        "institutionId": "inst-apex-01",
+        "actorUserId": "usr-stu-01",
+        "action": "AI_AGENT_EXECUTION",
+        "targetEntity": "OfficialRecordGuardrail",
+        "targetId": null,
+        "detailsJson": "{\"agentId\":\"examination\",\"actionAttempted\":\"ALTER_GRADE_RECORD\",\"outcome\":\"BLOCKED_BY_GUARDRAIL\"}",
+        "ipAddress": "127.0.0.1",
+        "userAgent": "CLASSROOM-Internal-Client",
+        "timestamp": "2026-09-22T04:58:57.949Z"
+      },
+      {
+        "id": "be5a398f-b607-4818-bd92-7f77e910dbcc",
+        "institutionId": "inst-apex-01",
+        "actorUserId": "usr-admin-01",
+        "action": "AI_ACTION",
+        "targetEntity": "SystemScheduler",
+        "targetId": null,
+        "detailsJson": "{\"cycle\":\"Scheduled Institutional Maintenance\",\"results\":[{\"job\":\"Biometric Attendance Aggregation\",\"success\":true,\"durationMs\":0,\"timestamp\":\"2026-09-22T04:58:57.972Z\",\"details\":{\"totalStudentsEvaluated\":2,\"ratesUpdated\":0}},{\"job\":\"Defaulter Risk Screening & Alerts\",\"success\":true,\"durationMs\":1,\"timestamp\":\"2026-09-22T04:58:57.973Z\",\"details\":{\"defaultersIdentified\":1,\"statusUpdated\":0,\"notificationsSent\":0}},{\"job\":\"Fee Ledger Reconciliation & Overdue Screening\",\"success\":true,\"durationMs\":1,\"timestamp\":\"2026-09-22T04:58:57.974Z\",\"details\":{\"totalLedgersInspected\":1,\"overdueMarked\":0,\"clearedMarked\":0,\"remindersDispatched\":0}}],\"totalDurationMs\":2}",
+        "ipAddress": null,
+        "userAgent": null,
+        "timestamp": "2026-09-22T04:58:57.976Z"
+      },
+      {
+        "id": "45d643ea-94cf-45ad-be99-a06dafbb3662",
+        "institutionId": "inst-apex-01",
+        "actorUserId": "usr-stu-01",
+        "action": "AI_AGENT_EXECUTION",
+        "targetEntity": "OfficialRecordGuardrail",
+        "targetId": null,
+        "detailsJson": "{\"agentId\":\"examination\",\"actionAttempted\":\"ALTER_GRADE_RECORD\",\"outcome\":\"BLOCKED_BY_GUARDRAIL\"}",
+        "ipAddress": "127.0.0.1",
+        "userAgent": "CLASSROOM-Internal-Client",
+        "timestamp": "2026-09-22T04:59:27.295Z"
+      },
+      {
+        "id": "c0525609-616d-4bab-9874-de2e5e48b283",
+        "institutionId": "inst-apex-01",
+        "actorUserId": "usr-admin-01",
+        "action": "AI_ACTION",
+        "targetEntity": "SystemScheduler",
+        "targetId": null,
+        "detailsJson": "{\"cycle\":\"Scheduled Institutional Maintenance\",\"results\":[{\"job\":\"Biometric Attendance Aggregation\",\"success\":true,\"durationMs\":1,\"timestamp\":\"2026-09-22T04:59:27.313Z\",\"details\":{\"totalStudentsEvaluated\":2,\"ratesUpdated\":0}},{\"job\":\"Defaulter Risk Screening & Alerts\",\"success\":true,\"durationMs\":1,\"timestamp\":\"2026-09-22T04:59:27.314Z\",\"details\":{\"defaultersIdentified\":1,\"statusUpdated\":0,\"notificationsSent\":0}},{\"job\":\"Fee Ledger Reconciliation & Overdue Screening\",\"success\":true,\"durationMs\":0,\"timestamp\":\"2026-09-22T04:59:27.314Z\",\"details\":{\"totalLedgersInspected\":1,\"overdueMarked\":0,\"clearedMarked\":0,\"remindersDispatched\":0}}],\"totalDurationMs\":2}",
+        "ipAddress": null,
+        "userAgent": null,
+        "timestamp": "2026-09-22T04:59:27.316Z"
+      },
+      {
+        "id": "c7d9e25f-7ca0-4bae-aba9-a1d3d18a7a55",
+        "institutionId": "inst-apex-01",
+        "actorUserId": "usr-stu-01",
+        "action": "AI_AGENT_EXECUTION",
+        "targetEntity": "OfficialRecordGuardrail",
+        "targetId": null,
+        "detailsJson": "{\"agentId\":\"examination\",\"actionAttempted\":\"ALTER_GRADE_RECORD\",\"outcome\":\"BLOCKED_BY_GUARDRAIL\"}",
+        "ipAddress": "127.0.0.1",
+        "userAgent": "CLASSROOM-Internal-Client",
+        "timestamp": "2026-09-22T05:14:30.439Z"
+      },
+      {
+        "id": "537e4f92-b77b-4a72-b4cc-6687c913ab95",
+        "institutionId": "inst-apex-01",
+        "actorUserId": "usr-admin-01",
+        "action": "AI_ACTION",
+        "targetEntity": "SystemScheduler",
+        "targetId": null,
+        "detailsJson": "{\"cycle\":\"Scheduled Institutional Maintenance\",\"results\":[{\"job\":\"Biometric Attendance Aggregation\",\"success\":true,\"durationMs\":0,\"timestamp\":\"2026-09-22T05:14:30.455Z\",\"details\":{\"totalStudentsEvaluated\":2,\"ratesUpdated\":0}},{\"job\":\"Defaulter Risk Screening & Alerts\",\"success\":true,\"durationMs\":1,\"timestamp\":\"2026-09-22T05:14:30.456Z\",\"details\":{\"defaultersIdentified\":1,\"statusUpdated\":0,\"notificationsSent\":0}},{\"job\":\"Fee Ledger Reconciliation & Overdue Screening\",\"success\":true,\"durationMs\":1,\"timestamp\":\"2026-09-22T05:14:30.457Z\",\"details\":{\"totalLedgersInspected\":1,\"overdueMarked\":0,\"clearedMarked\":0,\"remindersDispatched\":0}}],\"totalDurationMs\":2}",
+        "ipAddress": null,
+        "userAgent": null,
+        "timestamp": "2026-09-22T05:14:30.458Z"
+      }
+    ]
+  }
+}

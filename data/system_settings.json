@@ -1,0 +1,5 @@
+{
+  "aiQuestionGeneration": false,
+  "rfidAttendanceSync": true,
+  "strictGradeVerification": true
+}

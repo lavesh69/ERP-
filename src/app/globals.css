@@ -1,0 +1,120 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Ivory Bloom Aesthetic Foundation (Light Mode) */
+  --color-canvas: #FAF4F7;
+  --color-surface: #FFFFFF;
+  --color-surface-ground: #FDF9FB;
+  --color-surface-soft: #FBF0F5;
+  --color-surface-card: #FFFFFF;
+  --color-surface-muted: #F5EAEF;
+  --color-border: #E8DAE2;
+  --color-border-subtle: #F2E8EE;
+  --color-border-strong: #D5C2CD;
+  
+  --color-primary: #8E4662;
+  --color-primary-hover: #7B3953;
+  --color-primary-container: #F6E6ED;
+  --color-accent: #D17C9B;
+  --color-rose-light: #F9DEE8;
+  
+  --color-text-primary: #201B22;
+  --color-text-secondary: #635B66;
+  --color-text-muted: #958B99;
+
+  --color-success: #2E8555;
+  --color-warning: #C27A23;
+  --color-danger: #C54545;
+  --color-info: #3A7EBF;
+}
+
+.dark {
+  /* Velvet Dark Academic Foundation (Dark Mode) */
+  --color-canvas: #130F14;
+  --color-surface: #1C161D;
+  --color-surface-ground: #161117;
+  --color-surface-soft: #231B24;
+  --color-surface-card: #1D171E;
+  --color-surface-muted: #281F2A;
+  --color-border: #2D232F;
+  --color-border-subtle: #241B25;
+  --color-border-strong: #3D303F;
+  
+  --color-primary: #D17C9B;
+  --color-primary-hover: #DF8FA9;
+  --color-primary-container: #2A1C25;
+  --color-accent: #E08DAA;
+  --color-rose-light: #3D2230;
+  
+  --color-text-primary: #F7EFF4;
+  --color-text-secondary: #B7ABB7;
+  --color-text-muted: #7E727E;
+
+  --color-success: #3BB173;
+  --color-warning: #E0983D;
+  --color-danger: #E25D5D;
+  --color-info: #5B9FE0;
+}
+
+body {
+  background-color: var(--color-canvas);
+  color: var(--color-text-primary);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+/* Custom Soft Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-accent);
+}
+
+/* Accessible outline states */
+:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* Print Styles for Receipts and Hall Tickets */
+@media print {
+  body {
+    background-color: #ffffff !important;
+    color: #000000 !important;
+  }
+
+  header,
+  aside,
+  nav,
+  button,
+  .no-print {
+    display: none !important;
+  }
+
+  main {
+    margin: 0 !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+    border: none !important;
+  }
+
+  .print-only {
+    display: block !important;
+  }
+}
