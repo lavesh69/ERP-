@@ -59,11 +59,22 @@ export async function GET() {
     );
   } catch (error: any) {
     console.error("Health Check Failed:", error);
+    const availableEnvKeys = Object.keys(process.env).filter(
+      (k) => k.includes("DATABASE") || k.includes("POSTGRES") || k.includes("NEON")
+    );
+    const dbScheme = process.env.DATABASE_URL ? process.env.DATABASE_URL.split(":")[0] : "none";
+    const prismaScheme = process.env.POSTGRES_PRISMA_URL ? process.env.POSTGRES_PRISMA_URL.split(":")[0] : "none";
+
     return NextResponse.json(
       {
         status: "DEGRADED",
         timestamp: new Date().toISOString(),
         error: error.message || "Database connection degraded",
+        diagnostics: {
+          availableEnvKeys,
+          databaseUrlScheme: dbScheme,
+          postgresPrismaScheme: prismaScheme,
+        },
       },
       { status: 503 }
     );

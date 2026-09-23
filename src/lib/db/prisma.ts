@@ -6,12 +6,28 @@ const globalForPrisma = global as unknown as {
   prismaWalInitialized?: boolean;
 };
 
-// 1. Primary Writer Client (AWS RDS Primary / Master PgBouncer Node)
+// Automatically discover and prioritize Neon PostgreSQL connection strings
+const candidateUrls = [
+  process.env.POSTGRES_PRISMA_URL,
+  process.env.POSTGRES_URL,
+  process.env.DATABASE_URL,
+  process.env.POSTGRES_URL_NON_POOLING,
+].filter((url): url is string => typeof url === "string" && url.length > 0);
+
+const activePostgresUrl = candidateUrls.find(
+  (url) => url.startsWith("postgresql://") || url.startsWith("postgres://")
+);
+
+if (activePostgresUrl) {
+  process.env.DATABASE_URL = activePostgresUrl;
+}
+
+// 1. Primary Writer Client
 export const prisma =
   globalForPrisma.prisma ||
   new PrismaClient({
-    ...(process.env.DATABASE_URL || process.env.POSTGRES_PRISMA_URL
-      ? { datasources: { db: { url: process.env.DATABASE_URL || process.env.POSTGRES_PRISMA_URL } } }
+    ...(activePostgresUrl
+      ? { datasources: { db: { url: activePostgresUrl } } }
       : {}),
     log: process.env.NODE_ENV === "development" ? ["warn", "error"] : ["error"],
   });
