@@ -1,6 +1,4 @@
 import { PrismaClient } from "@prisma/client";
-import fs from "fs";
-import path from "path";
 
 const globalForPrisma = global as unknown as {
   prisma: PrismaClient;
@@ -27,24 +25,26 @@ if (activePostgresUrl) {
 } else {
   // If running in serverless environment (Vercel) without remote PostgreSQL,
   // prepare SQLite in writable /tmp directory to prevent SQLITE_CANTOPEN (Error 14)
-  if (process.env.VERCEL) {
-    const tmpDbPath = path.join("/tmp", "dev.db");
-    const candidates = [
-      path.join(process.cwd(), "prisma", "dev.db"),
-      path.join(process.cwd(), "dev.db"),
-      "/var/task/prisma/dev.db",
-      "/var/task/dev.db",
-    ];
-    const sourceDbPath = candidates.find((p) => fs.existsSync(p));
-    if (!fs.existsSync(tmpDbPath) && sourceDbPath) {
-      try {
+  if (process.env.VERCEL && typeof window === "undefined") {
+    try {
+      const fs = require("fs");
+      const path = require("path");
+      const tmpDbPath = path.join("/tmp", "dev.db");
+      const candidates = [
+        path.join(process.cwd(), "prisma", "dev.db"),
+        path.join(process.cwd(), "dev.db"),
+        "/var/task/prisma/dev.db",
+        "/var/task/dev.db",
+      ];
+      const sourceDbPath = candidates.find((p: string) => fs.existsSync(p));
+      if (!fs.existsSync(tmpDbPath) && sourceDbPath) {
         fs.copyFileSync(sourceDbPath, tmpDbPath);
-      } catch (err) {
-        console.warn("Could not copy sqlite db to /tmp:", err);
       }
+      activeDatabaseUrl = `file:${tmpDbPath}`;
+      process.env.DATABASE_URL = activeDatabaseUrl;
+    } catch (err) {
+      console.warn("Could not copy sqlite db to /tmp:", err);
     }
-    activeDatabaseUrl = `file:${tmpDbPath}`;
-    process.env.DATABASE_URL = activeDatabaseUrl;
   } else if (!process.env.DATABASE_URL) {
     process.env.DATABASE_URL = "file:./dev.db";
     activeDatabaseUrl = "file:./dev.db";
