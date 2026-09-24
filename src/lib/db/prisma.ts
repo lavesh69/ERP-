@@ -49,7 +49,12 @@ if (activePostgresUrl) {
     process.env.DATABASE_URL = "file:./dev.db";
     activeDatabaseUrl = "file:./dev.db";
   } else {
-    activeDatabaseUrl = process.env.DATABASE_URL;
+    let dbUrl = process.env.DATABASE_URL;
+    if (dbUrl.startsWith("file:./prisma/")) {
+      dbUrl = dbUrl.replace("file:./prisma/", "file:./");
+    }
+    activeDatabaseUrl = dbUrl;
+    process.env.DATABASE_URL = dbUrl;
   }
 }
 
