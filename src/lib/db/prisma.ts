@@ -1,4 +1,6 @@
 import { PrismaClient } from "@prisma/client";
+import fs from "fs";
+import path from "path";
 
 const globalForPrisma = global as unknown as {
   prisma: PrismaClient;
@@ -12,22 +14,51 @@ const candidateUrls = [
   process.env.POSTGRES_URL,
   process.env.DATABASE_URL,
   process.env.POSTGRES_URL_NON_POOLING,
-].filter((url): url is string => typeof url === "string" && url.length > 0);
+].filter((url): url is string => typeof url === "string" && url.trim().length > 0);
 
 const activePostgresUrl = candidateUrls.find(
   (url) => url.startsWith("postgresql://") || url.startsWith("postgres://")
 );
 
+let activeDatabaseUrl = activePostgresUrl;
+
 if (activePostgresUrl) {
   process.env.DATABASE_URL = activePostgresUrl;
+} else {
+  // If running in serverless environment (Vercel) without remote PostgreSQL,
+  // prepare SQLite in writable /tmp directory to prevent SQLITE_CANTOPEN (Error 14)
+  if (process.env.VERCEL) {
+    const tmpDbPath = path.join("/tmp", "dev.db");
+    const candidates = [
+      path.join(process.cwd(), "prisma", "dev.db"),
+      path.join(process.cwd(), "dev.db"),
+      "/var/task/prisma/dev.db",
+      "/var/task/dev.db",
+    ];
+    const sourceDbPath = candidates.find((p) => fs.existsSync(p));
+    if (!fs.existsSync(tmpDbPath) && sourceDbPath) {
+      try {
+        fs.copyFileSync(sourceDbPath, tmpDbPath);
+      } catch (err) {
+        console.warn("Could not copy sqlite db to /tmp:", err);
+      }
+    }
+    activeDatabaseUrl = `file:${tmpDbPath}`;
+    process.env.DATABASE_URL = activeDatabaseUrl;
+  } else if (!process.env.DATABASE_URL) {
+    process.env.DATABASE_URL = "file:./dev.db";
+    activeDatabaseUrl = "file:./dev.db";
+  } else {
+    activeDatabaseUrl = process.env.DATABASE_URL;
+  }
 }
 
 // 1. Primary Writer Client
 export const prisma =
   globalForPrisma.prisma ||
   new PrismaClient({
-    ...(activePostgresUrl
-      ? { datasources: { db: { url: activePostgresUrl } } }
+    ...(activeDatabaseUrl
+      ? { datasources: { db: { url: activeDatabaseUrl } } }
       : {}),
     log: process.env.NODE_ENV === "development" ? ["warn", "error"] : ["error"],
   });
