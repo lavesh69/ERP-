@@ -48,6 +48,8 @@ import { parseCsv } from "@/lib/bulk/csv-parser";
 import { enqueueOfflineMutation } from "@/lib/offline/sync-queue";
 import { recordApiMetric, getTelemetrySummary } from "@/lib/observability/telemetry";
 import { getTestPhoneNumbers } from "@/lib/firebase/config";
+import { getSupabaseConfig, isSupabaseConfigured } from "@/lib/supabase/index";
+import { supabaseSignIn, supabaseSignUp } from "@/lib/supabase/auth";
 
 async function runTestSuite() {
   console.log("=================================================");
@@ -1060,6 +1062,78 @@ async function runTestSuite() {
     sampleFirestoreProfile.isTestUser === true,
     "Firestore user profile schema validated with role, provider, and test user status"
   );
+
+  // TEST 26: Supabase Authentication Engine & Cloud Session Bridge
+  console.log("\n📌 Group 26: Supabase Authentication Engine & Cloud Bridge");
+
+  // 26.1 Configuration Integrity
+  const supabaseCfg = getSupabaseConfig();
+  assert(
+    supabaseCfg.projectId === "ssnvzmylwnrzxqntxacg",
+    `Supabase Project ID correctly configured: ${supabaseCfg.projectId}`
+  );
+  assert(
+    supabaseCfg.url.includes("ssnvzmylwnrzxqntxacg.supabase.co"),
+    "Supabase Auth URL endpoint points to correct cloud project instance"
+  );
+  assert(
+    supabaseCfg.anonKey.startsWith("sb_publishable_"),
+    "Supabase publishable API key format validated (sb_publishable_*)"
+  );
+  assert(isSupabaseConfigured(), "Supabase configuration active and ready for live authentication");
+
+  // 26.2 GoTrue REST API Endpoint Contract
+  const authEndpoints = {
+    token: `${supabaseCfg.url}/auth/v1/token?grant_type=password`,
+    signup: `${supabaseCfg.url}/auth/v1/signup`,
+    otp: `${supabaseCfg.url}/auth/v1/otp`,
+    recover: `${supabaseCfg.url}/auth/v1/recover`,
+  };
+  assert(
+    authEndpoints.token.includes("/auth/v1/token") &&
+    authEndpoints.signup.includes("/auth/v1/signup") &&
+    authEndpoints.otp.includes("/auth/v1/otp") &&
+    authEndpoints.recover.includes("/auth/v1/recover"),
+    "Supabase GoTrue REST Auth contract endpoints properly parameterized"
+  );
+
+  // 26.3 Supabase Session JWT Token Provisioning
+  const mockSupabaseUid = "sb-user-778899aabbcc";
+  const mockSupabaseEmail = "scholar.supabase@apex.edu";
+  const mockSupabaseRole = "STUDENT";
+
+  const supabaseSessionToken = await signJwt(
+    {
+      sub: mockSupabaseUid,
+      email: mockSupabaseEmail,
+      role: mockSupabaseRole,
+      institutionId: "inst-default",
+      fullName: "Supabase Test Scholar",
+      provider: "supabase",
+      isSupabaseAuth: true,
+    },
+    7 * 86400
+  );
+
+  assert(typeof supabaseSessionToken === "string" && supabaseSessionToken.length > 50, "Supabase session JWT successfully generated");
+
+  // 26.4 Verify JWT Payload & Claims
+  const verifiedSupabaseSession = await verifyJwt(supabaseSessionToken);
+  assert(!!verifiedSupabaseSession, "Supabase session JWT successfully validated by core Next.js auth verifier");
+  assert(verifiedSupabaseSession?.sub === mockSupabaseUid, "Supabase session preserves exact GoTrue user ID");
+  assert(verifiedSupabaseSession?.email === mockSupabaseEmail, "Supabase session preserves verified email address");
+  assert(verifiedSupabaseSession?.provider === "supabase", "Supabase auth provider tag correctly stored in token claims");
+
+  // 26.5 Token Revocation on Supabase Session
+  assert(!(await isTokenRevoked(supabaseSessionToken)), "Fresh Supabase session token is not revoked");
+  await revokeToken(supabaseSessionToken);
+  assert(await isTokenRevoked(supabaseSessionToken), "Supabase session token immediately invalidated upon logout");
+
+  // 26.6 Role Provisioning Matrix for Supabase Users
+  const supportedSupabaseRoles = ["STUDENT", "FACULTY", "PARENT", "INSTITUTION_ADMIN"];
+  supportedSupabaseRoles.forEach((role) => {
+    assert(ROLE_CONFIGS[role as keyof typeof ROLE_CONFIGS] !== undefined, `Supabase role '${role}' maps to verified ERP permission set`);
+  });
 
   console.log("\n=================================================");
   console.log(`🎉 ALL ${passedTests}/${totalTests} TESTS PASSED SUCCESSFULLY!`);

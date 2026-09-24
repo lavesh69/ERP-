@@ -25,16 +25,18 @@ import {
   Globe,
   Flame,
   Building2,
+  Zap,
 } from "lucide-react";
 import Link from "next/link";
 import PasswordStrengthMeter from "@/components/auth/PasswordStrengthMeter";
 import { FirebaseAuthCard } from "@/components/auth/FirebaseAuthCard";
+import { SupabaseAuthCard } from "@/components/auth/SupabaseAuthCard";
 
 export default function LoginPage() {
   const router = useRouter();
   const { showToast, setCurrentRole, setAuthSession, theme, toggleTheme } = useApp();
 
-  const [activePortalTab, setActivePortalTab] = useState<"FIREBASE_TRIAL" | "INSTITUTIONAL">("FIREBASE_TRIAL");
+  const [activePortalTab, setActivePortalTab] = useState<"SUPABASE" | "FIREBASE_TRIAL" | "INSTITUTIONAL">("SUPABASE");
   const [email, setEmail] = useState("provost.evans@classroom.edu");
   const [password, setPassword] = useState("Classroom@2026");
   const [showPassword, setShowPassword] = useState(false);
@@ -462,38 +464,54 @@ export default function LoginPage() {
       </div>
 
       <div className="mt-6 sm:mt-8 sm:mx-auto sm:w-full sm:max-w-3xl">
-        {/* Auth Mode Toggle: Firebase Trial Auth vs Institutional Demo */}
+        {/* Auth Mode Toggle: Supabase Cloud Auth vs Firebase Trial Auth vs Institutional Demo */}
         <div className="mb-6 flex items-center justify-center p-1.5 bg-white/70 dark:bg-charcoal-900/80 backdrop-blur-md rounded-2xl border border-border dark:border-charcoal-800 shadow-soft gap-1">
           <button
             type="button"
+            onClick={() => setActivePortalTab("SUPABASE")}
+            className={`flex-1 flex items-center justify-center gap-1.5 sm:gap-2 py-2.5 px-2 sm:px-3 rounded-xl text-xs font-bold transition-all min-h-[42px] ${
+              activePortalTab === "SUPABASE"
+                ? "bg-emerald-600 text-white shadow-md shadow-emerald-600/25"
+                : "text-charcoal-600 dark:text-charcoal-400 hover:text-charcoal-900 dark:hover:text-ivory-100"
+            }`}
+          >
+            <Zap className="h-4 w-4 text-emerald-300 shrink-0" />
+            <span className="hidden sm:inline">Supabase Cloud Auth</span>
+            <span className="sm:hidden">Supabase</span>
+          </button>
+
+          <button
+            type="button"
             onClick={() => setActivePortalTab("FIREBASE_TRIAL")}
-            className={`flex-1 flex items-center justify-center gap-1.5 sm:gap-2 py-2.5 px-2 sm:px-4 rounded-xl text-xs font-bold transition-all min-h-[42px] ${
+            className={`flex-1 flex items-center justify-center gap-1.5 sm:gap-2 py-2.5 px-2 sm:px-3 rounded-xl text-xs font-bold transition-all min-h-[42px] ${
               activePortalTab === "FIREBASE_TRIAL"
                 ? "bg-rose-primary text-white shadow-md shadow-rose-primary/20"
                 : "text-charcoal-600 dark:text-charcoal-400 hover:text-charcoal-900 dark:hover:text-ivory-100"
             }`}
           >
             <Flame className="h-4 w-4 text-amber-300 shrink-0" />
-            <span className="hidden sm:inline">Firebase Auth (Free Dev / Trial)</span>
-            <span className="sm:hidden">Firebase Auth</span>
+            <span className="hidden sm:inline">Firebase Trial (Dev)</span>
+            <span className="sm:hidden">Firebase</span>
           </button>
 
           <button
             type="button"
             onClick={() => setActivePortalTab("INSTITUTIONAL")}
-            className={`flex-1 flex items-center justify-center gap-1.5 sm:gap-2 py-2.5 px-2 sm:px-4 rounded-xl text-xs font-bold transition-all min-h-[42px] ${
+            className={`flex-1 flex items-center justify-center gap-1.5 sm:gap-2 py-2.5 px-2 sm:px-3 rounded-xl text-xs font-bold transition-all min-h-[42px] ${
               activePortalTab === "INSTITUTIONAL"
                 ? "bg-white dark:bg-charcoal-800 text-charcoal-900 dark:text-ivory-100 shadow-sm"
                 : "text-charcoal-600 dark:text-charcoal-400 hover:text-charcoal-900 dark:hover:text-ivory-100"
             }`}
           >
             <Building2 className="h-4 w-4 shrink-0" />
-            <span className="hidden sm:inline">Institutional Personas (16 Roles)</span>
+            <span className="hidden sm:inline">Institutional (16 Roles)</span>
             <span className="sm:hidden">16 Roles</span>
           </button>
         </div>
 
-        {activePortalTab === "FIREBASE_TRIAL" ? (
+        {activePortalTab === "SUPABASE" ? (
+          <SupabaseAuthCard onSuccessRedirect={fromRedirect || undefined} />
+        ) : activePortalTab === "FIREBASE_TRIAL" ? (
           <FirebaseAuthCard onSuccessRedirect={fromRedirect || undefined} />
         ) : (
           <div className="bg-white dark:bg-charcoal-800 py-8 px-6 shadow-elevated rounded-3xl sm:px-10 border border-border dark:border-charcoal-700 flex flex-col gap-6">

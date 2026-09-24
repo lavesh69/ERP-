@@ -25,6 +25,11 @@ export function getSupabaseConfig(): SupabaseConfig {
   };
 }
 
+export function isSupabaseConfigured(): boolean {
+  const cfg = getSupabaseConfig();
+  return Boolean(cfg.url && cfg.anonKey && cfg.projectId);
+}
+
 /**
  * Universal fetch wrapper for Supabase REST and Auth endpoints
  */
