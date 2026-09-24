@@ -75,33 +75,34 @@ export function TopNavBar() {
   };
 
   return (
-    <header className="sticky top-0 z-20 h-16 bg-white/85 dark:bg-charcoal-900/85 backdrop-blur-md border-b border-border dark:border-charcoal-800 px-4 md:px-6 flex items-center justify-between shadow-soft transition-colors duration-200">
+    <header className="sticky top-0 z-20 h-16 bg-white/85 dark:bg-charcoal-900/85 backdrop-blur-md border-b border-border dark:border-charcoal-800 px-3 sm:px-4 md:px-6 flex items-center justify-between gap-2 shadow-soft transition-colors duration-200">
       {/* Search Input triggering Command Palette */}
-      <div className="flex items-center gap-3 flex-1 max-w-xl">
+      <div className="flex items-center gap-2 sm:gap-3 flex-1 max-w-xl min-w-0">
         {/* Mobile Hamburger Button */}
         <button
           onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-          className="lg:hidden p-2 rounded-xl text-charcoal-700 dark:text-ivory-200 hover:bg-ivory-100 dark:hover:bg-charcoal-800 border border-border dark:border-charcoal-700 shrink-0"
+          className="lg:hidden min-h-[40px] min-w-[40px] flex items-center justify-center p-2 rounded-xl text-charcoal-700 dark:text-ivory-200 hover:bg-ivory-100 dark:hover:bg-charcoal-800 border border-border dark:border-charcoal-700 shrink-0"
           aria-label="Toggle Navigation Menu"
         >
           <Menu className="h-4 w-4" />
         </button>
         <button
           onClick={() => setIsCommandPaletteOpen(true)}
-          className="w-full flex items-center justify-between gap-3 px-3.5 py-2 rounded-xl bg-ivory-100/80 dark:bg-charcoal-900/80 hover:bg-ivory-100 dark:hover:bg-charcoal-800 border border-border dark:border-charcoal-700 text-xs text-charcoal-600 dark:text-charcoal-300 font-medium transition-all group"
+          className="w-full min-h-[40px] flex items-center justify-between gap-2 px-3 py-2 rounded-xl bg-ivory-100/80 dark:bg-charcoal-900/80 hover:bg-ivory-100 dark:hover:bg-charcoal-800 border border-border dark:border-charcoal-700 text-xs text-charcoal-600 dark:text-charcoal-300 font-medium transition-all group overflow-hidden"
         >
-          <div className="flex items-center gap-2.5">
-            <Search className="h-4 w-4 text-charcoal-400 group-hover:text-rose-primary dark:group-hover:text-rose-accent transition-colors" />
-            <span>Search students, faculty, courses, rooms, or actions...</span>
+          <div className="flex items-center gap-2 min-w-0">
+            <Search className="h-4 w-4 text-charcoal-400 group-hover:text-rose-primary dark:group-hover:text-rose-accent transition-colors shrink-0" />
+            <span className="hidden sm:inline truncate">Search students, faculty, courses, rooms, or actions...</span>
+            <span className="sm:hidden text-charcoal-500 truncate">Search...</span>
           </div>
-          <kbd className="hidden sm:inline-flex items-center gap-0.5 px-2 py-0.5 text-[10px] font-bold bg-white dark:bg-charcoal-800 text-charcoal-600 dark:text-charcoal-300 border border-border dark:border-charcoal-700 rounded-md shadow-xs">
+          <kbd className="hidden sm:inline-flex items-center gap-0.5 px-2 py-0.5 text-[10px] font-bold bg-white dark:bg-charcoal-800 text-charcoal-600 dark:text-charcoal-300 border border-border dark:border-charcoal-700 rounded-md shadow-xs shrink-0">
             ⌘K
           </kbd>
         </button>
       </div>
 
       {/* Right Controls */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
         {/* Campus & Term Selector Pills */}
         <div className="hidden lg:flex items-center gap-2 border-r border-border dark:border-charcoal-800 pr-3">
           <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-surface-soft dark:bg-charcoal-900 border border-border dark:border-charcoal-700 text-[11px] font-semibold text-charcoal-800 dark:text-ivory-200">
@@ -124,7 +125,7 @@ export function TopNavBar() {
         <button
           onClick={toggleTheme}
           aria-label="Toggle theme"
-          className="p-2 rounded-xl text-charcoal-600 dark:text-charcoal-300 hover:text-charcoal-900 dark:hover:text-ivory-100 hover:bg-ivory-100 dark:hover:bg-charcoal-800 border border-border dark:border-charcoal-700 transition-all"
+          className="min-h-[40px] min-w-[40px] flex items-center justify-center p-2 rounded-xl text-charcoal-600 dark:text-charcoal-300 hover:text-charcoal-900 dark:hover:text-ivory-100 hover:bg-ivory-100 dark:hover:bg-charcoal-800 border border-border dark:border-charcoal-700 transition-all"
         >
           {theme === "dark" ? (
             <Sun className="h-4 w-4 text-amber-400" />
@@ -136,7 +137,7 @@ export function TopNavBar() {
         {/* AI Quick Prompt Button */}
         <button
           onClick={() => setIsAIChatOpen(true)}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-rose-container dark:bg-rose-dark/30 hover:bg-rose-light dark:hover:bg-rose-dark/50 text-rose-primary dark:text-rose-accent text-xs font-bold transition-all border border-rose-accent/30"
+          className="min-h-[40px] flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl bg-rose-container dark:bg-rose-dark/30 hover:bg-rose-light dark:hover:bg-rose-dark/50 text-rose-primary dark:text-rose-accent text-xs font-bold transition-all border border-rose-accent/30"
         >
           <Sparkles className="h-3.5 w-3.5 text-rose-primary dark:text-rose-accent" />
           <span className="hidden md:inline">CLASSROOM AI</span>
@@ -145,7 +146,7 @@ export function TopNavBar() {
         {/* Quick Action Button */}
         <button
           onClick={() => setIsCommandPaletteOpen(true)}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-rose-primary hover:bg-rose-dark text-white text-xs font-bold transition-all shadow-sm shadow-rose-primary/20"
+          className="min-h-[40px] flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl bg-rose-primary hover:bg-rose-dark text-white text-xs font-bold transition-all shadow-sm shadow-rose-primary/20"
         >
           <Plus className="h-3.5 w-3.5" />
           <span className="hidden sm:inline">Actions</span>
@@ -155,17 +156,17 @@ export function TopNavBar() {
         <div className="relative">
           <button
             onClick={() => setShowNotifications(!showNotifications)}
-            className="relative p-2 rounded-xl text-charcoal-600 dark:text-charcoal-300 hover:text-charcoal-900 dark:hover:text-ivory-100 hover:bg-ivory-100 dark:hover:bg-charcoal-800 border border-border dark:border-charcoal-700 transition-all"
+            className="min-h-[40px] min-w-[40px] flex items-center justify-center relative p-2 rounded-xl text-charcoal-600 dark:text-charcoal-300 hover:text-charcoal-900 dark:hover:text-ivory-100 hover:bg-ivory-100 dark:hover:bg-charcoal-800 border border-border dark:border-charcoal-700 transition-all"
             aria-label="Notifications"
           >
             <Bell className="h-4 w-4" />
             {unreadNotificationsCount > 0 && (
-              <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-rose-primary ring-2 ring-white dark:ring-charcoal-900" />
+              <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-rose-primary ring-2 ring-white dark:ring-charcoal-900" />
             )}
           </button>
 
           {showNotifications && (
-            <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-[#231E21] rounded-2xl shadow-elevated border border-border dark:border-charcoal-800 p-3 z-50 animate-in fade-in slide-in-from-top-2">
+            <div className="absolute right-0 mt-2 w-[calc(100vw-1.5rem)] max-w-xs sm:w-80 bg-white dark:bg-[#231E21] rounded-2xl shadow-elevated border border-border dark:border-charcoal-800 p-3 z-50 animate-in fade-in slide-in-from-top-2">
               <div className="flex items-center justify-between pb-2 border-b border-border dark:border-charcoal-800 mb-2">
                 <span className="text-xs font-bold text-charcoal-900 dark:text-ivory-100">Notifications</span>
                 <button
@@ -216,7 +217,7 @@ export function TopNavBar() {
           <button
             onClick={() => logout()}
             title="Sign Out"
-            className="p-2 rounded-xl text-charcoal-600 dark:text-charcoal-400 hover:text-academic-danger hover:bg-rose-50 dark:hover:bg-charcoal-800 transition-colors"
+            className="min-h-[40px] min-w-[40px] flex items-center justify-center p-2 rounded-xl text-charcoal-600 dark:text-charcoal-400 hover:text-academic-danger hover:bg-rose-50 dark:hover:bg-charcoal-800 transition-colors"
           >
             <LogOut className="h-4 w-4" />
           </button>

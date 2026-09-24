@@ -463,31 +463,33 @@ export default function LoginPage() {
 
       <div className="mt-6 sm:mt-8 sm:mx-auto sm:w-full sm:max-w-3xl">
         {/* Auth Mode Toggle: Firebase Trial Auth vs Institutional Demo */}
-        <div className="mb-6 flex items-center justify-center p-1.5 bg-white/70 dark:bg-charcoal-900/80 backdrop-blur-md rounded-2xl border border-border dark:border-charcoal-800 shadow-soft">
+        <div className="mb-6 flex items-center justify-center p-1.5 bg-white/70 dark:bg-charcoal-900/80 backdrop-blur-md rounded-2xl border border-border dark:border-charcoal-800 shadow-soft gap-1">
           <button
             type="button"
             onClick={() => setActivePortalTab("FIREBASE_TRIAL")}
-            className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs font-bold transition-all ${
+            className={`flex-1 flex items-center justify-center gap-1.5 sm:gap-2 py-2.5 px-2 sm:px-4 rounded-xl text-xs font-bold transition-all min-h-[42px] ${
               activePortalTab === "FIREBASE_TRIAL"
                 ? "bg-rose-primary text-white shadow-md shadow-rose-primary/20"
                 : "text-charcoal-600 dark:text-charcoal-400 hover:text-charcoal-900 dark:hover:text-ivory-100"
             }`}
           >
-            <Flame className="h-4 w-4 text-amber-300" />
-            <span>Firebase Auth (Free Dev / Trial)</span>
+            <Flame className="h-4 w-4 text-amber-300 shrink-0" />
+            <span className="hidden sm:inline">Firebase Auth (Free Dev / Trial)</span>
+            <span className="sm:hidden">Firebase Auth</span>
           </button>
 
           <button
             type="button"
             onClick={() => setActivePortalTab("INSTITUTIONAL")}
-            className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs font-bold transition-all ${
+            className={`flex-1 flex items-center justify-center gap-1.5 sm:gap-2 py-2.5 px-2 sm:px-4 rounded-xl text-xs font-bold transition-all min-h-[42px] ${
               activePortalTab === "INSTITUTIONAL"
                 ? "bg-white dark:bg-charcoal-800 text-charcoal-900 dark:text-ivory-100 shadow-sm"
                 : "text-charcoal-600 dark:text-charcoal-400 hover:text-charcoal-900 dark:hover:text-ivory-100"
             }`}
           >
-            <Building2 className="h-4 w-4" />
-            <span>Institutional Personas (16 Roles)</span>
+            <Building2 className="h-4 w-4 shrink-0" />
+            <span className="hidden sm:inline">Institutional Personas (16 Roles)</span>
+            <span className="sm:hidden">16 Roles</span>
           </button>
         </div>
 

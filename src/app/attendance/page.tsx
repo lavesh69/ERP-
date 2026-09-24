@@ -262,21 +262,85 @@ export default function AttendancePage() {
           <SkeletonTable rows={4} />
         ) : (
           <div className="bg-white dark:bg-[#1E191C] rounded-2xl border border-border dark:border-charcoal-800 shadow-soft overflow-hidden">
-            <div className="p-4 border-b border-border dark:border-charcoal-800 bg-surface-soft dark:bg-charcoal-900/40 flex items-center justify-between">
+            <div className="p-3.5 sm:p-4 border-b border-border dark:border-charcoal-800 bg-surface-soft dark:bg-charcoal-900/40 flex items-center justify-between gap-2">
               <div>
                 <span className="text-xs font-bold text-charcoal-900 dark:text-ivory-100 block">
                   Class Roster: {selectedCourse} • {selectedDate}
                 </span>
                 <span className="text-[11px] text-charcoal-600 dark:text-charcoal-400">
-                  Click status pills to toggle Present, Absent, or Late. Changes persist on save.
+                  Tap status to record attendance. Changes persist on save.
                 </span>
               </div>
-              <span className="px-2.5 py-1 rounded text-[10px] font-bold bg-rose-container dark:bg-rose-dark/30 text-rose-primary dark:text-rose-accent">
+              <span className="px-2.5 py-1 rounded text-[10px] font-bold bg-rose-container dark:bg-rose-dark/30 text-rose-primary dark:text-rose-accent shrink-0">
                 Section 5-A
               </span>
             </div>
 
-            <div className="overflow-x-auto">
+            {/* Mobile Touch-First Roster Cards (< md) */}
+            <div className="md:hidden divide-y divide-border/60 dark:divide-charcoal-800">
+              {studentRoster.map((s) => (
+                <div key={s.studentId} className="p-3.5 space-y-2.5">
+                  <div className="flex items-center justify-between gap-2">
+                    <div>
+                      <span className="font-bold text-sm text-charcoal-900 dark:text-ivory-100 block">{s.name}</span>
+                      <span className="text-[11px] font-mono text-charcoal-500">{s.rollNo}</span>
+                    </div>
+                    <div className="text-right">
+                      <span className="text-xs font-bold text-charcoal-900 dark:text-ivory-100 block">{Number(s.aggregate).toFixed(1)}%</span>
+                      <span
+                        className={`text-[9px] font-bold px-2 py-0.5 rounded-full inline-block ${
+                          s.aggregate >= 75
+                            ? "bg-academic-success-subtle text-academic-success"
+                            : "bg-academic-danger-subtle text-academic-danger"
+                        }`}
+                      >
+                        {s.aggregate >= 75 ? "ELIGIBLE" : "DEFAULTER"}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* 3 Large Touch-Target Status Buttons */}
+                  <div className="grid grid-cols-3 gap-1.5 p-1 rounded-xl bg-ivory-100 dark:bg-charcoal-900 border border-border dark:border-charcoal-800">
+                    <button
+                      type="button"
+                      onClick={() => toggleStatus(s.studentId, "PRESENT")}
+                      className={`min-h-[40px] flex items-center justify-center rounded-lg text-xs font-bold transition-all ${
+                        s.status === "PRESENT"
+                          ? "bg-academic-success text-white shadow-xs"
+                          : "text-charcoal-600 dark:text-charcoal-400 hover:bg-white dark:hover:bg-charcoal-800"
+                      }`}
+                    >
+                      Present
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => toggleStatus(s.studentId, "LATE")}
+                      className={`min-h-[40px] flex items-center justify-center rounded-lg text-xs font-bold transition-all ${
+                        s.status === "LATE"
+                          ? "bg-academic-warning text-white shadow-xs"
+                          : "text-charcoal-600 dark:text-charcoal-400 hover:bg-white dark:hover:bg-charcoal-800"
+                      }`}
+                    >
+                      Late
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => toggleStatus(s.studentId, "ABSENT")}
+                      className={`min-h-[40px] flex items-center justify-center rounded-lg text-xs font-bold transition-all ${
+                        s.status === "ABSENT"
+                          ? "bg-academic-danger text-white shadow-xs"
+                          : "text-charcoal-600 dark:text-charcoal-400 hover:bg-white dark:hover:bg-charcoal-800"
+                      }`}
+                    >
+                      Absent
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Desktop Full Table (>= md) */}
+            <div className="hidden md:block overflow-x-auto">
               <table className="w-full text-left text-xs">
                 <thead className="bg-ivory-100 dark:bg-charcoal-900 border-b border-border dark:border-charcoal-800 text-charcoal-600 dark:text-charcoal-400 font-bold uppercase tracking-wider text-[10px]">
                   <tr>

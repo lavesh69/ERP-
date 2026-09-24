@@ -8,6 +8,14 @@ export const metadata: Metadata = {
     "Production-grade, modern Education ERP combining College/University ERP, School ERP, LMS, SIS, and Autonomous AI Agents.",
 };
 
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+  viewportFit: "cover",
+  themeColor: "#8E5368",
+};
+
 export default function RootLayout({
   children,
 }: {

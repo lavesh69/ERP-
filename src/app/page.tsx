@@ -178,18 +178,18 @@ export default function DashboardPage() {
     <AppShell>
       <div className="flex flex-col gap-6">
         {/* Executive Banner */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white dark:bg-[#1E191C] p-6 rounded-2xl border border-border dark:border-charcoal-800 shadow-soft transition-colors">
-          <div className="flex flex-col gap-1">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white dark:bg-[#1E191C] p-4 sm:p-6 rounded-2xl border border-border dark:border-charcoal-800 shadow-soft transition-colors">
+          <div className="flex flex-col gap-1 min-w-0">
             <div className="flex items-center gap-2">
               <span className="text-xs font-bold text-rose-primary dark:text-rose-accent uppercase tracking-wider">
                 Executive Command Center
               </span>
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-academic-success-subtle dark:bg-green-950/40 text-academic-success border border-green-200 dark:border-green-800">
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-academic-success-subtle dark:bg-green-950/40 text-academic-success border border-green-200 dark:border-green-800 shrink-0">
                 <span className="h-1.5 w-1.5 rounded-full bg-academic-success" />
                 Live DB Sync
               </span>
             </div>
-            <h1 className="text-2xl md:text-3xl font-display font-bold text-charcoal-900 dark:text-ivory-100 tracking-tight">
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-display font-bold text-charcoal-900 dark:text-ivory-100 tracking-tight truncate">
               Welcome back, {currentUser.fullName || currentUser.firstName}
             </h1>
             <p className="text-xs md:text-sm text-charcoal-600 dark:text-charcoal-400 font-medium">
@@ -197,17 +197,17 @@ export default function DashboardPage() {
             </p>
           </div>
 
-          <div className="flex items-center gap-2.5">
+          <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 sm:gap-2.5 shrink-0">
             <button
               onClick={handleExportReport}
-              className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-ivory-100 dark:bg-charcoal-800 hover:bg-rose-container dark:hover:bg-charcoal-700 text-charcoal-800 dark:text-ivory-200 text-xs font-bold border border-border dark:border-charcoal-700 transition-all"
+              className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-ivory-100 dark:bg-charcoal-800 hover:bg-rose-container dark:hover:bg-charcoal-700 text-charcoal-800 dark:text-ivory-200 text-xs font-bold border border-border dark:border-charcoal-700 transition-all min-h-[38px]"
             >
               <FileSpreadsheet className="h-4 w-4 text-charcoal-600 dark:text-charcoal-400" />
               <span>Export Report</span>
             </button>
             <button
               onClick={() => setIsAIChatOpen(true)}
-              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-rose-primary hover:bg-rose-dark active:scale-[0.98] text-white text-xs font-bold shadow-md shadow-rose-primary/20 transition-all"
+              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-rose-primary hover:bg-rose-dark active:scale-[0.98] text-white text-xs font-bold shadow-md shadow-rose-primary/20 transition-all min-h-[38px]"
             >
               <Sparkles className="h-4 w-4" />
               <span>Ask CLASSROOM AI</span>

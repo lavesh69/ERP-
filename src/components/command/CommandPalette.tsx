@@ -156,7 +156,7 @@ export function CommandPalette() {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center pt-20 px-4">
+    <div className="fixed inset-0 z-50 flex items-start justify-center pt-4 sm:pt-20 px-3 sm:px-4">
       {/* Backdrop */}
       <div
         className="fixed inset-0 bg-charcoal-900/60 backdrop-blur-xs transition-opacity animate-in fade-in duration-150"
@@ -165,33 +165,40 @@ export function CommandPalette() {
       />
 
       {/* Palette Container */}
-      <div className="relative w-full max-w-2xl bg-white dark:bg-[#231E21] rounded-2xl border border-border dark:border-charcoal-800 shadow-elevated overflow-hidden z-10 animate-in zoom-in-95 duration-150">
+      <div className="relative w-full max-w-2xl bg-white dark:bg-[#231E21] rounded-2xl border border-border dark:border-charcoal-800 shadow-elevated overflow-hidden z-10 animate-in zoom-in-95 duration-150 max-h-[calc(100dvh-2rem)] flex flex-col">
         {/* Search Bar Input */}
-        <div className="flex items-center px-4 py-3.5 border-b border-border dark:border-charcoal-800 gap-3">
-          <Search className="h-5 w-5 text-charcoal-400 dark:text-charcoal-500" />
+        <div className="flex items-center px-3.5 sm:px-4 py-3 sm:py-3.5 border-b border-border dark:border-charcoal-800 gap-2.5 sm:gap-3">
+          <Search className="h-4 sm:h-5 w-4 sm:w-5 text-charcoal-400 dark:text-charcoal-500 shrink-0" />
           <input
             type="text"
-            placeholder="Type a command, student name, course code, or room..."
+            placeholder="Type a command, student, course, room..."
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             autoFocus
-            className="flex-1 bg-transparent border-none outline-none text-sm text-charcoal-900 dark:text-ivory-100 placeholder:text-charcoal-400"
+            className="flex-1 bg-transparent border-none outline-none text-xs sm:text-sm text-charcoal-900 dark:text-ivory-100 placeholder:text-charcoal-400 min-w-0"
           />
           {query && (
             <button
               onClick={() => setQuery("")}
-              className="p-1 rounded text-charcoal-400 hover:text-charcoal-700 dark:hover:text-ivory-200"
+              className="min-h-[36px] min-w-[36px] flex items-center justify-center p-1 rounded-lg text-charcoal-400 hover:text-charcoal-700 dark:hover:text-ivory-200"
             >
               <X className="h-4 w-4" />
             </button>
           )}
+          <button
+            onClick={() => setIsCommandPaletteOpen(false)}
+            aria-label="Close"
+            className="sm:hidden min-h-[36px] min-w-[36px] flex items-center justify-center p-1 rounded-lg text-charcoal-400 hover:text-charcoal-700 dark:hover:text-ivory-200"
+          >
+            <X className="h-4 w-4" />
+          </button>
           <kbd className="hidden sm:inline-flex items-center px-2 py-0.5 text-[10px] font-bold bg-ivory-100 dark:bg-charcoal-800 text-charcoal-600 dark:text-charcoal-300 border border-border dark:border-charcoal-700 rounded-md">
             ESC
           </kbd>
         </div>
 
         {/* Results List */}
-        <div className="max-h-96 overflow-y-auto p-2 divide-y divide-border/40 dark:divide-charcoal-800">
+        <div className="max-h-[60vh] sm:max-h-96 overflow-y-auto p-2 divide-y divide-border/40 dark:divide-charcoal-800">
           {/* Live Database Entity Results */}
           {searchResults.length > 0 && (
             <div className="pb-2">

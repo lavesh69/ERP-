@@ -304,7 +304,75 @@ This is an electronically generated official university receipt.`;
             />
           ) : (
             <>
-              <div className="overflow-x-auto">
+              {/* Mobile Fee Ledger Cards (< md) */}
+              <div className="md:hidden divide-y divide-border/60 dark:divide-charcoal-700">
+                {filteredFees.map((l) => (
+                  <div key={l.id} className="p-3.5 space-y-3">
+                    <div className="flex items-start justify-between gap-2">
+                      <div>
+                        <span className="font-bold text-sm text-charcoal-900 dark:text-ivory-100 block">{l.studentName}</span>
+                        <span className="text-[11px] font-mono text-charcoal-500">{l.rollNo} • {l.title}</span>
+                      </div>
+                      <span
+                        className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold shrink-0 ${
+                          l.status === "PAID"
+                            ? "bg-academic-success-subtle text-academic-success"
+                            : "bg-academic-warning-subtle text-academic-warning"
+                        }`}
+                      >
+                        {l.status}
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-2 text-center text-xs bg-surface-soft dark:bg-charcoal-900/60 p-2.5 rounded-xl border border-border/50 dark:border-charcoal-700">
+                      <div>
+                        <span className="text-[10px] text-charcoal-500 block uppercase">Total Fee</span>
+                        <span className="font-bold text-charcoal-900 dark:text-ivory-100 mt-0.5 block">${l.totalAmount.toLocaleString()}</span>
+                      </div>
+                      <div>
+                        <span className="text-[10px] text-charcoal-500 block uppercase">Paid</span>
+                        <span className="font-bold text-academic-success mt-0.5 block">${l.paidAmount.toLocaleString()}</span>
+                      </div>
+                      <div>
+                        <span className="text-[10px] text-charcoal-500 block uppercase">Pending</span>
+                        <span className="font-bold text-academic-warning mt-0.5 block">${l.pendingAmount.toLocaleString()}</span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-end gap-2 pt-1">
+                      {l.status !== "PAID" && (
+                        <button
+                          onClick={() => {
+                            setSelectedFeeId(l.id);
+                            setPayAmount(l.pendingAmount);
+                            setIsPayModalOpen(true);
+                          }}
+                          className="min-h-[36px] px-3 py-1.5 rounded-xl bg-rose-primary hover:bg-rose-dark text-white text-xs font-bold shadow-sm"
+                        >
+                          Pay Due (${l.pendingAmount})
+                        </button>
+                      )}
+                      <button
+                        onClick={() =>
+                          handleDownloadReceipt(
+                            l.studentName,
+                            `TXN-REC-${l.rollNo}-${Date.now().toString().slice(-4)}`,
+                            l.paidAmount,
+                            l.title
+                          )
+                        }
+                        className="min-h-[36px] px-3 py-1.5 rounded-xl border border-border dark:border-charcoal-700 text-charcoal-700 dark:text-ivory-200 text-xs font-semibold hover:bg-ivory-100 dark:hover:bg-charcoal-700 flex items-center gap-1.5"
+                      >
+                        <Receipt className="h-3.5 w-3.5 text-rose-primary" />
+                        <span>Receipt</span>
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Desktop Full Table (>= md) */}
+              <div className="hidden md:block overflow-x-auto">
                 <table className="w-full text-left text-xs">
                 <thead className="bg-ivory-100 dark:bg-charcoal-900/60 border-b border-border dark:border-charcoal-700 text-charcoal-600 dark:text-charcoal-400 font-bold uppercase tracking-wider text-[10px]">
                   <tr>

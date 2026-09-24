@@ -179,7 +179,7 @@ export default function StudentsDirectoryPage() {
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap sm:flex-nowrap items-center gap-2">
             <button
               onClick={handleExportCSV}
               className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-ivory-100 dark:bg-charcoal-800 hover:bg-rose-container dark:hover:bg-charcoal-700 text-charcoal-800 dark:text-ivory-200 text-xs font-bold border border-border dark:border-charcoal-700 transition-all"
@@ -248,7 +248,84 @@ export default function StudentsDirectoryPage() {
           />
         ) : (
           <div className="bg-white dark:bg-[#1E191C] rounded-2xl border border-border dark:border-charcoal-800 shadow-soft overflow-hidden">
-            <div className="overflow-x-auto">
+            {/* Mobile Responsive Cards (Phone Viewports < md) */}
+            <div className="md:hidden divide-y divide-border/60 dark:divide-charcoal-800">
+              {students.map((student) => (
+                <div key={student.id} className="p-3.5 space-y-3">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <div className="h-10 w-10 rounded-xl bg-rose-container dark:bg-rose-dark/30 text-rose-primary dark:text-rose-accent flex items-center justify-center font-bold text-xs shrink-0">
+                        {student.name.split(" ").map((n: string) => n[0]).join("").substring(0, 2)}
+                      </div>
+                      <div className="min-w-0">
+                        <span className="font-bold text-sm text-charcoal-900 dark:text-ivory-100 block truncate">{student.name}</span>
+                        <span className="text-[11px] font-mono text-charcoal-500 block truncate">{student.rollNo} • {student.departmentName}</span>
+                      </div>
+                    </div>
+                    <span
+                      className={`font-bold inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] shrink-0 ${
+                        student.attendance >= 75
+                          ? "bg-academic-success-subtle text-academic-success border border-green-300 dark:border-green-800"
+                          : "bg-academic-danger-subtle text-academic-danger border border-rose-300 dark:border-rose-800"
+                      }`}
+                    >
+                      {student.attendance < 75 && <AlertTriangle className="h-3 w-3" />}
+                      {Number(student.attendance).toFixed(1)}% Att
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-2 text-center text-xs bg-surface-soft dark:bg-charcoal-900/60 p-2.5 rounded-xl border border-border/50 dark:border-charcoal-700">
+                    <div>
+                      <span className="text-[10px] text-charcoal-500 block uppercase">Semester</span>
+                      <span className="font-bold text-charcoal-900 dark:text-ivory-100 mt-0.5 block">{student.semester}</span>
+                    </div>
+                    <div>
+                      <span className="text-[10px] text-charcoal-500 block uppercase">CGPA</span>
+                      <span className="font-bold text-charcoal-900 dark:text-ivory-100 mt-0.5 block">{Number(student.cgpa).toFixed(2)}</span>
+                    </div>
+                    <div>
+                      <span className="text-[10px] text-charcoal-500 block uppercase">Fee Status</span>
+                      <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded inline-block mt-0.5 ${
+                        student.feeStatus === "PAID"
+                          ? "bg-academic-success-subtle text-academic-success"
+                          : "bg-academic-warning-subtle text-academic-warning"
+                      }`}>
+                        {student.feeStatus}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between pt-1">
+                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                      student.status === "DEFAULTER_ALERT"
+                        ? "bg-academic-danger-subtle text-academic-danger border border-red-200"
+                        : "bg-ivory-100 dark:bg-charcoal-800 text-charcoal-700 dark:text-charcoal-300"
+                    }`}>
+                      {student.status}
+                    </span>
+                    <div className="flex items-center gap-2">
+                      <Link
+                        href={`/students/profile?id=${student.id}`}
+                        className="min-h-[36px] px-3 py-1.5 rounded-xl bg-ivory-100 dark:bg-charcoal-800 text-charcoal-800 dark:text-ivory-200 text-xs font-bold flex items-center gap-1 hover:bg-rose-container"
+                      >
+                        <span>Profile</span>
+                        <ArrowUpRight className="h-3.5 w-3.5" />
+                      </Link>
+                      <button
+                        onClick={() => handleDelete(student.id, student.name)}
+                        aria-label="Delete Student"
+                        className="min-h-[36px] min-w-[36px] flex items-center justify-center p-1.5 rounded-xl text-charcoal-400 hover:text-academic-danger hover:bg-rose-50 dark:hover:bg-red-950/40"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Desktop Full Table (>= md) */}
+            <div className="hidden md:block overflow-x-auto">
               <table className="w-full text-left text-xs">
                 <thead className="bg-ivory-100 dark:bg-charcoal-900 border-b border-border dark:border-charcoal-800 text-charcoal-600 dark:text-charcoal-400 font-bold uppercase tracking-wider text-[10px]">
                   <tr>

@@ -393,7 +393,7 @@ export function FirebaseAuthCard({ onSuccessRedirect }: FirebaseAuthCardProps) {
   };
 
   return (
-    <div className="bg-white dark:bg-[#1E191C] rounded-3xl p-6 sm:p-8 border border-border dark:border-charcoal-800 shadow-elevated">
+    <div className="bg-white dark:bg-[#1E191C] rounded-3xl p-4 sm:p-8 border border-border dark:border-charcoal-800 shadow-elevated">
       {/* Invisible Recaptcha container */}
       <div ref={recaptchaContainerRef} id="recaptcha-container" />
 
@@ -690,19 +690,19 @@ export function FirebaseAuthCard({ onSuccessRedirect }: FirebaseAuthCardProps) {
               </div>
 
               {/* 6-Digit OTP Box Grid */}
-              <div className="flex justify-center gap-2 my-2" onPaste={handlePasteOtp}>
+              <div className="flex justify-center gap-1.5 sm:gap-2 my-2" onPaste={handlePasteOtp}>
                 {otpDigits.map((digit, index) => (
-                  <input
-                    key={index}
-                    id={`otp-input-${index}`}
-                    type="text"
-                    inputMode="numeric"
-                    maxLength={1}
-                    value={digit}
-                    onChange={(e) => handleDigitChange(index, e.target.value)}
-                    onKeyDown={(e) => handleDigitKeyDown(index, e)}
-                    className="w-10 h-12 text-center text-lg font-mono font-bold rounded-xl border-2 border-border dark:border-charcoal-700 bg-white dark:bg-charcoal-900 text-charcoal-900 dark:text-ivory-100 focus:border-rose-primary focus:outline-none transition-colors"
-                  />
+                   <input
+                     key={index}
+                     id={`otp-input-${index}`}
+                     type="text"
+                     inputMode="numeric"
+                     maxLength={1}
+                     value={digit}
+                     onChange={(e) => handleDigitChange(index, e.target.value)}
+                     onKeyDown={(e) => handleDigitKeyDown(index, e)}
+                     className="w-8 sm:w-10 h-11 sm:h-12 text-center text-base sm:text-lg font-mono font-bold rounded-xl border-2 border-border dark:border-charcoal-700 bg-white dark:bg-charcoal-900 text-charcoal-900 dark:text-ivory-100 focus:border-rose-primary focus:outline-none transition-colors"
+                   />
                 ))}
               </div>
 

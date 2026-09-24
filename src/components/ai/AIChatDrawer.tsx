@@ -42,6 +42,18 @@ export function AIChatDrawer() {
     },
   ]);
 
+  // Lock body scroll when drawer is open
+  React.useEffect(() => {
+    if (isAIChatOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "unset";
+    }
+    return () => {
+      document.body.style.overflow = "unset";
+    };
+  }, [isAIChatOpen]);
+
   if (!isAIChatOpen) return null;
 
   const handleSendMessage = async (queryText?: string) => {
@@ -100,32 +112,32 @@ export function AIChatDrawer() {
   return (
     <div className="fixed inset-0 z-50 flex justify-end bg-charcoal-900/40 backdrop-blur-xs animate-in fade-in">
       <div
-        className="w-full max-w-lg bg-white h-full shadow-elevated border-l border-border flex flex-col justify-between"
+        className="w-full sm:max-w-lg bg-white h-full shadow-elevated border-l border-border flex flex-col justify-between pt-[max(0rem,env(safe-area-inset-top))]"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Drawer Header */}
-        <div className="p-4 border-b border-border bg-ivory-100/60 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-xl bg-gradient-to-tr from-rose-primary to-rose-accent text-white flex items-center justify-center shadow-md shadow-rose-primary/20">
+        <div className="p-3.5 sm:p-4 border-b border-border bg-ivory-100/60 flex items-center justify-between gap-2">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="h-10 w-10 rounded-xl bg-gradient-to-tr from-rose-primary to-rose-accent text-white flex items-center justify-center shadow-md shadow-rose-primary/20 shrink-0">
               <Bot className="h-5 w-5" />
             </div>
-            <div className="flex flex-col">
+            <div className="flex flex-col min-w-0">
               <div className="flex items-center gap-1.5">
                 <span className="font-display font-bold text-sm text-charcoal-900">
                   CLASSROOM AI
                 </span>
-                <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-rose-primary text-white">
+                <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-rose-primary text-white shrink-0">
                   Grounded RAG
                 </span>
               </div>
-              <span className="text-[11px] text-charcoal-600">
-                12 Specialized Autonomous Agents • Zero Hallucination Guard
+              <span className="text-[11px] text-charcoal-600 truncate">
+                12 Autonomous Agents • Zero Hallucination
               </span>
             </div>
           </div>
           <button
             onClick={() => setIsAIChatOpen(false)}
-            className="p-1.5 rounded-lg text-charcoal-400 hover:text-charcoal-800 hover:bg-white transition-all"
+            className="min-h-[40px] min-w-[40px] flex items-center justify-center p-2 rounded-xl text-charcoal-400 hover:text-charcoal-800 hover:bg-white transition-all shrink-0"
             aria-label="Close Drawer"
           >
             <X className="h-5 w-5" />
@@ -236,7 +248,7 @@ export function AIChatDrawer() {
         </div>
 
         {/* Input Bar */}
-        <div className="p-3 border-t border-border bg-white flex items-center gap-2">
+        <div className="p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] border-t border-border bg-white flex items-center gap-2">
           <input
             type="text"
             placeholder={`Ask ${AI_AGENTS.find((a) => a.id === selectedAgent)?.name}...`}

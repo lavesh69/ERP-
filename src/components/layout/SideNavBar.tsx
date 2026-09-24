@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useApp } from "@/context/AppContext";
@@ -32,6 +32,7 @@ import {
   ShieldCheck,
   Radio,
   FileCode2,
+  X,
 } from "lucide-react";
 
 interface NavSection {
@@ -209,6 +210,18 @@ export function SideNavBar() {
   const pathname = usePathname();
   const { currentRole, setCurrentRole, currentUser, setIsAIChatOpen, isMobileMenuOpen, setIsMobileMenuOpen } = useApp();
 
+  // Prevent background scrolling when mobile drawer is open
+  useEffect(() => {
+    if (isMobileMenuOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "unset";
+    }
+    return () => {
+      document.body.style.overflow = "unset";
+    };
+  }, [isMobileMenuOpen]);
+
   return (
     <>
       {/* Mobile Backdrop Overlay */}
@@ -220,13 +233,13 @@ export function SideNavBar() {
         />
       )}
 
-      <aside className={`fixed top-0 left-0 h-screen w-64 bg-white/95 dark:bg-charcoal-900/95 backdrop-blur-md border-r border-border dark:border-charcoal-800 shadow-soft z-40 flex flex-col justify-between shrink-0 select-none transition-transform duration-200 lg:translate-x-0 ${
+      <aside className={`fixed top-0 left-0 h-screen w-72 max-w-[85vw] bg-white/95 dark:bg-charcoal-900/95 backdrop-blur-md border-r border-border dark:border-charcoal-800 shadow-elevated z-40 flex flex-col justify-between shrink-0 select-none transition-transform duration-200 lg:translate-x-0 ${
         isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"
       }`}>
       {/* Brand Header */}
       <div className="flex flex-col">
-        <div className="p-4 border-b border-border/60 dark:border-charcoal-800">
-          <Link href="/" className="flex items-center gap-3">
+        <div className="p-4 border-b border-border/60 dark:border-charcoal-800 flex items-center justify-between">
+          <Link href="/" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-3">
             <div className="h-10 w-10 rounded-xl bg-rose-primary text-white flex items-center justify-center shadow-md shadow-rose-primary/20 shrink-0">
               <Building2 className="h-5 w-5 text-white" />
             </div>
@@ -239,6 +252,14 @@ export function SideNavBar() {
               </span>
             </div>
           </Link>
+
+          <button
+            onClick={() => setIsMobileMenuOpen(false)}
+            aria-label="Close Navigation Menu"
+            className="lg:hidden min-h-[40px] min-w-[40px] flex items-center justify-center p-2 rounded-xl text-charcoal-500 hover:text-charcoal-900 dark:hover:text-ivory-100 hover:bg-ivory-100 dark:hover:bg-charcoal-800 transition-colors"
+          >
+            <X className="h-5 w-5" />
+          </button>
         </div>
 
         {/* Verified Institutional Role & Persona Badge */}
@@ -292,7 +313,7 @@ export function SideNavBar() {
                       key={item.href}
                       href={item.href}
                       onClick={() => setIsMobileMenuOpen(false)}
-                      className={`flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all duration-150 ${
+                      className={`flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold min-h-[44px] transition-all duration-150 ${
                         isActive
                           ? "bg-rose-primary text-white shadow-sm shadow-rose-primary/20"
                           : "text-charcoal-600 dark:text-charcoal-300 hover:bg-ivory-100 dark:hover:bg-charcoal-800 hover:text-charcoal-900 dark:hover:text-ivory-100"
@@ -327,7 +348,7 @@ export function SideNavBar() {
       </div>
 
       {/* User Footer Profile & Copilot Trigger */}
-      <div className="p-3 border-t border-border/70 dark:border-charcoal-800 bg-ivory-50/60 dark:bg-charcoal-950/60 flex flex-col gap-2">
+      <div className="p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] border-t border-border/70 dark:border-charcoal-800 bg-ivory-50/60 dark:bg-charcoal-950/60 flex flex-col gap-2">
         <button
           onClick={() => setIsAIChatOpen(true)}
           className="w-full flex items-center justify-center gap-2 bg-rose-primary hover:bg-rose-dark active:scale-[0.98] text-white text-xs font-bold py-2 px-3 rounded-xl shadow-md shadow-rose-primary/20 transition-all duration-150"

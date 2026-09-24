@@ -5,6 +5,7 @@ import { SideNavBar } from "@/components/layout/SideNavBar";
 import { TopNavBar } from "@/components/layout/TopNavBar";
 import { CommandPalette } from "@/components/command/CommandPalette";
 import { AIChatDrawer } from "@/components/ai/AIChatDrawer";
+import { MobileBottomBar } from "@/components/layout/MobileBottomBar";
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   return (
@@ -15,10 +16,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       {/* Main Content Area */}
       <div className="pl-0 lg:pl-64 flex-1 flex flex-col min-w-0">
         <TopNavBar />
-        <main className="flex-1 p-6 md:p-8 max-w-[1600px] w-full mx-auto">
+        <main className="flex-1 p-3 sm:p-5 md:p-8 pb-24 lg:pb-8 max-w-[1600px] w-full mx-auto overflow-x-hidden">
           {children}
         </main>
       </div>
+
+      {/* Mobile Bottom Navigation Bar (Phones/Tablets only) */}
+      <MobileBottomBar />
 
       {/* Global Modals & Drawers */}
       <CommandPalette />
