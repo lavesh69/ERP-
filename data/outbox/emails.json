@@ -1,5 +1,25 @@
 [
   {
+    "id": "msg-1790216507673-51801f",
+    "to": "student.fellow@apex.edu",
+    "subject": "Institutional Account Verification",
+    "html": "<p>Your security OTP is <strong>592819</strong></p>",
+    "text": "Institutional Account Verification",
+    "type": "PASSWORD_RESET",
+    "otpCode": "592819",
+    "createdAt": "2026-09-24T02:21:47.673Z"
+  },
+  {
+    "id": "msg-1790216427242-e10380",
+    "to": "student.fellow@apex.edu",
+    "subject": "Institutional Account Verification",
+    "html": "<p>Your security OTP is <strong>592819</strong></p>",
+    "text": "Institutional Account Verification",
+    "type": "PASSWORD_RESET",
+    "otpCode": "592819",
+    "createdAt": "2026-09-24T02:20:27.242Z"
+  },
+  {
     "id": "msg-1790215711214-053e18",
     "to": "student.fellow@apex.edu",
     "subject": "Institutional Account Verification",
