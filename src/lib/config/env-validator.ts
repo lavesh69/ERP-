@@ -16,7 +16,11 @@ export function validateEnvironment(): EnvValidationResult {
 
   // 1. Database Connection String
   if (!process.env.DATABASE_URL) {
-    errors.push("DATABASE_URL is missing.");
+    if (isProduction) {
+      errors.push("DATABASE_URL is missing.");
+    } else {
+      warnings.push("DATABASE_URL not set; falling back to local SQLite dev.db.");
+    }
   }
 
   // 2. JWT Secret

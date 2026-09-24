@@ -10,6 +10,10 @@ jobs:
   test_and_audit:
     name: Automated Verification & Unit Tests
     runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: "file:./dev.db"
+      JWT_SECRET: "ci_pipeline_secret_test_key_2026_at_least_32_chars!!"
+      RESET_SECRET: "ci_pipeline_secret_test_key_2026_at_least_32_chars!!"
 
     steps:
       - name: Checkout Repository

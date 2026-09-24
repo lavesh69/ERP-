@@ -47,3 +47,4 @@ coverage/
 backups/*.json
 .agents/
 skills-lock.json
+*.tsbuildinfo

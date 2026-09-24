@@ -14,6 +14,10 @@ jobs:
   verify:
     name: Lint, Test & Build
     runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: file:./prisma/dev.db
+      JWT_SECRET: ci-temporary-validation-jwt-secret-key-at-least-32-chars!
+      RESET_SECRET: ci-temporary-validation-reset-secret-key-at-least-32-chars!
 
     steps:
       - name: Checkout Source Code
