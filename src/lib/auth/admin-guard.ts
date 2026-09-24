@@ -104,6 +104,49 @@ export async function requireAdminAuth(
 }
 
 /**
+ * Restricts access to any authenticated user with a valid unrevoked session.
+ */
+export async function requireAuth(
+  req: NextRequest
+): Promise<{ payload: Record<string, any> } | NextResponse> {
+  const token = extractToken(req);
+
+  if (!token) {
+    logger.security("UNAUTHORIZED_ACCESS_NO_TOKEN", "anonymous", {
+      path: req.nextUrl.pathname,
+      ip: req.headers.get("x-forwarded-for") || "unknown",
+    });
+    return NextResponse.json(
+      { error: "Authentication required. Please log in." },
+      { status: 401 }
+    );
+  }
+
+  if (await isTokenRevoked(token)) {
+    logger.security("UNAUTHORIZED_ACCESS_REVOKED_TOKEN", "anonymous", {
+      path: req.nextUrl.pathname,
+    });
+    return NextResponse.json(
+      { error: "Session has been revoked or invalidated. Please log in again." },
+      { status: 401 }
+    );
+  }
+
+  const payload = await verifyJwt(token);
+  if (!payload) {
+    logger.security("UNAUTHORIZED_ACCESS_INVALID_TOKEN", "anonymous", {
+      path: req.nextUrl.pathname,
+    });
+    return NextResponse.json(
+      { error: "Invalid or expired session. Please log in again." },
+      { status: 401 }
+    );
+  }
+
+  return { payload };
+}
+
+/**
  * Restricts access to Faculty, Academic Leadership, or Admins.
  */
 export async function requireFacultyOrAdminAuth(
@@ -111,3 +154,5 @@ export async function requireFacultyOrAdminAuth(
 ): Promise<{ payload: Record<string, any> } | NextResponse> {
   return requireRoleAuth(req, FACULTY_LEADERSHIP_ROLES);
 }
+
+

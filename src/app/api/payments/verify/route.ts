@@ -36,6 +36,17 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Fee record not found" }, { status: 404 });
     }
 
+    if (
+      session.role === "STUDENT" &&
+      fee.student.userId !== session.userId &&
+      fee.student.user.email !== session.email
+    ) {
+      return NextResponse.json(
+        { error: "Forbidden: Cannot settle fees for another student" },
+        { status: 403 }
+      );
+    }
+
     const pending = Math.max(0, fee.totalAmount - fee.paidAmount - fee.discountAmount);
     const amountPaid = Number(amount) || pending;
     const newPaidAmount = fee.paidAmount + amountPaid;

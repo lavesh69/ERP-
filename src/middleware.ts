@@ -1,6 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import { verifyJwt } from "@/lib/auth/jwt";
 
+const ALLOWED_ORIGIN_PATTERNS = [
+  /^http:\/\/localhost:(3000|5173|5174)$/,
+  /^https:\/\/erp-.*\.vercel\.app$/,
+  /^https:\/\/.*-lavesh69s-projects\.vercel\.app$/,
+];
+
+function isOriginAllowed(origin: string | null): boolean {
+  if (!origin) return false;
+  return ALLOWED_ORIGIN_PATTERNS.some((pattern) => pattern.test(origin));
+}
+
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
@@ -67,11 +78,36 @@ export async function middleware(req: NextRequest) {
 
 
 
+  // CORS Handling for APIs
+  const origin = req.headers.get("origin");
+  const isAllowed = isOriginAllowed(origin);
+
+  if (req.method === "OPTIONS") {
+    const preflightHeaders = new Headers();
+    if (isAllowed && origin) {
+      preflightHeaders.set("Access-Control-Allow-Origin", origin);
+      preflightHeaders.set("Access-Control-Allow-Credentials", "true");
+      preflightHeaders.set("Access-Control-Allow-Methods", "GET,POST,PUT,PATCH,DELETE,OPTIONS");
+      preflightHeaders.set(
+        "Access-Control-Allow-Headers",
+        "X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization, User-Agent"
+      );
+      preflightHeaders.set("Access-Control-Max-Age", "86400");
+    }
+    return new NextResponse(null, { status: isAllowed ? 204 : 403, headers: preflightHeaders });
+  }
+
   // Forward user session info in headers to downstream routes
   const response = NextResponse.next();
   if (userSession) {
     response.headers.set("x-user-id", userSession.userId || "");
     response.headers.set("x-user-role", userSession.role || "");
+    response.headers.set("x-user-institution", userSession.institutionId || "");
+  }
+
+  if (isAllowed && origin) {
+    response.headers.set("Access-Control-Allow-Origin", origin);
+    response.headers.set("Access-Control-Allow-Credentials", "true");
   }
 
   // Enterprise Security Headers
@@ -79,6 +115,11 @@ export async function middleware(req: NextRequest) {
   response.headers.set("X-Content-Type-Options", "nosniff");
   response.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
   response.headers.set("X-XSS-Protection", "1; mode=block");
+  response.headers.set("Permissions-Policy", "camera=(), microphone=(), geolocation=()");
+  response.headers.set(
+    "Content-Security-Policy",
+    "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline' https://va.vercel-scripts.com https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: https: blob:; connect-src 'self' https: wss:; frame-src 'self' https://challenges.cloudflare.com; frame-ancestors 'self'; object-src 'none'; base-uri 'self';"
+  );
   if (process.env.NODE_ENV === "production") {
     response.headers.set("Strict-Transport-Security", "max-age=31536000; includeSubDomains; preload");
   }

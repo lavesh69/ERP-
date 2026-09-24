@@ -44,3 +44,6 @@ Thumbs.db
 # Temporary & test coverage
 coverage/
 .turbo
+backups/*.json
+.agents/
+skills-lock.json

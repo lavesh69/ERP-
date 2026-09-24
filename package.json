@@ -4,12 +4,12 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "prisma generate && node prisma-deploy.mjs && next build",
+    "build": "node prisma-deploy.mjs && next build",
     "start": "next start",
     "lint": "next lint",
     "db:push": "prisma db push",
     "db:seed": "tsx prisma/seed.ts",
-    "db:generate": "prisma generate",
+    "db:generate": "node prisma-deploy.mjs",
     "test": "tsx src/lib/test-runner.ts"
   },
   "dependencies": {

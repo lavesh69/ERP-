@@ -1,4 +1,5 @@
 import { execSync } from "child_process";
+import fs from "fs";
 
 const candidateUrls = [
   process.env.POSTGRES_PRISMA_URL,
@@ -12,8 +13,12 @@ const activePostgresUrl = candidateUrls.find(
 );
 
 if (activePostgresUrl) {
-  console.log("🚀 PostgreSQL database detected, syncing schema...");
+  console.log("🚀 PostgreSQL database detected (Cloud), activating PostgreSQL schema...");
   process.env.DATABASE_URL = activePostgresUrl;
+  if (fs.existsSync("prisma/schema.postgresql.prisma")) {
+    fs.copyFileSync("prisma/schema.postgresql.prisma", "prisma/schema.prisma");
+  }
+  execSync("npx prisma generate", { stdio: "inherit", env: process.env });
   try {
     execSync("npx prisma db push --accept-data-loss", { stdio: "inherit", env: process.env });
     console.log("✅ PostgreSQL schema synchronized successfully.");
@@ -21,5 +26,9 @@ if (activePostgresUrl) {
     console.warn("⚠️ Notice during prisma db push:", err.message);
   }
 } else {
-  console.log("ℹ️ No PostgreSQL URL configured in environment, skipping prisma db push.");
+  console.log("ℹ️ No PostgreSQL URL configured in environment, activating SQLite development schema...");
+  if (fs.existsSync("prisma/schema.sqlite.prisma")) {
+    fs.copyFileSync("prisma/schema.sqlite.prisma", "prisma/schema.prisma");
+  }
+  execSync("npx prisma generate", { stdio: "inherit", env: process.env });
 }

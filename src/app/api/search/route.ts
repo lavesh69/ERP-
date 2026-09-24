@@ -1,31 +1,24 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db/prisma";
+import { getOptionalSession } from "@/lib/auth/admin-guard";
+import { logger } from "@/lib/logging/logger";
 
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
-    const q = searchParams.get("q")?.trim();
+    const rawQuery = searchParams.get("q")?.trim();
 
-    if (!q || q.length < 2) {
+    if (!rawQuery || rawQuery.length < 2) {
       return NextResponse.json({ results: [] });
     }
 
-    const query = q.toLowerCase();
+    // Input sanitization: limit search query to 50 characters
+    const query = rawQuery.slice(0, 50).toLowerCase();
 
-    const [students, faculty, courses, rooms, announcements, books] = await Promise.all([
-      prisma.student.findMany({
-        include: { user: true, program: true },
-        take: 5,
-      }),
-      prisma.faculty.findMany({
-        include: { user: true, department: true },
-        take: 5,
-      }),
-      prisma.course.findMany({ take: 5 }),
-      prisma.room.findMany({ take: 5 }),
-      prisma.announcement.findMany({ take: 5 }),
-      prisma.libraryBook.findMany({ take: 5 }),
-    ]);
+    const session = await getOptionalSession(req);
+    const isStudent = session?.role === "STUDENT";
+    const isParent = session?.role === "PARENT";
+    const isStaff = session && !isStudent && !isParent;
 
     const results: Array<{
       id: string;
@@ -35,17 +28,25 @@ export async function GET(req: NextRequest) {
       href: string;
     }> = [];
 
-    // Filter students
-    for (const s of students) {
-      const name = `${s.user.firstName} ${s.user.lastName}`;
-      if (
-        name.toLowerCase().includes(query) ||
-        s.rollNumber.toLowerCase().includes(query) ||
-        s.user.email.toLowerCase().includes(query)
-      ) {
+    // 1. Student Search: Strictly restricted to academic staff / admins (Defense in Depth)
+    if (isStaff) {
+      const students = await prisma.student.findMany({
+        where: {
+          OR: [
+            { rollNumber: { contains: query } },
+            { user: { firstName: { contains: query } } },
+            { user: { lastName: { contains: query } } },
+            { user: { email: { contains: query } } },
+          ],
+        },
+        include: { user: true, program: true },
+        take: 5,
+      });
+
+      for (const s of students) {
         results.push({
           id: s.id,
-          title: name,
+          title: `${s.user.firstName} ${s.user.lastName}`,
           subtitle: `${s.rollNumber} • ${s.program.name}`,
           category: "STUDENT",
           href: `/students`,
@@ -53,70 +54,75 @@ export async function GET(req: NextRequest) {
       }
     }
 
-    // Filter faculty
+    // 2. Faculty Directory Search
+    const faculty = await prisma.faculty.findMany({
+      where: {
+        OR: [
+          { employeeCode: { contains: query } },
+          { user: { firstName: { contains: query } } },
+          { user: { lastName: { contains: query } } },
+        ],
+      },
+      include: { user: true, department: true },
+      take: 5,
+    });
+
     for (const f of faculty) {
-      const name = `${f.user.firstName} ${f.user.lastName}`;
-      if (
-        name.toLowerCase().includes(query) ||
-        f.employeeCode.toLowerCase().includes(query) ||
-        f.department.name.toLowerCase().includes(query)
-      ) {
-        results.push({
-          id: f.id,
-          title: name,
-          subtitle: `${f.designation} • Dept of ${f.department.code}`,
-          category: "FACULTY",
-          href: `/faculty`,
-        });
-      }
+      results.push({
+        id: f.id,
+        title: `${f.user.firstName} ${f.user.lastName}`,
+        subtitle: `${f.designation} • Dept of ${f.department.code}`,
+        category: "FACULTY",
+        href: `/faculty`,
+      });
     }
 
-    // Filter courses
+    // 3. Courses Search
+    const courses = await prisma.course.findMany({
+      where: {
+        OR: [
+          { code: { contains: query } },
+          { title: { contains: query } },
+        ],
+      },
+      take: 5,
+    });
+
     for (const c of courses) {
-      if (c.code.toLowerCase().includes(query) || c.title.toLowerCase().includes(query)) {
-        results.push({
-          id: c.id,
-          title: `${c.code}: ${c.title}`,
-          subtitle: `${c.credits} Credits • ${c.labHours > 0 ? "Theory + Lab" : "Theory"}`,
-          category: "COURSE",
-          href: `/lms`,
-        });
-      }
+      results.push({
+        id: c.id,
+        title: `${c.code}: ${c.title}`,
+        subtitle: `${c.credits} Credits • ${c.labHours > 0 ? "Theory + Lab" : "Theory"}`,
+        category: "COURSE",
+        href: `/lms`,
+      });
     }
 
-    // Filter rooms
-    for (const r of rooms) {
-      if (r.name.toLowerCase().includes(query) || r.code.toLowerCase().includes(query)) {
-        results.push({
-          id: r.id,
-          title: `${r.name} (${r.code})`,
-          subtitle: `Capacity: ${r.capacity} • IoT: ${r.iotStatus}`,
-          category: "ROOM",
-          href: `/timetable`,
-        });
-      }
-    }
+    // 4. Books Search
+    const books = await prisma.libraryBook.findMany({
+      where: {
+        OR: [
+          { title: { contains: query } },
+          { author: { contains: query } },
+          { isbn: { contains: query } },
+        ],
+      },
+      take: 5,
+    });
 
-    // Filter books
     for (const b of books) {
-      if (
-        b.title.toLowerCase().includes(query) ||
-        b.author.toLowerCase().includes(query) ||
-        b.isbn.toLowerCase().includes(query)
-      ) {
-        results.push({
-          id: b.id,
-          title: b.title,
-          subtitle: `By ${b.author} • ISBN: ${b.isbn}`,
-          category: "BOOK",
-          href: `/library`,
-        });
-      }
+      results.push({
+        id: b.id,
+        title: b.title,
+        subtitle: `By ${b.author} • ISBN: ${b.isbn}`,
+        category: "BOOK",
+        href: `/library`,
+      });
     }
 
     return NextResponse.json({ results });
-  } catch (error) {
-    console.error("Search API Error:", error);
+  } catch (error: any) {
+    logger.error("Search API Error:", error);
     return NextResponse.json(
       { error: "Search execution failed" },
       { status: 500 }

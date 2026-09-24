@@ -28,9 +28,26 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "Examination record not found" }, { status: 404 });
     }
 
-    // Resolve student
+    // Resolve student with IDOR protection
     let student = null;
-    if (studentId) {
+    if (session?.role === "STUDENT") {
+      student = await prisma.student.findFirst({
+        where: {
+          OR: [
+            { userId: session.userId },
+            { user: { email: session.email } },
+          ],
+        },
+        include: { user: true, program: true },
+      });
+
+      if (studentId && student && student.id !== studentId) {
+        return NextResponse.json(
+          { error: "Forbidden: You cannot access another student's hall ticket" },
+          { status: 403 }
+        );
+      }
+    } else if (studentId) {
       student = await prisma.student.findUnique({
         where: { id: studentId },
         include: { user: true, program: true },
