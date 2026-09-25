@@ -48,16 +48,18 @@ export async function GET(req: NextRequest) {
         requirements: j.requirements,
         status: j.status,
         applicationCount: j.applications.length,
-        applications: j.applications.map((app) => ({
-          id: app.id,
-          studentName: `${app.student.user.firstName} ${app.student.user.lastName}`,
-          rollNumber: app.student.rollNumber,
-          email: app.student.user.email,
-          cgpa: app.student.cgpa,
-          status: app.status,
-          appliedAt: app.appliedAt.toISOString().split("T")[0],
-          resumeUrl: app.resumeUrl,
-        })),
+        applications: isStudent
+          ? []
+          : j.applications.map((app) => ({
+              id: app.id,
+              studentName: `${app.student.user.firstName} ${app.student.user.lastName}`,
+              rollNumber: app.student.rollNumber,
+              email: app.student.user.email,
+              cgpa: app.student.cgpa,
+              status: app.status,
+              appliedAt: app.appliedAt.toISOString().split("T")[0],
+              resumeUrl: app.resumeUrl,
+            })),
         myApplication: myApplication
           ? {
               id: myApplication.id,

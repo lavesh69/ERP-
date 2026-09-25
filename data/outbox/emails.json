@@ -1,5 +1,65 @@
 [
   {
+    "id": "msg-1790305657761-510f03",
+    "to": "student.fellow@apex.edu",
+    "subject": "Institutional Account Verification",
+    "html": "<p>Your security OTP is <strong>592819</strong></p>",
+    "text": "Institutional Account Verification",
+    "type": "PASSWORD_RESET",
+    "otpCode": "592819",
+    "createdAt": "2026-09-25T03:07:37.761Z"
+  },
+  {
+    "id": "msg-1790305624323-d59867",
+    "to": "student.fellow@apex.edu",
+    "subject": "Institutional Account Verification",
+    "html": "<p>Your security OTP is <strong>592819</strong></p>",
+    "text": "Institutional Account Verification",
+    "type": "PASSWORD_RESET",
+    "otpCode": "592819",
+    "createdAt": "2026-09-25T03:07:04.323Z"
+  },
+  {
+    "id": "msg-1790305605786-6ad48b",
+    "to": "student.fellow@apex.edu",
+    "subject": "Institutional Account Verification",
+    "html": "<p>Your security OTP is <strong>592819</strong></p>",
+    "text": "Institutional Account Verification",
+    "type": "PASSWORD_RESET",
+    "otpCode": "592819",
+    "createdAt": "2026-09-25T03:06:45.786Z"
+  },
+  {
+    "id": "msg-1790305584818-5e4a65",
+    "to": "student.fellow@apex.edu",
+    "subject": "Institutional Account Verification",
+    "html": "<p>Your security OTP is <strong>592819</strong></p>",
+    "text": "Institutional Account Verification",
+    "type": "PASSWORD_RESET",
+    "otpCode": "592819",
+    "createdAt": "2026-09-25T03:06:24.818Z"
+  },
+  {
+    "id": "msg-1790305552241-481e4b",
+    "to": "student.fellow@apex.edu",
+    "subject": "Institutional Account Verification",
+    "html": "<p>Your security OTP is <strong>592819</strong></p>",
+    "text": "Institutional Account Verification",
+    "type": "PASSWORD_RESET",
+    "otpCode": "592819",
+    "createdAt": "2026-09-25T03:05:52.241Z"
+  },
+  {
+    "id": "msg-1790305521723-47c301",
+    "to": "student.fellow@apex.edu",
+    "subject": "Institutional Account Verification",
+    "html": "<p>Your security OTP is <strong>592819</strong></p>",
+    "text": "Institutional Account Verification",
+    "type": "PASSWORD_RESET",
+    "otpCode": "592819",
+    "createdAt": "2026-09-25T03:05:21.723Z"
+  },
+  {
     "id": "msg-1790302204398-93afad",
     "to": "student.fellow@apex.edu",
     "subject": "Institutional Account Verification",

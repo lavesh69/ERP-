@@ -16,6 +16,8 @@ export async function GET(req: NextRequest) {
     const department = searchParams.get("department");
     const search = searchParams.get("search");
 
+    const isFaculty = session?.role && ["FACULTY", "PROFESSOR", "CLASS_TEACHER", "HOD"].includes(session.role);
+
     if (id) {
       // Backend IDOR Defense: If caller is student, prevent them from accessing another student's dossier
       let lookupCondition: any = {
@@ -60,8 +62,10 @@ export async function GET(req: NextRequest) {
         return NextResponse.json({ error: "Student not found" }, { status: 404 });
       }
 
-      const primaryFee = student.fees[0];
-      const feeStatus = primaryFee
+      const primaryFee = !isFaculty && student.fees ? student.fees[0] : null;
+      const feeStatus = isFaculty
+        ? undefined
+        : primaryFee
         ? primaryFee.paidAmount >= primaryFee.totalAmount
           ? "PAID"
           : primaryFee.paidAmount > 0
@@ -86,7 +90,7 @@ export async function GET(req: NextRequest) {
           cgpa: student.cgpa || 3.88,
           attendanceRate: student.attendanceRate || 94.6,
           status: student.status,
-          feeStatus,
+          ...(isFaculty ? {} : { feeStatus }),
           totalCredits: student.program.totalCredits,
           earnedCredits: 84,
           courses: student.enrollments.map((e) => ({
@@ -117,21 +121,23 @@ export async function GET(req: NextRequest) {
               points: computed.points,
             };
           }),
-          fees: student.fees.map((f) => ({
-            id: f.id,
-            title: f.feeStructure.title,
-            total: f.totalAmount,
-            paid: f.paidAmount,
-            status: f.status,
-            dueDate: f.dueDate.toISOString().split("T")[0],
-            transactions: f.transactions.map((t) => ({
-              id: t.id,
-              reference: t.referenceNumber,
-              amount: t.amount,
-              method: t.paymentMethod,
-              date: t.transactedAt.toISOString().split("T")[0],
-            })),
-          })),
+          fees: isFaculty || !student.fees
+            ? []
+            : student.fees.map((f) => ({
+                id: f.id,
+                title: f.feeStructure.title,
+                total: f.totalAmount,
+                paid: f.paidAmount,
+                status: f.status,
+                dueDate: f.dueDate.toISOString().split("T")[0],
+                transactions: f.transactions.map((t) => ({
+                  id: t.id,
+                  reference: t.referenceNumber,
+                  amount: t.amount,
+                  method: t.paymentMethod,
+                  date: t.transactedAt.toISOString().split("T")[0],
+                })),
+              })),
           bookLoans: student.bookLoans.map((l) => ({
             id: l.id,
             title: l.book.title,
@@ -156,7 +162,33 @@ export async function GET(req: NextRequest) {
     const limit = Math.max(1, parseInt(searchParams.get("limit") || "10", 10));
 
 
+    let facultyCourseIds: string[] = [];
+    if (isFaculty && session?.userId) {
+      const fac = await prisma.faculty.findFirst({
+        where: {
+          OR: [
+            { userId: session.userId },
+            { user: { email: session.email } },
+          ],
+        },
+        include: { courses: true },
+      });
+      if (fac && fac.courses.length > 0) {
+        facultyCourseIds = fac.courses.map((c) => c.courseId);
+      }
+    }
+
+    const studentsWhere: any = {};
+    if (isFaculty && facultyCourseIds.length > 0) {
+      studentsWhere.enrollments = {
+        some: {
+          courseId: { in: facultyCourseIds },
+        },
+      };
+    }
+
     const students = await prisma.student.findMany({
+      where: studentsWhere,
       include: {
         user: true,
         program: { include: { department: true } },
@@ -187,8 +219,10 @@ export async function GET(req: NextRequest) {
         return true;
       })
       .map((s) => {
-        const primaryFee = s.fees[0];
-        const feeStatus = primaryFee
+        const primaryFee = !isFaculty && s.fees ? s.fees[0] : null;
+        const feeStatus = isFaculty
+          ? undefined
+          : primaryFee
           ? primaryFee.paidAmount >= primaryFee.totalAmount
             ? "PAID"
             : primaryFee.paidAmount > 0
@@ -209,7 +243,7 @@ export async function GET(req: NextRequest) {
           semester: `Sem ${s.currentSemester} (${s.section?.name || "Sec A"})`,
           cgpa: s.cgpa || 3.8,
           attendance: s.attendanceRate || 95.0,
-          feeStatus,
+          ...(isFaculty ? {} : { feeStatus }),
           status: s.attendanceRate < 75 ? "DEFAULTER_ALERT" : s.status,
           avatarUrl: s.user.avatarUrl,
         };

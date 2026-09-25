@@ -3,13 +3,15 @@ import { prisma } from "@/lib/db/prisma";
 import { requireFacultyOrAdminAuth } from "@/lib/auth/admin-guard";
 import { logger } from "@/lib/logging/logger";
 
+import { logAuditEvent } from "@/lib/audit/logger";
+
 export async function POST(req: NextRequest) {
   const auth = await requireFacultyOrAdminAuth(req);
   if (auth instanceof NextResponse) return auth;
 
   try {
     const body = await req.json();
-    const { submissionId, gradePoints, feedback } = body;
+    const { submissionId, gradePoints, feedback, rubricScores, lock } = body;
 
     if (!submissionId || gradePoints === undefined || gradePoints === null) {
       return NextResponse.json(
@@ -41,6 +43,16 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Check if existing grade is locked
+    const isLocked = existing.feedback?.includes("[LOCKED]");
+    const isElevated = ["SUPER_ADMIN", "INSTITUTION_ADMIN", "HOD", "PRINCIPAL"].includes(auth.payload.role);
+    if (isLocked && !isElevated) {
+      return NextResponse.json(
+        { error: "Grade record is locked. Only department HOD or administrator can override finalized grades." },
+        { status: 403 }
+      );
+    }
+
     if (numericPoints > existing.assignment.maxPoints) {
       return NextResponse.json(
         {
@@ -50,13 +62,34 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    let finalFeedback = feedback || "Evaluated by faculty.";
+    if (rubricScores && Array.isArray(rubricScores)) {
+      finalFeedback += `\n[RUBRIC]: ${JSON.stringify(rubricScores)}`;
+    }
+    if (lock) {
+      finalFeedback += "\n[LOCKED]";
+    }
+
     const updated = await prisma.submission.update({
       where: { id: submissionId },
       data: {
         gradePoints: numericPoints,
-        feedback: feedback || "Evaluated by faculty.",
+        feedback: finalFeedback,
         gradedAt: new Date(),
         gradedById: auth.payload.userId,
+      },
+    });
+
+    await logAuditEvent({
+      actorUserId: auth.payload.userId || auth.payload.sub || "faculty",
+      action: "GRADE_MODIFIED",
+      targetEntity: "Submission",
+      targetId: updated.id,
+      details: {
+        gradePoints: numericPoints,
+        rubricScores,
+        locked: !!lock,
+        studentId: existing.studentId,
       },
     });
 
@@ -66,16 +99,19 @@ export async function POST(req: NextRequest) {
       gradePoints: numericPoints,
       maxPoints: existing.assignment.maxPoints,
       gradedBy: auth.payload.email,
+      locked: !!lock,
     });
 
     return NextResponse.json({
       success: true,
-      message: `Score ${numericPoints}/${existing.assignment.maxPoints} saved successfully`,
+      message: `Score ${numericPoints}/${existing.assignment.maxPoints} saved successfully${lock ? " and grade locked" : ""}`,
       submission: {
         id: updated.id,
         gradePoints: updated.gradePoints,
         feedback: updated.feedback,
         gradedAt: updated.gradedAt,
+        isLocked: !!lock || updated.feedback?.includes("[LOCKED]"),
+        rubricScores: rubricScores || null,
       },
     });
   } catch (error: any) {

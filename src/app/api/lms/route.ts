@@ -234,6 +234,42 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const { action } = body;
 
+    // Teacher Action: Create New Curriculum Unit / Module
+    if (action === "CREATE_MODULE") {
+      const { courseId, courseCode, title, description, learningObjectives, courseOutcomes } = body;
+      let targetCourseId = courseId;
+      if (!targetCourseId && courseCode) {
+        const c = await prisma.course.findFirst({ where: { code: courseCode } });
+        if (c) targetCourseId = c.id;
+      }
+      if (!targetCourseId) {
+        const c = await prisma.course.findFirst();
+        if (c) targetCourseId = c.id;
+      }
+      if (!targetCourseId || !title) {
+        return NextResponse.json({ error: "courseId and title are required" }, { status: 400 });
+      }
+
+      const moduleCount = await prisma.courseModule.count({ where: { courseId: targetCourseId } });
+      const newModule = await prisma.courseModule.create({
+        data: {
+          courseId: targetCourseId,
+          title,
+          orderIndex: moduleCount + 1,
+          description: description || "4 hours • 3 Topics",
+          learningObjectives: learningObjectives || null,
+          courseOutcomes: courseOutcomes || null,
+          progressPercent: 0,
+        },
+      });
+
+      return NextResponse.json({
+        success: true,
+        message: `Module '${title}' created successfully.`,
+        module: newModule,
+      }, { status: 201 });
+    }
+
     // Teacher Action: Add Learning Material
     if (action === "ADD_MATERIAL") {
       const { moduleId, title, contentType, contentUrl, fileSizeKb } = body;
@@ -348,6 +384,53 @@ export async function POST(req: NextRequest) {
     console.error("LMS POST error:", error);
     return NextResponse.json(
       { error: "Failed to update chapter progress", details: error.message },
+      { status: 500 }
+    );
+  }
+}
+
+export async function DELETE(req: NextRequest) {
+  try {
+    const session = await getOptionalSession(req);
+    if (session?.role === "STUDENT") {
+      return NextResponse.json(
+        { error: "Forbidden: Students are not authorized to delete curriculum items." },
+        { status: 403 }
+      );
+    }
+
+    const { searchParams } = new URL(req.url);
+    const chapterId = searchParams.get("chapterId");
+    const moduleId = searchParams.get("moduleId");
+
+    if (chapterId) {
+      await prisma.courseChapter.delete({
+        where: { id: chapterId },
+      });
+      return NextResponse.json({
+        success: true,
+        message: `Chapter ${chapterId} deleted successfully.`,
+      });
+    }
+
+    if (moduleId) {
+      await prisma.courseChapter.deleteMany({
+        where: { moduleId },
+      });
+      await prisma.courseModule.delete({
+        where: { id: moduleId },
+      });
+      return NextResponse.json({
+        success: true,
+        message: `Module ${moduleId} and its chapters deleted successfully.`,
+      });
+    }
+
+    return NextResponse.json({ error: "chapterId or moduleId required" }, { status: 400 });
+  } catch (error: any) {
+    console.error("LMS DELETE error:", error);
+    return NextResponse.json(
+      { error: "Failed to delete curriculum item", details: error.message },
       { status: 500 }
     );
   }

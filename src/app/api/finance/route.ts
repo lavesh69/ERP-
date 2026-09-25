@@ -7,7 +7,17 @@ import { getOptionalSession } from "@/lib/auth/admin-guard";
 export async function GET(req: NextRequest) {
   try {
     const session = await getOptionalSession(req);
-    const isStudent = session?.role === "STUDENT";
+    const role = session?.role;
+
+    // FERPA Compliance: Academic faculty have zero access to student billing & ledgers
+    if (role && ["FACULTY", "PROFESSOR", "CLASS_TEACHER", "HOD"].includes(role)) {
+      return NextResponse.json(
+        { error: "Forbidden: Academic faculty are restricted from accessing student financial records (FERPA compliance)." },
+        { status: 403 }
+      );
+    }
+
+    const isStudent = role === "STUDENT";
 
     const { searchParams } = new URL(req.url);
     const search = searchParams.get("search");
@@ -134,6 +144,16 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json().catch(() => ({}));
+
+    const session = await getOptionalSession(req);
+    const role = session?.role;
+
+    if (role && ["FACULTY", "PROFESSOR", "CLASS_TEACHER", "HOD"].includes(role)) {
+      return NextResponse.json(
+        { error: "Forbidden: Academic faculty are restricted from modifying student financial records (FERPA compliance)." },
+        { status: 403 }
+      );
+    }
 
     // C2: Zod validation
     const parsed = processPaymentSchema.safeParse(body);

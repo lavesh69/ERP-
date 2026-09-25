@@ -71,23 +71,27 @@ export async function GET(req: NextRequest) {
       };
     });
 
-    const allApplications = scholarships.flatMap((s) =>
-      s.applications.map((app) => ({
-        id: app.id,
-        scholarshipId: s.id,
-        scholarshipTitle: s.title,
-        provider: s.provider,
-        amount: `$${s.amount.toLocaleString()} / semester`,
-        studentId: app.student.id,
-        studentName: `${app.student.user.firstName} ${app.student.user.lastName}`,
-        rollNumber: app.student.rollNumber,
-        cgpa: app.student.cgpa,
-        statement: app.statement,
-        documentsUrl: app.documentsUrl,
-        status: app.status,
-        appliedAt: app.appliedAt.toISOString().split("T")[0],
-      }))
-    );
+    const isStudent = session?.role === "STUDENT";
+
+    const allApplications = isStudent
+      ? []
+      : scholarships.flatMap((s) =>
+          s.applications.map((app) => ({
+            id: app.id,
+            scholarshipId: s.id,
+            scholarshipTitle: s.title,
+            provider: s.provider,
+            amount: `$${s.amount.toLocaleString()} / semester`,
+            studentId: app.student.id,
+            studentName: `${app.student.user.firstName} ${app.student.user.lastName}`,
+            rollNumber: app.student.rollNumber,
+            cgpa: app.student.cgpa,
+            statement: app.statement,
+            documentsUrl: app.documentsUrl,
+            status: app.status,
+            appliedAt: app.appliedAt.toISOString().split("T")[0],
+          }))
+        );
 
     return NextResponse.json({
       scholarships: formatted,

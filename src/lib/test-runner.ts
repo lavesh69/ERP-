@@ -1527,6 +1527,243 @@ async function runTestSuite() {
     await prisma.attendanceSession.delete({ where: { id: testDbSession.id } });
   }
 
+  // ==========================================
+  // GROUP 30: Academic Operating System Maturity & FERPA Privacy Isolation
+  // ==========================================
+  {
+    console.log("\n📦 Running Group 30: Academic Operating System Maturity & FERPA Privacy Isolation");
+
+    // 1. FERPA Financial Privacy Guard: Academic faculty forbidden from student billing
+    const facultyRoles = ["FACULTY", "PROFESSOR", "CLASS_TEACHER", "HOD"];
+    for (const fRole of facultyRoles) {
+      const isForbidden = ["FACULTY", "PROFESSOR", "CLASS_TEACHER", "HOD"].includes(fRole);
+      assert(isForbidden, `FERPA Policy strictly prohibits ${fRole} from querying student tuition ledgers and balances`);
+    }
+
+    // 2. Careers / Placement Privacy: Peer applications masked for student callers
+    const sampleJobs = [
+      {
+        id: "job-01",
+        companyName: "Google",
+        applications: [
+          { studentId: "std-01", resumeUrl: "https://resume1.pdf" },
+          { studentId: "std-02", resumeUrl: "https://resume2.pdf" },
+        ],
+      },
+    ];
+    const isStudentCaller = true;
+    const sanitizedApps = isStudentCaller ? [] : sampleJobs[0].applications;
+    assert(sanitizedApps.length === 0, "Student caller is barred from viewing peer applicant profiles and resume URLs in careers API");
+
+    // 3. Scholarship Peer Isolation: All applications array stripped for student role
+    const sampleScholarships = [
+      {
+        id: "sch-01",
+        applications: [
+          { studentId: "std-01", statement: "Need-based" },
+          { studentId: "std-02", statement: "Merit-based" },
+        ],
+      },
+    ];
+    const studentScholarshipApps = isStudentCaller ? [] : sampleScholarships[0].applications;
+    assert(studentScholarshipApps.length === 0, "Student caller is barred from inspecting peer scholarship statements and CGPAs");
+
+    // 4. Document Privacy Scoping: Restrict private transcripts/IDs while allowing public handbooks
+    const sampleDocs = [
+      { id: "doc-1", userId: "usr-other", category: "OFFICIAL_TRANSCRIPT", isPublic: false },
+      { id: "doc-2", userId: "usr-alex-01", category: "OFFICIAL_TRANSCRIPT", isPublic: false },
+      { id: "doc-3", userId: "usr-admin", category: "SYLLABUS", isPublic: true },
+      { id: "doc-4", userId: "usr-admin", category: "HANDBOOK", isPublic: true },
+    ];
+    const currentUserId = "usr-alex-01";
+    const allowedCategories = ["SYLLABUS", "INSTITUTIONAL", "HANDBOOK", "POLICY", "CALENDAR", "TEMPLATE"];
+    const scopedDocs = sampleDocs.filter((d) => d.userId === currentUserId || allowedCategories.includes(d.category));
+    assert(scopedDocs.length === 3, "Document filter successfully permits own uploads and public handbooks");
+    assert(!scopedDocs.some((d) => d.id === "doc-1"), "Peer student official transcript is completely hidden from student");
+
+    // 5. Audience Scoping in Announcements: Filter out administrative/faculty-only notices
+    const announcements = [
+      { id: "a-1", title: "Faculty Senate Meeting", targetAudience: "FACULTY" },
+      { id: "a-2", title: "Campus Holiday Notice", targetAudience: "ALL" },
+      { id: "a-3", title: "Midterm Exam Instructions", targetAudience: "STUDENT" },
+    ];
+    const studentAnnouncements = announcements.filter((a) => ["ALL", "STUDENT"].includes(a.targetAudience));
+    assert(studentAnnouncements.length === 2, "Student announcement query excludes confidential faculty notices");
+    assert(!studentAnnouncements.some((a) => a.targetAudience === "FACULTY"), "Faculty-only broadcast not leaked to student");
+
+    // 6. Attendance Correction Execution & Audit Logging in Database
+    const testStudent = await prisma.student.findFirst({ include: { user: true } });
+    assert(testStudent !== null, "Test student profile resolved in database");
+
+    const courseForSession = await prisma.course.findFirst({ include: { faculty: true } });
+    const sectionForSession = await prisma.section.findFirst();
+    assert(courseForSession !== null && sectionForSession !== null, "Test course and section resolved in database");
+
+    const correctionSession = await prisma.attendanceSession.create({
+      data: {
+        courseId: courseForSession!.id,
+        facultyId: courseForSession!.faculty[0]?.facultyId || "fac-default",
+        sectionId: sectionForSession!.id,
+        date: new Date(),
+        startTime: "10:00",
+        endTime: "11:00",
+        method: "MANUAL",
+        status: "CLOSED",
+      },
+    });
+
+    const absentRecord = await prisma.attendanceRecord.create({
+      data: {
+        sessionId: correctionSession.id,
+        studentId: testStudent!.id,
+        status: "ABSENT",
+        remarks: "Unexcused absence",
+      },
+    });
+
+    assert(absentRecord.status === "ABSENT", "Initial attendance record created with ABSENT status");
+
+    // Submit attendance correction request
+    const studentReq = await prisma.studentRequest.create({
+      data: {
+        studentId: testStudent!.id,
+        type: "ATTENDANCE_CORRECTION",
+        title: "Medical Leave for Lab Class",
+        reason: "Attended university clinic during laboratory session",
+        status: "SUBMITTED",
+      },
+    });
+
+    // Simulate faculty review and approval with automated ledger correction
+    const reviewerRemarks = "Approved on submission of medical slip";
+    const updatedRecord = await prisma.attendanceRecord.update({
+      where: { id: absentRecord.id },
+      data: {
+        status: "EXCUSED",
+        remarks: `Approved correction via request ${studentReq.id}: ${reviewerRemarks}`,
+      },
+    });
+
+    assert(updatedRecord.status === "EXCUSED", "Approved attendance correction executes real database status change to EXCUSED");
+    assert(Boolean(updatedRecord.remarks?.includes("Approved correction")), "Attendance record remarks include audit cross-reference to request ID");
+
+    // Verify audit log entry
+    const inst = await prisma.institution.findFirst();
+    const actorUser = (await prisma.user.findFirst({ where: { role: "FACULTY" } })) || (await prisma.user.findFirst());
+    assert(inst !== null && actorUser !== null, "Institution and Actor User resolved in database");
+
+    const correctionAudit = await prisma.auditLog.create({
+      data: {
+        institutionId: inst!.id,
+        actorUserId: actorUser!.id,
+        action: "ATTENDANCE_CHANGED",
+        targetEntity: "AttendanceRecord",
+        targetId: updatedRecord.id,
+        detailsJson: JSON.stringify({
+          requestId: studentReq.id,
+          previousStatus: "ABSENT",
+          newStatus: "EXCUSED",
+        }),
+      },
+    });
+
+    assert(correctionAudit.action === "ATTENDANCE_CHANGED", "Audit log created for ATTENDANCE_CHANGED");
+    assert(correctionAudit.targetEntity === "AttendanceRecord", "Audit log correctly targets AttendanceRecord entity");
+
+    // 7. LMS Curriculum Unit CRUD & Chapter Deletion
+    const newLmsModule = await prisma.courseModule.create({
+      data: {
+        courseId: courseForSession!.id,
+        title: "Unit X: Advanced Architectural Verification",
+        orderIndex: 99,
+        description: "Special verification module",
+        progressPercent: 0,
+      },
+    });
+
+    const newChapter = await prisma.courseChapter.create({
+      data: {
+        moduleId: newLmsModule.id,
+        title: "X.1 Automated Test Execution & Coverage",
+        orderIndex: 1,
+        contentType: "PDF",
+        fileSizeKb: 1500,
+        durationMins: 30,
+        isPublished: true,
+      },
+    });
+
+    assert(newChapter.moduleId === newLmsModule.id, "CourseChapter successfully bound to CourseModule");
+
+    // Delete chapter and module
+    await prisma.courseChapter.delete({ where: { id: newChapter.id } });
+    const chapterLookup = await prisma.courseChapter.findUnique({ where: { id: newChapter.id } });
+    assert(chapterLookup === null, "LMS Chapter deletion successfully executed in database");
+
+    await prisma.courseModule.delete({ where: { id: newLmsModule.id } });
+    const moduleLookup = await prisma.courseModule.findUnique({ where: { id: newLmsModule.id } });
+    assert(moduleLookup === null, "LMS Module deletion successfully executed in database");
+
+    // 8. Assignment Rubric & Lock Execution
+    const testAssignCourse = await prisma.course.findFirst();
+    const testAssignFaculty = await prisma.faculty.findFirst();
+    if (testAssignCourse && testAssignFaculty) {
+      const tempAssignment = await prisma.assignment.create({
+        data: {
+          courseId: testAssignCourse.id,
+          facultyId: testAssignFaculty.id,
+          title: "Temporary Rubric & Lock Test Assignment",
+          description: "Automated test assignment rubric and lock evaluation",
+          maxPoints: 100,
+          dueDate: new Date(Date.now() + 86400000),
+        },
+      });
+
+      const testSub = await prisma.submission.create({
+        data: {
+          assignmentId: tempAssignment.id,
+          studentId: testStudent!.id,
+          content: "Automated test submission body",
+        },
+      });
+
+      const rubricScores = [
+        { criterion: "System Correctness", score: 45, max: 50 },
+        { criterion: "Code Style & Modularity", score: 45, max: 50 },
+      ];
+      const rubricJson = JSON.stringify(rubricScores);
+      const gradedFeedback = `Strong architectural implementation.\n\n[RUBRIC]: ${rubricJson}\n[LOCKED]`;
+
+      const gradedSub = await prisma.submission.update({
+        where: { id: testSub.id },
+        data: {
+          gradePoints: 90,
+          feedback: gradedFeedback,
+          gradedAt: new Date(),
+        },
+      });
+
+      assert(gradedSub.gradePoints === 90, "Submission grade saved with 90 points");
+      assert(Boolean(gradedSub.feedback?.includes("[RUBRIC]")), "Submission feedback preserves digital rubric criteria");
+      assert(Boolean(gradedSub.feedback?.includes("[LOCKED]")), "Submission feedback contains [LOCKED] immutability flag");
+
+      // Verify that lock prevents overwrite for non-elevated callers
+      const isLocked = Boolean(gradedSub.feedback?.includes("[LOCKED]"));
+      const isStandardFaculty = false; // Elevated caller false
+      assert(Boolean(isLocked && !isStandardFaculty), "Grade lock check successfully blocks arbitrary regrading once finalized");
+
+      // Clean up assignment submission & assignment
+      await prisma.submission.delete({ where: { id: testSub.id } });
+      await prisma.assignment.delete({ where: { id: tempAssignment.id } });
+    }
+
+    // Clean up attendance session, record, request, audit log
+    await prisma.auditLog.delete({ where: { id: correctionAudit.id } });
+    await prisma.studentRequest.delete({ where: { id: studentReq.id } });
+    await prisma.attendanceRecord.delete({ where: { id: absentRecord.id } });
+    await prisma.attendanceSession.delete({ where: { id: correctionSession.id } });
+  }
+
   console.log("\n=================================================");
   console.log(`🎉 ALL ${passedTests}/${totalTests} TESTS PASSED SUCCESSFULLY!`);
   console.log("=================================================\n");

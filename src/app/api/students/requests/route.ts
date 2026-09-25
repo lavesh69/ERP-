@@ -147,12 +147,73 @@ export async function PATCH(req: NextRequest) {
       return NextResponse.json({ error: "Invalid status" }, { status: 400 });
     }
 
+    const existingRequest = await prisma.studentRequest.findUnique({
+      where: { id: requestId },
+      include: { student: true },
+    });
+
+    if (!existingRequest) {
+      return NextResponse.json({ error: "Request not found" }, { status: 404 });
+    }
+
+    const reviewerId = auth.payload.userId || auth.payload.sub || "admin";
+
+    let correctedRecord: any = null;
+    if (status === "APPROVED" && (existingRequest.type === "ATTENDANCE_CORRECTION" || existingRequest.type === "LEAVE")) {
+      const correctionStatus = body.correctionStatus || "EXCUSED";
+      const targetRecordId = body.attendanceRecordId;
+
+      if (targetRecordId) {
+        correctedRecord = await prisma.attendanceRecord.update({
+          where: { id: targetRecordId },
+          data: {
+            status: correctionStatus,
+            remarks: `Approved correction via request ${requestId}: ${reviewerRemarks || "Verified"}`,
+          },
+        });
+      } else {
+        const recentRecord = await prisma.attendanceRecord.findFirst({
+          where: {
+            studentId: existingRequest.studentId,
+            status: { in: ["ABSENT", "LATE"] },
+          },
+          orderBy: { timestamp: "desc" },
+        });
+
+        if (recentRecord) {
+          correctedRecord = await prisma.attendanceRecord.update({
+            where: { id: recentRecord.id },
+            data: {
+              status: correctionStatus,
+              remarks: `Approved correction via request ${requestId}: ${reviewerRemarks || "Verified"}`,
+            },
+          });
+        }
+      }
+
+      if (correctedRecord) {
+        await logAuditEvent({
+          actorUserId: reviewerId,
+          action: "ATTENDANCE_CHANGED",
+          targetEntity: "AttendanceRecord",
+          targetId: correctedRecord.id,
+          details: {
+            requestId,
+            previousStatus: correctedRecord.status,
+            newStatus: correctionStatus,
+            studentId: existingRequest.studentId,
+            reason: reviewerRemarks || existingRequest.reason,
+          },
+        });
+      }
+    }
+
     const updated = await prisma.studentRequest.update({
       where: { id: requestId },
       data: {
         status,
         reviewerRemarks: reviewerRemarks || null,
-        reviewedById: auth.payload.userId || auth.payload.sub,
+        reviewedById: reviewerId,
       },
     });
 
@@ -160,6 +221,7 @@ export async function PATCH(req: NextRequest) {
       success: true,
       message: `Request status updated to '${status}'.`,
       request: updated,
+      correctedAttendanceRecord: correctedRecord,
     });
   } catch (err: any) {
     return NextResponse.json({ error: err.message || "Failed to update request" }, { status: 500 });

@@ -1,14 +1,26 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db/prisma";
 import { getStorageProvider } from "@/lib/storage";
-import { requireRoleAuth } from "@/lib/auth/admin-guard";
+import { requireRoleAuth, getOptionalSession } from "@/lib/auth/admin-guard";
 import { logger } from "@/lib/logging/logger";
 import fs from "fs";
 import path from "path";
 import { validateUploadFile } from "@/lib/storage/upload-validator";
 
+const PUBLIC_DOCUMENT_CATEGORIES = [
+  "SYLLABUS",
+  "INSTITUTIONAL",
+  "HANDBOOK",
+  "POLICY",
+  "CALENDAR",
+  "TEMPLATE",
+];
+
 export async function GET(req: NextRequest) {
   try {
+    const session = await getOptionalSession(req);
+    const isStudent = session?.role === "STUDENT";
+
     const { searchParams } = new URL(req.url);
     const category = searchParams.get("category");
     const search = searchParams.get("search");
@@ -19,6 +31,15 @@ export async function GET(req: NextRequest) {
     });
 
     const filtered = docs
+      .filter((d) => {
+        // Privacy isolation for students: only see own docs or public institutional categories
+        if (isStudent) {
+          const isOwn = d.userId === session?.userId || d.user?.email === session?.email;
+          const isPublic = PUBLIC_DOCUMENT_CATEGORIES.includes(d.category);
+          if (!isOwn && !isPublic) return false;
+        }
+        return true;
+      })
       .filter((d) => {
         if (category && category !== "ALL") {
           return d.category === category;

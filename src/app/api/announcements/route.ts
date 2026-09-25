@@ -1,11 +1,22 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db/prisma";
-import { requireFacultyOrAdminAuth } from "@/lib/auth/admin-guard";
+import { requireFacultyOrAdminAuth, getOptionalSession } from "@/lib/auth/admin-guard";
 import { logger } from "@/lib/logging/logger";
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
+    const session = await getOptionalSession(req);
+    const role = session?.role;
+
+    let whereClause: any = {};
+    if (role === "STUDENT") {
+      whereClause = { targetAudience: { in: ["ALL", "STUDENT"] } };
+    } else if (role && ["FACULTY", "PROFESSOR", "CLASS_TEACHER", "HOD"].includes(role)) {
+      whereClause = { targetAudience: { in: ["ALL", "FACULTY", "STUDENT"] } };
+    }
+
     const announcements = await prisma.announcement.findMany({
+      where: whereClause,
       orderBy: { createdAt: "desc" },
     });
 
