@@ -2656,47 +2656,67 @@ export default function AttendancePage() {
       <Modal
         isOpen={Boolean(selectedCalendarDay)}
         onClose={() => setSelectedCalendarDay(null)}
-        title={`Academic Session: ${selectedCalendarDay?.date || ""}`}
-        description={`Record verified for ${selectedCalendarDay?.dayName || ""}`}
+        title={`Academic Session Ledger: ${selectedCalendarDay?.date || ""}`}
+        description={`Cryptographic check-in record verified for ${selectedCalendarDay?.dayName || ""}`}
         maxWidth="sm"
       >
-        <div className="flex flex-col gap-3 py-2 text-xs">
-          <div className="flex justify-between items-center py-1.5 border-b border-border dark:border-charcoal-800">
-            <span className="text-charcoal-500">Session Status:</span>
-            <span className={`px-2 py-0.5 rounded-full font-bold uppercase ${
+        <div className="flex flex-col gap-3 py-1 text-xs">
+          {/* Calendar Day Header Banner */}
+          <div className="bg-gradient-to-r from-slate-950 via-slate-900 to-indigo-950 p-3.5 rounded-2xl border border-indigo-500/30 text-white flex items-center justify-between gap-3 shadow-md">
+            <div className="flex items-center gap-2.5">
+              <div className="w-9 h-9 rounded-xl bg-indigo-500/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400">
+                <Calendar className="w-4 h-4" />
+              </div>
+              <div>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-300 block">
+                  {selectedCalendarDay?.dayName}
+                </span>
+                <span className="text-xs font-mono font-bold text-white">
+                  {selectedCalendarDay?.date}
+                </span>
+              </div>
+            </div>
+            <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase font-mono tracking-tight flex items-center gap-1.5 border ${
               selectedCalendarDay?.status === "PRESENT"
-                ? "bg-emerald-500/20 text-emerald-400"
+                ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/30"
                 : selectedCalendarDay?.status === "LATE"
-                ? "bg-amber-500/20 text-amber-400"
+                ? "bg-amber-500/20 text-amber-300 border-amber-500/30"
                 : selectedCalendarDay?.status === "ABSENT"
-                ? "bg-rose-500/20 text-rose-400"
-                : "bg-slate-800 text-slate-300"
+                ? "bg-rose-500/20 text-rose-300 border-rose-500/30"
+                : selectedCalendarDay?.status === "EXCUSED"
+                ? "bg-blue-500/20 text-blue-300 border-blue-500/30"
+                : "bg-slate-800 text-slate-300 border-slate-700"
             }`}>
+              <span className={`w-1.5 h-1.5 rounded-full ${
+                selectedCalendarDay?.status === "PRESENT" ? "bg-emerald-400" : selectedCalendarDay?.status === "ABSENT" ? "bg-rose-400" : "bg-amber-400"
+              }`} />
               {selectedCalendarDay?.status}
             </span>
           </div>
 
-          {selectedCalendarDay?.courseCode && (
-            <div className="flex justify-between items-center py-1.5 border-b border-border dark:border-charcoal-800">
-              <span className="text-charcoal-500">Course:</span>
-              <span className="font-semibold text-charcoal-900 dark:text-ivory-100">
-                {selectedCalendarDay.courseCode}: {selectedCalendarDay.courseTitle}
+          <div className="p-3 bg-surface-soft/60 dark:bg-charcoal-800/50 rounded-xl border border-border/80 dark:border-charcoal-700 space-y-2">
+            {selectedCalendarDay?.courseCode && (
+              <div className="flex justify-between items-center pb-2 border-b border-border/60 dark:border-charcoal-700">
+                <span className="text-charcoal-500 font-medium text-[11px]">Enrolled Course:</span>
+                <span className="font-bold text-charcoal-900 dark:text-ivory-100 font-mono text-[11px]">
+                  {selectedCalendarDay.courseCode}: {selectedCalendarDay.courseTitle}
+                </span>
+              </div>
+            )}
+
+            <div className="flex justify-between items-center">
+              <span className="text-charcoal-500 font-medium text-[11px]">Verification Source:</span>
+              <span className="font-mono text-charcoal-700 dark:text-charcoal-300 text-[11px] font-semibold bg-white dark:bg-charcoal-900 px-2 py-0.5 rounded-md border border-border/60 dark:border-charcoal-700">
+                {selectedCalendarDay?.method || "Academic Timetable"}
               </span>
             </div>
-          )}
-
-          <div className="flex justify-between items-center py-1.5">
-            <span className="text-charcoal-500">Verification Source:</span>
-            <span className="font-mono text-charcoal-700 dark:text-charcoal-300">
-              {selectedCalendarDay?.method || "Academic Timetable"}
-            </span>
           </div>
 
           <button
             onClick={() => setSelectedCalendarDay(null)}
-            className="w-full mt-3 py-2 bg-indigo-600 text-white font-bold rounded-xl text-xs"
+            className="w-full mt-2 py-2.5 bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 text-white font-bold rounded-xl text-xs shadow-sm transition-all"
           >
-            Close Details
+            Close Session Record
           </button>
         </div>
       </Modal>
@@ -2710,23 +2730,43 @@ export default function AttendancePage() {
         maxWidth="md"
       >
         <div className="flex flex-col gap-3 text-xs">
-          <div className="p-3 bg-surface-soft dark:bg-charcoal-800/60 rounded-xl space-y-1.5">
-            <div className="flex justify-between">
-              <span className="text-charcoal-500">Student:</span>
-              <span className="font-bold text-charcoal-900 dark:text-ivory-100">{reviewingPetition?.studentName} ({reviewingPetition?.rollNumber})</span>
+          {/* Petition Header Banner */}
+          <div className="bg-gradient-to-r from-slate-950 via-slate-900 to-amber-950 p-3.5 rounded-2xl border border-amber-500/30 text-white flex items-center justify-between gap-3 shadow-md">
+            <div className="flex items-center gap-2.5">
+              <div className="w-9 h-9 rounded-xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center text-amber-400">
+                <HelpCircle className="w-4 h-4" />
+              </div>
+              <div>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-amber-300 block">
+                  Official Grievance Petition
+                </span>
+                <span className="text-xs font-bold text-white">
+                  {reviewingPetition?.studentName}
+                </span>
+              </div>
             </div>
-            <div className="flex justify-between">
-              <span className="text-charcoal-500">Petition Subject:</span>
-              <span className="font-semibold text-indigo-400">{reviewingPetition?.title}</span>
+            <span className="px-2 py-0.5 rounded-full text-[10px] font-mono bg-amber-500/20 text-amber-300 border border-amber-500/30 font-bold">
+              {reviewingPetition?.rollNumber}
+            </span>
+          </div>
+
+          <div className="p-3.5 bg-surface-soft/60 dark:bg-charcoal-800/60 rounded-xl border border-border/80 dark:border-charcoal-700 space-y-2">
+            <div className="flex justify-between items-center text-[11px]">
+              <span className="text-charcoal-500 font-medium">Petition Subject:</span>
+              <span className="font-bold text-indigo-500 dark:text-indigo-400">{reviewingPetition?.title}</span>
             </div>
-            <div className="pt-1 text-charcoal-700 dark:text-charcoal-300">
-              <span className="font-bold text-charcoal-500 block mb-0.5">Justification:</span>
-              &ldquo;{reviewingPetition?.reason}&rdquo;
+            <div className="pt-2 border-t border-border/60 dark:border-charcoal-700 text-charcoal-700 dark:text-charcoal-300">
+              <span className="font-bold text-charcoal-500 text-[10px] uppercase tracking-wider block mb-1">
+                Student Written Justification:
+              </span>
+              <blockquote className="p-2.5 rounded-lg bg-white dark:bg-charcoal-900/80 border-l-2 border-amber-500 italic text-[11px] text-charcoal-700 dark:text-ivory-200">
+                &ldquo;{reviewingPetition?.reason}&rdquo;
+              </blockquote>
             </div>
           </div>
 
           <div>
-            <label className="text-xs font-bold text-charcoal-700 dark:text-charcoal-300 block mb-1">
+            <label className="text-[11px] font-bold text-charcoal-700 dark:text-charcoal-300 block mb-1">
               Faculty Endorsement Remarks
             </label>
             <textarea
@@ -2734,7 +2774,7 @@ export default function AttendancePage() {
               placeholder="e.g. Medical documentation confirmed by campus clinic. Attendance status updated to EXCUSED."
               value={petitionRemarks}
               onChange={(e) => setPetitionRemarks(e.target.value)}
-              className="w-full p-2 text-xs rounded-xl border border-border dark:border-charcoal-700 bg-white dark:bg-charcoal-800 text-charcoal-900 dark:text-ivory-100"
+              className="w-full p-2.5 text-xs rounded-xl border border-border dark:border-charcoal-700 bg-white dark:bg-charcoal-800 text-charcoal-900 dark:text-ivory-100 font-medium focus:outline-none focus:border-rose-primary transition-colors"
             />
           </div>
 
@@ -2742,14 +2782,14 @@ export default function AttendancePage() {
             <button
               onClick={() => handleResolvePetition("REJECTED")}
               disabled={isResolvingPetition}
-              className="px-3.5 py-2 text-xs font-bold bg-rose-500/10 text-rose-500 hover:bg-rose-500/20 rounded-xl"
+              className="px-4 py-2 text-xs font-bold bg-rose-500/10 text-rose-500 hover:bg-rose-500/20 border border-rose-500/20 rounded-xl transition-all"
             >
               Reject Petition
             </button>
             <button
               onClick={() => handleResolvePetition("APPROVED")}
               disabled={isResolvingPetition}
-              className="px-4 py-2 text-xs font-bold bg-academic-success hover:bg-emerald-600 text-white rounded-xl shadow-xs"
+              className="px-5 py-2 text-xs font-bold bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-500 hover:to-emerald-600 text-white rounded-xl shadow-xs transition-all"
             >
               {isResolvingPetition ? "Updating..." : "Approve as EXCUSED"}
             </button>
@@ -2766,9 +2806,29 @@ export default function AttendancePage() {
         maxWidth="lg"
       >
         <form onSubmit={handleStartConfiguredSession} className="flex flex-col gap-4">
+          {/* Projector Configuration Header Banner */}
+          <div className="bg-gradient-to-r from-slate-950 via-slate-900 to-indigo-950 p-4 rounded-2xl border border-indigo-500/30 text-white flex items-center justify-between gap-3 shadow-md">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-center text-indigo-400">
+                <QrCode className="w-5 h-5 animate-pulse" />
+              </div>
+              <div>
+                <span className="text-xs font-bold uppercase tracking-wider text-indigo-300 block">
+                  Smart Multi-Factor Projector Session
+                </span>
+                <span className="text-[11px] text-slate-400">
+                  Live dynamic HMAC tokens with anti-proxy rotation
+                </span>
+              </div>
+            </div>
+            <span className="px-2.5 py-1 rounded-full text-xs font-bold font-mono bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+              Live Engine V2
+            </span>
+          </div>
+
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="text-xs font-bold text-charcoal-700 dark:text-charcoal-300 block mb-1">
+              <label className="text-[11px] font-bold text-charcoal-700 dark:text-charcoal-300 block mb-1">
                 Select Course
               </label>
               <select
@@ -2781,7 +2841,7 @@ export default function AttendancePage() {
                     setConfigSection(cObj.sections[0].id);
                   }
                 }}
-                className="w-full text-xs font-semibold p-2.5 rounded-xl border border-border dark:border-charcoal-700 bg-white dark:bg-charcoal-800 text-charcoal-900 dark:text-ivory-100"
+                className="w-full text-xs font-bold p-2.5 rounded-xl border border-border dark:border-charcoal-700 bg-white dark:bg-charcoal-800 text-charcoal-900 dark:text-ivory-100 focus:outline-none focus:border-rose-primary transition-colors"
               >
                 {availableCourses.map((c) => (
                   <option key={c.id} value={c.code}>
@@ -2792,13 +2852,13 @@ export default function AttendancePage() {
             </div>
 
             <div>
-              <label className="text-xs font-bold text-charcoal-700 dark:text-charcoal-300 block mb-1">
+              <label className="text-[11px] font-bold text-charcoal-700 dark:text-charcoal-300 block mb-1">
                 Academic Section
               </label>
               <select
                 value={configSection}
                 onChange={(e) => setConfigSection(e.target.value)}
-                className="w-full text-xs font-semibold p-2.5 rounded-xl border border-border dark:border-charcoal-700 bg-white dark:bg-charcoal-800 text-charcoal-900 dark:text-ivory-100"
+                className="w-full text-xs font-bold p-2.5 rounded-xl border border-border dark:border-charcoal-700 bg-white dark:bg-charcoal-800 text-charcoal-900 dark:text-ivory-100 focus:outline-none focus:border-rose-primary transition-colors"
               >
                 {(() => {
                   const cObj = availableCourses.find((c) => c.code === configCourse);
@@ -2818,13 +2878,13 @@ export default function AttendancePage() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="text-xs font-bold text-charcoal-700 dark:text-charcoal-300 block mb-1">
+              <label className="text-[11px] font-bold text-charcoal-700 dark:text-charcoal-300 block mb-1">
                 Verification Pipeline
               </label>
               <select
                 value={configMethod}
                 onChange={(e) => setConfigMethod(e.target.value)}
-                className="w-full text-xs font-semibold p-2.5 rounded-xl border border-border dark:border-charcoal-700 bg-white dark:bg-charcoal-800 text-charcoal-900 dark:text-ivory-100"
+                className="w-full text-xs font-bold p-2.5 rounded-xl border border-border dark:border-charcoal-700 bg-white dark:bg-charcoal-800 text-charcoal-900 dark:text-ivory-100 focus:outline-none focus:border-rose-primary transition-colors"
               >
                 <option value="SMART_COMBO">Smart Combo (QR + GPS + BLE Proximity)</option>
                 <option value="QR">Rotating QR Only</option>
@@ -2835,13 +2895,13 @@ export default function AttendancePage() {
             </div>
 
             <div>
-              <label className="text-xs font-bold text-charcoal-700 dark:text-charcoal-300 block mb-1">
+              <label className="text-[11px] font-bold text-charcoal-700 dark:text-charcoal-300 block mb-1">
                 Anti-Proxy QR Rotation Period
               </label>
               <select
                 value={configRotation}
                 onChange={(e) => setConfigRotation(Number(e.target.value))}
-                className="w-full text-xs font-semibold p-2.5 rounded-xl border border-border dark:border-charcoal-700 bg-white dark:bg-charcoal-800 text-charcoal-900 dark:text-ivory-100"
+                className="w-full text-xs font-bold p-2.5 rounded-xl border border-border dark:border-charcoal-700 bg-white dark:bg-charcoal-800 text-charcoal-900 dark:text-ivory-100 focus:outline-none focus:border-rose-primary transition-colors"
               >
                 <option value={15}>15 Seconds (Recommended - Maximum Anti-Proxy)</option>
                 <option value={30}>30 Seconds</option>
@@ -2851,28 +2911,29 @@ export default function AttendancePage() {
             </div>
           </div>
 
-          <div className="p-3.5 bg-slate-50 dark:bg-charcoal-800/60 rounded-xl border border-border dark:border-charcoal-700 flex flex-col gap-2.5">
-            <span className="text-xs font-bold text-charcoal-800 dark:text-ivory-200">
+          <div className="p-3.5 bg-surface-soft/60 dark:bg-charcoal-800/60 rounded-2xl border border-border/80 dark:border-charcoal-700 flex flex-col gap-2.5">
+            <span className="text-xs font-bold text-charcoal-800 dark:text-ivory-200 flex items-center gap-2">
+              <ShieldCheck className="w-3.5 h-3.5 text-indigo-500" />
               Hardware Enforcement Gates
             </span>
 
-            <label className="flex items-center gap-2 cursor-pointer text-xs text-charcoal-700 dark:text-charcoal-300">
+            <label className="flex items-center gap-2.5 cursor-pointer text-xs text-charcoal-700 dark:text-charcoal-300 p-2 rounded-xl hover:bg-surface-soft dark:hover:bg-charcoal-700/40 transition-colors">
               <input
                 type="checkbox"
                 checked={configGeofenceRequired}
                 onChange={(e) => setConfigGeofenceRequired(e.target.checked)}
                 className="rounded border-border text-indigo-600 focus:ring-indigo-500"
               />
-              <span>Strict Geofence Required (Coordinates must fall within classroom radius)</span>
+              <span className="font-medium">Strict Geofence Required (Coordinates must fall within classroom radius)</span>
             </label>
 
             {configGeofenceRequired && (
               <div className="ml-6 flex items-center gap-2 text-xs">
-                <span className="text-charcoal-500">Allowed Classroom Radius:</span>
+                <span className="text-charcoal-500 font-medium">Allowed Classroom Radius:</span>
                 <select
                   value={configRadius}
                   onChange={(e) => setConfigRadius(Number(e.target.value))}
-                  className="p-1 rounded border border-border dark:border-charcoal-700 bg-white dark:bg-charcoal-800 text-xs font-bold"
+                  className="px-2 py-1 rounded-xl border border-border dark:border-charcoal-700 bg-white dark:bg-charcoal-800 text-xs font-bold font-mono"
                 >
                   <option value={50}>50 Meters (Tight Lecture Hall)</option>
                   <option value={100}>100 Meters (Standard Classroom)</option>
@@ -2881,14 +2942,14 @@ export default function AttendancePage() {
               </div>
             )}
 
-            <label className="flex items-center gap-2 cursor-pointer text-xs text-charcoal-700 dark:text-charcoal-300">
+            <label className="flex items-center gap-2.5 cursor-pointer text-xs text-charcoal-700 dark:text-charcoal-300 p-2 rounded-xl hover:bg-surface-soft dark:hover:bg-charcoal-700/40 transition-colors">
               <input
                 type="checkbox"
                 checked={configBleRequired}
                 onChange={(e) => setConfigBleRequired(e.target.checked)}
                 className="rounded border-border text-blue-600 focus:ring-blue-500"
               />
-              <span>Classroom BLE Beacon Proximity Required (Verifies physical room presence)</span>
+              <span className="font-medium">Classroom BLE Beacon Proximity Required (Verifies physical room presence)</span>
             </label>
           </div>
 
@@ -2896,14 +2957,14 @@ export default function AttendancePage() {
             <button
               type="button"
               onClick={() => setIsConfigModalOpen(false)}
-              className="px-4 py-2 text-xs font-bold text-charcoal-600 dark:text-charcoal-400 hover:bg-ivory-100 dark:hover:bg-charcoal-800 rounded-xl"
+              className="px-4 py-2 text-xs font-bold text-charcoal-600 dark:text-charcoal-400 hover:bg-ivory-100 dark:hover:bg-charcoal-800 rounded-xl transition-colors"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isStartingSession}
-              className="px-5 py-2 text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl shadow-md disabled:opacity-50 flex items-center gap-2"
+              className="px-5 py-2 text-xs font-bold bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 text-white rounded-xl shadow-md disabled:opacity-50 flex items-center gap-2 transition-all"
             >
               <Play className="w-3.5 h-3.5 fill-current" />
               <span>{isStartingSession ? "Initializing..." : "Launch Projector Session"}</span>
