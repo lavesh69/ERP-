@@ -327,7 +327,7 @@ Verification Code: APX-LMS-2026-${Date.now()}
     <AppShell>
       <div className="flex flex-col gap-6">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-[#1E191C] p-6 rounded-2xl border border-border dark:border-charcoal-800 shadow-soft">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 glass-panel p-6 rounded-2xl shadow-soft">
           <div className="flex items-center gap-3">
             <div className="h-12 w-12 rounded-xl bg-rose-primary text-white flex items-center justify-center shadow-md shadow-rose-primary/20">
               <BookOpen className="h-6 w-6" />
@@ -337,7 +337,7 @@ Verification Code: APX-LMS-2026-${Date.now()}
                 <h1 className="text-xl font-display font-bold text-charcoal-900 dark:text-ivory-100">
                   Learning Management System (LMS)
                 </h1>
-                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-container dark:bg-rose-dark/30 text-rose-primary dark:text-rose-accent">
+                <span className="badge-subtle bg-rose-container/60 dark:bg-rose-dark/30 text-rose-primary dark:text-rose-accent">
                   Interactive Courseware
                 </span>
               </div>
@@ -356,7 +356,7 @@ Verification Code: APX-LMS-2026-${Date.now()}
         </div>
 
         {/* Course Banner & Progress */}
-        <div className="bg-white dark:bg-[#1E191C] p-6 rounded-2xl border border-border dark:border-charcoal-800 shadow-soft flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div className="glass-panel p-6 rounded-2xl shadow-soft flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="flex flex-col gap-2">
             <div className="flex items-center gap-3">
               <span className="text-xs font-bold text-rose-primary dark:text-rose-accent uppercase tracking-wider">
@@ -416,7 +416,7 @@ Verification Code: APX-LMS-2026-${Date.now()}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
             {/* Modules List (5 cols) */}
             <div className="lg:col-span-5 flex flex-col gap-4">
-              <div className="bg-white dark:bg-[#1E191C] rounded-2xl border border-border dark:border-charcoal-800 shadow-soft p-4">
+              <div className="glass-panel rounded-2xl shadow-soft p-4">
                 <div className="flex items-center justify-between pb-3 border-b border-border/70 dark:border-charcoal-800 mb-3">
                   <h3 className="text-xs font-bold text-charcoal-900 dark:text-ivory-100 uppercase tracking-wider">
                     Curriculum Syllabus
@@ -561,7 +561,7 @@ Verification Code: APX-LMS-2026-${Date.now()}
 
             {/* Active Lecture Player / Reader Workspace (7 cols) */}
             <div className="lg:col-span-7 flex flex-col gap-4">
-              <div className="bg-white dark:bg-[#1E191C] rounded-2xl border border-border dark:border-charcoal-800 shadow-soft p-6 flex flex-col gap-4">
+              <div className="glass-panel rounded-2xl shadow-soft p-6 flex flex-col gap-4">
                 {/* Simulated Lecture Media Player Container */}
                 <div className="w-full aspect-video rounded-xl bg-charcoal-900 text-white flex flex-col items-center justify-center p-6 relative overflow-hidden group shadow-md">
                   <PlayCircle className="h-16 w-16 text-rose-accent group-hover:scale-110 transition-transform cursor-pointer" />

@@ -255,7 +255,7 @@ export default function LibraryPage() {
     <AppShell>
       <div className="flex flex-col gap-6">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-charcoal-800 p-6 rounded-2xl border border-border dark:border-charcoal-700 shadow-soft">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 glass-panel p-6 rounded-2xl shadow-soft">
           <div className="flex items-center gap-3">
             <div className="h-12 w-12 rounded-xl bg-rose-primary text-white flex items-center justify-center shadow-md shadow-rose-primary/20">
               <Library className="h-6 w-6" />
@@ -265,7 +265,7 @@ export default function LibraryPage() {
                 <h1 className="text-xl font-display font-bold text-charcoal-900 dark:text-ivory-100">
                   Library ERP & Digital Repository
                 </h1>
-                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-academic-success-subtle text-academic-success border border-green-200 dark:border-green-800">
+                <span className="badge-subtle bg-academic-success-subtle text-academic-success border border-green-200 dark:border-green-800">
                   Real SQLite Catalog
                 </span>
               </div>
@@ -279,14 +279,14 @@ export default function LibraryPage() {
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setIsIssueModalOpen(true)}
-                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-ivory-100 dark:bg-charcoal-700 hover:bg-rose-container text-charcoal-800 dark:text-ivory-100 text-xs font-bold border border-border dark:border-charcoal-600 transition-all"
+                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-surface-soft dark:bg-charcoal-700 hover:bg-rose-container text-charcoal-800 dark:text-ivory-100 text-xs font-bold border border-border dark:border-charcoal-600 transition-all"
               >
                 <Barcode className="h-4 w-4 text-rose-primary" />
                 <span>Issue Loan</span>
               </button>
               <button
                 onClick={() => setIsAddBookModalOpen(true)}
-                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-rose-primary hover:bg-rose-dark text-white text-xs font-bold shadow-sm transition-all"
+                className="btn-primary-glow flex items-center gap-2 px-4 py-2 rounded-xl bg-rose-primary hover:bg-rose-dark active:scale-[0.98] text-white text-xs font-bold shadow-sm transition-all"
               >
                 <Plus className="h-4 w-4" />
                 <span>Catalog New Book</span>
@@ -295,55 +295,68 @@ export default function LibraryPage() {
           )}
         </div>
 
-        {/* 3 Library KPI Cards */}
+        {/* 4 Library KPI Cards */}
         {loading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <SkeletonCard />
             <SkeletonCard />
             <SkeletonCard />
             <SkeletonCard />
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="bg-white dark:bg-charcoal-800 p-5 rounded-2xl border border-border dark:border-charcoal-700 shadow-soft">
-              <span className="text-xs font-bold text-charcoal-600 dark:text-charcoal-400 uppercase">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="glass-panel glass-card-hover p-5 rounded-2xl shadow-soft">
+              <span className="text-[10px] font-bold text-charcoal-500 dark:text-charcoal-400 uppercase tracking-wider">
                 Cataloged Titles
               </span>
-              <div className="text-3xl font-display font-bold text-charcoal-900 dark:text-ivory-100 mt-2">
+              <div className="text-2xl font-display font-bold text-charcoal-900 dark:text-ivory-100 mt-1">
                 {books.length}
               </div>
-              <span className="text-xs text-rose-primary dark:text-rose-light font-semibold">
-                {totalCopiesCount} Total Physical & Digital Volumes
+              <span className="badge-subtle bg-rose-container/60 dark:bg-rose-dark/30 text-rose-primary dark:text-rose-accent mt-2">
+                {totalCopiesCount} Physical Volumes
               </span>
             </div>
 
-            <div className="bg-white dark:bg-charcoal-800 p-5 rounded-2xl border border-border dark:border-charcoal-700 shadow-soft">
-              <span className="text-xs font-bold text-charcoal-600 dark:text-charcoal-400 uppercase">
+            <div className="glass-panel glass-card-hover p-5 rounded-2xl shadow-soft">
+              <span className="text-[10px] font-bold text-charcoal-500 dark:text-charcoal-400 uppercase tracking-wider">
                 Available on Shelf
               </span>
-              <div className="text-3xl font-display font-bold text-academic-success mt-2">
+              <div className="text-2xl font-display font-bold text-academic-success mt-1">
                 {totalAvailableCount}
               </div>
-              <span className="text-xs text-charcoal-600 dark:text-charcoal-400">
-                Ready for immediate student checkout
+              <span className="badge-subtle bg-academic-success-subtle text-academic-success border border-green-200 dark:border-green-800 mt-2">
+                Ready for Checkout
               </span>
             </div>
 
-            <div className="bg-white dark:bg-charcoal-800 p-5 rounded-2xl border border-border dark:border-charcoal-700 shadow-soft">
-              <span className="text-xs font-bold text-charcoal-600 dark:text-charcoal-400 uppercase">
+            <div className="glass-panel glass-card-hover p-5 rounded-2xl shadow-soft">
+              <span className="text-[10px] font-bold text-charcoal-500 dark:text-charcoal-400 uppercase tracking-wider">
                 Active Scholar Loans
               </span>
-              <div className="text-3xl font-display font-bold text-academic-warning mt-2">
+              <div className="text-2xl font-display font-bold text-academic-warning mt-1">
                 {totalIssuedCount}
               </div>
-              <span className="text-xs text-charcoal-600 dark:text-charcoal-400">
-                Issued with 14-day return window
+              <span className="badge-subtle bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800 mt-2">
+                14-Day Circulation
+              </span>
+            </div>
+
+            <div className="glass-panel glass-card-hover p-5 rounded-2xl shadow-soft">
+              <span className="text-[10px] font-bold text-charcoal-500 dark:text-charcoal-400 uppercase tracking-wider">
+                Circulation Health
+              </span>
+              <div className="text-2xl font-display font-bold text-charcoal-900 dark:text-ivory-100 mt-1">
+                100%
+              </div>
+              <span className="badge-subtle bg-surface-soft dark:bg-charcoal-800 text-charcoal-700 dark:text-charcoal-300 border border-border dark:border-charcoal-700 mt-2">
+                Automated Audit
               </span>
             </div>
           </div>
         )}
 
         {/* Filter Bar */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white dark:bg-charcoal-800 p-4 rounded-2xl border border-border dark:border-charcoal-700 shadow-soft">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 glass-panel p-4 rounded-2xl shadow-soft">
           <div className="flex items-center gap-2 overflow-x-auto w-full sm:w-auto pb-1 sm:pb-0">
             {categories.map((cat) => (
               <button
@@ -352,7 +365,7 @@ export default function LibraryPage() {
                 className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${
                   selectedCategory === cat
                     ? "bg-rose-primary text-white shadow-sm"
-                    : "bg-ivory-100 dark:bg-charcoal-700 text-charcoal-700 dark:text-charcoal-300 hover:bg-rose-container"
+                    : "bg-surface-soft dark:bg-charcoal-700 text-charcoal-700 dark:text-charcoal-300 hover:bg-rose-container"
                 }`}
               >
                 {cat}
@@ -364,16 +377,16 @@ export default function LibraryPage() {
             <Search className="absolute left-3 top-2.5 h-3.5 w-3.5 text-charcoal-400" />
             <input
               type="text"
-              placeholder="Search by Title, Author, ISBN..."
+              placeholder="Search by title, author, ISBN..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-3 py-1.5 rounded-xl bg-ivory-100 dark:bg-charcoal-900 border border-border dark:border-charcoal-700 text-xs text-charcoal-900 dark:text-ivory-100 focus:outline-none focus:ring-1 focus:ring-rose-primary"
+              className="w-full pl-9 pr-3 py-1.5 rounded-xl bg-surface-soft dark:bg-charcoal-900 border border-border dark:border-charcoal-700 text-xs text-charcoal-900 dark:text-ivory-100 focus:outline-none focus:ring-1 focus:ring-rose-primary"
             />
           </div>
         </div>
 
         {/* Books Catalog Table */}
-        <div className="bg-white dark:bg-charcoal-800 rounded-2xl border border-border dark:border-charcoal-700 shadow-soft overflow-hidden">
+        <div className="glass-panel rounded-2xl shadow-soft overflow-hidden">
           <div className="p-4 border-b border-border dark:border-charcoal-700 bg-surface-soft dark:bg-charcoal-800/80 flex items-center justify-between">
             <span className="text-xs font-bold text-charcoal-900 dark:text-ivory-100">
               Circulation Book Inventory

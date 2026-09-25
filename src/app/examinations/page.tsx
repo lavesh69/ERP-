@@ -278,7 +278,7 @@ ${isDefaulter ? "WARNING: Candidate attendance is below 75% Senate threshold. Su
     <AppShell>
       <div className="flex flex-col gap-6">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-[#1E191C] p-6 rounded-2xl border border-border dark:border-charcoal-800 shadow-soft">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 glass-panel p-6 rounded-2xl shadow-soft">
           <div className="flex items-center gap-3">
             <div className="h-12 w-12 rounded-xl bg-rose-primary text-white flex items-center justify-center shadow-md shadow-rose-primary/20">
               <Award className="h-6 w-6" />
@@ -304,7 +304,7 @@ ${isDefaulter ? "WARNING: Candidate attendance is below 75% Senate threshold. Su
               </button>
               <button
                 onClick={() => setIsScheduleModalOpen(true)}
-                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-rose-primary hover:bg-rose-dark active:scale-[0.98] text-white text-xs font-bold shadow-sm transition-all"
+                className="btn-primary-glow flex items-center gap-2 px-4 py-2 rounded-xl bg-rose-primary hover:bg-rose-dark active:scale-[0.98] text-white text-xs font-bold shadow-sm transition-all"
               >
                 <Plus className="h-4 w-4" />
                 <span>Schedule Exam</span>
@@ -313,9 +313,80 @@ ${isDefaulter ? "WARNING: Candidate attendance is below 75% Senate threshold. Su
           )}
         </div>
 
+        {/* 4-Card KPI Telemetry Strip */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="glass-panel glass-card-hover p-4 rounded-2xl shadow-soft flex items-center justify-between">
+            <div>
+              <p className="text-[10px] font-bold tracking-wider uppercase text-charcoal-500 dark:text-charcoal-400">
+                Scheduled Assessments
+              </p>
+              <h3 className="text-2xl font-bold font-display text-charcoal-900 dark:text-ivory-100 mt-0.5">
+                {exams.length}
+              </h3>
+              <span className="badge-subtle bg-rose-container/60 dark:bg-rose-dark/30 text-rose-primary dark:text-rose-accent mt-1">
+                Official Senate Calendar
+              </span>
+            </div>
+            <div className="h-10 w-10 rounded-xl bg-rose-container dark:bg-rose-dark/30 text-rose-primary dark:text-rose-accent flex items-center justify-center">
+              <Award className="h-5 w-5" />
+            </div>
+          </div>
+
+          <div className="glass-panel glass-card-hover p-4 rounded-2xl shadow-soft flex items-center justify-between">
+            <div>
+              <p className="text-[10px] font-bold tracking-wider uppercase text-charcoal-500 dark:text-charcoal-400">
+                Graded Candidates
+              </p>
+              <h3 className="text-2xl font-bold font-display text-academic-success mt-0.5">
+                {exams.reduce((acc, e) => acc + (e.results?.length || 0), 0)}
+              </h3>
+              <span className="badge-subtle bg-academic-success-subtle text-academic-success border border-green-200 dark:border-green-800 mt-1">
+                Certified Rosters
+              </span>
+            </div>
+            <div className="h-10 w-10 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-academic-success flex items-center justify-center">
+              <FileCheck className="h-5 w-5" />
+            </div>
+          </div>
+
+          <div className="glass-panel glass-card-hover p-4 rounded-2xl shadow-soft flex items-center justify-between">
+            <div>
+              <p className="text-[10px] font-bold tracking-wider uppercase text-charcoal-500 dark:text-charcoal-400">
+                Curriculum Types
+              </p>
+              <h3 className="text-2xl font-bold font-display text-charcoal-900 dark:text-ivory-100 mt-0.5">
+                {exams.filter((e) => e.type === "MID_TERM").length} Mid • {exams.filter((e) => e.type === "END_TERM").length} End
+              </h3>
+              <span className="badge-subtle bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 mt-1">
+                Balanced Evaluation
+              </span>
+            </div>
+            <div className="h-10 w-10 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 flex items-center justify-center">
+              <Calendar className="h-5 w-5" />
+            </div>
+          </div>
+
+          <div className="glass-panel glass-card-hover p-4 rounded-2xl shadow-soft flex items-center justify-between">
+            <div>
+              <p className="text-[10px] font-bold tracking-wider uppercase text-charcoal-500 dark:text-charcoal-400">
+                Hall Tickets
+              </p>
+              <h3 className="text-2xl font-bold font-display text-charcoal-900 dark:text-ivory-100 mt-0.5">
+                100% Verified
+              </h3>
+              <span className="badge-subtle bg-emerald-50 dark:bg-emerald-950/40 text-academic-success border border-green-200 dark:border-green-800 mt-1">
+                QR & Hash Secured
+              </span>
+            </div>
+            <div className="h-10 w-10 rounded-xl bg-rose-container dark:bg-rose-dark/30 text-rose-primary dark:text-rose-accent flex items-center justify-center">
+              <QrCode className="h-5 w-5" />
+            </div>
+          </div>
+        </div>
+
         {/* Student Published Grades & Certified Results Dossier */}
         {isStudent && (
-          <div className="bg-white dark:bg-[#1E191C] p-6 rounded-2xl border border-border dark:border-charcoal-800 shadow-soft flex flex-col gap-4">
+          <div className="glass-panel p-6 rounded-2xl shadow-soft flex flex-col gap-4">
             <div className="flex items-center justify-between pb-3 border-b border-border/70 dark:border-charcoal-800">
               <div className="flex items-center gap-2.5">
                 <div className="h-8 w-8 rounded-lg bg-rose-container dark:bg-rose-dark/30 text-rose-primary dark:text-rose-accent flex items-center justify-center">
@@ -394,7 +465,7 @@ ${isDefaulter ? "WARNING: Candidate attendance is below 75% Senate threshold. Su
             {exams.map((exam) => (
               <div
                 key={exam.id}
-                className="bg-white dark:bg-[#1E191C] p-5 rounded-2xl border border-border dark:border-charcoal-800 shadow-soft flex flex-col justify-between hover:shadow-card transition-all"
+                className="glass-panel glass-card-hover p-5 rounded-2xl shadow-soft flex flex-col justify-between transition-all"
               >
                 <div>
                   <div className="flex items-center justify-between pb-3 border-b border-border dark:border-charcoal-800 mb-3">

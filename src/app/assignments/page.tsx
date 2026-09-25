@@ -188,7 +188,7 @@ export default function AssignmentsPage() {
     <AppShell>
       <div className="flex flex-col gap-6">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-[#1E191C] p-6 rounded-2xl border border-border dark:border-charcoal-800 shadow-soft">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 glass-panel p-6 rounded-2xl shadow-soft">
           <div className="flex items-center gap-3">
             <div className="h-12 w-12 rounded-xl bg-rose-primary text-white flex items-center justify-center shadow-md shadow-rose-primary/20">
               <FileText className="h-6 w-6" />
@@ -206,12 +206,99 @@ export default function AssignmentsPage() {
           {!isStudent && (
             <button
               onClick={() => setIsCreateModalOpen(true)}
-              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-rose-primary hover:bg-rose-dark active:scale-[0.98] text-white text-xs font-bold shadow-sm transition-all"
+              className="btn-primary-glow flex items-center gap-2 px-4 py-2 rounded-xl bg-rose-primary hover:bg-rose-dark active:scale-[0.98] text-white text-xs font-bold shadow-sm transition-all"
             >
               <Plus className="h-4 w-4" />
               <span>Create Assignment</span>
             </button>
           )}
+        </div>
+
+        {/* 4-Card KPI Telemetry Strip */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="glass-panel glass-card-hover p-4 rounded-2xl shadow-soft flex items-center justify-between">
+            <div>
+              <p className="text-[10px] font-bold tracking-wider uppercase text-charcoal-500 dark:text-charcoal-400">
+                Active Coursework
+              </p>
+              <h3 className="text-2xl font-bold font-display text-charcoal-900 dark:text-ivory-100 mt-0.5">
+                {assignments.length}
+              </h3>
+              <span className="badge-subtle bg-rose-container/60 dark:bg-rose-dark/30 text-rose-primary dark:text-rose-accent mt-1">
+                Syllabus Aligned
+              </span>
+            </div>
+            <div className="h-10 w-10 rounded-xl bg-rose-container dark:bg-rose-dark/30 text-rose-primary dark:text-rose-accent flex items-center justify-center">
+              <FileText className="h-5 w-5" />
+            </div>
+          </div>
+
+          <div className="glass-panel glass-card-hover p-4 rounded-2xl shadow-soft flex items-center justify-between">
+            <div>
+              <p className="text-[10px] font-bold tracking-wider uppercase text-charcoal-500 dark:text-charcoal-400">
+                Total Submissions
+              </p>
+              <h3 className="text-2xl font-bold font-display text-charcoal-900 dark:text-ivory-100 mt-0.5">
+                {assignments.reduce((acc, a) => acc + (a.submissionCount || (a.submissions?.length || 0)), 0)}
+              </h3>
+              <span className="badge-subtle bg-academic-success-subtle text-academic-success border border-green-200 dark:border-green-800 mt-1">
+                Student Artifacts
+              </span>
+            </div>
+            <div className="h-10 w-10 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-academic-success flex items-center justify-center">
+              <Upload className="h-5 w-5" />
+            </div>
+          </div>
+
+          <div className="glass-panel glass-card-hover p-4 rounded-2xl shadow-soft flex items-center justify-between">
+            <div>
+              <p className="text-[10px] font-bold tracking-wider uppercase text-charcoal-500 dark:text-charcoal-400">
+                Pending Evaluation
+              </p>
+              <h3 className="text-2xl font-bold font-display text-academic-warning mt-0.5">
+                {Math.max(
+                  0,
+                  assignments.reduce((acc, a) => acc + (a.submissionCount || (a.submissions?.length || 0)), 0) -
+                    assignments.reduce(
+                      (acc, a) =>
+                        acc +
+                        (a.submissions?.filter((s: any) => s.gradePoints !== null && s.gradePoints !== undefined)
+                          .length || 0),
+                      0
+                    )
+                )}
+              </h3>
+              <span className="badge-subtle bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800 mt-1">
+                Faculty Action Queue
+              </span>
+            </div>
+            <div className="h-10 w-10 rounded-xl bg-amber-50 dark:bg-amber-950/40 text-amber-600 flex items-center justify-center">
+              <Clock className="h-5 w-5" />
+            </div>
+          </div>
+
+          <div className="glass-panel glass-card-hover p-4 rounded-2xl shadow-soft flex items-center justify-between">
+            <div>
+              <p className="text-[10px] font-bold tracking-wider uppercase text-charcoal-500 dark:text-charcoal-400">
+                Graded & Certified
+              </p>
+              <h3 className="text-2xl font-bold font-display text-charcoal-900 dark:text-ivory-100 mt-0.5">
+                {assignments.reduce(
+                  (acc, a) =>
+                    acc +
+                    (a.submissions?.filter((s: any) => s.gradePoints !== null && s.gradePoints !== undefined)
+                      .length || 0),
+                  0
+                )}
+              </h3>
+              <span className="badge-subtle bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 mt-1">
+                Rubric Scored
+              </span>
+            </div>
+            <div className="h-10 w-10 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 flex items-center justify-center">
+              <Award className="h-5 w-5" />
+            </div>
+          </div>
         </div>
 
         {/* Assignment Cards */}
@@ -233,7 +320,7 @@ export default function AssignmentsPage() {
               return (
                 <div
                   key={asg.id}
-                  className="bg-white dark:bg-[#1E191C] p-5 rounded-2xl border border-border dark:border-charcoal-800 shadow-soft flex flex-col justify-between hover:shadow-card transition-all"
+                  className="glass-panel glass-card-hover p-5 rounded-2xl shadow-soft flex flex-col justify-between transition-all"
                 >
                   <div>
                     <div className="flex items-center justify-between pb-3 border-b border-border dark:border-charcoal-800 mb-3">

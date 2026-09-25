@@ -150,7 +150,7 @@ export default function CareersPage() {
     <AppShell>
       <div className="flex flex-col gap-6">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-charcoal-800 p-6 rounded-2xl border border-border dark:border-charcoal-700 shadow-soft">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 glass-panel p-6 rounded-2xl shadow-soft">
           <div className="flex items-center gap-3">
             <div className="h-12 w-12 rounded-xl bg-rose-primary text-white flex items-center justify-center shadow-md shadow-rose-primary/20">
               <Briefcase className="h-6 w-6" />
@@ -160,7 +160,7 @@ export default function CareersPage() {
                 <h1 className="text-xl font-display font-bold text-charcoal-900 dark:text-ivory-100">
                   Career, Internship & Placement Hub
                 </h1>
-                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-academic-success-subtle text-academic-success border border-green-200">
+                <span className="badge-subtle bg-academic-success-subtle text-academic-success border border-green-200">
                   AI Career Coach Active
                 </span>
               </div>
@@ -174,7 +174,7 @@ export default function CareersPage() {
             {["SUPER_ADMIN", "INSTITUTION_ADMIN", "FACULTY", "HOD"].includes(currentRole) && (
               <button
                 onClick={() => setIsCreateJobModalOpen(true)}
-                className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-ivory-100 dark:bg-charcoal-700 hover:bg-rose-container text-charcoal-900 dark:text-ivory-100 text-xs font-bold border border-border dark:border-charcoal-600 shadow-sm transition-all"
+                className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-surface-soft dark:bg-charcoal-700 hover:bg-rose-container text-charcoal-900 dark:text-ivory-100 text-xs font-bold border border-border dark:border-charcoal-600 shadow-sm transition-all"
               >
                 <Plus className="h-4 w-4 text-rose-primary dark:text-rose-accent" />
                 <span>Post Placement Drive</span>
@@ -182,7 +182,7 @@ export default function CareersPage() {
             )}
             <button
               onClick={() => setIsAIChatOpen(true)}
-              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-rose-primary hover:bg-rose-dark text-white text-xs font-bold shadow-sm transition-all"
+              className="btn-primary-glow flex items-center gap-2 px-4 py-2 rounded-xl bg-rose-primary hover:bg-rose-dark active:scale-[0.98] text-white text-xs font-bold shadow-sm transition-all"
             >
               <Sparkles className="h-4 w-4" />
               <span>AI Resume & Mock Interview</span>
@@ -190,35 +190,50 @@ export default function CareersPage() {
           </div>
         </div>
 
-        {/* 3 Career Highlights */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div className="bg-white dark:bg-charcoal-800 p-5 rounded-2xl border border-border dark:border-charcoal-700 shadow-soft">
-            <span className="text-xs font-bold text-charcoal-600 dark:text-charcoal-400 uppercase">
+        {/* 4 Career Highlights */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="glass-panel glass-card-hover p-5 rounded-2xl shadow-soft">
+            <span className="text-[10px] font-bold text-charcoal-500 dark:text-charcoal-400 uppercase tracking-wider">
               Campus Placement Rate
             </span>
-            <div className="text-3xl font-display font-bold text-academic-success mt-2">
+            <div className="text-2xl font-display font-bold text-academic-success mt-1">
               {metrics.placementRate}
             </div>
-            <span className="text-xs text-charcoal-500">Graduating Cohort Verified</span>
+            <span className="badge-subtle bg-academic-success-subtle text-academic-success border border-green-200 dark:border-green-800 mt-2">
+              Graduating Cohort Verified
+            </span>
           </div>
-          <div className="bg-white dark:bg-charcoal-800 p-5 rounded-2xl border border-border dark:border-charcoal-700 shadow-soft">
-            <span className="text-xs font-bold text-charcoal-600 dark:text-charcoal-400 uppercase">
+          <div className="glass-panel glass-card-hover p-5 rounded-2xl shadow-soft">
+            <span className="text-[10px] font-bold text-charcoal-500 dark:text-charcoal-400 uppercase tracking-wider">
               Average Tier-1 CTC
             </span>
-            <div className="text-3xl font-display font-bold text-charcoal-900 dark:text-ivory-100 mt-2">
+            <div className="text-2xl font-display font-bold text-charcoal-900 dark:text-ivory-100 mt-1">
               {metrics.averageCtc}
             </div>
-            <span className="text-xs text-rose-primary font-semibold">Tier-1 Corporate Offers</span>
+            <span className="badge-subtle bg-rose-container/60 dark:bg-rose-dark/30 text-rose-primary dark:text-rose-accent mt-2">
+              Tier-1 Corporate Offers
+            </span>
           </div>
-          <div className="bg-white dark:bg-charcoal-800 p-5 rounded-2xl border border-border dark:border-charcoal-700 shadow-soft">
-            <span className="text-xs font-bold text-charcoal-600 dark:text-charcoal-400 uppercase">
+          <div className="glass-panel glass-card-hover p-5 rounded-2xl shadow-soft">
+            <span className="text-[10px] font-bold text-charcoal-500 dark:text-charcoal-400 uppercase tracking-wider">
               Active Corporate Drives
             </span>
-            <div className="text-3xl font-display font-bold text-charcoal-900 dark:text-ivory-100 mt-2">
+            <div className="text-2xl font-display font-bold text-charcoal-900 dark:text-ivory-100 mt-1">
               {metrics.activeDrivesCount || jobs.length} Drives
             </div>
-            <span className="text-xs text-charcoal-500">
-              {metrics.totalApplicationsCount} Candidate Submissions
+            <span className="badge-subtle bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 mt-2">
+              {metrics.totalApplicationsCount} Applications
+            </span>
+          </div>
+          <div className="glass-panel glass-card-hover p-5 rounded-2xl shadow-soft">
+            <span className="text-[10px] font-bold text-charcoal-500 dark:text-charcoal-400 uppercase tracking-wider">
+              Recruitment Partners
+            </span>
+            <div className="text-2xl font-display font-bold text-charcoal-900 dark:text-ivory-100 mt-1">
+              45+ Labs
+            </div>
+            <span className="badge-subtle bg-surface-soft dark:bg-charcoal-800 text-charcoal-700 dark:text-charcoal-300 border border-border dark:border-charcoal-700 mt-2">
+              Fortune 500 Network
             </span>
           </div>
         </div>
@@ -241,7 +256,7 @@ export default function CareersPage() {
             jobs.map((j) => (
               <div
                 key={j.id}
-                className="bg-white dark:bg-charcoal-800 rounded-2xl border border-border dark:border-charcoal-700 shadow-soft p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:border-rose-accent/40 transition-all"
+                className="glass-panel glass-card-hover rounded-2xl shadow-soft p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 transition-all"
               >
                 <div className="flex items-start gap-3.5">
                   <div className="h-12 w-12 rounded-xl bg-rose-container text-rose-primary flex items-center justify-center font-bold text-sm shadow-xs shrink-0">

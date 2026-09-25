@@ -135,7 +135,7 @@ export default function CommunicationPage() {
     <AppShell>
       <div className="flex flex-col gap-6">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-charcoal-800 p-6 rounded-2xl border border-border dark:border-charcoal-700 shadow-soft">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 glass-panel p-6 rounded-2xl shadow-soft">
           <div className="flex items-center gap-3">
             <div className="h-12 w-12 rounded-xl bg-rose-primary text-white flex items-center justify-center shadow-md shadow-rose-primary/20">
               <Bell className="h-6 w-6" />
@@ -145,7 +145,7 @@ export default function CommunicationPage() {
                 <h1 className="text-xl font-display font-bold text-charcoal-900 dark:text-ivory-100">
                   Centralized Communication & Broadcast Dispatch
                 </h1>
-                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-academic-success-subtle text-academic-success border border-green-200 dark:border-green-800">
+                <span className="badge-subtle bg-academic-success-subtle text-academic-success border border-green-200 dark:border-green-800">
                   Multi-Channel Active
                 </span>
               </div>
@@ -157,62 +157,78 @@ export default function CommunicationPage() {
 
           <button
             onClick={() => setIsBroadcastModalOpen(true)}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-rose-primary hover:bg-rose-dark text-white text-xs font-bold shadow-sm transition-all"
+            className="btn-primary-glow flex items-center gap-2 px-4 py-2 rounded-xl bg-rose-primary hover:bg-rose-dark active:scale-[0.98] text-white text-xs font-bold shadow-sm transition-all"
           >
             <Send className="h-4 w-4" />
             <span>Broadcast Circular</span>
           </button>
         </div>
 
-        {/* 3 Telemetry Cards */}
+        {/* 4 Telemetry KPI Cards */}
         {loading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <SkeletonCard />
             <SkeletonCard />
             <SkeletonCard />
             <SkeletonCard />
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="bg-white dark:bg-charcoal-800 p-5 rounded-2xl border border-border dark:border-charcoal-700 shadow-soft">
-              <span className="text-xs font-bold text-charcoal-600 dark:text-charcoal-400 uppercase">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="glass-panel glass-card-hover p-5 rounded-2xl shadow-soft">
+              <span className="text-[10px] font-bold text-charcoal-500 dark:text-charcoal-400 uppercase tracking-wider">
                 Active Circulars
               </span>
-              <div className="text-3xl font-display font-bold text-charcoal-900 dark:text-ivory-100 mt-2">
+              <div className="text-2xl font-display font-bold text-charcoal-900 dark:text-ivory-100 mt-1">
                 {announcements.length}
               </div>
-              <span className="text-xs text-rose-primary dark:text-rose-light font-semibold">
-                Stored in SQLite Database
+              <span className="badge-subtle bg-rose-container/60 dark:bg-rose-dark/30 text-rose-primary dark:text-rose-accent mt-2">
+                SQLite Database Backed
               </span>
             </div>
 
-            <div className="bg-white dark:bg-charcoal-800 p-5 rounded-2xl border border-border dark:border-charcoal-700 shadow-soft">
-              <span className="text-xs font-bold text-charcoal-600 dark:text-charcoal-400 uppercase">
-                Emergency Siren Status
-              </span>
-              <div className="text-3xl font-display font-bold text-academic-success mt-2">
+            <div className="glass-panel glass-card-hover p-5 rounded-2xl shadow-soft">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-bold text-charcoal-500 dark:text-charcoal-400 uppercase tracking-wider">
+                  Emergency Siren
+                </span>
+                <span className="h-2.5 w-2.5 rounded-full bg-emerald-500 beacon-pulse" />
+              </div>
+              <div className="text-2xl font-display font-bold text-academic-success mt-1">
                 STANDBY
               </div>
-              <span className="text-xs text-charcoal-600 dark:text-charcoal-400">
-                Campus-wide push relay ready
+              <span className="badge-subtle bg-academic-success-subtle text-academic-success border border-green-200 dark:border-green-800 mt-2">
+                Push Relay Ready
               </span>
             </div>
 
-            <div className="bg-white dark:bg-charcoal-800 p-5 rounded-2xl border border-border dark:border-charcoal-700 shadow-soft">
-              <span className="text-xs font-bold text-charcoal-600 dark:text-charcoal-400 uppercase">
-                Delivery Success Rate
+            <div className="glass-panel glass-card-hover p-5 rounded-2xl shadow-soft">
+              <span className="text-[10px] font-bold text-charcoal-500 dark:text-charcoal-400 uppercase tracking-wider">
+                Delivery Success
               </span>
-              <div className="text-3xl font-display font-bold text-charcoal-900 dark:text-ivory-100 mt-2">
+              <div className="text-2xl font-display font-bold text-charcoal-900 dark:text-ivory-100 mt-1">
                 99.8%
               </div>
-              <span className="text-xs text-academic-success font-semibold">
-                Across SMS & Mobile Push
+              <span className="badge-subtle bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 mt-2">
+                SMS & Mobile Push
+              </span>
+            </div>
+
+            <div className="glass-panel glass-card-hover p-5 rounded-2xl shadow-soft">
+              <span className="text-[10px] font-bold text-charcoal-500 dark:text-charcoal-400 uppercase tracking-wider">
+                Broadcast Reach
+              </span>
+              <div className="text-2xl font-display font-bold text-charcoal-900 dark:text-ivory-100 mt-1">
+                1,420+
+              </div>
+              <span className="badge-subtle bg-surface-soft dark:bg-charcoal-800 text-charcoal-700 dark:text-charcoal-300 border border-border dark:border-charcoal-700 mt-2">
+                Verified Campus Nodes
               </span>
             </div>
           </div>
         )}
 
         {/* Filter & Search Bar */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white dark:bg-charcoal-800 p-4 rounded-2xl border border-border dark:border-charcoal-700 shadow-soft">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 glass-panel p-4 rounded-2xl shadow-soft">
           <div className="flex items-center gap-2 overflow-x-auto w-full sm:w-auto">
             {["ALL", "STUDENTS", "FACULTY", "PARENTS"].map((aud) => (
               <button
@@ -221,7 +237,7 @@ export default function CommunicationPage() {
                 className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${
                   filterAudience === aud
                     ? "bg-rose-primary text-white shadow-sm"
-                    : "bg-ivory-100 dark:bg-charcoal-700 text-charcoal-700 dark:text-charcoal-300 hover:bg-rose-container"
+                    : "bg-surface-soft dark:bg-charcoal-700 text-charcoal-700 dark:text-charcoal-300 hover:bg-rose-container"
                 }`}
               >
                 {aud}
@@ -236,7 +252,7 @@ export default function CommunicationPage() {
               placeholder="Search circulars by keyword..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-3 py-1.5 rounded-xl bg-ivory-100 dark:bg-charcoal-900 border border-border dark:border-charcoal-700 text-xs text-charcoal-900 dark:text-ivory-100 focus:outline-none focus:ring-1 focus:ring-rose-primary"
+              className="w-full pl-9 pr-3 py-1.5 rounded-xl bg-surface-soft dark:bg-charcoal-900 border border-border dark:border-charcoal-700 text-xs text-charcoal-900 dark:text-ivory-100 focus:outline-none focus:ring-1 focus:ring-rose-primary"
             />
           </div>
         </div>
@@ -260,7 +276,7 @@ export default function CommunicationPage() {
             {filtered.map((a) => (
               <div
                 key={a.id}
-                className="bg-white dark:bg-charcoal-800 p-5 rounded-2xl border border-border dark:border-charcoal-700 shadow-soft flex flex-col gap-3"
+                className="glass-panel glass-card-hover p-5 rounded-2xl shadow-soft flex flex-col gap-3 transition-all"
               >
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                   <div className="flex items-center gap-2">

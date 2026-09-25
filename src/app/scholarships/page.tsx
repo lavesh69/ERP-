@@ -111,7 +111,7 @@ export default function ScholarshipsPage() {
     <AppShell>
       <div className="flex flex-col gap-6">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-charcoal-800 p-6 rounded-2xl border border-border dark:border-charcoal-700 shadow-soft">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 glass-panel p-6 rounded-2xl shadow-soft">
           <div className="flex items-center gap-3">
             <div className="h-12 w-12 rounded-xl bg-rose-primary text-white flex items-center justify-center shadow-md shadow-rose-primary/20">
               <Gift className="h-6 w-6" />
@@ -121,7 +121,7 @@ export default function ScholarshipsPage() {
                 <h1 className="text-xl font-display font-bold text-charcoal-900 dark:text-ivory-100">
                   Scholarship & Endowment Hub
                 </h1>
-                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-academic-success-subtle text-academic-success border border-green-200">
+                <span className="badge-subtle bg-academic-success-subtle text-academic-success border border-green-200">
                   Eligibility Engine Online
                 </span>
               </div>
@@ -134,7 +134,7 @@ export default function ScholarshipsPage() {
           <div className="flex items-center gap-2">
             <button
               onClick={() => setIsAIChatOpen(true)}
-              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-rose-primary hover:bg-rose-dark text-white text-xs font-bold shadow-sm transition-all"
+              className="btn-primary-glow flex items-center gap-2 px-4 py-2 rounded-xl bg-rose-primary hover:bg-rose-dark active:scale-[0.98] text-white text-xs font-bold shadow-sm transition-all"
             >
               <Sparkles className="h-4 w-4" />
               <span>Ask AI Eligibility Advisor</span>
@@ -144,7 +144,7 @@ export default function ScholarshipsPage() {
 
         {/* Officer Review Queue (Visible to Admins & Faculty) */}
         {["SUPER_ADMIN", "INSTITUTION_ADMIN", "FACULTY", "HOD", "ACCOUNTANT"].includes(currentRole) && (
-          <div className="bg-white dark:bg-charcoal-800 rounded-2xl border border-border dark:border-charcoal-700 shadow-soft p-5 flex flex-col gap-4">
+          <div className="glass-panel rounded-2xl shadow-soft p-5 flex flex-col gap-4">
             <div className="flex items-center justify-between pb-3 border-b border-border dark:border-charcoal-700">
               <div className="flex items-center gap-2">
                 <ShieldCheck className="h-5 w-5 text-rose-primary dark:text-rose-accent" />
@@ -240,7 +240,7 @@ export default function ScholarshipsPage() {
             scholarships.map((s) => (
               <div
                 key={s.id}
-                className="bg-white dark:bg-charcoal-800 rounded-2xl border border-border dark:border-charcoal-700 shadow-soft p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:border-rose-accent/40 transition-all"
+                className="glass-panel glass-card-hover rounded-2xl shadow-soft p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 transition-all"
               >
                 <div className="flex items-start gap-4">
                   <div className="h-12 w-12 rounded-xl bg-rose-container text-rose-primary flex items-center justify-center font-bold text-sm shadow-xs shrink-0">

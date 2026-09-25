@@ -173,7 +173,7 @@ Status: INSTITUTIONALLY VERIFIED & AUDITED
     <AppShell>
       <div className="flex flex-col gap-6">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-charcoal-800 p-6 rounded-2xl border border-border dark:border-charcoal-700 shadow-soft">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 glass-panel p-6 rounded-2xl shadow-soft">
           <div className="flex items-center gap-3">
             <div className="h-12 w-12 rounded-xl bg-rose-primary text-white flex items-center justify-center shadow-md shadow-rose-primary/20">
               <FolderLock className="h-6 w-6" />
@@ -183,7 +183,7 @@ Status: INSTITUTIONALLY VERIFIED & AUDITED
                 <h1 className="text-xl font-display font-bold text-charcoal-900 dark:text-ivory-100">
                   Academic Document Vault & Verification
                 </h1>
-                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-academic-success-subtle text-academic-success border border-green-200 dark:border-green-800">
+                <span className="badge-subtle bg-academic-success-subtle text-academic-success border border-green-200 dark:border-green-800">
                   Live SQLite Document Storage
                 </span>
               </div>
@@ -195,62 +195,75 @@ Status: INSTITUTIONALLY VERIFIED & AUDITED
 
           <button
             onClick={() => setIsUploadModalOpen(true)}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-rose-primary hover:bg-rose-dark text-white text-xs font-bold shadow-sm transition-all"
+            className="btn-primary-glow flex items-center gap-2 px-4 py-2 rounded-xl bg-rose-primary hover:bg-rose-dark active:scale-[0.98] text-white text-xs font-bold shadow-sm transition-all"
           >
             <Upload className="h-4 w-4" />
             <span>Upload Document</span>
           </button>
         </div>
 
-        {/* 3 Telemetry Cards */}
+        {/* 4 Telemetry KPI Cards */}
         {loading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <SkeletonCard />
             <SkeletonCard />
             <SkeletonCard />
             <SkeletonCard />
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="bg-white dark:bg-charcoal-800 p-5 rounded-2xl border border-border dark:border-charcoal-700 shadow-soft">
-              <span className="text-xs font-bold text-charcoal-600 dark:text-charcoal-400 uppercase">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="glass-panel glass-card-hover p-5 rounded-2xl shadow-soft">
+              <span className="text-[10px] font-bold text-charcoal-500 dark:text-charcoal-400 uppercase tracking-wider">
                 Archived Documents
               </span>
-              <div className="text-3xl font-display font-bold text-charcoal-900 dark:text-ivory-100 mt-2">
+              <div className="text-2xl font-display font-bold text-charcoal-900 dark:text-ivory-100 mt-1">
                 {documents.length}
               </div>
-              <span className="text-xs text-rose-primary dark:text-rose-light font-semibold">
-                Stored with SHA-256 Signatures
+              <span className="badge-subtle bg-rose-container/60 dark:bg-rose-dark/30 text-rose-primary dark:text-rose-accent mt-2">
+                SHA-256 Signatures
               </span>
             </div>
 
-            <div className="bg-white dark:bg-charcoal-800 p-5 rounded-2xl border border-border dark:border-charcoal-700 shadow-soft">
-              <span className="text-xs font-bold text-charcoal-600 dark:text-charcoal-400 uppercase">
-                Verified Credentials
+            <div className="glass-panel glass-card-hover p-5 rounded-2xl shadow-soft">
+              <span className="text-[10px] font-bold text-charcoal-500 dark:text-charcoal-400 uppercase tracking-wider">
+                Cryptographic Integrity
               </span>
-              <div className="text-3xl font-display font-bold text-academic-success mt-2">
+              <div className="text-2xl font-display font-bold text-academic-success mt-1">
                 100%
               </div>
-              <span className="text-xs text-charcoal-600 dark:text-charcoal-400">
-                Tamper-resistant digital records
+              <span className="badge-subtle bg-academic-success-subtle text-academic-success border border-green-200 dark:border-green-800 mt-2">
+                Tamper-Resistant Ledger
               </span>
             </div>
 
-            <div className="bg-white dark:bg-charcoal-800 p-5 rounded-2xl border border-border dark:border-charcoal-700 shadow-soft">
-              <span className="text-xs font-bold text-charcoal-600 dark:text-charcoal-400 uppercase">
+            <div className="glass-panel glass-card-hover p-5 rounded-2xl shadow-soft">
+              <span className="text-[10px] font-bold text-charcoal-500 dark:text-charcoal-400 uppercase tracking-wider">
                 Storage Allocation
               </span>
-              <div className="text-3xl font-display font-bold text-charcoal-900 dark:text-ivory-100 mt-2">
+              <div className="text-2xl font-display font-bold text-charcoal-900 dark:text-ivory-100 mt-1">
                 {(documents.reduce((acc, d) => acc + d.fileSizeKb, 0) / 1024).toFixed(1)} MB
               </div>
-              <span className="text-xs text-charcoal-600 dark:text-charcoal-400">
-                Across {categories.length - 1} categories
+              <span className="badge-subtle bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 mt-2">
+                Across {categories.length - 1} Categories
+              </span>
+            </div>
+
+            <div className="glass-panel glass-card-hover p-5 rounded-2xl shadow-soft">
+              <span className="text-[10px] font-bold text-charcoal-500 dark:text-charcoal-400 uppercase tracking-wider">
+                Access Protocol
+              </span>
+              <div className="text-2xl font-display font-bold text-charcoal-900 dark:text-ivory-100 mt-1">
+                ZERO TRUST
+              </div>
+              <span className="badge-subtle bg-surface-soft dark:bg-charcoal-800 text-charcoal-700 dark:text-charcoal-300 border border-border dark:border-charcoal-700 mt-2">
+                Role-Gated Vault
               </span>
             </div>
           </div>
         )}
 
         {/* Filter and Search Bar */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white dark:bg-charcoal-800 p-4 rounded-2xl border border-border dark:border-charcoal-700 shadow-soft">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 glass-panel p-4 rounded-2xl shadow-soft">
           <div className="flex items-center gap-2 overflow-x-auto w-full sm:w-auto">
             {categories.map((cat) => (
               <button
@@ -259,7 +272,7 @@ Status: INSTITUTIONALLY VERIFIED & AUDITED
                 className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${
                   selectedCategory === cat
                     ? "bg-rose-primary text-white shadow-sm"
-                    : "bg-ivory-100 dark:bg-charcoal-700 text-charcoal-700 dark:text-charcoal-300 hover:bg-rose-container"
+                    : "bg-surface-soft dark:bg-charcoal-700 text-charcoal-700 dark:text-charcoal-300 hover:bg-rose-container"
                 }`}
               >
                 {cat.replace("_", " ")}
@@ -274,13 +287,13 @@ Status: INSTITUTIONALLY VERIFIED & AUDITED
               placeholder="Search documents by title..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-3 py-1.5 rounded-xl bg-ivory-100 dark:bg-charcoal-900 border border-border dark:border-charcoal-700 text-xs text-charcoal-900 dark:text-ivory-100 focus:outline-none focus:ring-1 focus:ring-rose-primary"
+              className="w-full pl-9 pr-3 py-1.5 rounded-xl bg-surface-soft dark:bg-charcoal-900 border border-border dark:border-charcoal-700 text-xs text-charcoal-900 dark:text-ivory-100 focus:outline-none focus:ring-1 focus:ring-rose-primary"
             />
           </div>
         </div>
 
         {/* Documents Table */}
-        <div className="bg-white dark:bg-charcoal-800 rounded-2xl border border-border dark:border-charcoal-700 shadow-soft overflow-hidden">
+        <div className="glass-panel rounded-2xl shadow-soft overflow-hidden">
           <div className="p-4 border-b border-border dark:border-charcoal-700 bg-surface-soft dark:bg-charcoal-800/80 flex items-center justify-between">
             <span className="text-xs font-bold text-charcoal-900 dark:text-ivory-100">
               Archived Institutional Records

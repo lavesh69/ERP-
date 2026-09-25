@@ -94,7 +94,7 @@ export default function ResearchPage() {
     <AppShell>
       <div className="flex flex-col gap-6">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-[#1E191C] p-6 rounded-2xl border border-border dark:border-charcoal-800 shadow-soft">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 glass-panel p-6 rounded-2xl shadow-soft">
           <div className="flex items-center gap-3">
             <div className="h-12 w-12 rounded-xl bg-rose-primary text-white flex items-center justify-center shadow-md shadow-rose-primary/20">
               <FlaskConical className="h-6 w-6" />
@@ -104,7 +104,7 @@ export default function ResearchPage() {
                 <h1 className="text-xl font-display font-bold text-charcoal-900 dark:text-ivory-100">
                   Research & Grants Hub
                 </h1>
-                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-container dark:bg-rose-dark/30 text-rose-primary dark:text-rose-accent">
+                <span className="badge-subtle bg-rose-container/60 dark:bg-rose-dark/30 text-rose-primary dark:text-rose-accent">
                   Verifiable Citations
                 </span>
               </div>
@@ -117,14 +117,14 @@ export default function ResearchPage() {
           <div className="flex items-center gap-2">
             <button
               onClick={() => setIsProposalModalOpen(true)}
-              className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-ivory-100 dark:bg-charcoal-800 hover:bg-rose-container dark:hover:bg-charcoal-700 text-charcoal-800 dark:text-ivory-200 text-xs font-bold border border-border dark:border-charcoal-700 transition-all"
+              className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-surface-soft dark:bg-charcoal-800 hover:bg-rose-container dark:hover:bg-charcoal-700 text-charcoal-800 dark:text-ivory-200 text-xs font-bold border border-border dark:border-charcoal-700 transition-all"
             >
               <Plus className="h-4 w-4 text-rose-primary dark:text-rose-accent" />
               <span>Submit Proposal</span>
             </button>
             <button
               onClick={() => setIsAIChatOpen(true)}
-              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-rose-primary hover:bg-rose-dark text-white text-xs font-bold shadow-sm transition-all"
+              className="btn-primary-glow flex items-center gap-2 px-4 py-2 rounded-xl bg-rose-primary hover:bg-rose-dark active:scale-[0.98] text-white text-xs font-bold shadow-sm transition-all"
             >
               <Sparkles className="h-4 w-4" />
               <span>AI Literature Discovery</span>
@@ -133,7 +133,7 @@ export default function ResearchPage() {
         </div>
 
         {/* Funded Projects Section */}
-        <div className="bg-white dark:bg-[#1E191C] rounded-2xl border border-border dark:border-charcoal-800 shadow-soft p-5">
+        <div className="glass-panel rounded-2xl shadow-soft p-5">
           <div className="flex items-center justify-between pb-3 border-b border-border dark:border-charcoal-800 mb-4">
             <h2 className="text-xs font-bold text-charcoal-900 dark:text-ivory-100 uppercase tracking-wider">
               Funded Research Projects & Milestones
@@ -196,7 +196,7 @@ export default function ResearchPage() {
         </div>
 
         {/* Peer-Reviewed Publications Table */}
-        <div className="bg-white dark:bg-[#1E191C] rounded-2xl border border-border dark:border-charcoal-800 shadow-soft overflow-hidden">
+        <div className="glass-panel rounded-2xl shadow-soft overflow-hidden">
           <div className="p-4 border-b border-border dark:border-charcoal-800 bg-surface-soft dark:bg-charcoal-900/40 flex items-center justify-between">
             <span className="text-xs font-bold text-charcoal-900 dark:text-ivory-100">
               Peer-Reviewed Publications & Transcripts
