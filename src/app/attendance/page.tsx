@@ -186,6 +186,7 @@ export default function AttendancePage() {
   const [isExceptionsModalOpen, setIsExceptionsModalOpen] = useState(false);
   const [exceptionsData, setExceptionsData] = useState<any[]>([]);
   const [isLoadingExceptions, setIsLoadingExceptions] = useState(false);
+  const [exceptionFilter, setExceptionFilter] = useState("ALL");
 
   // Report Generator Modal
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
@@ -3070,43 +3071,94 @@ export default function AttendancePage() {
       <Modal
         isOpen={isMissingModalOpen}
         onClose={() => setIsMissingModalOpen(false)}
-        title="Missing Attendance Session Scanner"
-        description="Identifies scheduled timetable lectures that have not had attendance recorded."
+        title="Timetable Attendance Compliance & Missing Scanner"
+        description="Comprehensive audit of scheduled academic timetable slots versus recorded attendance sessions."
         maxWidth="2xl"
       >
         <div className="flex flex-col gap-4">
-          <div className="flex items-center justify-between text-xs text-charcoal-600 dark:text-charcoal-400 pb-2 border-b border-border dark:border-charcoal-800">
-            <span>Date scanned: <strong>{selectedDate}</strong></span>
-            <span>Total Missing: <strong className="text-rose-600 dark:text-rose-400">{missingData?.missingCount ?? missingData?.totalMissing ?? 0}</strong></span>
+          {/* Executive Compliance Banner */}
+          <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 p-4 rounded-2xl border border-indigo-500/20 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-md">
+            <div>
+              <div className="flex items-center gap-2">
+                <Clock className="w-4 h-4 text-indigo-400" />
+                <span className="text-[11px] font-bold uppercase tracking-wider text-indigo-300">
+                  Daily Timetable Audit: {selectedDate}
+                </span>
+              </div>
+              <p className="text-xs text-slate-300 mt-0.5">
+                Automatically identifies un-conducted or unsaved lectures from official course schedule.
+              </p>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="text-right">
+                <span className="text-[10px] text-slate-400 uppercase font-bold block">Compliance</span>
+                <span className={`text-base font-bold font-mono ${
+                  (missingData?.complianceRate ?? 100) >= 90
+                    ? "text-emerald-400"
+                    : (missingData?.complianceRate ?? 100) >= 75
+                    ? "text-amber-400"
+                    : "text-rose-400"
+                }`}>
+                  {missingData?.complianceRate ?? 100}%
+                </span>
+              </div>
+              <div className="h-8 w-px bg-slate-800" />
+              <div className="text-right">
+                <span className="text-[10px] text-slate-400 uppercase font-bold block">Missing</span>
+                <span className="text-base font-bold font-mono text-rose-400">
+                  {missingData?.missingCount ?? missingData?.totalMissing ?? 0}
+                </span>
+              </div>
+            </div>
           </div>
 
           {isLoadingMissing ? (
-            <div className="py-8 text-center text-xs text-charcoal-500">Scanning scheduled timetable slots...</div>
+            <div className="py-12 flex flex-col items-center justify-center gap-3 text-charcoal-500">
+              <RefreshCw className="w-6 h-6 animate-spin text-rose-primary" />
+              <span className="text-xs font-medium">Scanning live timetable ledger across all departments...</span>
+            </div>
           ) : (missingData?.missingSessions || missingData?.missingClasses) && ((missingData?.missingSessions || missingData?.missingClasses).length > 0) ? (
-            <div className="overflow-x-auto max-h-96">
+            <div className="overflow-x-auto max-h-96 rounded-xl border border-border/80 dark:border-charcoal-800">
               <table className="w-full text-left text-xs">
                 <thead className="bg-ivory-100 dark:bg-charcoal-900 border-b border-border dark:border-charcoal-800 text-[10px] uppercase font-bold text-charcoal-600 dark:text-charcoal-400">
                   <tr>
-                    <th className="p-2.5">Course</th>
-                    <th className="p-2.5">Section</th>
-                    <th className="p-2.5">Faculty</th>
-                    <th className="p-2.5">Scheduled Slot</th>
-                    <th className="p-2.5">Room</th>
-                    <th className="p-2.5 text-right">Action</th>
+                    <th className="p-3">Course &amp; Subject</th>
+                    <th className="p-3">Section</th>
+                    <th className="p-3">Faculty</th>
+                    <th className="p-3">Time Slot</th>
+                    <th className="p-3">Venue</th>
+                    <th className="p-3 text-right">Instant Action</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-border/60 dark:divide-charcoal-800">
+                <tbody className="divide-y divide-border/60 dark:divide-charcoal-800 bg-white dark:bg-[#1E191C]">
                   {(missingData.missingSessions || missingData.missingClasses).map((ms: any) => (
-                    <tr key={ms.slotId} className="hover:bg-ivory-50/50 dark:hover:bg-charcoal-900/40">
-                      <td className="p-2.5 font-bold">
-                        {ms.courseCode}
-                        <span className="text-[10px] text-charcoal-500 font-normal block truncate max-w-[150px]">{ms.courseTitle}</span>
+                    <tr key={ms.slotId} className="hover:bg-ivory-50/50 dark:hover:bg-charcoal-900/40 transition-colors">
+                      <td className="p-3 font-bold">
+                        <div className="flex items-center gap-2">
+                          <span className="px-1.5 py-0.5 rounded bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 font-mono text-[10px] border border-indigo-500/20">
+                            {ms.courseCode}
+                          </span>
+                          <span className="truncate max-w-[160px] text-charcoal-900 dark:text-ivory-100">{ms.courseTitle}</span>
+                        </div>
+                        <span className="text-[10px] text-charcoal-500 font-normal block mt-0.5">{ms.departmentCode || ms.programName}</span>
                       </td>
-                      <td className="p-2.5">{ms.sectionName}</td>
-                      <td className="p-2.5">{ms.facultyName}</td>
-                      <td className="p-2.5 font-mono text-[11px] text-amber-600 dark:text-amber-400 font-semibold">{ms.startTime} - {ms.endTime}</td>
-                      <td className="p-2.5">{ms.roomCode}</td>
-                      <td className="p-2.5 text-right">
+                      <td className="p-3">
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-surface-soft dark:bg-charcoal-800 text-charcoal-700 dark:text-charcoal-300 border border-border dark:border-charcoal-700">
+                          {ms.sectionName}
+                        </span>
+                      </td>
+                      <td className="p-3 font-medium text-charcoal-700 dark:text-charcoal-300">
+                        {ms.facultyName}
+                      </td>
+                      <td className="p-3 font-mono text-[11px] text-amber-600 dark:text-amber-400 font-semibold">
+                        {ms.startTime} - {ms.endTime}
+                      </td>
+                      <td className="p-3">
+                        <span className="font-mono text-[10px] text-charcoal-600 dark:text-charcoal-400">
+                          {ms.roomCode}
+                        </span>
+                      </td>
+                      <td className="p-3 text-right">
                         <button
                           onClick={() => {
                             setSelectedCourse(ms.courseCode);
@@ -3114,9 +3166,10 @@ export default function AttendancePage() {
                             setIsMissingModalOpen(false);
                             handleQuickProjector();
                           }}
-                          className="px-2.5 py-1 bg-rose-primary hover:bg-rose-dark text-white rounded-lg text-[10px] font-bold"
+                          className="px-3 py-1.5 bg-gradient-to-r from-rose-primary to-rose-dark hover:shadow-sm text-white rounded-xl text-[10px] font-bold transition-all flex items-center gap-1.5 ml-auto"
                         >
-                          Launch Now
+                          <Play className="w-3 h-3 fill-current" />
+                          <span>Launch Session</span>
                         </button>
                       </td>
                     </tr>
@@ -3125,15 +3178,21 @@ export default function AttendancePage() {
               </table>
             </div>
           ) : (
-            <div className="py-8 text-center text-xs text-emerald-600 dark:text-emerald-400 font-bold">
-              ✅ All scheduled lectures for this date have recorded attendance sessions!
+            <div className="py-10 text-center flex flex-col items-center justify-center gap-2 rounded-2xl bg-emerald-500/5 border border-emerald-500/20">
+              <CheckCircle2 className="w-8 h-8 text-emerald-500" />
+              <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400">
+                100% Timetable Compliance
+              </span>
+              <p className="text-[11px] text-charcoal-500 max-w-sm">
+                All scheduled lectures for {selectedDate} have active or completed attendance records in the ledger.
+              </p>
             </div>
           )}
 
           <div className="flex justify-end pt-3 border-t border-border dark:border-charcoal-800">
             <button
               onClick={() => setIsMissingModalOpen(false)}
-              className="px-4 py-2 text-xs font-bold text-charcoal-600 dark:text-charcoal-400 hover:bg-ivory-100 dark:hover:bg-charcoal-800 rounded-xl"
+              className="px-4 py-2 text-xs font-bold text-charcoal-600 dark:text-charcoal-400 hover:bg-ivory-100 dark:hover:bg-charcoal-800 rounded-xl transition-colors"
             >
               Close
             </button>
@@ -3145,65 +3204,181 @@ export default function AttendancePage() {
       <Modal
         isOpen={isExceptionsModalOpen}
         onClose={() => setIsExceptionsModalOpen(false)}
-        title="Attendance Security Exception Radar"
-        description="Live audit feed of suspicious scans, geofence breaches, replay attacks, and proxy attempts."
+        title="Attendance Security & Anomaly Telemetry Radar"
+        description="High-frequency telemetry stream auditing cryptographic tokens, geofence perimeters, and BLE beacons."
         maxWidth="2xl"
       >
         <div className="flex flex-col gap-4">
-          <div className="flex items-center justify-between text-xs text-charcoal-600 dark:text-charcoal-400 pb-2 border-b border-border dark:border-charcoal-800">
-            <span>Security Incidents Logged: <strong>{exceptionsData.length}</strong></span>
-            <span className="text-[10px] text-charcoal-500">Live tamper &amp; spoof detection telemetry</span>
+          {/* Real-Time Cyber Telemetry Header Banner */}
+          <div className="bg-gradient-to-r from-slate-950 via-slate-900 to-indigo-950 p-4 rounded-2xl border border-indigo-500/30 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-lg">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-rose-500/10 border border-rose-500/30 flex items-center justify-center text-rose-400 relative">
+                <Radio className="w-5 h-5 animate-pulse" />
+                <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-emerald-500 rounded-full border-2 border-slate-900 animate-ping" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-bold uppercase tracking-wider text-rose-300">
+                    Live Anti-Spoofing Radar
+                  </span>
+                  <span className="px-2 py-0.5 rounded-full text-[9px] font-mono bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 font-semibold">
+                    ONLINE
+                  </span>
+                </div>
+                <p className="text-[11px] text-slate-400 mt-0.5">
+                  Surfacing HMAC token replay, out-of-perimeter GPS breaches, and device anomalies.
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="text-right">
+                <span className="text-[10px] text-slate-400 uppercase font-bold block">Incidents</span>
+                <span className="text-lg font-bold font-mono text-white">{exceptionsData.length}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Incident Category Filter Pills */}
+          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs">
+            {[
+              { id: "ALL", label: `All Events (${exceptionsData.length})` },
+              {
+                id: "CRITICAL",
+                label: `Critical P0 (${exceptionsData.filter((e) => e.severity?.includes("CRITICAL") || e.severity === "P0_CRITICAL").length})`,
+              },
+              {
+                id: "GEOFENCE",
+                label: `Geofence Breaches (${exceptionsData.filter((e) => e.category === "OUTSIDE_GEOFENCE").length})`,
+              },
+              {
+                id: "REPLAY",
+                label: `Replay / Spoof (${exceptionsData.filter((e) => e.category === "REPLAY_ATTEMPT").length})`,
+              },
+              {
+                id: "QR",
+                label: `QR Tokens (${exceptionsData.filter((e) => e.category === "QR_FAILED").length})`,
+              },
+              {
+                id: "BLE",
+                label: `BLE Mismatches (${exceptionsData.filter((e) => e.category === "BLE_MISMATCH").length})`,
+              },
+            ].map((f) => (
+              <button
+                key={f.id}
+                onClick={() => setExceptionFilter(f.id)}
+                className={`px-3 py-1.5 rounded-xl font-semibold transition-all whitespace-nowrap text-[11px] ${
+                  exceptionFilter === f.id
+                    ? "bg-charcoal-900 dark:bg-white text-white dark:text-charcoal-900 shadow-xs"
+                    : "bg-ivory-100 dark:bg-charcoal-800 text-charcoal-600 dark:text-charcoal-300 hover:bg-ivory-200 dark:hover:bg-charcoal-700"
+                }`}
+              >
+                {f.label}
+              </button>
+            ))}
           </div>
 
           {isLoadingExceptions ? (
-            <div className="py-8 text-center text-xs text-charcoal-500">Loading exception logs...</div>
+            <div className="py-12 flex flex-col items-center justify-center gap-3 text-charcoal-500">
+              <RefreshCw className="w-6 h-6 animate-spin text-indigo-500" />
+              <span className="text-xs font-medium">Querying immutable audit logs and security telemetry...</span>
+            </div>
           ) : exceptionsData.length > 0 ? (
-            <div className="overflow-x-auto max-h-96">
+            <div className="overflow-x-auto max-h-96 rounded-xl border border-border/80 dark:border-charcoal-800">
               <table className="w-full text-left text-xs">
                 <thead className="bg-ivory-100 dark:bg-charcoal-900 border-b border-border dark:border-charcoal-800 text-[10px] uppercase font-bold text-charcoal-600 dark:text-charcoal-400">
                   <tr>
-                    <th className="p-2.5">Time</th>
-                    <th className="p-2.5">Type</th>
-                    <th className="p-2.5">Student / Actor</th>
-                    <th className="p-2.5">Details</th>
-                    <th className="p-2.5 text-right">Severity</th>
+                    <th className="p-3">Timestamp</th>
+                    <th className="p-3">Threat Category</th>
+                    <th className="p-3">Actor / Origin</th>
+                    <th className="p-3">Anomaly Context</th>
+                    <th className="p-3 text-right">Severity</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-border/60 dark:divide-charcoal-800">
-                  {exceptionsData.map((ex: any) => (
-                    <tr key={ex.id} className="hover:bg-ivory-50/50 dark:hover:bg-charcoal-900/40">
-                      <td className="p-2.5 font-mono text-[10px] text-charcoal-500">{new Date(ex.timestamp).toLocaleTimeString()}</td>
-                      <td className="p-2.5 font-bold text-rose-600 dark:text-rose-400">{ex.category || ex.type}</td>
-                      <td className="p-2.5 font-medium">{ex.actor || ex.studentName || ex.studentId || "Anonymous"}</td>
-                      <td className="p-2.5 text-[11px] text-charcoal-600 dark:text-charcoal-300">{ex.reason || ex.details}</td>
-                      <td className="p-2.5 text-right">
-                        <span
-                          className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase ${
-                            ex.severity?.includes("CRITICAL") || ex.severity === "P0_CRITICAL"
-                              ? "bg-rose-500/20 text-rose-500 border border-rose-500/30"
-                              : ex.severity?.includes("HIGH") || ex.severity === "P1_HIGH"
-                              ? "bg-orange-500/20 text-orange-500 border border-orange-500/30"
-                              : "bg-amber-500/20 text-amber-500 border border-amber-500/30"
-                          }`}
-                        >
-                          {ex.severity}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
+                <tbody className="divide-y divide-border/60 dark:divide-charcoal-800 bg-white dark:bg-[#1E191C]">
+                  {exceptionsData
+                    .filter((ex: any) => {
+                      if (exceptionFilter === "ALL") return true;
+                      if (exceptionFilter === "CRITICAL") return ex.severity?.includes("CRITICAL") || ex.severity === "P0_CRITICAL";
+                      if (exceptionFilter === "GEOFENCE") return ex.category === "OUTSIDE_GEOFENCE";
+                      if (exceptionFilter === "REPLAY") return ex.category === "REPLAY_ATTEMPT";
+                      if (exceptionFilter === "QR") return ex.category === "QR_FAILED";
+                      if (exceptionFilter === "BLE") return ex.category === "BLE_MISMATCH";
+                      return true;
+                    })
+                    .map((ex: any) => (
+                      <tr key={ex.id} className="hover:bg-ivory-50/50 dark:hover:bg-charcoal-900/40 transition-colors">
+                        <td className="p-3 font-mono text-[10px] text-charcoal-500 whitespace-nowrap">
+                          {new Date(ex.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
+                        </td>
+                        <td className="p-3">
+                          <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold font-mono tracking-tight uppercase border inline-flex items-center gap-1 ${
+                            ex.category === "OUTSIDE_GEOFENCE"
+                              ? "bg-orange-500/10 text-orange-500 border-orange-500/20"
+                              : ex.category === "REPLAY_ATTEMPT"
+                              ? "bg-rose-500/10 text-rose-500 border-rose-500/20"
+                              : ex.category === "BLE_MISMATCH"
+                              ? "bg-blue-500/10 text-blue-500 border-blue-500/20"
+                              : ex.category === "UNENROLLED_SCAN"
+                              ? "bg-purple-500/10 text-purple-500 border-purple-500/20"
+                              : "bg-amber-500/10 text-amber-500 border-amber-500/20"
+                          }`}>
+                            {ex.category || ex.type}
+                          </span>
+                        </td>
+                        <td className="p-3">
+                          <span className="font-semibold text-charcoal-900 dark:text-ivory-100 block">
+                            {ex.actor || ex.studentName || ex.studentId || "Anonymous"}
+                          </span>
+                          {ex.clientIp && (
+                            <span className="font-mono text-[9px] text-charcoal-400 block mt-0.5">
+                              IP: {ex.clientIp}
+                            </span>
+                          )}
+                        </td>
+                        <td className="p-3 text-[11px] text-charcoal-600 dark:text-charcoal-300 max-w-xs">
+                          {ex.reason || ex.details}
+                        </td>
+                        <td className="p-3 text-right">
+                          <span
+                            className={`px-2.5 py-0.5 rounded-full text-[9px] font-bold uppercase inline-flex items-center gap-1 border ${
+                              ex.severity?.includes("CRITICAL") || ex.severity === "P0_CRITICAL"
+                                ? "bg-rose-500/20 text-rose-500 border-rose-500/30"
+                                : ex.severity?.includes("HIGH") || ex.severity === "P1_HIGH"
+                                ? "bg-orange-500/20 text-orange-500 border-orange-500/30"
+                                : "bg-blue-500/20 text-blue-500 border-blue-500/30"
+                            }`}
+                          >
+                            <span className={`w-1.5 h-1.5 rounded-full ${
+                              ex.severity?.includes("CRITICAL") || ex.severity === "P0_CRITICAL"
+                                ? "bg-rose-500 animate-ping"
+                                : ex.severity?.includes("HIGH") || ex.severity === "P1_HIGH"
+                                ? "bg-orange-500"
+                                : "bg-blue-500"
+                            }`} />
+                            {ex.severity}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
                 </tbody>
               </table>
             </div>
           ) : (
-            <div className="py-8 text-center text-xs text-emerald-600 dark:text-emerald-400 font-bold">
-              ✅ Zero security exceptions or proxy attempts detected in active sessions!
+            <div className="py-12 text-center flex flex-col items-center justify-center gap-2 rounded-2xl bg-emerald-500/5 border border-emerald-500/20">
+              <ShieldCheck className="w-10 h-10 text-emerald-500" />
+              <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400">
+                Zero Security Anomalies Detected
+              </span>
+              <p className="text-[11px] text-charcoal-500 max-w-sm">
+                Active lectures have zero proxy attempts, replay attacks, or geofence breaches.
+              </p>
             </div>
           )}
 
           <div className="flex justify-end pt-3 border-t border-border dark:border-charcoal-800">
             <button
               onClick={() => setIsExceptionsModalOpen(false)}
-              className="px-4 py-2 text-xs font-bold text-charcoal-600 dark:text-charcoal-400 hover:bg-ivory-100 dark:hover:bg-charcoal-800 rounded-xl"
+              className="px-4 py-2 text-xs font-bold text-charcoal-600 dark:text-charcoal-400 hover:bg-ivory-100 dark:hover:bg-charcoal-800 rounded-xl transition-colors"
             >
               Close
             </button>
