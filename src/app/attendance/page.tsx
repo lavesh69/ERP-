@@ -15,7 +15,10 @@ import {
   Filter,
   Save,
   CheckCircle2,
+  Scan,
 } from "lucide-react";
+import QRScannerModal from "@/components/attendance/QRScannerModal";
+import ProjectorModeModal from "@/components/attendance/ProjectorModeModal";
 
 export default function AttendancePage() {
   const { showToast, triggerRefresh, currentRole, currentUser } = useApp();
@@ -27,9 +30,13 @@ export default function AttendancePage() {
   const [sessionExists, setSessionExists] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
-  const [isQrModalOpen, setIsQrModalOpen] = useState(false);
-  const [qrExpiry, setQrExpiry] = useState(45);
   const [isDispatchingAlerts, setIsDispatchingAlerts] = useState(false);
+
+  // Smart Attendance: Projector & Scanner States
+  const [isProjectorOpen, setIsProjectorOpen] = useState(false);
+  const [isScannerModalOpen, setIsScannerModalOpen] = useState(false);
+  const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
+  const [isStartingSession, setIsStartingSession] = useState(false);
 
   // Correction Request State
   const [isCorrectionModalOpen, setIsCorrectionModalOpen] = useState(false);
@@ -94,16 +101,40 @@ export default function AttendancePage() {
     fetchRoster();
   }, [selectedCourse, selectedDate, currentRole]);
 
-  // QR Code Expiry Timer
-  useEffect(() => {
-    let timer: NodeJS.Timeout;
-    if (isQrModalOpen && qrExpiry > 0) {
-      timer = setInterval(() => setQrExpiry((prev) => prev - 1), 1000);
-    } else if (qrExpiry === 0) {
-      setQrExpiry(45);
+  const handleOpenProjector = async () => {
+    setIsStartingSession(true);
+    try {
+      const res = await fetch("/api/attendance/sessions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          courseCode: selectedCourse,
+          method: "SMART_COMBO",
+          qrRotationSeconds: 15,
+          allowedRadiusMeters: 100,
+          bleRequired: false,
+          geofenceRequired: false,
+        }),
+      });
+      const data = await res.json();
+      if (res.ok && data.session) {
+        setActiveSessionId(data.session.id);
+        setIsProjectorOpen(true);
+      } else {
+        showToast(data.error || "Failed to initialize attendance session", "danger");
+      }
+    } catch {
+      showToast("Network error starting smart session", "danger");
+    } finally {
+      setIsStartingSession(false);
     }
-    return () => clearInterval(timer);
-  }, [isQrModalOpen, qrExpiry]);
+  };
+
+  const handleScanSuccess = (data: any) => {
+    showToast(data.message || "Attendance recorded successfully!", "success");
+    fetchRoster();
+    triggerRefresh();
+  };
 
   const toggleStatus = (studentId: string, newStatus: "PRESENT" | "ABSENT" | "LATE") => {
     setStudentRoster((prev) =>
@@ -207,22 +238,40 @@ export default function AttendancePage() {
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             {currentRole === "STUDENT" ? (
-              <button
-                onClick={() => setIsCorrectionModalOpen(true)}
-                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-rose-primary hover:bg-rose-dark active:scale-[0.98] text-white text-xs font-bold shadow-sm transition-all"
-              >
-                <span>Request Attendance Correction</span>
-              </button>
+              <>
+                <button
+                  onClick={() => setIsScannerModalOpen(true)}
+                  className="flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 active:scale-[0.98] text-white text-xs font-bold shadow-sm transition-all"
+                >
+                  <Scan className="h-4 w-4 animate-pulse" />
+                  <span>Scan Attendance QR</span>
+                </button>
+                <button
+                  onClick={() => setIsCorrectionModalOpen(true)}
+                  className="flex items-center gap-2 px-4 py-2 rounded-xl bg-ivory-100 dark:bg-charcoal-800 hover:bg-rose-container dark:hover:bg-charcoal-700 text-charcoal-800 dark:text-ivory-200 text-xs font-bold border border-border dark:border-charcoal-700 transition-all"
+                >
+                  <span>Request Correction</span>
+                </button>
+              </>
             ) : (
               <>
                 <button
-                  onClick={() => setIsQrModalOpen(true)}
-                  className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-ivory-100 dark:bg-charcoal-800 hover:bg-rose-container dark:hover:bg-charcoal-700 text-charcoal-800 dark:text-ivory-200 text-xs font-bold border border-border dark:border-charcoal-700 transition-all"
+                  onClick={handleOpenProjector}
+                  disabled={isStartingSession}
+                  className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 active:scale-[0.98] text-white text-xs font-bold shadow-sm transition-all disabled:opacity-50"
                 >
-                  <QrCode className="h-4 w-4 text-rose-primary dark:text-rose-accent" />
-                  <span>Project QR Scanner</span>
+                  <QrCode className="h-4 w-4" />
+                  <span>{isStartingSession ? "Launching..." : "Project Dynamic QR"}</span>
+                </button>
+                <button
+                  onClick={() => setIsScannerModalOpen(true)}
+                  className="flex items-center gap-2 px-3 py-2 rounded-xl bg-ivory-100 dark:bg-charcoal-800 hover:bg-rose-container dark:hover:bg-charcoal-700 text-charcoal-800 dark:text-ivory-200 text-xs font-bold border border-border dark:border-charcoal-700 transition-all"
+                  title="Test in-browser camera scanner"
+                >
+                  <Scan className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                  <span>Scanner</span>
                 </button>
                 <button
                   onClick={handleSaveAttendance}
@@ -775,88 +824,24 @@ export default function AttendancePage() {
         </form>
       </Modal>
 
-      {/* QR Scanner Projector Modal */}
-      <Modal
-        isOpen={isQrModalOpen}
-        onClose={() => setIsQrModalOpen(false)}
-        title="Dynamic Attendance QR Code Projector"
-        description="Students scan this code via their CLASSROOM Mobile App to register presence."
-      >
-        <div className="flex flex-col items-center justify-center p-6 text-center">
-          <div className="p-4 bg-white rounded-2xl border border-border shadow-md mb-4 flex flex-col items-center">
-            {/* Dynamic Animated QR Matrix SVG Visual */}
-            <div className="relative p-2 bg-white rounded-xl border border-gray-200">
-              <svg
-                width="176"
-                height="176"
-                viewBox="0 0 176 176"
-                className="transition-transform duration-300"
-              >
-                {/* Background */}
-                <rect width="176" height="176" fill="#ffffff" />
-                {/* Corner Finder Pattern 1 (Top-Left) */}
-                <rect x="12" y="12" width="40" height="40" fill="#1e191c" rx="4" />
-                <rect x="20" y="20" width="24" height="24" fill="#ffffff" rx="2" />
-                <rect x="26" y="26" width="12" height="12" fill="#8e5368" rx="2" />
+      {/* Smart Attendance Projector Mode Modal */}
+      {activeSessionId && (
+        <ProjectorModeModal
+          isOpen={isProjectorOpen}
+          onClose={() => setIsProjectorOpen(false)}
+          sessionId={activeSessionId}
+          courseCode={selectedCourse}
+          courseTitle={availableCourses.find((c) => c.code === selectedCourse)?.title || "Lecture"}
+          onSessionUpdated={fetchRoster}
+        />
+      )}
 
-                {/* Corner Finder Pattern 2 (Top-Right) */}
-                <rect x="124" y="12" width="40" height="40" fill="#1e191c" rx="4" />
-                <rect x="132" y="20" width="24" height="24" fill="#ffffff" rx="2" />
-                <rect x="138" y="26" width="12" height="12" fill="#8e5368" rx="2" />
-
-                {/* Corner Finder Pattern 3 (Bottom-Left) */}
-                <rect x="12" y="124" width="40" height="40" fill="#1e191c" rx="4" />
-                <rect x="20" y="132" width="24" height="24" fill="#ffffff" rx="2" />
-                <rect x="26" y="138" width="12" height="12" fill="#8e5368" rx="2" />
-
-                {/* Data Matrix Bits */}
-                <rect x="64" y="16" width="8" height="8" fill="#1e191c" />
-                <rect x="80" y="16" width="8" height="8" fill="#1e191c" />
-                <rect x="96" y="16" width="8" height="8" fill="#1e191c" />
-                <rect x="64" y="32" width="8" height="8" fill="#1e191c" />
-                <rect x="72" y="48" width="8" height="8" fill="#8e5368" />
-                <rect x="88" y="48" width="8" height="8" fill="#1e191c" />
-                <rect x="104" y="48" width="8" height="8" fill="#1e191c" />
-
-                <rect x="16" y="64" width="8" height="8" fill="#1e191c" />
-                <rect x="32" y="64" width="8" height="8" fill="#1e191c" />
-                <rect x="48" y="64" width="8" height="8" fill="#1e191c" />
-                <rect x="64" y="64" width="8" height="8" fill="#1e191c" />
-                <rect x="80" y="64" width="16" height="16" fill="#8e5368" rx="3" />
-                <rect x="112" y="64" width="8" height="8" fill="#1e191c" />
-                <rect x="128" y="64" width="8" height="8" fill="#1e191c" />
-                <rect x="144" y="64" width="8" height="8" fill="#1e191c" />
-
-                <rect x="64" y="96" width="8" height="8" fill="#1e191c" />
-                <rect x="80" y="96" width="8" height="8" fill="#8e5368" />
-                <rect x="96" y="96" width="8" height="8" fill="#1e191c" />
-                <rect x="120" y="96" width="8" height="8" fill="#1e191c" />
-                <rect x="136" y="96" width="8" height="8" fill="#1e191c" />
-
-                <rect x="64" y="124" width="8" height="8" fill="#1e191c" />
-                <rect x="80" y="124" width="8" height="8" fill="#1e191c" />
-                <rect x="104" y="124" width="8" height="8" fill="#8e5368" />
-                <rect x="120" y="124" width="8" height="8" fill="#1e191c" />
-                <rect x="144" y="124" width="8" height="8" fill="#1e191c" />
-
-                <rect x="64" y="144" width="8" height="8" fill="#1e191c" />
-                <rect x="88" y="144" width="8" height="8" fill="#1e191c" />
-                <rect x="112" y="144" width="8" height="8" fill="#1e191c" />
-                <rect x="136" y="144" width="8" height="8" fill="#1e191c" />
-              </svg>
-            </div>
-            <div className="mt-2 text-[10px] font-mono text-charcoal-500">
-              TOKEN: APX-{selectedCourse}-ROT-{qrExpiry}
-            </div>
-          </div>
-          <div className="text-xs font-bold text-charcoal-900 dark:text-ivory-100 mb-1">
-            Token Rotates In: <span className="text-rose-primary dark:text-rose-accent font-mono">{qrExpiry}s</span>
-          </div>
-          <p className="text-[11px] text-charcoal-500 dark:text-charcoal-400 max-w-xs">
-            Geofence active within Lecture Hall LH-4B. Bluetooth proximity verification enabled.
-          </p>
-        </div>
-      </Modal>
+      {/* Smart Attendance Real Camera Scanner Modal */}
+      <QRScannerModal
+        isOpen={isScannerModalOpen}
+        onClose={() => setIsScannerModalOpen(false)}
+        onSuccess={handleScanSuccess}
+      />
     </AppShell>
   );
 }

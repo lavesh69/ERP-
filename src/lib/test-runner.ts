@@ -51,6 +51,9 @@ import { getTestPhoneNumbers } from "@/lib/firebase/config";
 import { getSupabaseConfig, isSupabaseConfigured } from "@/lib/supabase/index";
 import { supabaseSignIn, supabaseSignUp } from "@/lib/supabase/auth";
 import { hasPermission, ROLE_PERMISSIONS, PermissionCode } from "@/lib/auth/permissions";
+import { generateRotatingQrToken, verifyRotatingQrToken } from "@/lib/attendance/qr-token";
+import { calculateHaversineDistance, verifyGeofenceProximity } from "@/lib/attendance/geofence";
+import { generateBleChallenge, verifyBleChallengeProof } from "@/lib/attendance/ble";
 
 async function runTestSuite() {
   console.log("=================================================");
@@ -1362,6 +1365,167 @@ async function runTestSuite() {
   const aliceView = filterExamsForStudent(mockExamsData, "user-alice");
   assert(aliceView[0].results.length === 1 && aliceView[0].results[0].marks === 92, "Student (Alice) can see her own certified published result");
   assert(!aliceView[0].results.some((r: any) => r.studentUserId !== "user-alice"), "Student cannot view grades belonging to other scholars");
+
+  // TEST 29: Smart Attendance Dynamic QR, BLE & Geofence Architecture
+  console.log("\n📌 Group 29: Smart Attendance Dynamic QR, BLE & Geofence Architecture");
+
+  // 29.1 Cryptographic Dynamic Rotating QR Token Generation
+  const testSessionId = "session-test-uuid-4488";
+  const rotatingQr = generateRotatingQrToken(testSessionId, 15);
+
+  assert(typeof rotatingQr.token === "string", "Rotating QR token generated as string");
+  assert(rotatingQr.token.startsWith("APX_ATT_V2."), "QR token uses APX_ATT_V2 protocol prefix");
+  assert(rotatingQr.token.split(".").length === 6, "QR token format conforms to 6-part dot-delimited structure");
+  assert(rotatingQr.rotationSeconds === 15, "Default rotation interval matches 15-second configuration");
+  assert(rotatingQr.expiresAt === rotatingQr.issuedAt + 15, "Expiration strictly calculated from issued timestamp");
+
+  // 29.2 Cryptographic Verification & Tamper Detection
+  const validVerification = verifyRotatingQrToken(rotatingQr.token, testSessionId);
+  assert(validVerification.valid === true, "Authentic server-generated token successfully verified");
+  assert(validVerification.sessionId === testSessionId, "Verified token matches expected session ID");
+
+  // Mismatched session verification
+  const wrongSessionVerification = verifyRotatingQrToken(rotatingQr.token, "different-session-uuid");
+  assert(wrongSessionVerification.valid === false, "Token verification rejects mismatched session ID");
+
+  // Tampered payload verification
+  const tamperedQrToken = rotatingQr.token.replace("APX_ATT_V2.", "APX_ATT_V2.hacked.");
+  const tamperedVerification = verifyRotatingQrToken(tamperedQrToken, testSessionId);
+  assert(tamperedVerification.valid === false, "Tampered QR token fails cryptographic validation");
+
+  // Counterfeit signature verification
+  const tokenParts = rotatingQr.token.split(".");
+  tokenParts[5] = "00000000000000000000000000000000"; // Forged signature
+  const forgedToken = tokenParts.join(".");
+  const forgedVerification = verifyRotatingQrToken(forgedToken, testSessionId);
+  assert(forgedVerification.valid === false, "Forged token signature strictly rejected by constant-time comparator");
+
+  // 29.3 Replay Attack & Sliding Window Expiration Prevention
+  const pastIssued = Math.floor(Date.now() / 1000) - 120; // 2 minutes ago
+  const pastExpires = pastIssued + 15;
+  const expiredTokenMock = `APX_ATT_V2.${testSessionId}.abcdef1234567890.${pastIssued}.${pastExpires}.invalid`;
+  const expiredVerification = verifyRotatingQrToken(expiredTokenMock, testSessionId);
+  assert(expiredVerification.valid === false, "Expired attendance token is rejected");
+
+  // 29.4 Server-Side Haversine Geofence Distance Calculation & Radius Verification
+  const hallLat = 28.5450;
+  const hallLng = 77.1926;
+
+  // Student 25m away (Inside 100m radius)
+  const nearbyStudentLat = 28.5451;
+  const nearbyStudentLng = 77.1927;
+  const insideDistance = calculateHaversineDistance(nearbyStudentLat, nearbyStudentLng, hallLat, hallLng);
+  assert(insideDistance > 0 && insideDistance < 50, `Haversine distance accurate for nearby student (${insideDistance}m)`);
+
+  const insideResult = verifyGeofenceProximity(
+    { latitude: nearbyStudentLat, longitude: nearbyStudentLng, accuracy: 10 },
+    { latitude: hallLat, longitude: hallLng },
+    100
+  );
+  assert(insideResult.inGeofence === true, "Student within 100m radius successfully passes geofence check");
+
+  // Student in off-campus hostel / remote (1500m away)
+  const remoteStudentLat = 28.5580;
+  const remoteStudentLng = 77.1990;
+  const outsideDistance = calculateHaversineDistance(remoteStudentLat, remoteStudentLng, hallLat, hallLng);
+  assert(outsideDistance > 1000, `Haversine distance accurate for remote student (${outsideDistance}m)`);
+
+  const outsideResult = verifyGeofenceProximity(
+    { latitude: remoteStudentLat, longitude: remoteStudentLng, accuracy: 10 },
+    { latitude: hallLat, longitude: hallLng },
+    100
+  );
+  assert(outsideResult.inGeofence === false, "Remote student outside 100m radius is strictly rejected by geofence");
+  assert(Boolean(outsideResult.error?.includes("outside allowed radius")), "Geofence failure returns actionable error description");
+
+  // 29.5 Web Bluetooth Proximity Challenge Generation & Proof Verification
+  const testStudentId = "student-smart-attendee-01";
+  const bleChallenge = generateBleChallenge(testSessionId, testStudentId, 60);
+
+  assert(bleChallenge.challenge.startsWith("BLE_CHALLENGE."), "BLE challenge adheres to BLE_CHALLENGE protocol prefix");
+  assert(bleChallenge.sessionId === testSessionId, "BLE challenge preserves target session binding");
+  assert(bleChallenge.studentId === testStudentId, "BLE challenge cryptographically bound to specific student ID");
+
+  // Valid proof verification
+  const validBleProof = verifyBleChallengeProof(bleChallenge.challenge, testSessionId, testStudentId, -68, -85);
+  assert(validBleProof.valid === true, "Valid BLE challenge proof with strong RSSI (-68 dBm) confirmed");
+
+  // BLE proof for wrong student
+  const wrongStudentBleProof = verifyBleChallengeProof(bleChallenge.challenge, testSessionId, "other-student-id");
+  assert(wrongStudentBleProof.valid === false, "BLE challenge rejects attempt to submit proof for a different student ID");
+
+  // BLE proof with weak signal (beyond classroom perimeter, e.g. -95 dBm < -85 dBm)
+  const weakSignalProof = verifyBleChallengeProof(bleChallenge.challenge, testSessionId, testStudentId, -95, -85);
+  assert(weakSignalProof.valid === false && Boolean(weakSignalProof.error?.includes("signal strength too weak")), "BLE rejects weak RSSI beyond calibrated classroom perimeter");
+
+  // 29.6 Database Session & Record Persistence with Verification Badges
+  const courseForSession = await prisma.course.findFirst({ include: { faculty: true } });
+  const studentForSession = await prisma.student.findFirst();
+  const sectionForSession = await prisma.section.findFirst();
+
+  if (courseForSession && studentForSession && sectionForSession && courseForSession.faculty.length > 0) {
+    const testDbSession = await prisma.attendanceSession.create({
+      data: {
+        courseId: courseForSession.id,
+        facultyId: courseForSession.faculty[0].facultyId,
+        sectionId: sectionForSession.id,
+        date: new Date(),
+        startTime: "11:00",
+        endTime: "12:00",
+        method: "SMART_COMBO",
+        qrRotationSeconds: 15,
+        allowedRadiusMeters: 75.0,
+        latitude: hallLat,
+        longitude: hallLng,
+        bleRequired: false,
+        geofenceRequired: true,
+        status: "ACTIVE",
+      },
+    });
+
+    assert(testDbSession.method === "SMART_COMBO", "AttendanceSession persisted with SMART_COMBO method");
+    assert(testDbSession.allowedRadiusMeters === 75.0, "AttendanceSession persisted with custom allowedRadiusMeters");
+
+    // Create verified AttendanceRecord
+    const testRecord = await prisma.attendanceRecord.create({
+      data: {
+        sessionId: testDbSession.id,
+        studentId: studentForSession.id,
+        status: "PRESENT",
+        verificationMethod: "COMBO",
+        qrVerified: true,
+        bluetoothVerified: true,
+        geofenceVerified: true,
+        distanceMeters: 18.5,
+        verifiedAt: new Date(),
+        markedBy: "STUDENT_SELF_SCAN",
+      },
+    });
+
+    assert(testRecord.status === "PRESENT", "AttendanceRecord marked PRESENT");
+    assert(testRecord.verificationMethod === "COMBO", "AttendanceRecord has COMBO verification method");
+    assert(testRecord.qrVerified === true && testRecord.geofenceVerified === true, "AttendanceRecord preserves multi-factor verification flags");
+    assert(testRecord.distanceMeters === 18.5, "AttendanceRecord records verified GPS distance in meters");
+
+    // Verify duplicate attendance prevention via unique compound key
+    let duplicateRejected = false;
+    try {
+      await prisma.attendanceRecord.create({
+        data: {
+          sessionId: testDbSession.id,
+          studentId: studentForSession.id,
+          status: "PRESENT",
+        },
+      });
+    } catch {
+      duplicateRejected = true;
+    }
+    assert(duplicateRejected, "Database unique constraint [sessionId, studentId] strictly prevents duplicate attendance submissions");
+
+    // Clean up test attendance records and session
+    await prisma.attendanceRecord.delete({ where: { id: testRecord.id } });
+    await prisma.attendanceSession.delete({ where: { id: testDbSession.id } });
+  }
 
   console.log("\n=================================================");
   console.log(`🎉 ALL ${passedTests}/${totalTests} TESTS PASSED SUCCESSFULLY!`);

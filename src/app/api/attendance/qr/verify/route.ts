@@ -1,0 +1,289 @@
+import { NextRequest, NextResponse } from "next/server";
+import { prisma } from "@/lib/db/prisma";
+import { requireAuth } from "@/lib/auth/admin-guard";
+import { verifyRotatingQrToken } from "@/lib/attendance/qr-token";
+import { verifyGeofenceProximity } from "@/lib/attendance/geofence";
+import { verifyBleChallengeProof } from "@/lib/attendance/ble";
+import { logger } from "@/lib/logging/logger";
+
+export async function POST(req: NextRequest) {
+  // Step 1: Require authenticated user session
+  const auth = await requireAuth(req);
+  if (auth instanceof NextResponse) return auth;
+
+  try {
+    const body = await req.json();
+    const {
+      token,
+      sessionId: explicitSessionId,
+      latitude,
+      longitude,
+      accuracy,
+      bleChallenge,
+      rssi,
+      deviceFingerprint,
+    } = body;
+
+    if (!token || typeof token !== "string") {
+      return NextResponse.json(
+        { error: "Attendance QR token is required" },
+        { status: 400 }
+      );
+    }
+
+    // Step 2: Resolve calling Student
+    const userRole = auth.payload.role;
+    let student = null;
+
+    if (userRole === "STUDENT") {
+      student = await prisma.student.findFirst({
+        where: {
+          OR: [
+            { userId: auth.payload.userId },
+            { user: { email: auth.payload.email } },
+          ],
+        },
+        include: { user: true },
+      });
+    } else {
+      // If an admin or faculty tests scanning on behalf of a student, or in testing mode
+      const targetStudentId = body.studentId;
+      if (targetStudentId) {
+        student = await prisma.student.findUnique({
+          where: { id: targetStudentId },
+          include: { user: true },
+        });
+      } else {
+        student = await prisma.student.findFirst({
+          include: { user: true },
+        });
+      }
+    }
+
+    if (!student) {
+      return NextResponse.json(
+        { error: "No active student academic record linked to your account" },
+        { status: 404 }
+      );
+    }
+
+    // Step 3: Cryptographic verification of rotating token
+    const tokenVerification = verifyRotatingQrToken(token, explicitSessionId);
+    if (!tokenVerification.valid) {
+      return NextResponse.json(
+        { error: tokenVerification.error || "Invalid attendance token" },
+        { status: 400 }
+      );
+    }
+
+    const sessionId = tokenVerification.sessionId!;
+
+    // Step 4: Verify session state and metadata
+    const session = await prisma.attendanceSession.findUnique({
+      where: { id: sessionId },
+      include: {
+        course: { select: { id: true, code: true, title: true } },
+        room: { select: { id: true, code: true, name: true, latitude: true, longitude: true } },
+      },
+    });
+
+    if (!session) {
+      return NextResponse.json(
+        { error: "Attendance session not found or has been revoked" },
+        { status: 404 }
+      );
+    }
+
+    if (session.status !== "ACTIVE") {
+      return NextResponse.json(
+        { error: `Session is ${session.status.toLowerCase()}. You can only scan during an active attendance window.` },
+        { status: 403 }
+      );
+    }
+
+    // Step 5: Check Student Course Enrollment (Anti-Proxy / Unauthorized Student)
+    const enrollment = await prisma.enrollment.findFirst({
+      where: {
+        studentId: student.id,
+        courseId: session.courseId,
+        status: "ENROLLED",
+      },
+    });
+
+    if (!enrollment) {
+      return NextResponse.json(
+        {
+          error: `You are not enrolled in ${session.course.code} (${session.course.title}). Only enrolled students may check in.`,
+        },
+        { status: 403 }
+      );
+    }
+
+    // Step 6: Server-Side Geofence Validation
+    let geofenceVerified = false;
+    let distanceMeters: number | null = null;
+    const sessionLat = session.latitude ?? session.room?.latitude;
+    const sessionLng = session.longitude ?? session.room?.longitude;
+
+    if (typeof latitude === "number" && typeof longitude === "number" && sessionLat && sessionLng) {
+      const geoResult = verifyGeofenceProximity(
+        { latitude, longitude, accuracy },
+        { latitude: sessionLat, longitude: sessionLng },
+        session.allowedRadiusMeters || 100
+      );
+
+      distanceMeters = geoResult.distanceMeters;
+      geofenceVerified = geoResult.inGeofence;
+
+      if (session.geofenceRequired && !geofenceVerified) {
+        return NextResponse.json(
+          {
+            error: `Geofence validation failed: You are ${distanceMeters}m away from the classroom. Maximum allowed radius is ${session.allowedRadiusMeters}m.`,
+            distanceMeters,
+            allowedRadiusMeters: session.allowedRadiusMeters,
+          },
+          { status: 403 }
+        );
+      }
+    } else if (session.geofenceRequired) {
+      return NextResponse.json(
+        { error: "Geolocation coordinates are strictly required for this attendance session. Please enable GPS permissions." },
+        { status: 403 }
+      );
+    }
+
+    // Step 7: Web Bluetooth (BLE) Proximity Validation
+    let bluetoothVerified = false;
+    if (session.bleRequired) {
+      if (!bleChallenge) {
+        return NextResponse.json(
+          { error: "Classroom Bluetooth Low Energy beacon verification is required for this lecture. Enable Bluetooth and scan the classroom beacon." },
+          { status: 403 }
+        );
+      }
+
+      const bleResult = verifyBleChallengeProof(
+        bleChallenge,
+        session.id,
+        student.id,
+        rssi
+      );
+
+      if (!bleResult.valid) {
+        return NextResponse.json(
+          { error: bleResult.error || "BLE Proximity verification failed" },
+          { status: 403 }
+        );
+      }
+
+      bluetoothVerified = true;
+    } else if (bleChallenge) {
+      const bleResult = verifyBleChallengeProof(bleChallenge, session.id, student.id, rssi);
+      bluetoothVerified = bleResult.valid;
+    }
+
+    // Step 8: Duplicate Check (Idempotency)
+    const existingRecord = await prisma.attendanceRecord.findUnique({
+      where: {
+        sessionId_studentId: {
+          sessionId: session.id,
+          studentId: student.id,
+        },
+      },
+    });
+
+    if (existingRecord) {
+      return NextResponse.json({
+        success: true,
+        alreadyMarked: true,
+        message: "Attendance was already recorded for this lecture",
+        record: {
+          id: existingRecord.id,
+          status: existingRecord.status,
+          timestamp: existingRecord.timestamp,
+          verificationMethod: existingRecord.verificationMethod,
+        },
+        student: {
+          name: `${student.user.firstName} ${student.user.lastName}`,
+          rollNumber: student.rollNumber,
+        },
+        course: {
+          code: session.course.code,
+          title: session.course.title,
+        },
+      });
+    }
+
+    // Step 9: Determine composite verification method
+    let verificationMethod = "QR";
+    if (bluetoothVerified && geofenceVerified) {
+      verificationMethod = "COMBO";
+    } else if (bluetoothVerified) {
+      verificationMethod = "BLUETOOTH";
+    } else if (geofenceVerified) {
+      verificationMethod = "GEOFENCE";
+    }
+
+    // Step 10: Atomic Record Creation
+    const record = await prisma.attendanceRecord.create({
+      data: {
+        sessionId: session.id,
+        studentId: student.id,
+        status: "PRESENT",
+        verificationMethod,
+        qrVerified: true,
+        bluetoothVerified,
+        geofenceVerified,
+        distanceMeters,
+        verifiedAt: new Date(),
+        deviceFingerprint: deviceFingerprint || null,
+        markedBy: "STUDENT_SELF_SCAN",
+      },
+    });
+
+    logger.security("STUDENT_QR_ATTENDANCE_VERIFIED", student.user.email, {
+      studentId: student.id,
+      sessionId: session.id,
+      courseCode: session.course.code,
+      verificationMethod,
+      distanceMeters,
+      bluetoothVerified,
+    });
+
+    return NextResponse.json({
+      success: true,
+      message: "Attendance recorded successfully",
+      record: {
+        id: record.id,
+        status: record.status,
+        timestamp: record.timestamp,
+        verificationMethod: record.verificationMethod,
+        qrVerified: record.qrVerified,
+        bluetoothVerified: record.bluetoothVerified,
+        geofenceVerified: record.geofenceVerified,
+        distanceMeters: record.distanceMeters,
+      },
+      student: {
+        id: student.id,
+        name: `${student.user.firstName} ${student.user.lastName}`,
+        rollNumber: student.rollNumber,
+      },
+      course: {
+        code: session.course.code,
+        title: session.course.title,
+      },
+      session: {
+        id: session.id,
+        date: session.date.toISOString().split("T")[0],
+        startTime: session.startTime,
+        room: session.room ? `${session.room.code} - ${session.room.name}` : "Lecture Hall",
+      },
+    });
+  } catch (error) {
+    console.error("Attendance QR Verify API Error:", error);
+    return NextResponse.json(
+      { error: "Internal server error during attendance verification" },
+      { status: 500 }
+    );
+  }
+}

@@ -408,10 +408,14 @@ model Room {
   hasIot      Boolean  @default(true)
   iotStatus   String   @default("ONLINE") // ONLINE, OFFLINE, OCCUPIED
   amenities   String?  // "Projector, AC, SmartBoard, Recording"
+  latitude    Float?
+  longitude   Float?
   createdAt   DateTime @default(now())
 
-  campus     Campus          @relation(fields: [campusId], references: [id], onDelete: Cascade)
-  timetables TimetableSlot[]
+  campus             Campus              @relation(fields: [campusId], references: [id], onDelete: Cascade)
+  timetables         TimetableSlot[]
+  attendanceSessions AttendanceSession[]
+  bleDevices         BleDevice[]
 }
 
 model TimetableSlot {
@@ -439,37 +443,77 @@ model TimetableSlot {
 // ==========================================
 
 model AttendanceSession {
-  id          String   @id @default(uuid())
-  courseId    String
-  facultyId   String
-  sectionId   String
-  date        DateTime
-  startTime   String
-  endTime     String
-  method      String   @default("MANUAL") // MANUAL, QR, RFID, BIOMETRIC
-  qrCodeToken String?
-  qrExpiresAt DateTime?
-  status      String   @default("SUBMITTED") // DRAFT, SUBMITTED, LOCKED
-  createdAt   DateTime @default(now())
+  id                  String   @id @default(uuid())
+  courseId            String
+  facultyId           String
+  sectionId           String
+  roomId              String?
+  date                DateTime
+  startTime           String
+  endTime             String
+  method              String   @default("MANUAL") // MANUAL, QR, RFID, BIOMETRIC, SMART_COMBO
+  qrCodeToken         String?
+  qrNonce             String?
+  qrExpiresAt         DateTime?
+  qrRotationSeconds   Int      @default(15)
+  latitude            Float?
+  longitude           Float?
+  allowedRadiusMeters Float?   @default(100.0)
+  bleDeviceId         String?
+  bleBeaconId         String?
+  bleRequired         Boolean  @default(false)
+  geofenceRequired    Boolean  @default(false)
+  status              String   @default("SUBMITTED") // DRAFT, ACTIVE, PAUSED, SUBMITTED, LOCKED, CLOSED
+  closedAt            DateTime?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @default(now()) @updatedAt
 
   course  Course  @relation(fields: [courseId], references: [id], onDelete: Cascade)
   faculty Faculty @relation(fields: [facultyId], references: [id], onDelete: Cascade)
   section Section @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  room    Room?   @relation(fields: [roomId], references: [id], onDelete: SetNull)
   records AttendanceRecord[]
 }
 
 model AttendanceRecord {
-  id        String   @id @default(uuid())
-  sessionId String
-  studentId String
-  status    String   @default("PRESENT") // PRESENT, ABSENT, LATE, EXCUSED
-  remarks   String?
-  timestamp DateTime @default(now())
+  id                 String   @id @default(uuid())
+  sessionId          String
+  studentId          String
+  status             String   @default("PRESENT") // PRESENT, ABSENT, LATE, EXCUSED
+  remarks            String?
+  verificationMethod String   @default("MANUAL") // MANUAL, QR, BLUETOOTH, GEOFENCE, COMBO
+  qrVerified         Boolean  @default(false)
+  bluetoothVerified  Boolean  @default(false)
+  geofenceVerified   Boolean  @default(false)
+  distanceMeters     Float?
+  verifiedAt         DateTime?
+  deviceFingerprint  String?
+  markedBy           String?  // USER_ID, "STUDENT_SELF_SCAN", "FACULTY_MANUAL"
+  timestamp          DateTime @default(now())
 
   session AttendanceSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
   student Student           @relation(fields: [studentId], references: [id], onDelete: Cascade)
 
   @@unique([sessionId, studentId])
+}
+
+model BleDevice {
+  id                 String    @id @default(uuid())
+  institutionId      String?
+  roomId             String?
+  name               String
+  serviceUuid        String
+  characteristicUuid String?
+  beaconIdentifier   String
+  major              Int?
+  minor              Int?
+  rssiThreshold      Int       @default(-80)
+  isActive           Boolean   @default(true)
+  lastSeenAt         DateTime?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @default(now()) @updatedAt
+
+  room               Room?     @relation(fields: [roomId], references: [id], onDelete: SetNull)
 }
 
 // ==========================================
