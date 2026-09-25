@@ -24,14 +24,23 @@ import {
 } from "lucide-react";
 
 export default function ExaminationsPage() {
-  const { showToast, setIsAIChatOpen, refreshTrigger, triggerRefresh } = useApp();
+  const { showToast, setIsAIChatOpen, refreshTrigger, triggerRefresh, currentRole } = useApp();
   const [exams, setExams] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+
+  const isStudent = currentRole === "STUDENT";
+  const canEditExams = ["SUPER_ADMIN", "INSTITUTION_ADMIN", "EXAMINATION_CONTROLLER", "FACULTY", "HOD", "PRINCIPAL"].includes(
+    currentRole
+  );
 
   // Modals
   const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
   const [isMarksModalOpen, setIsMarksModalOpen] = useState(false);
   const [selectedExam, setSelectedExam] = useState<any>(null);
+
+  // Batch Roster Grading state
+  const [batchMarks, setBatchMarks] = useState<Record<string, string>>({});
+  const [isSavingBatch, setIsSavingBatch] = useState(false);
 
   // Hall Ticket state
   const [isHallTicketModalOpen, setIsHallTicketModalOpen] = useState(false);
@@ -47,12 +56,6 @@ export default function ExaminationsPage() {
     weightage: "30",
     examDate: "",
     durationMins: "120",
-  });
-
-  // Marks Entry Form
-  const [marksForm, setMarksForm] = useState({
-    marksObtained: "88",
-    studentId: "stu-mercer-01",
   });
 
   const fetchExams = () => {
@@ -73,6 +76,52 @@ export default function ExaminationsPage() {
     fetchExams();
   }, [refreshTrigger]);
 
+  const handleOpenMarksModal = (exam: any) => {
+    setSelectedExam(exam);
+    const initialBatch: Record<string, string> = {};
+    if (exam.classRoster && exam.classRoster.length > 0) {
+      exam.classRoster.forEach((r: any) => {
+        initialBatch[r.studentId] = r.currentMarks !== null && r.currentMarks !== undefined ? String(r.currentMarks) : "";
+      });
+    }
+    setBatchMarks(initialBatch);
+    setIsMarksModalOpen(true);
+  };
+
+  const handleSaveBatchMarks = async (publish: boolean) => {
+    if (!selectedExam) return;
+    setIsSavingBatch(true);
+    try {
+      const batchEntries = Object.entries(batchMarks).map(([studentId, marks]) => ({
+        studentId,
+        marksObtained: marks,
+      }));
+
+      const res = await fetch("/api/examinations", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          examId: selectedExam.id,
+          batchEntries,
+          publish,
+        }),
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        showToast(data.message || (publish ? "Grades officially certified & published!" : "Draft grades saved."), "success");
+        setIsMarksModalOpen(false);
+        triggerRefresh();
+      } else {
+        showToast(data.error || "Failed to update grades", "danger");
+      }
+    } catch {
+      showToast("Error updating exam marks", "danger");
+    } finally {
+      setIsSavingBatch(false);
+    }
+  };
+
   const handleScheduleExam = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
@@ -91,32 +140,6 @@ export default function ExaminationsPage() {
       }
     } catch {
       showToast("Error scheduling exam", "danger");
-    }
-  };
-
-  const handleRecordMarks = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!selectedExam) return;
-    try {
-      const res = await fetch("/api/examinations", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          examId: selectedExam.id,
-          studentId: marksForm.studentId,
-          marksObtained: marksForm.marksObtained,
-        }),
-      });
-      const data = await res.json();
-      if (res.ok) {
-        showToast(`Grade recorded: ${data.result.gradeLetter} (${data.result.marksObtained} Marks)`, "success");
-        setIsMarksModalOpen(false);
-        triggerRefresh();
-      } else {
-        showToast(data.error || "Failed to record marks", "danger");
-      }
-    } catch {
-      showToast("Error recording marks", "danger");
     }
   };
 
@@ -211,23 +234,81 @@ Controller Seal: [APEX-SEAL-VERIFIED]
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setIsAIChatOpen(true)}
-              className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-rose-container dark:bg-rose-dark/30 hover:bg-rose-light dark:hover:bg-rose-dark/50 text-rose-primary dark:text-rose-accent text-xs font-bold border border-rose-accent/30 transition-all"
-            >
-              <Sparkles className="h-4 w-4" />
-              <span>Bloom&apos;s AI Questions</span>
-            </button>
-            <button
-              onClick={() => setIsScheduleModalOpen(true)}
-              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-rose-primary hover:bg-rose-dark active:scale-[0.98] text-white text-xs font-bold shadow-sm transition-all"
-            >
-              <Plus className="h-4 w-4" />
-              <span>Schedule Exam</span>
-            </button>
-          </div>
+          {canEditExams && (
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setIsAIChatOpen(true)}
+                className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-rose-container dark:bg-rose-dark/30 hover:bg-rose-light dark:hover:bg-rose-dark/50 text-rose-primary dark:text-rose-accent text-xs font-bold border border-rose-accent/30 transition-all"
+              >
+                <Sparkles className="h-4 w-4" />
+                <span>Bloom&apos;s AI Questions</span>
+              </button>
+              <button
+                onClick={() => setIsScheduleModalOpen(true)}
+                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-rose-primary hover:bg-rose-dark active:scale-[0.98] text-white text-xs font-bold shadow-sm transition-all"
+              >
+                <Plus className="h-4 w-4" />
+                <span>Schedule Exam</span>
+              </button>
+            </div>
+          )}
         </div>
+
+        {/* Student Published Grades & Certified Results Dossier */}
+        {isStudent && (
+          <div className="bg-white dark:bg-[#1E191C] p-6 rounded-2xl border border-border dark:border-charcoal-800 shadow-soft flex flex-col gap-4">
+            <div className="flex items-center justify-between pb-3 border-b border-border/70 dark:border-charcoal-800">
+              <div className="flex items-center gap-2.5">
+                <div className="h-8 w-8 rounded-lg bg-rose-container dark:bg-rose-dark/30 text-rose-primary dark:text-rose-accent flex items-center justify-center">
+                  <TrendingUp className="h-4 w-4" />
+                </div>
+                <div>
+                  <h3 className="text-xs font-bold text-charcoal-900 dark:text-ivory-100 uppercase tracking-wider">
+                    My Certified Examination Results
+                  </h3>
+                  <p className="text-[11px] text-charcoal-600 dark:text-charcoal-400">
+                    Official grades verified by Apex Academic Senate &amp; Examination Controller
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {exams.flatMap((e) => e.results || []).length === 0 ? (
+              <div className="text-center py-6 text-xs text-charcoal-500">
+                No certified grades published yet. Once faculty evaluates and publishes assessments, your marks and grade letters will appear here.
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                {exams.flatMap((e) =>
+                  (e.results || []).map((r: any) => (
+                    <div
+                      key={r.id}
+                      className="p-3.5 rounded-xl border border-border dark:border-charcoal-800 bg-surface-soft dark:bg-charcoal-900/30 flex flex-col gap-2"
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold text-charcoal-900 dark:text-ivory-100 line-clamp-1">
+                          {e.title}
+                        </span>
+                        <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-academic-success-subtle text-academic-success border border-green-200">
+                          {r.gradeLetter} Grade
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between text-xs text-charcoal-600 dark:text-charcoal-400">
+                        <span>Course: {e.courseCode}</span>
+                        <span className="font-bold text-charcoal-900 dark:text-ivory-100">
+                          {r.marksObtained} / {e.totalMarks} Marks
+                        </span>
+                      </div>
+                      <span className="text-[10px] text-charcoal-400 italic">
+                        {r.remarks || "Certified Academic Record"}
+                      </span>
+                    </div>
+                  ))
+                )}
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Examination Registry Cards */}
         {isLoading ? (
@@ -237,8 +318,8 @@ Controller Seal: [APEX-SEAL-VERIFIED]
             icon={Award}
             title="No exams scheduled yet"
             description="Schedule mid-terms, practicals, or end-semester assessments."
-            actionLabel="Schedule First Exam"
-            onAction={() => setIsScheduleModalOpen(true)}
+            actionLabel={canEditExams ? "Schedule First Exam" : undefined}
+            onAction={canEditExams ? () => setIsScheduleModalOpen(true) : undefined}
           />
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -268,28 +349,31 @@ Controller Seal: [APEX-SEAL-VERIFIED]
                     </div>
                     <div className="flex items-center gap-1.5">
                       <Clock className="h-3.5 w-3.5 text-rose-accent" />
-                      <span>Duration: {exam.durationMins} Mins ({exam.weightage}% of final grade)</span>
+                      <span>Duration: {exam.durationMins} Mins ({exam.weightage}% weightage)</span>
                     </div>
                     <div className="flex items-center gap-1.5">
                       <FileCheck className="h-3.5 w-3.5 text-rose-accent" />
-                      <span>Total Marks: {exam.totalMarks} • Graded: {exam.results.length} students</span>
+                      <span>
+                        Total Marks: {exam.totalMarks} • Graded: {exam.results?.length || 0} students
+                      </span>
                     </div>
                   </div>
                 </div>
 
                 <div className="mt-5 pt-3 border-t border-border/60 dark:border-charcoal-800 flex items-center justify-between">
                   <div className="flex items-center gap-2.5">
-                    <button
-                      onClick={() => {
-                        setSelectedExam(exam);
-                        setIsMarksModalOpen(true);
-                      }}
-                      className="flex items-center gap-1 text-xs font-bold text-rose-primary dark:text-rose-accent hover:underline"
-                    >
-                      <Edit className="h-3.5 w-3.5" />
-                      <span>Enter Marks</span>
-                    </button>
-                    <span>•</span>
+                    {canEditExams && (
+                      <>
+                        <button
+                          onClick={() => handleOpenMarksModal(exam)}
+                          className="flex items-center gap-1 text-xs font-bold text-rose-primary dark:text-rose-accent hover:underline"
+                        >
+                          <Edit className="h-3.5 w-3.5" />
+                          <span>Batch Grading</span>
+                        </button>
+                        <span>•</span>
+                      </>
+                    )}
                     <button
                       disabled={isLoadingTicket}
                       onClick={() => handleOpenHallTicket(exam.id)}
@@ -415,59 +499,109 @@ Controller Seal: [APEX-SEAL-VERIFIED]
         </form>
       </Modal>
 
-      {/* Enter Marks Modal */}
+      {/* Batch Roster Marks Entry Modal */}
       <Modal
         isOpen={isMarksModalOpen}
         onClose={() => setIsMarksModalOpen(false)}
-        title={`Enter Marks: ${selectedExam?.title || "Exam"}`}
-        description="Grades and GPA points are automatically computed and persisted into student transcripts."
+        title={`Class Roster Grading: ${selectedExam?.title || "Exam"}`}
+        description={`Record student marks out of ${selectedExam?.totalMarks || 100}. Save drafts or publish officially to student transcripts.`}
+        maxWidth="2xl"
       >
-        <form onSubmit={handleRecordMarks} className="flex flex-col gap-3">
-          <div>
-            <label className="text-[11px] font-bold text-charcoal-700 dark:text-charcoal-300 block mb-1">
-              Select Student
-            </label>
-            <select
-              value={marksForm.studentId}
-              onChange={(e) => setMarksForm({ ...marksForm, studentId: e.target.value })}
-              className="w-full text-xs p-2 rounded-lg border border-border dark:border-charcoal-700 bg-white dark:bg-charcoal-800 text-charcoal-900 dark:text-ivory-100"
-            >
-              <option value="stu-mercer-01">Alex Mercer (2024-CSE-042)</option>
-              <option value="stu-hunt-02">Ethan Hunt (2024-CSE-099)</option>
-            </select>
-          </div>
+        <div className="flex flex-col gap-4 mt-2">
+          {(!selectedExam?.classRoster || selectedExam.classRoster.length === 0) ? (
+            <p className="text-xs text-charcoal-500 py-6 text-center">
+              No students enrolled in this course roster yet.
+            </p>
+          ) : (
+            <div className="max-h-[380px] overflow-y-auto rounded-xl border border-border dark:border-charcoal-800">
+              <table className="w-full text-left border-collapse text-xs">
+                <thead>
+                  <tr className="bg-surface-soft dark:bg-charcoal-800 text-charcoal-600 dark:text-charcoal-400 font-bold border-b border-border dark:border-charcoal-700">
+                    <th className="p-3">Student Candidate</th>
+                    <th className="p-3">Roll Number</th>
+                    <th className="p-3 w-36">Marks (Max {selectedExam?.totalMarks || 100})</th>
+                    <th className="p-3">Status</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border/60 dark:divide-charcoal-800">
+                  {selectedExam.classRoster.map((st: any) => (
+                    <tr key={st.studentId} className="hover:bg-ivory-50/50 dark:hover:bg-charcoal-800/40">
+                      <td className="p-3 font-bold text-charcoal-900 dark:text-ivory-100">
+                        {st.name}
+                      </td>
+                      <td className="p-3 font-mono text-[11px] text-charcoal-600 dark:text-charcoal-400">
+                        {st.rollNumber}
+                      </td>
+                      <td className="p-3">
+                        <input
+                          type="number"
+                          min="0"
+                          max={selectedExam?.totalMarks || 100}
+                          value={batchMarks[st.studentId] ?? ""}
+                          onChange={(e) =>
+                            setBatchMarks((prev) => ({
+                              ...prev,
+                              [st.studentId]: e.target.value,
+                            }))
+                          }
+                          placeholder="—"
+                          className="w-full px-2.5 py-1.5 rounded-lg border border-border dark:border-charcoal-700 bg-white dark:bg-charcoal-900 text-charcoal-900 dark:text-ivory-100 font-bold focus:outline-none focus:border-rose-primary"
+                        />
+                      </td>
+                      <td className="p-3">
+                        {st.isPublished ? (
+                          <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-academic-success-subtle text-academic-success border border-green-200">
+                            Certified ({st.gradeLetter})
+                          </span>
+                        ) : st.currentMarks !== null && st.currentMarks !== undefined ? (
+                          <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-300 border border-amber-200">
+                            Draft ({st.gradeLetter})
+                          </span>
+                        ) : (
+                          <span className="text-[10px] text-charcoal-400 font-medium">
+                            Not Graded
+                          </span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
 
-          <div>
-            <label className="text-[11px] font-bold text-charcoal-700 dark:text-charcoal-300 block mb-1">
-              Marks Obtained (Out of {selectedExam?.totalMarks || 100})
-            </label>
-            <input
-              type="number"
-              required
-              min="0"
-              max={selectedExam?.totalMarks || 100}
-              value={marksForm.marksObtained}
-              onChange={(e) => setMarksForm({ ...marksForm, marksObtained: e.target.value })}
-              className="w-full text-xs p-2 rounded-lg border border-border dark:border-charcoal-700 bg-white dark:bg-charcoal-800 text-charcoal-900 dark:text-ivory-100"
-            />
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-3 border-t border-border dark:border-charcoal-800">
+            <span className="text-[11px] text-charcoal-500">
+              Draft saves progress locally. Publishing locks grades to student academic dossiers and computes SGPA.
+            </span>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setIsMarksModalOpen(false)}
+                className="px-3.5 py-2 text-xs font-bold text-charcoal-600 dark:text-charcoal-400 hover:bg-surface-soft rounded-xl border border-border dark:border-charcoal-700"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={isSavingBatch}
+                onClick={() => handleSaveBatchMarks(false)}
+                className="px-3.5 py-2 text-xs font-bold bg-surface-soft hover:bg-ivory-100 dark:bg-charcoal-800 dark:hover:bg-charcoal-700 text-charcoal-900 dark:text-ivory-100 rounded-xl border border-border dark:border-charcoal-700 disabled:opacity-50"
+              >
+                {isSavingBatch ? "Saving..." : "Save Draft"}
+              </button>
+              <button
+                type="button"
+                disabled={isSavingBatch}
+                onClick={() => handleSaveBatchMarks(true)}
+                className="px-4 py-2 text-xs font-bold bg-academic-success hover:bg-green-700 text-white rounded-xl shadow-xs disabled:opacity-50 flex items-center gap-1.5"
+              >
+                <ShieldCheck className="h-3.5 w-3.5" />
+                <span>{isSavingBatch ? "Publishing..." : "Publish Official Grades"}</span>
+              </button>
+            </div>
           </div>
-
-          <div className="flex items-center justify-end gap-2 mt-4 pt-3 border-t border-border dark:border-charcoal-800">
-            <button
-              type="button"
-              onClick={() => setIsMarksModalOpen(false)}
-              className="px-3.5 py-2 text-xs font-bold text-charcoal-600 dark:text-charcoal-400 hover:bg-ivory-100 dark:hover:bg-charcoal-800 rounded-xl"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              className="px-4 py-2 text-xs font-bold bg-rose-primary hover:bg-rose-dark text-white rounded-xl shadow-sm"
-            >
-              Save Grade to Transcript
-            </button>
-          </div>
-        </form>
+        </div>
       </Modal>
 
       {/* 3. Official Examination Hall Ticket Modal */}

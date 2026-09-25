@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { AppShell } from "@/components/layout/AppShell";
 import { useApp } from "@/context/AppContext";
 import { SkeletonCard } from "@/components/common/SkeletonLoader";
+import { Modal } from "@/components/common/Modal";
 import {
   BookOpen,
   PlayCircle,
@@ -18,31 +19,61 @@ import {
   ChevronRight,
   MessageSquare,
   Check,
+  Plus,
+  Edit3,
+  Sliders,
+  FileCode,
+  Video,
 } from "lucide-react";
 
 interface Chapter {
   id: string;
   title: string;
   contentType: string;
+  contentUrl?: string | null;
+  fileSizeKb?: number;
   durationMins: string;
   completed: boolean;
+  isPublished?: boolean;
 }
 
 interface Module {
   id: string;
   title: string;
   duration: string;
+  progressPercent?: number;
+  learningObjectives?: string | null;
+  courseOutcomes?: string | null;
   chapters: Chapter[];
 }
 
 export default function LMSPage() {
-  const { showToast, setIsAIChatOpen, refreshTrigger, triggerRefresh } = useApp();
+  const { showToast, setIsAIChatOpen, refreshTrigger, triggerRefresh, currentRole } = useApp();
   const [selectedCourse, setSelectedCourse] = useState("CS-402");
+  const [availableCourses, setAvailableCourses] = useState<{ id: string; code: string; title: string }[]>([]);
   const [activeChapterId, setActiveChapterId] = useState<string>("");
   const [modules, setModules] = useState<Module[]>([]);
   const [courseInfo, setCourseInfo] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isUpdatingProgress, setIsUpdatingProgress] = useState(false);
+
+  // Faculty Syllabus & Material Management State
+  const [isSyllabusModalOpen, setIsSyllabusModalOpen] = useState(false);
+  const [selectedModule, setSelectedModule] = useState<Module | null>(null);
+  const [progressInput, setProgressInput] = useState(0);
+  const [learningObjectivesInput, setLearningObjectivesInput] = useState("");
+  
+  const [isAddMaterialModalOpen, setIsAddMaterialModalOpen] = useState(false);
+  const [materialModuleId, setMaterialModuleId] = useState("");
+  const [materialTitle, setMaterialTitle] = useState("");
+  const [materialType, setMaterialType] = useState("PDF");
+  const [materialUrl, setMaterialUrl] = useState("");
+  const [materialFileSize, setMaterialFileSize] = useState("1500");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const isFacultyOrAdmin = ["FACULTY", "PROFESSOR", "HOD", "PRINCIPAL", "SUPER_ADMIN", "INSTITUTION_ADMIN"].includes(
+    currentRole
+  );
 
   useEffect(() => {
     async function loadLMS() {
@@ -53,6 +84,9 @@ export default function LMSPage() {
           const data = await res.json();
           setCourseInfo(data.course);
           setModules(data.modules || []);
+          if (data.availableCourses?.length > 0) {
+            setAvailableCourses(data.availableCourses);
+          }
           if (data.modules?.length > 0 && !activeChapterId) {
             const firstCh = data.modules[0].chapters[0];
             if (firstCh) setActiveChapterId(firstCh.id);
@@ -99,6 +133,73 @@ export default function LMSPage() {
       showToast("Network error updating chapter progress", "error");
     } finally {
       setIsUpdatingProgress(false);
+    }
+  };
+
+  const handleUpdateSyllabus = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedModule) return;
+    try {
+      setIsSubmitting(true);
+      const res = await fetch("/api/lms", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "UPDATE_SYLLABUS_PROGRESS",
+          moduleId: selectedModule.id,
+          progressPercent: Number(progressInput),
+          learningObjectives: learningObjectivesInput,
+        }),
+      });
+      if (res.ok) {
+        showToast("Syllabus progress updated successfully", "success");
+        setIsSyllabusModalOpen(false);
+        triggerRefresh();
+      } else {
+        const err = await res.json();
+        showToast(err.error || "Failed to update syllabus", "error");
+      }
+    } catch {
+      showToast("Network error updating syllabus", "error");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleAddMaterial = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!materialModuleId || !materialTitle) {
+      showToast("Module and Material Title are required", "warning");
+      return;
+    }
+    try {
+      setIsSubmitting(true);
+      const res = await fetch("/api/lms", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "ADD_MATERIAL",
+          moduleId: materialModuleId,
+          title: materialTitle,
+          contentType: materialType,
+          contentUrl: materialUrl,
+          fileSizeKb: Number(materialFileSize) || 1200,
+        }),
+      });
+      if (res.ok) {
+        showToast("Learning material uploaded to courseware", "success");
+        setIsAddMaterialModalOpen(false);
+        setMaterialTitle("");
+        setMaterialUrl("");
+        triggerRefresh();
+      } else {
+        const err = await res.json();
+        showToast(err.error || "Failed to add material", "error");
+      }
+    } catch {
+      showToast("Network error adding learning material", "error");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -182,20 +283,38 @@ Verification Code: APX-LMS-2026-${Date.now()}
         {/* Course Banner & Progress */}
         <div className="bg-white dark:bg-[#1E191C] p-6 rounded-2xl border border-border dark:border-charcoal-800 shadow-soft flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="flex flex-col gap-2">
-            <span className="text-xs font-bold text-rose-primary dark:text-rose-accent uppercase tracking-wider">
-              Enrolled Course
-            </span>
+            <div className="flex items-center gap-3">
+              <span className="text-xs font-bold text-rose-primary dark:text-rose-accent uppercase tracking-wider">
+                {isFacultyOrAdmin ? "Assigned Course" : "Enrolled Course"}
+              </span>
+              {availableCourses.length > 1 && (
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[11px] text-charcoal-500 font-semibold">Switch:</span>
+                  <select
+                    value={selectedCourse}
+                    onChange={(e) => setSelectedCourse(e.target.value)}
+                    className="px-2 py-0.5 text-xs rounded-lg border border-border dark:border-charcoal-700 bg-surface-soft dark:bg-charcoal-800 text-charcoal-900 dark:text-ivory-100 font-bold focus:outline-none focus:border-rose-primary"
+                  >
+                    {availableCourses.map((c) => (
+                      <option key={c.id} value={c.code}>
+                        {c.code} — {c.title}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+            </div>
             <h2 className="text-xl font-display font-bold text-charcoal-900 dark:text-ivory-100">
               {courseInfo?.title || "CS-402: Advanced Neural Networks & Multi-Agent Systems"}
             </h2>
             <p className="text-xs text-charcoal-600 dark:text-charcoal-400">
-              Instructor: Prof. Sarah Chen • Department of Computer Science • 4 Credits
+              Department of Computer Science • 4 Credits • Theory & Laboratory Integrated
             </p>
           </div>
 
           <div className="flex flex-col gap-1.5 min-w-[220px]">
             <div className="flex justify-between text-xs font-bold text-charcoal-800 dark:text-ivory-200">
-              <span>Course Progress</span>
+              <span>{isFacultyOrAdmin ? "Curriculum Delivery Rate" : "Course Progress"}</span>
               <span className="text-rose-primary dark:text-rose-accent">
                 {courseInfo?.progressPercent || 0}% Complete
               </span>
@@ -223,20 +342,68 @@ Verification Code: APX-LMS-2026-${Date.now()}
             {/* Modules List (5 cols) */}
             <div className="lg:col-span-5 flex flex-col gap-4">
               <div className="bg-white dark:bg-[#1E191C] rounded-2xl border border-border dark:border-charcoal-800 shadow-soft p-4">
-                <h3 className="text-xs font-bold text-charcoal-900 dark:text-ivory-100 uppercase tracking-wider mb-3">
-                  Curriculum Syllabus
-                </h3>
+                <div className="flex items-center justify-between pb-3 border-b border-border/70 dark:border-charcoal-800 mb-3">
+                  <h3 className="text-xs font-bold text-charcoal-900 dark:text-ivory-100 uppercase tracking-wider">
+                    Curriculum Syllabus
+                  </h3>
+                  <span className="text-[11px] text-charcoal-500 dark:text-charcoal-400 font-semibold">
+                    {modules.length} Units
+                  </span>
+                </div>
 
                 <div className="flex flex-col gap-3">
                   {modules.map((mod) => (
                     <div key={mod.id} className="flex flex-col gap-1.5">
-                      <div className="p-2.5 rounded-xl bg-ivory-100/70 dark:bg-charcoal-800/70 border border-border/70 dark:border-charcoal-700 flex justify-between items-center">
-                        <span className="text-xs font-bold text-charcoal-900 dark:text-ivory-100">
-                          {mod.title}
-                        </span>
-                        <span className="text-[10px] text-charcoal-500 dark:text-charcoal-400 font-semibold shrink-0">
-                          {mod.duration}
-                        </span>
+                      <div className="p-3 rounded-xl bg-ivory-100/70 dark:bg-charcoal-800/70 border border-border/70 dark:border-charcoal-700 flex flex-col gap-2">
+                        <div className="flex justify-between items-center">
+                          <span className="text-xs font-bold text-charcoal-900 dark:text-ivory-100">
+                            {mod.title}
+                          </span>
+                          <span className="text-[10px] text-charcoal-500 dark:text-charcoal-400 font-semibold shrink-0">
+                            {mod.duration}
+                          </span>
+                        </div>
+
+                        {/* Module Progress Bar */}
+                        <div className="flex items-center gap-2">
+                          <div className="w-full h-1.5 bg-border/40 dark:bg-charcoal-700 rounded-full overflow-hidden">
+                            <div
+                              className="h-full bg-rose-primary rounded-full transition-all"
+                              style={{ width: `${mod.progressPercent ?? 0}%` }}
+                            />
+                          </div>
+                          <span className="text-[10px] font-bold text-charcoal-600 dark:text-charcoal-400 shrink-0">
+                            {mod.progressPercent ?? 0}%
+                          </span>
+                        </div>
+
+                        {/* Faculty Unit Management Controls */}
+                        {isFacultyOrAdmin && (
+                          <div className="flex items-center justify-end gap-2 pt-1.5 border-t border-border/40 dark:border-charcoal-700/60">
+                            <button
+                              onClick={() => {
+                                setSelectedModule(mod);
+                                setProgressInput(mod.progressPercent ?? 0);
+                                setLearningObjectivesInput(mod.learningObjectives || "");
+                                setIsSyllabusModalOpen(true);
+                              }}
+                              className="px-2 py-0.5 rounded text-[10px] font-bold bg-white dark:bg-charcoal-900 border border-border dark:border-charcoal-700 text-charcoal-700 dark:text-ivory-200 hover:text-rose-primary flex items-center gap-1 transition-colors shadow-2xs"
+                            >
+                              <Sliders className="h-3 w-3" />
+                              <span>Update Syllabus %</span>
+                            </button>
+                            <button
+                              onClick={() => {
+                                setMaterialModuleId(mod.id);
+                                setIsAddMaterialModalOpen(true);
+                              }}
+                              className="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-container dark:bg-rose-dark/30 border border-rose-accent/30 text-rose-primary dark:text-rose-accent hover:opacity-85 flex items-center gap-1 transition-colors shadow-2xs"
+                            >
+                              <Plus className="h-3 w-3" />
+                              <span>+ Material</span>
+                            </button>
+                          </div>
+                        )}
                       </div>
 
                       <div className="flex flex-col gap-1 pl-2">
@@ -370,6 +537,180 @@ Verification Code: APX-LMS-2026-${Date.now()}
           </div>
         )}
       </div>
+
+      {/* Faculty Modal 1: Update Syllabus Progress */}
+      <Modal
+        isOpen={isSyllabusModalOpen}
+        onClose={() => setIsSyllabusModalOpen(false)}
+        title="Update Syllabus Coverage (%)"
+        description="Update lecture delivery progress and accredited course outcomes for this academic unit."
+      >
+        <form onSubmit={handleUpdateSyllabus} className="flex flex-col gap-4 mt-2">
+          <div>
+            <label className="block text-xs font-bold text-charcoal-700 dark:text-ivory-200 mb-1">
+              Unit / Module Title
+            </label>
+            <input
+              type="text"
+              disabled
+              value={selectedModule?.title || ""}
+              className="w-full px-3 py-2 text-xs rounded-xl border border-border dark:border-charcoal-700 bg-surface-soft dark:bg-charcoal-800 text-charcoal-500 font-medium"
+            />
+          </div>
+
+          <div>
+            <div className="flex items-center justify-between mb-1">
+              <label className="text-xs font-bold text-charcoal-700 dark:text-ivory-200">
+                Delivery Progress (% Completed)
+              </label>
+              <span className="text-xs font-mono font-bold text-rose-primary dark:text-rose-accent">
+                {progressInput}%
+              </span>
+            </div>
+            <input
+              type="range"
+              min="0"
+              max="100"
+              step="5"
+              value={progressInput}
+              onChange={(e) => setProgressInput(Number(e.target.value))}
+              className="w-full accent-rose-primary cursor-pointer"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold text-charcoal-700 dark:text-ivory-200 mb-1">
+              Accredited Learning Objectives / Key Outlines
+            </label>
+            <textarea
+              rows={3}
+              value={learningObjectivesInput}
+              onChange={(e) => setLearningObjectivesInput(e.target.value)}
+              placeholder="e.g. Mastered RoPE positional encodings, KV-cache quantization, and FlashAttention-2 benchmarks."
+              className="w-full px-3 py-2 text-xs rounded-xl border border-border dark:border-charcoal-700 bg-white dark:bg-charcoal-900 text-charcoal-900 dark:text-ivory-100 placeholder:text-charcoal-400 focus:outline-none focus:border-rose-primary"
+            />
+          </div>
+
+          <div className="flex items-center justify-end gap-2 pt-3 border-t border-border dark:border-charcoal-800">
+            <button
+              type="button"
+              onClick={() => setIsSyllabusModalOpen(false)}
+              className="px-4 py-2 rounded-xl text-xs font-bold border border-border dark:border-charcoal-700 text-charcoal-700 dark:text-ivory-200 hover:bg-surface-soft"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="px-4 py-2 rounded-xl text-xs font-bold bg-rose-primary hover:bg-rose-dark text-white shadow-xs disabled:opacity-50"
+            >
+              {isSubmitting ? "Updating..." : "Save Syllabus Progress"}
+            </button>
+          </div>
+        </form>
+      </Modal>
+
+      {/* Faculty Modal 2: Add Learning Material */}
+      <Modal
+        isOpen={isAddMaterialModalOpen}
+        onClose={() => setIsAddMaterialModalOpen(false)}
+        title="Upload Academic Material"
+        description="Publish lecture slides, lab code, syllabus notes, or video lectures for enrolled students."
+      >
+        <form onSubmit={handleAddMaterial} className="flex flex-col gap-4 mt-2">
+          <div>
+            <label className="block text-xs font-bold text-charcoal-700 dark:text-ivory-200 mb-1">
+              Select Module
+            </label>
+            <select
+              value={materialModuleId}
+              onChange={(e) => setMaterialModuleId(e.target.value)}
+              className="w-full px-3 py-2 text-xs rounded-xl border border-border dark:border-charcoal-700 bg-white dark:bg-charcoal-900 text-charcoal-900 dark:text-ivory-100 focus:outline-none focus:border-rose-primary"
+            >
+              {modules.map((m) => (
+                <option key={m.id} value={m.id}>
+                  {m.title}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold text-charcoal-700 dark:text-ivory-200 mb-1">
+              Material Title *
+            </label>
+            <input
+              type="text"
+              required
+              value={materialTitle}
+              onChange={(e) => setMaterialTitle(e.target.value)}
+              placeholder="e.g. Unit 2 Laboratory Manual: Attention Kernels"
+              className="w-full px-3 py-2 text-xs rounded-xl border border-border dark:border-charcoal-700 bg-white dark:bg-charcoal-900 text-charcoal-900 dark:text-ivory-100 placeholder:text-charcoal-400 focus:outline-none focus:border-rose-primary"
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs font-bold text-charcoal-700 dark:text-ivory-200 mb-1">
+                Content Type
+              </label>
+              <select
+                value={materialType}
+                onChange={(e) => setMaterialType(e.target.value)}
+                className="w-full px-3 py-2 text-xs rounded-xl border border-border dark:border-charcoal-700 bg-white dark:bg-charcoal-900 text-charcoal-900 dark:text-ivory-100 focus:outline-none focus:border-rose-primary"
+              >
+                <option value="PDF">PDF Document</option>
+                <option value="SLIDES">Lecture Slide Deck</option>
+                <option value="VIDEO">Video Lecture Stream</option>
+                <option value="CODE">Lab Code / Repository</option>
+                <option value="QUIZ">Interactive Quiz</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-charcoal-700 dark:text-ivory-200 mb-1">
+                Est. File Size (KB)
+              </label>
+              <input
+                type="number"
+                value={materialFileSize}
+                onChange={(e) => setMaterialFileSize(e.target.value)}
+                className="w-full px-3 py-2 text-xs rounded-xl border border-border dark:border-charcoal-700 bg-white dark:bg-charcoal-900 text-charcoal-900 dark:text-ivory-100 focus:outline-none focus:border-rose-primary"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold text-charcoal-700 dark:text-ivory-200 mb-1">
+              Resource URL / Storage Path (Optional)
+            </label>
+            <input
+              type="text"
+              value={materialUrl}
+              onChange={(e) => setMaterialUrl(e.target.value)}
+              placeholder="e.g. /materials/cs402_attention_lab.py or YouTube URL"
+              className="w-full px-3 py-2 text-xs rounded-xl border border-border dark:border-charcoal-700 bg-white dark:bg-charcoal-900 text-charcoal-900 dark:text-ivory-100 placeholder:text-charcoal-400 focus:outline-none focus:border-rose-primary"
+            />
+          </div>
+
+          <div className="flex items-center justify-end gap-2 pt-3 border-t border-border dark:border-charcoal-800">
+            <button
+              type="button"
+              onClick={() => setIsAddMaterialModalOpen(false)}
+              className="px-4 py-2 rounded-xl text-xs font-bold border border-border dark:border-charcoal-700 text-charcoal-700 dark:text-ivory-200 hover:bg-surface-soft"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="px-4 py-2 rounded-xl text-xs font-bold bg-rose-primary hover:bg-rose-dark text-white shadow-xs disabled:opacity-50"
+            >
+              {isSubmitting ? "Uploading..." : "Publish Material"}
+            </button>
+          </div>
+        </form>
+      </Modal>
     </AppShell>
   );
 }

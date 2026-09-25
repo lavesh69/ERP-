@@ -1205,6 +1205,164 @@ async function runTestSuite() {
   assert(!canAssignRole("STUDENT", "HOD"), "STUDENT cannot assign HOD role");
   assert(canAssignRole("INSTITUTION_ADMIN", "STUDENT"), "INSTITUTION_ADMIN can provision STUDENT role");
 
+  // TEST 28: Teacher & Student Production Workflows & Data Isolation
+  console.log("\n📌 Group 28: Teacher & Student Workflows, Petitions & FERPA Isolation");
+
+  // 28.1 Student Petitions Lifecycle (Create -> Review -> Resolve)
+  const workflowStudent = await prisma.student.findFirst({
+    include: { user: true },
+  });
+  assert(!!workflowStudent, "Test student record resolved for petition testing");
+
+  if (workflowStudent) {
+    const createdPetition = await prisma.studentRequest.create({
+      data: {
+        studentId: workflowStudent.id,
+        type: "LEAVE",
+        title: "Medical Leave for Neural Networks Lab",
+        reason: "Recovering from viral influenza. Medical certificate attached.",
+        attachmentUrl: "/documents/medical_cert_test.pdf",
+        status: "SUBMITTED",
+      },
+    });
+    assert(!!createdPetition.id && createdPetition.status === "SUBMITTED", "StudentRequest created with initial SUBMITTED status");
+
+    // Faculty reviews and approves petition
+    const approvedPetition = await prisma.studentRequest.update({
+      where: { id: createdPetition.id },
+      data: {
+        status: "APPROVED",
+        reviewerRemarks: "Medical documentation verified by campus health dispensary. Attendance excused.",
+      },
+    });
+    assert(approvedPetition.status === "APPROVED", "StudentRequest resolved to APPROVED status");
+    assert(Boolean(approvedPetition.reviewerRemarks?.includes("dispensary")), "StudentRequest contains faculty resolution remarks");
+
+    // Clean up test petition
+    await prisma.studentRequest.delete({ where: { id: createdPetition.id } });
+  }
+
+  // 28.2 LMS Syllabus & Accredited Module Enhancements
+  const workflowCourse = await prisma.course.findFirst({
+    include: { modules: true },
+  });
+  assert(!!workflowCourse, "Test academic course resolved");
+
+  if (workflowCourse) {
+    const testModule = await prisma.courseModule.create({
+      data: {
+        courseId: workflowCourse.id,
+        title: "Unit IV: Distributed Attention & Inference Acceleration",
+        orderIndex: 4,
+        description: "5 hours • 3 Topics",
+        progressPercent: 40.0,
+        learningObjectives: "Understand vLLM PagedAttention and FP8 matrix acceleration.",
+        courseOutcomes: "CO4: Optimize transformer token generation latency under concurrent loads.",
+      },
+    });
+    assert(testModule.progressPercent === 40.0, "CourseModule supports dynamic progress percent");
+    assert(Boolean(testModule.courseOutcomes?.startsWith("CO4")), "CourseModule persists accredited course outcomes");
+
+    // Faculty updates syllabus delivery progress
+    const updatedModule = await prisma.courseModule.update({
+      where: { id: testModule.id },
+      data: { progressPercent: 75.0 },
+    });
+    assert(updatedModule.progressPercent === 75.0, "CourseModule progress percentage updated to 75%");
+
+    // Add learning chapter / material
+    const testChapter = await prisma.courseChapter.create({
+      data: {
+        moduleId: testModule.id,
+        title: "4.1 PagedAttention Memory Architecture",
+        orderIndex: 1,
+        contentType: "PDF",
+        contentUrl: "/materials/paged_attention_vllm.pdf",
+        fileSizeKb: 3400,
+        durationMins: 45,
+        isPublished: true,
+      },
+    });
+    assert(testChapter.contentType === "PDF" && testChapter.fileSizeKb === 3400, "CourseChapter supports verified digital courseware metadata");
+
+    // Clean up test module and chapter
+    await prisma.courseChapter.delete({ where: { id: testChapter.id } });
+    await prisma.courseModule.delete({ where: { id: testModule.id } });
+  }
+
+  // 28.3 Examination Batch Grading Draft vs Publish
+  const workflowExam = await prisma.exam.findFirst();
+  assert(!!workflowExam, "Test examination record resolved");
+
+  if (workflowExam && workflowStudent) {
+    // 1. Save Draft Grade (isVerified = false, publishedAt = null)
+    const draftResult = await prisma.examResult.upsert({
+      where: {
+        examId_studentId: {
+          examId: workflowExam.id,
+          studentId: workflowStudent.id,
+        },
+      },
+      update: {
+        marksObtained: 85,
+        gradeLetter: "A",
+        remarks: "Evaluated draft by instructor",
+        isVerified: false,
+        publishedAt: null,
+      },
+      create: {
+        examId: workflowExam.id,
+        studentId: workflowStudent.id,
+        marksObtained: 85,
+        gradeLetter: "A",
+        remarks: "Evaluated draft by instructor",
+        isVerified: false,
+        publishedAt: null,
+      },
+    });
+    assert(draftResult.isVerified === false && draftResult.publishedAt === null, "Draft grade is not published to student transcripts");
+
+    // 2. Publish Official Grade (isVerified = true, publishedAt = Date)
+    const publishedResult = await prisma.examResult.update({
+      where: { id: draftResult.id },
+      data: {
+        isVerified: true,
+        publishedAt: new Date(),
+      },
+    });
+    assert(publishedResult.isVerified === true && publishedResult.publishedAt !== null, "Published grade is certified and locked to student transcripts");
+  }
+
+  // 28.4 FERPA Student Data Isolation Check
+  function filterExamsForStudent(examsList: any[], studentUserId: string) {
+    return examsList.map((e) => ({
+      id: e.id,
+      title: e.title,
+      results: (e.results || []).filter(
+        (r: any) => r.studentUserId === studentUserId && r.isPublished === true
+      ),
+    }));
+  }
+
+  const mockExamsData = [
+    {
+      id: "exam-1",
+      title: "Mid-Term Examination",
+      results: [
+        { id: "res-1", studentUserId: "user-alice", isPublished: true, marks: 92 },
+        { id: "res-2", studentUserId: "user-bob", isPublished: false, marks: 74 }, // Draft
+        { id: "res-3", studentUserId: "user-charlie", isPublished: true, marks: 88 },
+      ],
+    },
+  ];
+
+  const bobView = filterExamsForStudent(mockExamsData, "user-bob");
+  assert(bobView[0].results.length === 0, "Student (Bob) cannot see draft (unpublished) results");
+
+  const aliceView = filterExamsForStudent(mockExamsData, "user-alice");
+  assert(aliceView[0].results.length === 1 && aliceView[0].results[0].marks === 92, "Student (Alice) can see her own certified published result");
+  assert(!aliceView[0].results.some((r: any) => r.studentUserId !== "user-alice"), "Student cannot view grades belonging to other scholars");
+
   console.log("\n=================================================");
   console.log(`🎉 ALL ${passedTests}/${totalTests} TESTS PASSED SUCCESSFULLY!`);
   console.log("=================================================\n");

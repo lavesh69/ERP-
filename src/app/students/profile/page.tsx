@@ -107,11 +107,14 @@ interface StudentProfileData {
 function StudentProfileContent() {
   const searchParams = useSearchParams();
   const studentId = searchParams.get("id");
+  const tabParam = searchParams.get("tab");
   const { showToast, currentUser, currentRole } = useApp();
 
   const [loading, setLoading] = useState(true);
   const [student, setStudent] = useState<StudentProfileData | null>(null);
-  const [activeTab, setActiveTab] = useState<"overview" | "academics" | "attendance" | "finance" | "library" | "security">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "academics" | "attendance" | "finance" | "library" | "security" | "requests">(
+    tabParam === "requests" ? "requests" : "overview"
+  );
   const [userSessions, setUserSessions] = useState<Array<{
     id: string;
     device: string;
@@ -127,6 +130,115 @@ function StudentProfileContent() {
   const [confirmPwd, setConfirmPwd] = useState("");
   const [changingPwd, setChangingPwd] = useState(false);
   const [pwdMsg, setPwdMsg] = useState<{ type: "success" | "error"; text: string } | null>(null);
+
+  // Requests & Petitions State
+  const [requests, setRequests] = useState<any[]>([]);
+  const [loadingRequests, setLoadingRequests] = useState(false);
+  const [isNewRequestModalOpen, setIsNewRequestModalOpen] = useState(false);
+  const [newRequestForm, setNewRequestForm] = useState<{
+    type: "LEAVE" | "ATTENDANCE_CORRECTION" | "DOCUMENT_REQUEST" | "CERTIFICATE" | "ACADEMIC_CORRECTION";
+    title: string;
+    reason: string;
+    attachmentUrl: string;
+  }>({
+    type: "LEAVE",
+    title: "",
+    reason: "",
+    attachmentUrl: "",
+  });
+  const [isSubmittingRequest, setIsSubmittingRequest] = useState(false);
+
+  // Faculty Review State
+  const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
+  const [selectedRequestForReview, setSelectedRequestForReview] = useState<any>(null);
+  const [reviewStatus, setReviewStatus] = useState<"APPROVED" | "REJECTED">("APPROVED");
+  const [reviewRemarks, setReviewRemarks] = useState("");
+  const [isSavingReview, setIsSavingReview] = useState(false);
+
+  const fetchRequests = async () => {
+    try {
+      setLoadingRequests(true);
+      const res = await fetch("/api/students/requests");
+      if (res.ok) {
+        const data = await res.json();
+        setRequests(data.requests || []);
+      }
+    } catch (err) {
+      console.error("Failed to load requests:", err);
+    } finally {
+      setLoadingRequests(false);
+    }
+  };
+
+  useEffect(() => {
+    if (tabParam === "requests") {
+      setActiveTab("requests");
+    }
+  }, [tabParam]);
+
+  useEffect(() => {
+    if (activeTab === "requests") {
+      fetchRequests();
+    }
+  }, [activeTab]);
+
+  const handleCreateRequest = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newRequestForm.title || !newRequestForm.reason) {
+      showToast("Title and reason are required", "warning");
+      return;
+    }
+    try {
+      setIsSubmittingRequest(true);
+      const res = await fetch("/api/students/requests", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newRequestForm),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        showToast(data.message || "Petition submitted successfully", "success");
+        setIsNewRequestModalOpen(false);
+        setNewRequestForm({ type: "LEAVE", title: "", reason: "", attachmentUrl: "" });
+        fetchRequests();
+      } else {
+        showToast(data.error || "Failed to submit petition", "danger");
+      }
+    } catch {
+      showToast("Network error submitting petition", "danger");
+    } finally {
+      setIsSubmittingRequest(false);
+    }
+  };
+
+  const handleReviewRequest = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedRequestForReview) return;
+    try {
+      setIsSavingReview(true);
+      const res = await fetch("/api/students/requests", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          requestId: selectedRequestForReview.id,
+          status: reviewStatus,
+          reviewerRemarks: reviewRemarks,
+        }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        showToast(data.message || `Request ${reviewStatus.toLowerCase()} successfully`, "success");
+        setIsReviewModalOpen(false);
+        fetchRequests();
+      } else {
+        showToast(data.error || "Failed to update petition status", "danger");
+      }
+    } catch {
+      showToast("Network error reviewing petition", "danger");
+    } finally {
+      setIsSavingReview(false);
+    }
+  };
 
   // 2FA TOTP state
   const [twoFactorInfo, setTwoFactorInfo] = useState<{
@@ -538,6 +650,7 @@ Registrar Stamp: [APEX-ACADEMIC-SEAL]
             { id: "attendance", label: "Attendance Records", icon: Clock },
             { id: "finance", label: "Bursar Ledgers", icon: DollarSign },
             { id: "library", label: "Library Circulation", icon: Book },
+            { id: "requests", label: "Requests & Petitions", icon: FileText },
             { id: "security", label: "Security & Sessions", icon: ShieldCheck },
           ].map((tab) => {
             const Icon = tab.icon;
@@ -1092,7 +1205,275 @@ Registrar Stamp: [APEX-ACADEMIC-SEAL]
             </div>
           </div>
         )}
+
+        {/* 7. Requests & Petitions Tab Content */}
+        {activeTab === "requests" && (
+          <div className="flex flex-col gap-6">
+            <div className="bg-white dark:bg-charcoal-800 p-6 rounded-2xl border border-border dark:border-charcoal-700 shadow-soft flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 rounded-xl bg-rose-container dark:bg-rose-dark/30 text-rose-primary dark:text-rose-accent flex items-center justify-center">
+                  <FileText className="h-5 w-5" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-display font-bold text-charcoal-900 dark:text-ivory-100 uppercase tracking-wider">
+                    Academic Petitions &amp; Requests Desk
+                  </h3>
+                  <p className="text-xs text-charcoal-500 mt-0.5">
+                    Formal petitions for Leave of Absence, Attendance Discrepancies, Bonafide Certificates, and Transcripts.
+                  </p>
+                </div>
+              </div>
+
+              <button
+                onClick={() => setIsNewRequestModalOpen(true)}
+                className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold bg-rose-primary hover:bg-rose-dark active:scale-[0.98] text-white shadow-xs transition-all shrink-0"
+              >
+                <span>+ New Academic Petition</span>
+              </button>
+            </div>
+
+            {loadingRequests ? (
+              <SkeletonTable rows={4} />
+            ) : requests.length === 0 ? (
+              <EmptyState
+                icon={FileText}
+                title="No active petitions or requests"
+                description="Scholars can submit formal leave petitions, attendance discrepancy reviews, and document requests here."
+                actionLabel="Submit First Petition"
+                onAction={() => setIsNewRequestModalOpen(true)}
+              />
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {requests.map((req) => (
+                  <div
+                    key={req.id}
+                    className="p-5 rounded-2xl border border-border dark:border-charcoal-700 bg-white dark:bg-charcoal-800 shadow-soft flex flex-col justify-between gap-4 hover:shadow-card transition-all"
+                  >
+                    <div className="flex flex-col gap-2">
+                      <div className="flex items-center justify-between">
+                        <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-container dark:bg-rose-dark/30 text-rose-primary dark:text-rose-accent uppercase">
+                          {req.type.replace(/_/g, " ")}
+                        </span>
+                        <span
+                          className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
+                            req.status === "APPROVED"
+                              ? "bg-academic-success-subtle text-academic-success border border-green-200"
+                              : req.status === "REJECTED"
+                              ? "bg-academic-danger-subtle text-academic-danger border border-red-200"
+                              : "bg-academic-warning-subtle text-academic-warning border border-amber-200"
+                          }`}
+                        >
+                          {req.status}
+                        </span>
+                      </div>
+
+                      <h4 className="text-sm font-bold text-charcoal-900 dark:text-ivory-100">
+                        {req.title}
+                      </h4>
+
+                      {req.studentName && (
+                        <div className="text-[11px] text-charcoal-600 dark:text-charcoal-400 font-medium">
+                          Submitted by: <span className="font-bold text-charcoal-800 dark:text-ivory-200">{req.studentName}</span> ({req.rollNumber})
+                        </div>
+                      )}
+
+                      <p className="text-xs text-charcoal-600 dark:text-charcoal-400 bg-surface-soft dark:bg-charcoal-900/40 p-3 rounded-xl border border-border/70 dark:border-charcoal-700 leading-relaxed">
+                        {req.reason}
+                      </p>
+
+                      {req.reviewerRemarks && (
+                        <div className="p-2.5 rounded-xl bg-green-50/60 dark:bg-green-950/20 border border-green-200 dark:border-green-900/40 text-[11px] text-academic-success">
+                          <span className="font-bold block">Authority Resolution:</span>
+                          <span>{req.reviewerRemarks}</span>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="flex items-center justify-between pt-3 border-t border-border/60 dark:border-charcoal-700 text-[10px] text-charcoal-400">
+                      <span>Logged: {new Date(req.createdAt).toLocaleDateString("en-US", { dateStyle: "medium" })}</span>
+
+                      {currentRole !== "STUDENT" && req.status === "SUBMITTED" && (
+                        <button
+                          onClick={() => {
+                            setSelectedRequestForReview(req);
+                            setReviewStatus("APPROVED");
+                            setReviewRemarks("");
+                            setIsReviewModalOpen(true);
+                          }}
+                          className="px-3 py-1 rounded-lg text-xs font-bold bg-rose-container dark:bg-rose-dark/30 hover:bg-rose-primary hover:text-white text-rose-primary dark:text-rose-accent transition-colors border border-rose-accent/30"
+                        >
+                          Review &amp; Resolve
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
       </div>
+
+      {/* New Request Modal */}
+      <Modal
+        isOpen={isNewRequestModalOpen}
+        onClose={() => setIsNewRequestModalOpen(false)}
+        title="Submit Academic Petition / Request"
+        description="Formal student petitions are routed directly to assigned course faculty, academic advisors, and the Registrar."
+      >
+        <form onSubmit={handleCreateRequest} className="flex flex-col gap-3 mt-2">
+          <div>
+            <label className="text-[11px] font-bold text-charcoal-700 dark:text-charcoal-300 block mb-1">
+              Petition Category *
+            </label>
+            <select
+              value={newRequestForm.type}
+              onChange={(e) =>
+                setNewRequestForm({
+                  ...newRequestForm,
+                  type: e.target.value as any,
+                })
+              }
+              className="w-full text-xs p-2.5 rounded-xl border border-border dark:border-charcoal-700 bg-white dark:bg-charcoal-900 text-charcoal-900 dark:text-ivory-100 focus:outline-none focus:border-rose-primary font-medium"
+            >
+              <option value="LEAVE">Leave of Absence / Medical Exemption</option>
+              <option value="ATTENDANCE_CORRECTION">Attendance Discrepancy Rectification</option>
+              <option value="DOCUMENT_REQUEST">Official Transcript / Bonafide Certificate</option>
+              <option value="CERTIFICATE">Course Completion / Degree Verification</option>
+              <option value="ACADEMIC_CORRECTION">Grade Discrepancy / Re-evaluation Petition</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="text-[11px] font-bold text-charcoal-700 dark:text-charcoal-300 block mb-1">
+              Petition Title *
+            </label>
+            <input
+              type="text"
+              required
+              placeholder="e.g. Medical Leave Request for Lab Session (Sept 24)"
+              value={newRequestForm.title}
+              onChange={(e) =>
+                setNewRequestForm({ ...newRequestForm, title: e.target.value })
+              }
+              className="w-full text-xs p-2.5 rounded-xl border border-border dark:border-charcoal-700 bg-white dark:bg-charcoal-900 text-charcoal-900 dark:text-ivory-100 placeholder:text-charcoal-400 focus:outline-none focus:border-rose-primary"
+            />
+          </div>
+
+          <div>
+            <label className="text-[11px] font-bold text-charcoal-700 dark:text-charcoal-300 block mb-1">
+              Detailed Justification / Statement of Facts *
+            </label>
+            <textarea
+              required
+              rows={4}
+              placeholder="Provide a comprehensive academic explanation, dates affected, and course codes..."
+              value={newRequestForm.reason}
+              onChange={(e) =>
+                setNewRequestForm({ ...newRequestForm, reason: e.target.value })
+              }
+              className="w-full text-xs p-2.5 rounded-xl border border-border dark:border-charcoal-700 bg-white dark:bg-charcoal-900 text-charcoal-900 dark:text-ivory-100 placeholder:text-charcoal-400 focus:outline-none focus:border-rose-primary"
+            />
+          </div>
+
+          <div>
+            <label className="text-[11px] font-bold text-charcoal-700 dark:text-charcoal-300 block mb-1">
+              Evidence Document URL (Optional)
+            </label>
+            <input
+              type="text"
+              placeholder="e.g. /documents/medical_certificate_2026.pdf"
+              value={newRequestForm.attachmentUrl}
+              onChange={(e) =>
+                setNewRequestForm({ ...newRequestForm, attachmentUrl: e.target.value })
+              }
+              className="w-full text-xs p-2.5 rounded-xl border border-border dark:border-charcoal-700 bg-white dark:bg-charcoal-900 text-charcoal-900 dark:text-ivory-100 placeholder:text-charcoal-400 focus:outline-none focus:border-rose-primary"
+            />
+          </div>
+
+          <div className="flex items-center justify-end gap-2 pt-3 border-t border-border dark:border-charcoal-700">
+            <button
+              type="button"
+              onClick={() => setIsNewRequestModalOpen(false)}
+              className="px-4 py-2 rounded-xl text-xs font-bold border border-border dark:border-charcoal-700 text-charcoal-700 dark:text-ivory-200 hover:bg-surface-soft"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={isSubmittingRequest}
+              className="px-4 py-2 rounded-xl text-xs font-bold bg-rose-primary hover:bg-rose-dark text-white shadow-xs disabled:opacity-50"
+            >
+              {isSubmittingRequest ? "Submitting..." : "Submit Official Petition"}
+            </button>
+          </div>
+        </form>
+      </Modal>
+
+      {/* Review Request Modal (Faculty/Authority) */}
+      <Modal
+        isOpen={isReviewModalOpen}
+        onClose={() => setIsReviewModalOpen(false)}
+        title={`Review Petition: ${selectedRequestForReview?.title || "Request"}`}
+        description="Verify evidence and issue an official resolution recorded in the academic audit log."
+      >
+        <form onSubmit={handleReviewRequest} className="flex flex-col gap-3 mt-2">
+          <div className="p-3 rounded-xl bg-surface-soft dark:bg-charcoal-900 text-xs">
+            <span className="font-bold block text-charcoal-900 dark:text-ivory-100">
+              {selectedRequestForReview?.studentName} ({selectedRequestForReview?.rollNumber})
+            </span>
+            <p className="text-charcoal-600 dark:text-charcoal-400 mt-1">
+              {selectedRequestForReview?.reason}
+            </p>
+          </div>
+
+          <div>
+            <label className="text-[11px] font-bold text-charcoal-700 dark:text-charcoal-300 block mb-1">
+              Determination / Action *
+            </label>
+            <select
+              value={reviewStatus}
+              onChange={(e) => setReviewStatus(e.target.value as any)}
+              className="w-full text-xs p-2.5 rounded-xl border border-border dark:border-charcoal-700 bg-white dark:bg-charcoal-900 text-charcoal-900 dark:text-ivory-100 font-bold focus:outline-none focus:border-rose-primary"
+            >
+              <option value="APPROVED">APPROVE — Grant Academic Exemption / Certificate</option>
+              <option value="REJECTED">REJECT — Request Ineligible / Insufficient Evidence</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="text-[11px] font-bold text-charcoal-700 dark:text-charcoal-300 block mb-1">
+              Authority Remarks / Justification Note
+            </label>
+            <textarea
+              rows={3}
+              placeholder="e.g. Approved: Medical certificate verified by health center. Attendance record credited."
+              value={reviewRemarks}
+              onChange={(e) => setReviewRemarks(e.target.value)}
+              className="w-full text-xs p-2.5 rounded-xl border border-border dark:border-charcoal-700 bg-white dark:bg-charcoal-900 text-charcoal-900 dark:text-ivory-100 placeholder:text-charcoal-400 focus:outline-none focus:border-rose-primary"
+            />
+          </div>
+
+          <div className="flex items-center justify-end gap-2 pt-3 border-t border-border dark:border-charcoal-700">
+            <button
+              type="button"
+              onClick={() => setIsReviewModalOpen(false)}
+              className="px-4 py-2 rounded-xl text-xs font-bold border border-border dark:border-charcoal-700 text-charcoal-700 dark:text-ivory-200 hover:bg-surface-soft"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={isSavingReview}
+              className={`px-4 py-2 rounded-xl text-xs font-bold text-white shadow-xs disabled:opacity-50 ${
+                reviewStatus === "APPROVED" ? "bg-academic-success hover:bg-green-700" : "bg-academic-danger hover:bg-red-700"
+              }`}
+            >
+              {isSavingReview ? "Saving Decision..." : `Confirm ${reviewStatus}`}
+            </button>
+          </div>
+        </form>
+      </Modal>
 
       {/* 2FA Setup Modal */}
       <Modal

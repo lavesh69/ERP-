@@ -154,6 +154,12 @@ const NAV_SECTIONS: NavSection[] = [
         badge: "NSF",
         roles: ["SUPER_ADMIN", "INSTITUTION_ADMIN", "PRINCIPAL", "HOD", "FACULTY", "RESEARCH_COORDINATOR"],
       },
+      {
+        name: "Requests & Petitions",
+        href: "/students/profile?tab=requests",
+        icon: FileText,
+        roles: ["SUPER_ADMIN", "INSTITUTION_ADMIN", "FACULTY", "STUDENT"],
+      },
     ],
   },
   {
@@ -163,7 +169,7 @@ const NAV_SECTIONS: NavSection[] = [
         name: "Announcements",
         href: "/communication",
         icon: Bell,
-        roles: ["SUPER_ADMIN", "INSTITUTION_ADMIN", "PRINCIPAL", "FACULTY", "CLASS_TEACHER", "PARENT", "HR_STAFF", "ALUMNI"],
+        roles: ["SUPER_ADMIN", "INSTITUTION_ADMIN", "PRINCIPAL", "FACULTY", "CLASS_TEACHER", "STUDENT", "PARENT", "HR_STAFF", "ALUMNI"],
       },
     ],
   },

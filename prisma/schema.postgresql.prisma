@@ -255,6 +255,7 @@ model Student {
   bookLoans    BookLoan[]
   applications JobApplication[]
   scholarships ScholarshipApplication[]
+  requests     StudentRequest[]
 }
 
 model Faculty {
@@ -362,12 +363,15 @@ model Enrollment {
 }
 
 model CourseModule {
-  id          String   @id @default(uuid())
-  courseId    String
-  title       String
-  orderIndex  Int
-  description String?
-  createdAt   DateTime @default(now())
+  id                 String   @id @default(uuid())
+  courseId           String
+  title              String
+  orderIndex         Int
+  description        String?
+  progressPercent    Float    @default(0.0)
+  learningObjectives String?
+  courseOutcomes     String?
+  createdAt          DateTime @default(now())
 
   course   Course         @relation(fields: [courseId], references: [id], onDelete: Cascade)
   chapters CourseChapter[]
@@ -378,10 +382,13 @@ model CourseChapter {
   moduleId    String
   title       String
   orderIndex  Int
-  contentType String   // VIDEO, PDF, TEXT, QUIZ
+  contentType String   // VIDEO, PDF, TEXT, QUIZ, SLIDES
   contentUrl  String?
   textContent String?
   durationMins Int     @default(45)
+  isPublished Boolean  @default(true)
+  fileSizeKb  Int      @default(0)
+  authorId    String?
   createdAt   DateTime @default(now())
 
   module CourseModule @relation(fields: [moduleId], references: [id], onDelete: Cascade)
@@ -631,6 +638,22 @@ model ScholarshipApplication {
 
   scholarship Scholarship @relation(fields: [scholarshipId], references: [id], onDelete: Cascade)
   student     Student     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+}
+
+model StudentRequest {
+  id              String    @id @default(uuid())
+  studentId       String
+  type            String    // LEAVE, ATTENDANCE_CORRECTION, DOCUMENT_REQUEST, CERTIFICATE, ACADEMIC_CORRECTION
+  title           String
+  reason          String
+  status          String    @default("SUBMITTED") // SUBMITTED, UNDER_REVIEW, APPROVED, REJECTED, COMPLETED
+  attachmentUrl   String?
+  reviewerRemarks String?
+  reviewedById    String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
 }
 
 // ==========================================
