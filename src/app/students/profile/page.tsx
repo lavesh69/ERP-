@@ -35,6 +35,7 @@ import {
 } from "lucide-react";
 import PasswordStrengthMeter from "@/components/auth/PasswordStrengthMeter";
 import { Modal } from "@/components/common/Modal";
+import { Breadcrumbs } from "@/components/common/Breadcrumbs";
 
 interface StudentProfileData {
   id: string;
@@ -536,6 +537,13 @@ Registrar Stamp: [APEX-ACADEMIC-SEAL]
   return (
     <AppShell>
       <div className="flex flex-col gap-6">
+        <Breadcrumbs
+          items={[
+            { label: "Dashboard", href: "/" },
+            { label: "Students Directory", href: "/students" },
+            { label: student.name },
+          ]}
+        />
         {/* Student 360 Header Profile Card */}
         <div className="bg-white dark:bg-charcoal-800 p-6 rounded-2xl border border-border dark:border-charcoal-700 shadow-soft flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="flex items-start md:items-center gap-4">

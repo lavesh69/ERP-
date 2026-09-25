@@ -159,13 +159,13 @@ export function CommandPalette() {
     <div className="fixed inset-0 z-50 flex items-start justify-center pt-4 sm:pt-20 px-3 sm:px-4">
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-charcoal-900/60 backdrop-blur-xs transition-opacity animate-in fade-in duration-150"
+        className="fixed inset-0 bg-charcoal-950/70 backdrop-blur-md transition-opacity animate-in fade-in duration-200"
         onClick={() => setIsCommandPaletteOpen(false)}
         aria-hidden="true"
       />
 
       {/* Palette Container */}
-      <div className="relative w-full max-w-2xl bg-white dark:bg-[#231E21] rounded-2xl border border-border dark:border-charcoal-800 shadow-elevated overflow-hidden z-10 animate-in zoom-in-95 duration-150 max-h-[calc(100dvh-2rem)] flex flex-col">
+      <div className="relative w-full max-w-2xl glass-panel rounded-3xl border border-border/80 dark:border-charcoal-700/80 shadow-elevated overflow-hidden z-10 animate-in zoom-in-95 duration-200 max-h-[calc(100dvh-2rem)] flex flex-col">
         {/* Search Bar Input */}
         <div className="flex items-center px-3.5 sm:px-4 py-3 sm:py-3.5 border-b border-border dark:border-charcoal-800 gap-2.5 sm:gap-3">
           <Search className="h-4 sm:h-5 w-4 sm:w-5 text-charcoal-400 dark:text-charcoal-500 shrink-0" />

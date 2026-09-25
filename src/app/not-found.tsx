@@ -3,8 +3,8 @@ import { GraduationCap, ArrowLeft, Home, Search, ShieldCheck } from "lucide-reac
 
 export default function NotFound() {
   return (
-    <div className="min-h-screen bg-ivory-100 dark:bg-charcoal-950 flex flex-col items-center justify-center p-6 text-center select-none transition-colors duration-200">
-      <div className="max-w-md w-full bg-white dark:bg-charcoal-900 rounded-3xl border border-border dark:border-charcoal-800 p-8 shadow-elevated flex flex-col items-center">
+    <div className="min-h-screen bg-ivory-100 dark:bg-charcoal-950 ambient-glow-mesh flex flex-col items-center justify-center p-6 text-center select-none transition-colors duration-200">
+      <div className="max-w-md w-full glass-panel rounded-3xl border border-border/80 dark:border-charcoal-700/80 p-8 sm:p-10 shadow-elevated flex flex-col items-center">
         {/* Academic Seal Icon */}
         <div className="h-16 w-16 rounded-2xl bg-rose-container dark:bg-rose-dark/30 text-rose-primary dark:text-rose-accent flex items-center justify-center mb-6 shadow-sm border border-rose-primary/20">
           <GraduationCap className="h-8 w-8" />

@@ -16,8 +16,8 @@ export default function GlobalErrorPage({
   }, [error]);
 
   return (
-    <div className="min-h-screen bg-ivory-100 dark:bg-charcoal-950 flex flex-col items-center justify-center p-6 text-center select-none transition-colors duration-200">
-      <div className="max-w-md w-full bg-white dark:bg-charcoal-900 rounded-3xl border border-red-200 dark:border-red-900/50 p-8 shadow-elevated flex flex-col items-center">
+    <div className="min-h-screen bg-ivory-100 dark:bg-charcoal-950 ambient-glow-mesh flex flex-col items-center justify-center p-6 text-center select-none transition-colors duration-200">
+      <div className="max-w-md w-full glass-panel rounded-3xl border border-red-200/80 dark:border-red-900/40 p-8 sm:p-10 shadow-elevated flex flex-col items-center">
         <div className="h-16 w-16 rounded-2xl bg-red-50 dark:bg-red-950/40 text-red-600 flex items-center justify-center mb-6 shadow-sm border border-red-200 dark:border-red-800">
           <AlertTriangle className="h-8 w-8" />
         </div>

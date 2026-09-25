@@ -6,13 +6,17 @@ import { TopNavBar } from "@/components/layout/TopNavBar";
 import { CommandPalette } from "@/components/command/CommandPalette";
 import { AIChatDrawer } from "@/components/ai/AIChatDrawer";
 import { MobileBottomBar } from "@/components/layout/MobileBottomBar";
+import { OfflineBanner } from "@/components/common/OfflineBanner";
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen bg-ivory-100 dark:bg-charcoal-950 text-charcoal-900 dark:text-ivory-100 flex transition-colors duration-200 relative selection:bg-rose-accent/25 selection:text-rose-primary dark:selection:text-rose-light">
+      {/* Realtime Offline Sentinel */}
+      <OfflineBanner />
+
       {/* Ambient Atmospheric Lights */}
-      <div className="fixed top-0 right-10 w-[500px] h-[500px] bg-gradient-to-br from-rose-accent/8 via-rose-primary/4 to-transparent rounded-full blur-3xl pointer-events-none -z-10" />
-      <div className="fixed -bottom-20 left-10 w-[420px] h-[420px] bg-gradient-to-tr from-rose-primary/5 via-rose-accent/4 to-transparent rounded-full blur-3xl pointer-events-none -z-10" />
+      <div className="fixed top-0 right-10 w-[500px] h-[500px] bg-gradient-to-br from-rose-accent/8 via-rose-primary/4 to-transparent rounded-full blur-3xl pointer-events-none -z-10 no-print" />
+      <div className="fixed -bottom-20 left-10 w-[420px] h-[420px] bg-gradient-to-tr from-rose-primary/5 via-rose-accent/4 to-transparent rounded-full blur-3xl pointer-events-none -z-10 no-print" />
 
       {/* Left Navigation Sidebar */}
       <SideNavBar />

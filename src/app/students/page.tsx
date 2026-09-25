@@ -8,6 +8,7 @@ import { Modal } from "@/components/common/Modal";
 import { SkeletonTable } from "@/components/common/SkeletonLoader";
 import { EmptyState } from "@/components/common/EmptyState";
 import { Pagination } from "@/components/common/Pagination";
+import { Breadcrumbs } from "@/components/common/Breadcrumbs";
 import {
   GraduationCap,
   Search,
@@ -308,6 +309,7 @@ export default function StudentsDirectoryPage() {
   return (
     <AppShell>
       <div className="flex flex-col gap-6">
+        <Breadcrumbs />
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-[#1E191C] p-6 rounded-2xl border border-border dark:border-charcoal-800 shadow-soft">
           <div className="flex items-center gap-3">
