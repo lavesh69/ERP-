@@ -1802,30 +1802,33 @@ export default function AttendancePage() {
                 />
               </div>
 
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5 flex-wrap">
                 <button
                   onClick={() => promptMarkAll("PRESENT")}
-                  className="text-xs font-semibold px-2.5 py-1.5 rounded-lg bg-academic-success-subtle dark:bg-green-950/40 text-academic-success border border-green-300 dark:border-green-800 hover:bg-green-100 transition-colors"
+                  className="text-xs font-bold px-3 py-1.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 active:scale-95 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 transition-all flex items-center gap-1.5 shadow-xs"
                 >
-                  Mark All Present
+                  <UserCheck className="w-3.5 h-3.5" />
+                  <span>Mark All Present</span>
                 </button>
                 <button
                   onClick={promptMarkRemainingAbsent}
-                  className="text-xs font-semibold px-2.5 py-1.5 rounded-lg bg-academic-warning-subtle dark:bg-amber-950/40 text-academic-warning border border-amber-300 dark:border-amber-800 hover:bg-amber-100 transition-colors"
+                  className="text-xs font-bold px-3 py-1.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 active:scale-95 text-amber-600 dark:text-amber-400 border border-amber-500/30 transition-all flex items-center gap-1.5 shadow-xs"
                   title="Mark remaining unmarked students absent with explicit confirmation"
                 >
-                  Mark Remaining Absent ({unmarkedCount})
+                  <Clock className="w-3.5 h-3.5" />
+                  <span>Mark Remaining Absent ({unmarkedCount})</span>
                 </button>
                 <button
                   onClick={() => promptMarkAll("ABSENT")}
-                  className="text-xs font-semibold px-2.5 py-1.5 rounded-lg bg-academic-danger-subtle dark:bg-red-950/40 text-academic-danger border border-rose-300 dark:border-rose-800 hover:bg-rose-100 transition-colors"
+                  className="text-xs font-bold px-3 py-1.5 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 active:scale-95 text-rose-600 dark:text-rose-400 border border-rose-500/30 transition-all flex items-center gap-1.5 shadow-xs"
                 >
-                  Mark All Absent
+                  <UserX className="w-3.5 h-3.5" />
+                  <span>Mark All Absent</span>
                 </button>
                 {historyStack.length > 0 && (
                   <button
                     onClick={handleUndo}
-                    className="text-xs font-semibold px-2 py-1.5 rounded-lg bg-ivory-100 dark:bg-charcoal-800 text-charcoal-700 dark:text-charcoal-300 border border-border dark:border-charcoal-700 hover:bg-ivory-200 transition-colors flex items-center gap-1"
+                    className="text-xs font-bold px-2.5 py-1.5 rounded-xl bg-ivory-100 dark:bg-charcoal-800 text-charcoal-700 dark:text-charcoal-300 border border-border dark:border-charcoal-700 hover:bg-ivory-200 transition-all flex items-center gap-1 shadow-xs"
                     title="Undo last status modification"
                   >
                     <RotateCcw className="w-3.5 h-3.5" />
@@ -1839,44 +1842,52 @@ export default function AttendancePage() {
             <div className="bg-white dark:bg-[#1E191C] p-4 rounded-2xl border border-border dark:border-charcoal-800 shadow-soft flex flex-col gap-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                  <div className="relative flex h-2.5 w-2.5">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                    <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500" />
+                  </div>
                   <span className="text-xs font-bold text-charcoal-900 dark:text-ivory-100 flex items-center gap-1.5">
                     <Wifi className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
-                    <span>Live Campus RFID Turnstile Stream</span>
+                    <span>Live Campus RFID Edge Gateways</span>
                   </span>
-                  <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
-                    42 Turnstiles Connected
+                  <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 font-bold">
+                    42 Turnstiles Online
                   </span>
                 </div>
                 <span className="text-[10px] text-charcoal-500 font-mono hidden sm:inline">
-                  Real-time edge gateway active
+                  ⚡ Micro-second biometric edge ledger active
                 </span>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2.5">
                 {[
-                  { gate: "North Quad Turnstile #02", student: "Sarah Chen (CS-2024-042)", time: "Just now", status: "VERIFIED" },
-                  { gate: "CS & AI Lab Reader #01", student: "Alex Mercer (CS-2024-088)", time: "1m ago", status: "VERIFIED" },
-                  { gate: "Main Library Turnstile #05", student: "Elena Rostova (CS-2024-019)", time: "3m ago", status: "VERIFIED" },
-                  { gate: "South Academic Gate #01", student: "Marcus Vance (CS-2024-055)", time: "4m ago", status: "VERIFIED" },
+                  { gate: "North Quad Turnstile #02", student: "Sarah Chen", roll: "CS-2024-042", time: "Just now", status: "VERIFIED" },
+                  { gate: "CS & AI Lab Reader #01", student: "Alex Mercer", roll: "CS-2024-088", time: "1m ago", status: "VERIFIED" },
+                  { gate: "Main Library Turnstile #05", student: "Elena Rostova", roll: "CS-2024-019", time: "3m ago", status: "VERIFIED" },
+                  { gate: "South Academic Gate #01", student: "Marcus Vance", roll: "CS-2024-055", time: "4m ago", status: "VERIFIED" },
                 ].map((swipe, idx) => (
                   <div
                     key={idx}
-                    className="p-2.5 rounded-xl border border-border/80 dark:border-charcoal-700 bg-surface-soft dark:bg-charcoal-900/40 flex items-center justify-between text-xs"
+                    className="p-3 rounded-xl border border-border/80 dark:border-charcoal-700/80 bg-surface-soft/60 dark:bg-charcoal-900/60 flex items-center justify-between text-xs hover:border-emerald-500/40 hover:-translate-y-0.5 transition-all shadow-xs"
                   >
                     <div className="truncate pr-2">
-                      <span className="font-bold text-charcoal-900 dark:text-ivory-100 block truncate text-[11px]">
-                        {swipe.student}
-                      </span>
-                      <span className="text-[10px] text-charcoal-500 truncate block">
+                      <div className="flex items-center gap-1.5 truncate">
+                        <span className="font-bold text-charcoal-900 dark:text-ivory-100 text-[11px] truncate">
+                          {swipe.student}
+                        </span>
+                        <span className="font-mono text-[9px] text-charcoal-500 dark:text-charcoal-400">
+                          {swipe.roll}
+                        </span>
+                      </div>
+                      <span className="text-[10px] text-charcoal-500 truncate block mt-0.5">
                         {swipe.gate}
                       </span>
                     </div>
                     <div className="text-right shrink-0">
-                      <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 block">
+                      <span className="px-2 py-0.5 rounded-full text-[9px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 block font-mono">
                         {swipe.status}
                       </span>
-                      <span className="text-[9px] text-charcoal-400 font-mono">{swipe.time}</span>
+                      <span className="text-[9px] text-charcoal-400 font-mono mt-0.5 block">{swipe.time}</span>
                     </div>
                   </div>
                 ))}
@@ -2247,61 +2258,135 @@ export default function AttendancePage() {
         {/* STUDENT PERSPECTIVE: Personal Attendance Dossier */}
         {effectiveRole === "STUDENT" && (
           <div className="flex flex-col gap-6">
+            {/* Student ID & Biometric Dossier Header */}
+            <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 p-5 rounded-2xl border border-indigo-500/30 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-lg">
+              <div className="flex items-center gap-4">
+                <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-rose-primary to-indigo-600 flex items-center justify-center text-white font-bold text-lg shadow-md border-2 border-white/20 shrink-0">
+                  {currentUser?.name?.split(" ").map((n: string) => n[0]).join("").slice(0, 2) || "ST"}
+                </div>
+                <div>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h2 className="text-base font-bold text-white">
+                      {currentUser?.name || "Academic Scholar"}
+                    </h2>
+                    <span className="font-mono text-xs px-2.5 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+                      Roll: 2024-CSE-042
+                    </span>
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 flex items-center gap-1 font-mono">
+                      <ShieldCheck className="w-3 h-3" />
+                      RFID Pass Active
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-300 mt-1">
+                    B.Tech Computer Science &amp; Engineering • Semester V • Section 5-A
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 flex-wrap">
+                <button
+                  onClick={() => setIsScannerModalOpen(true)}
+                  className="px-4 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs rounded-xl shadow-md transition-all flex items-center gap-2 active:scale-95"
+                >
+                  <Scan className="w-4 h-4 animate-pulse" />
+                  <span>Scan Lecture QR</span>
+                </button>
+                <button
+                  onClick={() => setIsCorrectionModalOpen(true)}
+                  className="px-3.5 py-2.5 bg-slate-800/80 hover:bg-slate-700 text-slate-200 font-bold text-xs rounded-xl border border-slate-700 transition-all"
+                >
+                  Request Correction
+                </button>
+              </div>
+            </div>
+
             {/* Student Attendance KPI Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-              <div className="bg-white dark:bg-[#1E191C] p-5 rounded-2xl border border-border dark:border-charcoal-800 shadow-soft">
-                <span className="text-xs font-bold text-charcoal-500 uppercase">Cumulative Attendance</span>
-                <div className="text-3xl font-display font-bold mt-2 flex items-baseline gap-2">
-                  <span
-                    className={`${
-                      (studentData?.overallAttendance?.aggregateRate ?? 95) >= 75
-                        ? "text-academic-success"
-                        : "text-academic-danger"
-                    }`}
-                  >
-                    {(studentData?.overallAttendance?.aggregateRate ?? 95).toFixed(1)}%
+              <div className="bg-white dark:bg-[#1E191C] p-5 rounded-2xl border border-border dark:border-charcoal-800 shadow-soft flex flex-col justify-between">
+                <div>
+                  <span className="text-xs font-bold text-charcoal-500 uppercase tracking-wider block">Cumulative Attendance</span>
+                  <div className="text-3xl font-display font-bold mt-2 flex items-baseline gap-2">
+                    <span
+                      className={`${
+                        (studentData?.overallAttendance?.aggregateRate ?? 95) >= 75
+                          ? "text-emerald-500"
+                          : "text-rose-500"
+                      }`}
+                    >
+                      {(studentData?.overallAttendance?.aggregateRate ?? 95).toFixed(1)}%
+                    </span>
+                  </div>
+                </div>
+
+                <div className="mt-3">
+                  <div className="w-full h-2 bg-slate-100 dark:bg-charcoal-800 rounded-full overflow-hidden">
+                    <div
+                      className={`h-full rounded-full transition-all duration-500 ${
+                        (studentData?.overallAttendance?.aggregateRate ?? 95) >= 75
+                          ? "bg-gradient-to-r from-emerald-500 to-teal-400"
+                          : "bg-gradient-to-r from-rose-500 to-amber-500"
+                      }`}
+                      style={{ width: `${Math.min(100, studentData?.overallAttendance?.aggregateRate ?? 95)}%` }}
+                    />
+                  </div>
+                  <span className="text-[11px] font-medium text-charcoal-500 mt-1.5 block">
+                    {(studentData?.overallAttendance?.aggregateRate ?? 95) >= 75
+                      ? `Safe above 75% Senate Cutoff (Can miss up to ${calculateSafeAbsencesAllowed(studentData?.overallAttendance?.attendedLectures ?? 38, studentData?.overallAttendance?.totalLectures ?? 40, 75)} classes safely)`
+                      : `Defaulter: Must attend ${calculateClassesNeededToRecover(studentData?.overallAttendance?.attendedLectures ?? 14, studentData?.overallAttendance?.totalLectures ?? 20, 75)} consecutive lectures to recover`}
                   </span>
                 </div>
-                <span className="text-[11px] text-charcoal-500 mt-1 block">
-                  {(studentData?.overallAttendance?.aggregateRate ?? 95) >= 75
-                    ? "Safe above 75% Cutoff"
-                    : "Defaulter Warning Triggered"}
-                </span>
               </div>
 
-              <div className="bg-white dark:bg-[#1E191C] p-5 rounded-2xl border border-border dark:border-charcoal-800 shadow-soft">
-                <span className="text-xs font-bold text-charcoal-500 uppercase">Lectures Attended</span>
-                <div className="text-3xl font-display font-bold text-charcoal-900 dark:text-ivory-100 mt-2">
-                  {studentData?.overallAttendance?.attendedLectures ?? 0} /{" "}
-                  {studentData?.overallAttendance?.totalLectures ?? 0}
+              <div className="bg-white dark:bg-[#1E191C] p-5 rounded-2xl border border-border dark:border-charcoal-800 shadow-soft flex flex-col justify-between">
+                <div>
+                  <span className="text-xs font-bold text-charcoal-500 uppercase tracking-wider block">Lectures Attended</span>
+                  <div className="text-3xl font-display font-bold text-charcoal-900 dark:text-ivory-100 mt-2">
+                    {studentData?.overallAttendance?.attendedLectures ?? 0}{" "}
+                    <span className="text-sm font-normal text-charcoal-400">/ {studentData?.overallAttendance?.totalLectures ?? 0}</span>
+                  </div>
                 </div>
-                <span className="text-[11px] text-charcoal-500 mt-1 block">Total term lectures logged</span>
+                <div className="mt-3">
+                  <span className="text-[11px] text-charcoal-500 block">
+                    Confirmed across RFID turnstiles, smart QR, and verified faculty registers.
+                  </span>
+                </div>
               </div>
 
-              <div className="bg-white dark:bg-[#1E191C] p-5 rounded-2xl border border-border dark:border-charcoal-800 shadow-soft">
-                <span className="text-xs font-bold text-charcoal-500 uppercase">Senate Threshold</span>
-                <div className="text-3xl font-display font-bold text-charcoal-900 dark:text-ivory-100 mt-2">
-                  75.0%
+              <div className="bg-white dark:bg-[#1E191C] p-5 rounded-2xl border border-border dark:border-charcoal-800 shadow-soft flex flex-col justify-between">
+                <div>
+                  <span className="text-xs font-bold text-charcoal-500 uppercase tracking-wider block">Senate Threshold</span>
+                  <div className="text-3xl font-display font-bold text-charcoal-900 dark:text-ivory-100 mt-2 font-mono">
+                    75.0%
+                  </div>
                 </div>
-                <span className="text-[11px] text-charcoal-500 mt-1 block">Mandatory exam appearance cutoff</span>
+                <div className="mt-3">
+                  <span className="text-[11px] text-charcoal-500 block">
+                    Institutional cutoff required for end-semester examinations eligibility.
+                  </span>
+                </div>
               </div>
 
-              <div className="bg-white dark:bg-[#1E191C] p-5 rounded-2xl border border-border dark:border-charcoal-800 shadow-soft">
-                <span className="text-xs font-bold text-charcoal-500 uppercase">Examination Clearance</span>
-                <div
-                  className={`text-2xl font-display font-bold mt-2 ${
-                    studentData?.overallAttendance?.isDefaulter
-                      ? "text-academic-danger"
-                      : "text-academic-success"
-                  }`}
-                >
-                  {studentData?.overallAttendance?.isDefaulter ? "DEFAULTER" : "ELIGIBLE"}
+              <div className="bg-white dark:bg-[#1E191C] p-5 rounded-2xl border border-border dark:border-charcoal-800 shadow-soft flex flex-col justify-between">
+                <div>
+                  <span className="text-xs font-bold text-charcoal-500 uppercase tracking-wider block">Admit Card Clearance</span>
+                  <div
+                    className={`text-2xl font-display font-bold mt-2 flex items-center gap-1.5 ${
+                      studentData?.overallAttendance?.isDefaulter
+                        ? "text-rose-500"
+                        : "text-emerald-500"
+                    }`}
+                  >
+                    <span className={`w-2.5 h-2.5 rounded-full ${studentData?.overallAttendance?.isDefaulter ? "bg-rose-500 animate-pulse" : "bg-emerald-500"}`} />
+                    <span>{studentData?.overallAttendance?.isDefaulter ? "DEFAULTER" : "ELIGIBLE"}</span>
+                  </div>
                 </div>
-                <span className="text-[11px] text-charcoal-500 mt-1 block">
-                  {studentData?.overallAttendance?.isDefaulter
-                    ? "Admit card withheld pending review"
-                    : "Hall ticket clearance granted"}
-                </span>
+                <div className="mt-3">
+                  <span className="text-[11px] text-charcoal-500 block">
+                    {studentData?.overallAttendance?.isDefaulter
+                      ? "Admit card withheld pending academic appeal"
+                      : "Hall ticket approved for all enrolled subjects"}
+                  </span>
+                </div>
               </div>
             </div>
 
@@ -2831,42 +2916,89 @@ export default function AttendancePage() {
       <Modal
         isOpen={isBleModalOpen}
         onClose={() => setIsBleModalOpen(false)}
-        title="Classroom BLE Beacon Manager"
-        description="Register and calibrate Bluetooth Low Energy beacons deployed across lecture halls."
+        title="Classroom BLE Beacon Proximity Mesh"
+        description="Register, monitor, and calibrate Bluetooth Low Energy hardware beacons deployed across academic lecture halls."
         maxWidth="xl"
       >
         <div className="flex flex-col gap-4">
-          <div className="border border-border dark:border-charcoal-700 rounded-xl overflow-hidden">
-            <div className="p-3 bg-surface-soft dark:bg-charcoal-800 font-bold text-xs flex justify-between items-center">
-              <span>Deployed Beacons ({bleDevices.length})</span>
+          {/* Hardware Fleet Telemetry Banner */}
+          <div className="bg-gradient-to-r from-slate-950 via-slate-900 to-blue-950 p-4 rounded-2xl border border-blue-500/30 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-md">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/30 flex items-center justify-center text-blue-400">
+                <Bluetooth className="w-5 h-5 animate-pulse" />
+              </div>
+              <div>
+                <span className="text-xs font-bold uppercase tracking-wider text-blue-300 block">
+                  Classroom Proximity Mesh Active
+                </span>
+                <span className="text-[11px] text-slate-400">
+                  2.4 GHz iBeacon &amp; Eddystone broadcast beacons
+                </span>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="px-2.5 py-1 rounded-full text-xs font-bold font-mono bg-blue-500/20 text-blue-300 border border-blue-500/30">
+                {bleDevices.length} Hardware Nodes
+              </span>
               <button
                 onClick={fetchBleDevices}
-                className="text-indigo-500 hover:underline text-[11px]"
+                className="p-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors"
+                title="Scan for nearby beacons"
               >
-                Refresh
+                <RefreshCw className={`w-3.5 h-3.5 ${isLoadingBle ? "animate-spin text-blue-400" : ""}`} />
               </button>
             </div>
+          </div>
+
+          {/* Deployed Beacon List */}
+          <div className="border border-border/80 dark:border-charcoal-700 rounded-2xl overflow-hidden bg-white dark:bg-[#1E191C]">
+            <div className="p-3 bg-surface-soft/80 dark:bg-charcoal-800/80 font-bold text-xs flex justify-between items-center border-b border-border/60 dark:border-charcoal-700">
+              <span className="text-charcoal-900 dark:text-ivory-100 flex items-center gap-2">
+                <Radio className="w-3.5 h-3.5 text-blue-500" />
+                Deployed Beacon Nodes ({bleDevices.length})
+              </span>
+              <span className="text-[10px] text-charcoal-500 font-mono">RSSI Gate: -80 dBm</span>
+            </div>
+
             {isLoadingBle ? (
-              <div className="p-6 text-center text-xs text-charcoal-500">Loading beacons...</div>
+              <div className="py-8 flex flex-col items-center justify-center gap-2 text-charcoal-500">
+                <RefreshCw className="w-5 h-5 animate-spin text-blue-500" />
+                <span className="text-xs">Querying Bluetooth hardware database...</span>
+              </div>
             ) : bleDevices.length === 0 ? (
-              <div className="p-6 text-center text-xs text-charcoal-500">
-                No BLE beacons registered yet. Add one below to enable proximity-gated attendance.
+              <div className="py-8 text-center px-4">
+                <Bluetooth className="w-8 h-8 text-charcoal-300 dark:text-charcoal-600 mx-auto mb-2" />
+                <span className="text-xs font-bold text-charcoal-700 dark:text-charcoal-300 block">
+                  Zero Hardware Beacons Configured
+                </span>
+                <p className="text-[11px] text-charcoal-500 mt-1 max-w-sm mx-auto">
+                  Deploy a Bluetooth beacon below to gate classroom attendance by physical student proximity.
+                </p>
               </div>
             ) : (
-              <div className="divide-y divide-border/60 dark:divide-charcoal-700 max-h-48 overflow-y-auto">
+              <div className="divide-y divide-border/60 dark:divide-charcoal-700 max-h-52 overflow-y-auto">
                 {bleDevices.map((b) => (
-                  <div key={b.id} className="p-3 flex items-center justify-between text-xs">
-                    <div>
-                      <span className="font-bold text-charcoal-900 dark:text-ivory-100 block">
-                        {b.name}
-                      </span>
-                      <span className="text-[10px] text-charcoal-500 font-mono">
-                        ID: {b.beaconId} • Room: {b.room ? `${b.room.code}` : "Unassigned"} • Calibrated: {b.rssiCalibrated1m}dBm
-                      </span>
+                  <div key={b.id} className="p-3 flex items-center justify-between text-xs hover:bg-surface-soft/40 transition-colors">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <span className="font-bold text-charcoal-900 dark:text-ivory-100 text-xs">
+                          {b.name}
+                        </span>
+                        <span className="px-1.5 py-0.5 rounded text-[9px] font-bold font-mono bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20">
+                          {b.room ? b.room.code : "Room Unassigned"}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-3 text-[10px] text-charcoal-500 font-mono">
+                        <span>ID: <strong className="text-charcoal-700 dark:text-charcoal-300">{b.beaconId}</strong></span>
+                        <span>•</span>
+                        <span>Calibrated: {b.rssiCalibrated1m ?? -65}dBm</span>
+                        <span>•</span>
+                        <span>Tx: {b.txPower ?? 4}dBm</span>
+                      </div>
                     </div>
                     <button
                       onClick={() => handleDeleteBeacon(b.id)}
-                      className="px-2.5 py-1 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/30 rounded text-[11px] font-bold"
+                      className="px-2.5 py-1 text-rose-500 hover:bg-rose-500/10 rounded-xl text-[11px] font-bold border border-rose-500/20 hover:border-rose-500/40 transition-all"
                     >
                       Revoke
                     </button>
@@ -2877,22 +3009,26 @@ export default function AttendancePage() {
           </div>
 
           {/* Register New Beacon Form */}
-          <form onSubmit={handleRegisterBeacon} className="p-3.5 bg-ivory-50 dark:bg-charcoal-800/40 rounded-xl border border-border dark:border-charcoal-700 flex flex-col gap-3">
-            <span className="text-xs font-bold text-charcoal-900 dark:text-ivory-100">
-              Register New Classroom Beacon
-            </span>
+          <form onSubmit={handleRegisterBeacon} className="p-4 bg-surface-soft/60 dark:bg-charcoal-800/40 rounded-2xl border border-border/80 dark:border-charcoal-700 flex flex-col gap-3">
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full bg-blue-500" />
+              <span className="text-xs font-bold text-charcoal-900 dark:text-ivory-100">
+                Register New Classroom Proximity Beacon
+              </span>
+            </div>
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label className="text-[11px] font-bold text-charcoal-600 dark:text-charcoal-400 block mb-1">
-                  Beacon Name
+                  Beacon Hardware Name
                 </label>
                 <input
                   type="text"
                   required
-                  placeholder="e.g. CS Lab 1 Beacon"
+                  placeholder="e.g. Turing Lab 301 Beacon"
                   value={newBeaconForm.name}
                   onChange={(e) => setNewBeaconForm({ ...newBeaconForm, name: e.target.value })}
-                  className="w-full text-xs p-2 rounded-lg border border-border dark:border-charcoal-700 bg-white dark:bg-charcoal-800 text-charcoal-900 dark:text-ivory-100"
+                  className="w-full text-xs px-3 py-2 rounded-xl border border-border dark:border-charcoal-700 bg-white dark:bg-charcoal-800 text-charcoal-900 dark:text-ivory-100 focus:outline-none focus:border-blue-500 font-medium"
                 />
               </div>
               <div>
@@ -2905,7 +3041,7 @@ export default function AttendancePage() {
                   placeholder="e.g. BEACON-LH101-01"
                   value={newBeaconForm.beaconId}
                   onChange={(e) => setNewBeaconForm({ ...newBeaconForm, beaconId: e.target.value })}
-                  className="w-full text-xs p-2 rounded-lg border border-border dark:border-charcoal-700 bg-white dark:bg-charcoal-800 text-charcoal-900 dark:text-ivory-100"
+                  className="w-full text-xs px-3 py-2 rounded-xl border border-border dark:border-charcoal-700 bg-white dark:bg-charcoal-800 text-charcoal-900 dark:text-ivory-100 focus:outline-none focus:border-blue-500 font-mono"
                 />
               </div>
             </div>
@@ -2913,13 +3049,14 @@ export default function AttendancePage() {
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div>
                 <label className="text-[11px] font-bold text-charcoal-600 dark:text-charcoal-400 block mb-1">
-                  Assigned Room Code
+                  Assigned Lecture Venue
                 </label>
                 <input
                   type="text"
                   value={newBeaconForm.roomCode}
                   onChange={(e) => setNewBeaconForm({ ...newBeaconForm, roomCode: e.target.value })}
-                  className="w-full text-xs p-2 rounded-lg border border-border dark:border-charcoal-700 bg-white dark:bg-charcoal-800 text-charcoal-900 dark:text-ivory-100"
+                  placeholder="e.g. LAB-301"
+                  className="w-full text-xs px-3 py-2 rounded-xl border border-border dark:border-charcoal-700 bg-white dark:bg-charcoal-800 text-charcoal-900 dark:text-ivory-100 focus:outline-none focus:border-blue-500 font-mono"
                 />
               </div>
               <div>
@@ -2930,27 +3067,28 @@ export default function AttendancePage() {
                   type="number"
                   value={newBeaconForm.rssiCalibrated1m}
                   onChange={(e) => setNewBeaconForm({ ...newBeaconForm, rssiCalibrated1m: Number(e.target.value) })}
-                  className="w-full text-xs p-2 rounded-lg border border-border dark:border-charcoal-700 bg-white dark:bg-charcoal-800 text-charcoal-900 dark:text-ivory-100"
+                  className="w-full text-xs px-3 py-2 rounded-xl border border-border dark:border-charcoal-700 bg-white dark:bg-charcoal-800 text-charcoal-900 dark:text-ivory-100 focus:outline-none focus:border-blue-500 font-mono"
                 />
               </div>
               <div>
                 <label className="text-[11px] font-bold text-charcoal-600 dark:text-charcoal-400 block mb-1">
-                  Tx Power (dBm)
+                  Transmit Power (dBm)
                 </label>
                 <input
                   type="number"
                   value={newBeaconForm.txPower}
                   onChange={(e) => setNewBeaconForm({ ...newBeaconForm, txPower: Number(e.target.value) })}
-                  className="w-full text-xs p-2 rounded-lg border border-border dark:border-charcoal-700 bg-white dark:bg-charcoal-800 text-charcoal-900 dark:text-ivory-100"
+                  className="w-full text-xs px-3 py-2 rounded-xl border border-border dark:border-charcoal-700 bg-white dark:bg-charcoal-800 text-charcoal-900 dark:text-ivory-100 focus:outline-none focus:border-blue-500 font-mono"
                 />
               </div>
             </div>
 
             <button
               type="submit"
-              className="mt-1 py-2 px-4 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs rounded-xl shadow-xs self-end"
+              className="mt-1 py-2 px-5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-xs rounded-xl shadow-md self-end transition-all flex items-center gap-1.5"
             >
-              Add Beacon
+              <Bluetooth className="w-3.5 h-3.5" />
+              <span>Deploy Beacon Node</span>
             </button>
           </form>
         </div>
@@ -3390,92 +3528,145 @@ export default function AttendancePage() {
       <Modal
         isOpen={isPolicyModalOpen}
         onClose={() => setIsPolicyModalOpen(false)}
-        title="Institutional Attendance Policy & Compliance"
-        description="Configure academic senate cutoffs, proxy mitigation rules, and geofence standards."
+        title="Institutional Attendance Policy & Compliance Regulations"
+        description="Configure academic senate cutoffs, anti-proxy mitigation protocols, and perimeter standards."
         maxWidth="lg"
       >
         <form onSubmit={handleSavePolicySubmit} className="flex flex-col gap-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <label className="text-[11px] font-bold text-charcoal-700 dark:text-charcoal-300 block mb-1">
-                Minimum Exam Eligibility %
-              </label>
-              <input
-                type="number"
-                step="0.1"
-                min="50"
-                max="100"
-                required
-                value={policyForm.minimumAttendancePercentage}
-                onChange={(e) => setPolicyForm({ ...policyForm, minimumAttendancePercentage: parseFloat(e.target.value) })}
-                className="w-full text-xs p-2 rounded-lg border border-border dark:border-charcoal-700 bg-white dark:bg-charcoal-800 text-charcoal-900 dark:text-ivory-100"
-              />
+          {/* Policy Header Banner */}
+          <div className="bg-gradient-to-r from-slate-950 via-slate-900 to-emerald-950 p-4 rounded-2xl border border-emerald-500/30 text-white flex items-center justify-between gap-3 shadow-md">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
+                <Settings2 className="w-5 h-5" />
+              </div>
+              <div>
+                <span className="text-xs font-bold uppercase tracking-wider text-emerald-300 block">
+                  Central Academic Senate Parameters
+                </span>
+                <span className="text-[11px] text-slate-400">
+                  Enforces automated hall-ticket eligibility and defaulter alerts
+                </span>
+              </div>
             </div>
-            <div>
+            <span className="px-2.5 py-1 rounded-full text-xs font-bold font-mono bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+              Active V2.4
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="p-3 bg-surface-soft/60 dark:bg-charcoal-800/40 rounded-xl border border-border/80 dark:border-charcoal-700">
               <label className="text-[11px] font-bold text-charcoal-700 dark:text-charcoal-300 block mb-1">
-                Late Marking Grace Period (Mins)
+                Minimum Exam Eligibility Cutoff
               </label>
-              <input
-                type="number"
-                min="0"
-                max="60"
-                required
-                value={policyForm.lateThresholdMinutes}
-                onChange={(e) => setPolicyForm({ ...policyForm, lateThresholdMinutes: parseInt(e.target.value) })}
-                className="w-full text-xs p-2 rounded-lg border border-border dark:border-charcoal-700 bg-white dark:bg-charcoal-800 text-charcoal-900 dark:text-ivory-100"
-              />
+              <div className="relative">
+                <input
+                  type="number"
+                  step="0.1"
+                  min="50"
+                  max="100"
+                  required
+                  value={policyForm.minimumAttendancePercentage}
+                  onChange={(e) => setPolicyForm({ ...policyForm, minimumAttendancePercentage: parseFloat(e.target.value) })}
+                  className="w-full text-xs px-3 py-2 pr-8 rounded-xl border border-border dark:border-charcoal-700 bg-white dark:bg-charcoal-800 text-charcoal-900 dark:text-ivory-100 font-bold font-mono focus:outline-none focus:border-rose-primary"
+                />
+                <span className="absolute right-3 top-2 text-xs font-bold text-charcoal-400 font-mono">%</span>
+              </div>
+              <span className="text-[10px] text-charcoal-500 mt-1 block">Standard university baseline is 75.0%</span>
+            </div>
+
+            <div className="p-3 bg-surface-soft/60 dark:bg-charcoal-800/40 rounded-xl border border-border/80 dark:border-charcoal-700">
+              <label className="text-[11px] font-bold text-charcoal-700 dark:text-charcoal-300 block mb-1">
+                Late Marking Grace Window
+              </label>
+              <div className="relative">
+                <input
+                  type="number"
+                  min="0"
+                  max="60"
+                  required
+                  value={policyForm.lateThresholdMinutes}
+                  onChange={(e) => setPolicyForm({ ...policyForm, lateThresholdMinutes: parseInt(e.target.value) })}
+                  className="w-full text-xs px-3 py-2 pr-12 rounded-xl border border-border dark:border-charcoal-700 bg-white dark:bg-charcoal-800 text-charcoal-900 dark:text-ivory-100 font-bold font-mono focus:outline-none focus:border-rose-primary"
+                />
+                <span className="absolute right-3 top-2 text-xs font-bold text-charcoal-400 font-mono">min</span>
+              </div>
+              <span className="text-[10px] text-charcoal-500 mt-1 block">Marks arriving students as LATE instead of PRESENT</span>
             </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
+            <div className="p-3 bg-surface-soft/60 dark:bg-charcoal-800/40 rounded-xl border border-border/80 dark:border-charcoal-700">
               <label className="text-[11px] font-bold text-charcoal-700 dark:text-charcoal-300 block mb-1">
-                Dynamic QR Rotation Interval (Sec)
+                Dynamic QR Token Refresh Interval
               </label>
-              <input
-                type="number"
-                min="5"
-                max="120"
-                required
-                value={policyForm.qrRotationSeconds}
-                onChange={(e) => setPolicyForm({ ...policyForm, qrRotationSeconds: parseInt(e.target.value) })}
-                className="w-full text-xs p-2 rounded-lg border border-border dark:border-charcoal-700 bg-white dark:bg-charcoal-800 text-charcoal-900 dark:text-ivory-100"
-              />
+              <div className="relative">
+                <input
+                  type="number"
+                  min="5"
+                  max="120"
+                  required
+                  value={policyForm.qrRotationSeconds}
+                  onChange={(e) => setPolicyForm({ ...policyForm, qrRotationSeconds: parseInt(e.target.value) })}
+                  className="w-full text-xs px-3 py-2 pr-10 rounded-xl border border-border dark:border-charcoal-700 bg-white dark:bg-charcoal-800 text-charcoal-900 dark:text-ivory-100 font-bold font-mono focus:outline-none focus:border-rose-primary"
+                />
+                <span className="absolute right-3 top-2 text-xs font-bold text-charcoal-400 font-mono">sec</span>
+              </div>
+              <span className="text-[10px] text-charcoal-500 mt-1 block">Prevents WhatsApp photo sharing and proxy check-ins</span>
             </div>
-            <div>
+
+            <div className="p-3 bg-surface-soft/60 dark:bg-charcoal-800/40 rounded-xl border border-border/80 dark:border-charcoal-700">
               <label className="text-[11px] font-bold text-charcoal-700 dark:text-charcoal-300 block mb-1">
-                Geofence Perimeter Radius (Meters)
+                Geofence Classroom Perimeter
               </label>
-              <input
-                type="number"
-                min="10"
-                max="1000"
-                required
-                value={policyForm.allowedRadiusMeters}
-                onChange={(e) => setPolicyForm({ ...policyForm, allowedRadiusMeters: parseInt(e.target.value) })}
-                className="w-full text-xs p-2 rounded-lg border border-border dark:border-charcoal-700 bg-white dark:bg-charcoal-800 text-charcoal-900 dark:text-ivory-100"
-              />
+              <div className="relative">
+                <input
+                  type="number"
+                  min="10"
+                  max="1000"
+                  required
+                  value={policyForm.allowedRadiusMeters}
+                  onChange={(e) => setPolicyForm({ ...policyForm, allowedRadiusMeters: parseInt(e.target.value) })}
+                  className="w-full text-xs px-3 py-2 pr-12 rounded-xl border border-border dark:border-charcoal-700 bg-white dark:bg-charcoal-800 text-charcoal-900 dark:text-ivory-100 font-bold font-mono focus:outline-none focus:border-rose-primary"
+                />
+                <span className="absolute right-3 top-2 text-xs font-bold text-charcoal-400 font-mono">meters</span>
+              </div>
+              <span className="text-[10px] text-charcoal-500 mt-1 block">Proximity radius around lecture room GPS coordinates</span>
             </div>
           </div>
 
-          <div className="space-y-2 pt-2 border-t border-border dark:border-charcoal-800">
-            <label className="flex items-center gap-2 text-xs font-semibold text-charcoal-700 dark:text-charcoal-300 cursor-pointer">
+          <div className="space-y-2 pt-2 border-t border-border/80 dark:border-charcoal-800">
+            <label className="flex items-start gap-3 p-3 rounded-xl border border-border/70 dark:border-charcoal-700/80 bg-surface-soft/40 dark:bg-charcoal-900/40 cursor-pointer hover:bg-surface-soft transition-colors">
               <input
                 type="checkbox"
                 checked={policyForm.requireGeofenceForQr}
                 onChange={(e) => setPolicyForm({ ...policyForm, requireGeofenceForQr: e.target.checked })}
-                className="rounded border-charcoal-300 text-rose-primary focus:ring-rose-primary"
+                className="mt-0.5 rounded border-charcoal-300 text-rose-primary focus:ring-rose-primary"
               />
-              <span>Mandate GPS Classroom Proximity for QR Verification</span>
+              <div>
+                <span className="text-xs font-bold text-charcoal-900 dark:text-ivory-100 block">
+                  Mandate GPS Classroom Geofence Proximity
+                </span>
+                <span className="text-[10px] text-charcoal-500">
+                  Scans from outside the calibrated perimeter are logged as security breaches on the Exception Radar.
+                </span>
+              </div>
             </label>
-            <label className="flex items-center gap-2 text-xs font-semibold text-charcoal-700 dark:text-charcoal-300 cursor-pointer">
+
+            <label className="flex items-start gap-3 p-3 rounded-xl border border-border/70 dark:border-charcoal-700/80 bg-surface-soft/40 dark:bg-charcoal-900/40 cursor-pointer hover:bg-surface-soft transition-colors">
               <input
                 type="checkbox"
                 checked={policyForm.requireBleForQr}
                 onChange={(e) => setPolicyForm({ ...policyForm, requireBleForQr: e.target.checked })}
-                className="rounded border-charcoal-300 text-rose-primary focus:ring-rose-primary"
+                className="mt-0.5 rounded border-charcoal-300 text-rose-primary focus:ring-rose-primary"
               />
-              <span>Mandate Hardware BLE Proximity Beacon for QR Scanning</span>
+              <div>
+                <span className="text-xs font-bold text-charcoal-900 dark:text-ivory-100 block">
+                  Mandate Hardware BLE Beacon Handshake
+                </span>
+                <span className="text-[10px] text-charcoal-500">
+                  Requires student device to establish local 2.4 GHz physical proximity with the lecture hall beacon.
+                </span>
+              </div>
             </label>
           </div>
 
@@ -3483,16 +3674,17 @@ export default function AttendancePage() {
             <button
               type="button"
               onClick={() => setIsPolicyModalOpen(false)}
-              className="px-4 py-2 text-xs font-bold text-charcoal-600 dark:text-charcoal-400 hover:bg-ivory-100 dark:hover:bg-charcoal-800 rounded-xl"
+              className="px-4 py-2 text-xs font-bold text-charcoal-600 dark:text-charcoal-400 hover:bg-ivory-100 dark:hover:bg-charcoal-800 rounded-xl transition-colors"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isSavingPolicy}
-              className="px-4 py-2 text-xs font-bold bg-rose-primary hover:bg-rose-dark text-white rounded-xl shadow-sm disabled:opacity-50"
+              className="px-5 py-2 text-xs font-bold bg-gradient-to-r from-rose-primary to-rose-dark hover:shadow-md text-white rounded-xl shadow-sm disabled:opacity-50 transition-all flex items-center gap-1.5"
             >
-              {isSavingPolicy ? "Saving Policy..." : "Save Institutional Policy"}
+              <Save className="w-3.5 h-3.5" />
+              <span>{isSavingPolicy ? "Saving Policy..." : "Save Institutional Regulations"}</span>
             </button>
           </div>
         </form>
@@ -3502,77 +3694,120 @@ export default function AttendancePage() {
       <Modal
         isOpen={isReportModalOpen}
         onClose={() => setIsReportModalOpen(false)}
-        title="Generate Official Attendance Report"
-        description="Export standardized academic records, subject registers, or senate defaulter rosters."
+        title="Official Academic Attendance Exporter"
+        description="Generate standardized university attendance ledgers, master subject registers, and senate defaulter lists."
         maxWidth="md"
       >
         <div className="flex flex-col gap-4">
-          <div>
-            <label className="text-[11px] font-bold text-charcoal-700 dark:text-charcoal-300 block mb-1">
-              Report Type
-            </label>
-            <select
-              value={reportType}
-              onChange={(e) => setReportType(e.target.value)}
-              className="w-full text-xs p-2 rounded-lg border border-border dark:border-charcoal-700 bg-white dark:bg-charcoal-800 text-charcoal-900 dark:text-ivory-100 font-semibold"
-            >
-              <option value="DAILY_SHEET">Daily Attendance Sheet (Date &amp; Course Specific)</option>
-              <option value="SUBJECT_REGISTER">Subject-Wise Master Attendance Register</option>
-              <option value="DEFAULTER_ROSTER">Defaulters List (Below 75% Senate Threshold)</option>
-            </select>
+          {/* Exporter Banner */}
+          <div className="bg-gradient-to-r from-slate-950 via-slate-900 to-purple-950 p-4 rounded-2xl border border-purple-500/30 text-white flex items-center justify-between gap-3 shadow-md">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-purple-500/10 border border-purple-500/30 flex items-center justify-center text-purple-400">
+                <FileSpreadsheet className="w-5 h-5" />
+              </div>
+              <div>
+                <span className="text-xs font-bold uppercase tracking-wider text-purple-300 block">
+                  RFC 4180 Verified Export Engine
+                </span>
+                <span className="text-[11px] text-slate-400">
+                  Ready for Excel, University ERP import, and Exam Senate
+                </span>
+              </div>
+            </div>
+            <span className="px-2 py-0.5 rounded-full text-[10px] font-mono bg-purple-500/20 text-purple-300 border border-purple-500/30 font-bold">
+              UTF-8
+            </span>
           </div>
 
           <div>
             <label className="text-[11px] font-bold text-charcoal-700 dark:text-charcoal-300 block mb-1">
-              Export Format
+              Select Report Scope
             </label>
-            <div className="flex items-center gap-3">
-              <label className="flex items-center gap-1.5 text-xs font-bold text-charcoal-700 dark:text-charcoal-300 cursor-pointer">
+            <select
+              value={reportType}
+              onChange={(e) => setReportType(e.target.value)}
+              className="w-full text-xs px-3 py-2.5 rounded-xl border border-border dark:border-charcoal-700 bg-white dark:bg-charcoal-800 text-charcoal-900 dark:text-ivory-100 font-bold focus:outline-none focus:border-rose-primary"
+            >
+              <option value="DAILY_SHEET">📅 Daily Attendance Sheet (Date &amp; Course Specific)</option>
+              <option value="SUBJECT_REGISTER">📚 Subject-Wise Master Attendance Register (Full Term)</option>
+              <option value="DEFAULTER_ROSTER">⚠️ Senate Defaulters Roster (&lt; 75% Examination Ineligible)</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="text-[11px] font-bold text-charcoal-700 dark:text-charcoal-300 block mb-1.5">
+              Standard Output Format
+            </label>
+            <div className="grid grid-cols-2 gap-2.5">
+              <label
+                className={`p-3 rounded-xl border cursor-pointer flex items-center gap-2.5 transition-all ${
+                  reportFormat === "CSV"
+                    ? "border-rose-primary bg-rose-primary/5 dark:bg-rose-950/20 text-rose-primary font-bold shadow-xs"
+                    : "border-border dark:border-charcoal-700 bg-surface-soft/60 text-charcoal-700 dark:text-charcoal-300 font-medium"
+                }`}
+              >
                 <input
                   type="radio"
                   name="reportFormat"
                   value="CSV"
                   checked={reportFormat === "CSV"}
                   onChange={() => setReportFormat("CSV")}
-                  className="text-rose-primary focus:ring-rose-primary"
+                  className="sr-only"
                 />
-                <span>CSV (RFC 4180 / Excel)</span>
+                <FileSpreadsheet className="w-4 h-4 text-emerald-500 shrink-0" />
+                <div className="text-left">
+                  <span className="text-xs block">CSV / Excel</span>
+                  <span className="text-[10px] text-charcoal-500 block font-normal">RFC 4180 Escaped</span>
+                </div>
               </label>
-              <label className="flex items-center gap-1.5 text-xs font-bold text-charcoal-700 dark:text-charcoal-300 cursor-pointer">
+
+              <label
+                className={`p-3 rounded-xl border cursor-pointer flex items-center gap-2.5 transition-all ${
+                  reportFormat === "JSON"
+                    ? "border-rose-primary bg-rose-primary/5 dark:bg-rose-950/20 text-rose-primary font-bold shadow-xs"
+                    : "border-border dark:border-charcoal-700 bg-surface-soft/60 text-charcoal-700 dark:text-charcoal-300 font-medium"
+                }`}
+              >
                 <input
                   type="radio"
                   name="reportFormat"
                   value="JSON"
                   checked={reportFormat === "JSON"}
                   onChange={() => setReportFormat("JSON")}
-                  className="text-rose-primary focus:ring-rose-primary"
+                  className="sr-only"
                 />
-                <span>JSON (Academic ERP API)</span>
+                <FileText className="w-4 h-4 text-indigo-500 shrink-0" />
+                <div className="text-left">
+                  <span className="text-xs block">JSON Payload</span>
+                  <span className="text-[10px] text-charcoal-500 block font-normal">Academic ERP API</span>
+                </div>
               </label>
             </div>
           </div>
 
-          <div className="p-3 bg-ivory-100 dark:bg-charcoal-800 rounded-xl text-xs space-y-1">
-            <span className="font-bold text-charcoal-900 dark:text-ivory-100 block">Report Parameters</span>
-            <div className="text-[11px] text-charcoal-600 dark:text-charcoal-400">
-              Course: <strong className="text-charcoal-800 dark:text-ivory-200">{selectedCourse}</strong> • Date: <strong className="text-charcoal-800 dark:text-ivory-200">{selectedDate}</strong>
+          <div className="p-3 bg-surface-soft/60 dark:bg-charcoal-800/60 rounded-xl border border-border/80 dark:border-charcoal-700 text-xs space-y-1">
+            <span className="font-bold text-charcoal-900 dark:text-ivory-100 block">Export Ledger Context</span>
+            <div className="text-[11px] text-charcoal-600 dark:text-charcoal-400 flex items-center gap-2 flex-wrap">
+              <span>Course: <strong className="text-charcoal-900 dark:text-ivory-100 font-mono">{selectedCourse}</strong></span>
+              <span>•</span>
+              <span>Session Date: <strong className="text-charcoal-900 dark:text-ivory-100 font-mono">{selectedDate}</strong></span>
             </div>
           </div>
 
           <div className="flex items-center justify-end gap-2 pt-3 border-t border-border dark:border-charcoal-800">
             <button
               onClick={() => setIsReportModalOpen(false)}
-              className="px-4 py-2 text-xs font-bold text-charcoal-600 dark:text-charcoal-400 hover:bg-ivory-100 dark:hover:bg-charcoal-800 rounded-xl"
+              className="px-4 py-2 text-xs font-bold text-charcoal-600 dark:text-charcoal-400 hover:bg-ivory-100 dark:hover:bg-charcoal-800 rounded-xl transition-colors"
             >
               Cancel
             </button>
             <button
               onClick={handleTriggerReport}
               disabled={isGeneratingReport}
-              className="px-4 py-2 text-xs font-bold bg-rose-primary hover:bg-rose-dark text-white rounded-xl shadow-sm disabled:opacity-50 flex items-center gap-1.5"
+              className="px-5 py-2 text-xs font-bold bg-gradient-to-r from-rose-primary to-rose-dark hover:shadow-md text-white rounded-xl shadow-sm disabled:opacity-50 flex items-center gap-1.5 transition-all"
             >
               <Download className="w-3.5 h-3.5" />
-              <span>{isGeneratingReport ? "Generating..." : "Download Report"}</span>
+              <span>{isGeneratingReport ? "Exporting..." : "Download Official Report"}</span>
             </button>
           </div>
         </div>
