@@ -314,10 +314,21 @@ model Course {
   semesterId   String
   code         String   // "CS-402"
   title        String   // "Advanced Neural Networks"
+  shortName    String?
   description  String?
+  subjectType  String   @default("CORE") // CORE, ELECTIVE, OPEN_ELECTIVE, PROGRAM_ELECTIVE, MINOR, MAJOR, ABILITY_ENHANCEMENT, SKILL_ENHANCEMENT, VALUE_ADDED, PRACTICAL, LAB, PROJECT, SEMINAR, INTERNSHIP, OTHER
+  courseType   String   @default("THEORY") // THEORY, PRACTICAL, LAB, TUTORIAL, INTEGRATED
   credits      Int      @default(4)
   lectureHours Int      @default(3)
+  tutorialHours Int     @default(0)
   labHours     Int      @default(2)
+  internalMarks Int     @default(40)
+  externalMarks Int     @default(60)
+  totalMarks   Int      @default(100)
+  passingMarks Int      @default(40)
+  status       String   @default("ACTIVE") // ACTIVE, INACTIVE, ARCHIVED
+  isElective   Boolean  @default(false)
+  isCommon     Boolean  @default(false)
   syllabusUrl  String?
   isActive     Boolean  @default(true)
   createdAt    DateTime @default(now())

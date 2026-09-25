@@ -57,10 +57,13 @@ import {
 export default function AttendancePage() {
   const { showToast, triggerRefresh, currentRole, currentUser } = useApp();
 
-  // Core Selection
+  // Core Selection & Academic Context
   const [selectedCourse, setSelectedCourse] = useState("CS-402");
+  const [selectedSection, setSelectedSection] = useState("");
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split("T")[0]);
-  const [availableCourses, setAvailableCourses] = useState<{ id: string; code: string; title: string }[]>([]);
+  const [availableCourses, setAvailableCourses] = useState<any[]>([]);
+  const [programFilter, setProgramFilter] = useState("ALL");
+  const [subjectTypeFilter, setSubjectTypeFilter] = useState("ALL");
 
   // Faculty Roster & State
   const [studentRoster, setStudentRoster] = useState<any[]>([]);
@@ -110,6 +113,7 @@ export default function AttendancePage() {
   // Session Configurator Modal
   const [isConfigModalOpen, setIsConfigModalOpen] = useState(false);
   const [configCourse, setConfigCourse] = useState("CS-402");
+  const [configSection, setConfigSection] = useState("");
   const [configMethod, setConfigMethod] = useState("SMART_COMBO");
   const [configRotation, setConfigRotation] = useState(15);
   const [configRadius, setConfigRadius] = useState(100);
@@ -129,6 +133,7 @@ export default function AttendancePage() {
   });
 
   // Calendar Day Details Modal (Student)
+  const [studentSubjectTypeFilter, setStudentSubjectTypeFilter] = useState("ALL");
   const [selectedCalendarDay, setSelectedCalendarDay] = useState<{
     date: string;
     dayName: string;
@@ -246,7 +251,11 @@ export default function AttendancePage() {
   // Fetch Roster & Command Center
   const fetchRoster = () => {
     setIsLoading(true);
-    fetch(`/api/attendance?courseCode=${selectedCourse}&date=${selectedDate}`)
+    let url = `/api/attendance?courseCode=${selectedCourse}&date=${selectedDate}`;
+    if (selectedSection) {
+      url += `&sectionId=${selectedSection}`;
+    }
+    fetch(url)
       .then((res) => res.json())
       .then((data) => {
         if (data.role === "STUDENT" || data.perspective === "STUDENT") {
@@ -257,6 +266,12 @@ export default function AttendancePage() {
           }
           if (data.availableCourses && data.availableCourses.length > 0) {
             setAvailableCourses(data.availableCourses);
+            const currentC = data.availableCourses.find((c: any) => c.code === selectedCourse);
+            if (currentC && currentC.sections?.length > 0) {
+              if (!selectedSection || !currentC.sections.some((s: any) => s.id === selectedSection)) {
+                setSelectedSection(currentC.sections[0].id);
+              }
+            }
           }
           if (data.commandCenter) {
             setCommandCenter(data.commandCenter);
@@ -277,7 +292,7 @@ export default function AttendancePage() {
 
   useEffect(() => {
     fetchRoster();
-  }, [selectedCourse, selectedDate, currentRole]);
+  }, [selectedCourse, selectedSection, selectedDate, currentRole]);
 
   // Fetch BLE Devices when BLE modal opens
   const fetchBleDevices = async () => {
@@ -349,6 +364,7 @@ export default function AttendancePage() {
   // Launch Session Configurator or Quick Launch
   const handleOpenConfigurator = () => {
     setConfigCourse(selectedCourse);
+    setConfigSection(selectedSection);
     setIsConfigModalOpen(true);
   };
 
@@ -361,6 +377,7 @@ export default function AttendancePage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           courseCode: configCourse,
+          sectionId: configSection || selectedSection,
           method: configMethod,
           qrRotationSeconds: configRotation,
           allowedRadiusMeters: configRadius,
@@ -374,6 +391,7 @@ export default function AttendancePage() {
         setCurrentSessionId(data.session.id);
         setCurrentSessionStatus("ACTIVE");
         setSelectedCourse(configCourse);
+        if (configSection) setSelectedSection(configSection);
         setIsConfigModalOpen(false);
         setIsProjectorOpen(true);
         showToast("Smart Session initialized and projector active!", "success");
@@ -397,6 +415,7 @@ export default function AttendancePage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           courseCode: selectedCourse,
+          sectionId: selectedSection,
           method: "SMART_COMBO",
           qrRotationSeconds: 15,
           allowedRadiusMeters: 100,
@@ -562,6 +581,7 @@ export default function AttendancePage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           courseCode: selectedCourse,
+          sectionId: selectedSection,
           date: selectedDate,
           sessionAction: action === "FINALIZED" ? "CLOSE" : action,
           records: studentRoster.map((s) => ({
@@ -1151,6 +1171,7 @@ export default function AttendancePage() {
                           <button
                             onClick={() => {
                               setSelectedCourse(cls.courseCode);
+                              if (cls.sectionId) setSelectedSection(cls.sectionId);
                               if (cls.sessionStatus === "ACTIVE" || cls.sessionStatus === "NOT_STARTED") {
                                 handleQuickProjector();
                               }
@@ -1161,7 +1182,10 @@ export default function AttendancePage() {
                             <span>{cls.sessionStatus === "ACTIVE" ? "Projector" : "Start QR"}</span>
                           </button>
                           <button
-                            onClick={() => setSelectedCourse(cls.courseCode)}
+                            onClick={() => {
+                              setSelectedCourse(cls.courseCode);
+                              if (cls.sectionId) setSelectedSection(cls.sectionId);
+                            }}
                             className="py-1.5 px-2.5 bg-ivory-100 dark:bg-charcoal-800 hover:bg-ivory-200 dark:hover:bg-charcoal-700 text-charcoal-700 dark:text-charcoal-300 font-bold text-[10px] rounded-lg transition-colors"
                           >
                             Roster
@@ -1222,29 +1246,106 @@ export default function AttendancePage() {
               </div>
             )}
 
-            {/* Course & Date Filter Strip */}
+            {/* Course & Academic Context Filter Strip */}
             <div className="bg-white dark:bg-[#1E191C] p-4 rounded-2xl border border-border dark:border-charcoal-800 shadow-soft flex flex-wrap items-center justify-between gap-4">
-              <div className="flex items-center gap-3">
-                <Filter className="h-4 w-4 text-charcoal-400" />
-                <span className="text-xs font-bold text-charcoal-700 dark:text-charcoal-300">Course:</span>
+              <div className="flex flex-wrap items-center gap-3">
+                <div className="flex items-center gap-2">
+                  <Filter className="h-4 w-4 text-charcoal-400" />
+                  <span className="text-xs font-bold text-charcoal-700 dark:text-charcoal-300">Course:</span>
+                </div>
+
+                {/* Program Filter */}
+                {availableCourses.some((c) => c.program) && (
+                  <select
+                    value={programFilter}
+                    onChange={(e) => setProgramFilter(e.target.value)}
+                    className="text-xs font-semibold bg-ivory-50 dark:bg-charcoal-800 border border-border dark:border-charcoal-700 rounded-xl px-2.5 py-2 text-charcoal-900 dark:text-ivory-100"
+                    title="Filter courses by academic program"
+                  >
+                    <option value="ALL">All Programs</option>
+                    {Array.from(
+                      new Set(
+                        availableCourses
+                          .map((c) => c.program?.code)
+                          .filter(Boolean)
+                      )
+                    ).map((pCode) => (
+                      <option key={pCode} value={pCode}>
+                        {pCode}
+                      </option>
+                    ))}
+                  </select>
+                )}
+
+                {/* Subject Type Filter */}
+                <select
+                  value={subjectTypeFilter}
+                  onChange={(e) => setSubjectTypeFilter(e.target.value)}
+                  className="text-xs font-semibold bg-ivory-50 dark:bg-charcoal-800 border border-border dark:border-charcoal-700 rounded-xl px-2.5 py-2 text-charcoal-900 dark:text-ivory-100"
+                  title="Filter by subject type"
+                >
+                  <option value="ALL">All Subject Types</option>
+                  <option value="CORE">Core</option>
+                  <option value="ELECTIVE">Elective</option>
+                  <option value="LAB">Lab / Practical</option>
+                  <option value="SEMINAR">Seminar / Project</option>
+                </select>
+
+                {/* Course Selection */}
                 <select
                   value={selectedCourse}
-                  onChange={(e) => setSelectedCourse(e.target.value)}
-                  className="text-xs font-semibold bg-ivory-50 dark:bg-charcoal-800 border border-border dark:border-charcoal-700 rounded-xl px-3 py-2 text-charcoal-900 dark:text-ivory-100"
+                  onChange={(e) => {
+                    const newCourseCode = e.target.value;
+                    setSelectedCourse(newCourseCode);
+                    const courseObj = availableCourses.find((c) => c.code === newCourseCode);
+                    if (courseObj && courseObj.sections?.length > 0) {
+                      setSelectedSection(courseObj.sections[0].id);
+                    }
+                  }}
+                  className="text-xs font-semibold bg-ivory-50 dark:bg-charcoal-800 border border-border dark:border-charcoal-700 rounded-xl px-3 py-2 text-charcoal-900 dark:text-ivory-100 max-w-[280px] truncate"
                 >
-                  {availableCourses.length > 0 ? (
-                    availableCourses.map((c) => (
+                  {availableCourses
+                    .filter((c) => {
+                      if (programFilter !== "ALL" && c.program?.code !== programFilter) return false;
+                      if (subjectTypeFilter !== "ALL") {
+                        if (subjectTypeFilter === "ELECTIVE" && !c.subjectType?.includes("ELECTIVE") && !c.isElective) return false;
+                        if (subjectTypeFilter === "LAB" && c.subjectType !== "LAB" && c.courseType !== "PRACTICAL") return false;
+                        if (subjectTypeFilter === "CORE" && c.subjectType !== "CORE") return false;
+                        if (subjectTypeFilter === "SEMINAR" && c.subjectType !== "SEMINAR" && c.subjectType !== "PROJECT") return false;
+                      }
+                      return true;
+                    })
+                    .map((c) => (
                       <option key={c.id} value={c.code}>
-                        {c.code}: {c.title}
+                        {c.code}: {c.shortName || c.title} [{c.subjectType || "CORE"}]
                       </option>
-                    ))
-                  ) : (
-                    <>
-                      <option value="CS-402">CS-402: Advanced Neural Networks</option>
-                      <option value="BIO-210">BIO-210: Cellular Genomics &amp; CRISPR</option>
-                    </>
-                  )}
+                    ))}
                 </select>
+
+                {/* Section Selection */}
+                {(() => {
+                  const currentCourseObj = availableCourses.find((c) => c.code === selectedCourse);
+                  const sections = currentCourseObj?.sections || [];
+                  if (sections.length > 0) {
+                    return (
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-[11px] font-bold text-charcoal-500">Section:</span>
+                        <select
+                          value={selectedSection}
+                          onChange={(e) => setSelectedSection(e.target.value)}
+                          className="text-xs font-semibold bg-ivory-50 dark:bg-charcoal-800 border border-border dark:border-charcoal-700 rounded-xl px-2.5 py-2 text-charcoal-900 dark:text-ivory-100"
+                        >
+                          {sections.map((sec: any) => (
+                            <option key={sec.id} value={sec.id}>
+                              {sec.name}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    );
+                  }
+                  return null;
+                })()}
               </div>
 
               <div className="flex items-center gap-3">
@@ -1466,7 +1567,10 @@ export default function AttendancePage() {
                     </span>
                   </div>
                   <span className="px-2.5 py-1 rounded text-[10px] font-bold bg-rose-container dark:bg-rose-dark/30 text-rose-primary dark:text-rose-accent shrink-0">
-                    Section 5-A
+                    {availableCourses
+                      .find((c) => c.code === selectedCourse)
+                      ?.sections?.find((sec: any) => sec.id === selectedSection)?.name ||
+                      "Section Roster"}
                   </span>
                 </div>
 
@@ -1759,7 +1863,7 @@ export default function AttendancePage() {
 
             {/* Subject-Wise Attendance Breakdown */}
             <div className="bg-white dark:bg-[#1E191C] rounded-2xl border border-border dark:border-charcoal-800 shadow-soft overflow-hidden">
-              <div className="p-5 border-b border-border/70 dark:border-charcoal-800 flex items-center justify-between">
+              <div className="p-5 border-b border-border/70 dark:border-charcoal-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div>
                   <h3 className="text-sm font-bold text-charcoal-900 dark:text-ivory-100">
                     Subject-Wise Attendance Breakdown
@@ -1768,12 +1872,29 @@ export default function AttendancePage() {
                     Authoritative tracking based on central academic attendance calculation service
                   </p>
                 </div>
-                <button
-                  onClick={() => setIsCorrectionModalOpen(true)}
-                  className="text-xs font-bold text-rose-primary dark:text-rose-accent hover:underline"
-                >
-                  File Discrepancy Petition →
-                </button>
+                <div className="flex flex-wrap items-center gap-2">
+                  <div className="flex items-center bg-ivory-100 dark:bg-charcoal-800 p-1 rounded-xl text-[11px] font-semibold">
+                    {["ALL", "CORE", "ELECTIVE", "LAB"].map((type) => (
+                      <button
+                        key={type}
+                        onClick={() => setStudentSubjectTypeFilter(type)}
+                        className={`px-2.5 py-1 rounded-lg transition-all ${
+                          studentSubjectTypeFilter === type
+                            ? "bg-white dark:bg-charcoal-700 text-charcoal-900 dark:text-ivory-100 shadow-xs font-bold"
+                            : "text-charcoal-500 hover:text-charcoal-800 dark:hover:text-charcoal-300"
+                        }`}
+                      >
+                        {type === "ALL" ? "All Subjects" : type}
+                      </button>
+                    ))}
+                  </div>
+                  <button
+                    onClick={() => setIsCorrectionModalOpen(true)}
+                    className="text-xs font-bold text-rose-primary dark:text-rose-accent hover:underline ml-1"
+                  >
+                    File Discrepancy Petition →
+                  </button>
+                </div>
               </div>
 
               <div className="overflow-x-auto">
@@ -1781,6 +1902,7 @@ export default function AttendancePage() {
                   <thead className="bg-ivory-100 dark:bg-charcoal-900 border-b border-border dark:border-charcoal-800 text-charcoal-600 dark:text-charcoal-400 font-bold uppercase tracking-wider text-[10px]">
                     <tr>
                       <th className="p-3.5">Course Code &amp; Title</th>
+                      <th className="p-3.5">Type</th>
                       <th className="p-3.5">Credits</th>
                       <th className="p-3.5">Faculty</th>
                       <th className="p-3.5 text-center">Lectures Attended</th>
@@ -1790,12 +1912,34 @@ export default function AttendancePage() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border/60 dark:divide-charcoal-800 text-charcoal-900 dark:text-ivory-100">
-                    {studentData?.courseWiseAttendance?.map((c: any) => (
+                    {studentData?.courseWiseAttendance
+                      ?.filter((c: any) =>
+                        studentSubjectTypeFilter === "ALL"
+                          ? true
+                          : c.subjectType === studentSubjectTypeFilter ||
+                            (studentSubjectTypeFilter === "LAB" && (c.subjectType === "PRACTICAL" || c.courseType === "LAB"))
+                      )
+                      .map((c: any) => (
                       <tr key={c.courseCode} className="hover:bg-ivory-50/50 dark:hover:bg-charcoal-900/40">
                         <td className="p-3.5">
                           <span className="font-bold block">
-                            {c.courseCode}: {c.courseTitle}
+                            {c.courseCode}: {c.shortName || c.courseTitle}
                           </span>
+                          {c.shortName && c.shortName !== c.courseTitle && (
+                            <span className="text-[10px] text-charcoal-500 block truncate max-w-[220px]">
+                              {c.courseTitle}
+                            </span>
+                          )}
+                        </td>
+                        <td className="p-3.5">
+                          <div className="flex flex-wrap gap-1 items-center">
+                            <span className="px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider bg-rose-primary/10 text-rose-primary dark:text-rose-accent border border-rose-primary/20">
+                              {c.subjectType || "CORE"}
+                            </span>
+                            <span className="px-1.5 py-0.5 rounded text-[9px] font-medium bg-ivory-200 dark:bg-charcoal-700 text-charcoal-600 dark:text-charcoal-300">
+                              {c.courseType || "THEORY"}
+                            </span>
+                          </div>
                         </td>
                         <td className="p-3.5 font-mono">{c.credits}</td>
                         <td className="p-3.5 text-charcoal-600 dark:text-charcoal-400">{c.facultyName}</td>
@@ -2093,21 +2237,54 @@ export default function AttendancePage() {
         maxWidth="lg"
       >
         <form onSubmit={handleStartConfiguredSession} className="flex flex-col gap-4">
-          <div>
-            <label className="text-xs font-bold text-charcoal-700 dark:text-charcoal-300 block mb-1">
-              Select Course
-            </label>
-            <select
-              value={configCourse}
-              onChange={(e) => setConfigCourse(e.target.value)}
-              className="w-full text-xs font-semibold p-2.5 rounded-xl border border-border dark:border-charcoal-700 bg-white dark:bg-charcoal-800 text-charcoal-900 dark:text-ivory-100"
-            >
-              {availableCourses.map((c) => (
-                <option key={c.id} value={c.code}>
-                  {c.code}: {c.title}
-                </option>
-              ))}
-            </select>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label className="text-xs font-bold text-charcoal-700 dark:text-charcoal-300 block mb-1">
+                Select Course
+              </label>
+              <select
+                value={configCourse}
+                onChange={(e) => {
+                  const newCode = e.target.value;
+                  setConfigCourse(newCode);
+                  const cObj = availableCourses.find((c) => c.code === newCode);
+                  if (cObj && cObj.sections?.length > 0) {
+                    setConfigSection(cObj.sections[0].id);
+                  }
+                }}
+                className="w-full text-xs font-semibold p-2.5 rounded-xl border border-border dark:border-charcoal-700 bg-white dark:bg-charcoal-800 text-charcoal-900 dark:text-ivory-100"
+              >
+                {availableCourses.map((c) => (
+                  <option key={c.id} value={c.code}>
+                    {c.code}: {c.shortName || c.title} [{c.subjectType || "CORE"}]
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="text-xs font-bold text-charcoal-700 dark:text-charcoal-300 block mb-1">
+                Academic Section
+              </label>
+              <select
+                value={configSection}
+                onChange={(e) => setConfigSection(e.target.value)}
+                className="w-full text-xs font-semibold p-2.5 rounded-xl border border-border dark:border-charcoal-700 bg-white dark:bg-charcoal-800 text-charcoal-900 dark:text-ivory-100"
+              >
+                {(() => {
+                  const cObj = availableCourses.find((c) => c.code === configCourse);
+                  const secList = cObj?.sections || [];
+                  if (secList.length === 0) {
+                    return <option value="">Default Section</option>;
+                  }
+                  return secList.map((s: any) => (
+                    <option key={s.id} value={s.id}>
+                      {s.name} (Cap: {s.capacity || 60})
+                    </option>
+                  ));
+                })()}
+              </select>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">

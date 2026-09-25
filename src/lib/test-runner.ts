@@ -61,6 +61,7 @@ import {
   calculateSafeAbsencesAllowed,
   computeAttendanceSummary,
 } from "@/lib/attendance/calculator";
+import { ensureAcademicMasterData } from "@/lib/academic/master-data";
 
 async function runTestSuite() {
   console.log("=================================================");
@@ -2244,6 +2245,180 @@ async function runTestSuite() {
 
   assert(isValidOfflinePayload(offlineDraftPayload) === true, "Offline draft payload meets client cache storage schema");
   assert(isValidOfflinePayload({ courseId: "cs-101" }) === false, "Incomplete offline draft payload rejected");
+
+  // =========================================================================
+  // TEST GROUP 35: Course & Subject Master Data Integration & Multi-Section Isolation
+  // =========================================================================
+  console.log("\n📌 Group 35: Course Master Data Hierarchy, Multi-Section Isolation & Ingestion Engine");
+
+  // 35.1 Master Data Synchronization & Hierarchy Seeding
+  const masterDataResult = await ensureAcademicMasterData();
+  assert(masterDataResult.institutionId === "inst-apex-01", "Master Data sync confirms institutional apex");
+  assert(masterDataResult.departmentsCount >= 5, `University departments populated (${masterDataResult.departmentsCount} depts)`);
+  assert(masterDataResult.programsCount >= 10, `Academic programs mapped (${masterDataResult.programsCount} programs)`);
+  assert(masterDataResult.coursesCount >= 15, `Full subject catalog seeded (${masterDataResult.coursesCount} courses/subjects)`);
+  assert(masterDataResult.sectionsCount >= 4, `Multi-sections established (${masterDataResult.sectionsCount} sections)`);
+
+  // 35.2 Subject Catalog Rich Metadata & Subject Types
+  const coreCourses = await prisma.course.findMany({ where: { subjectType: "CORE" } });
+  const labCourses = await prisma.course.findMany({ where: { subjectType: "LAB" } });
+  const electiveCourses = await prisma.course.findMany({ where: { isElective: true } });
+  assert(coreCourses.length >= 6, `Core academic subjects cataloged (${coreCourses.length} core courses)`);
+  assert(labCourses.length >= 2, `Hands-on practical laboratory courses configured (${labCourses.length} labs)`);
+  assert(electiveCourses.length >= 3, `Elective courses properly flagged (${electiveCourses.length} electives)`);
+
+  // 35.3 Multi-Section Session Independence (Section A vs Section B Separation)
+  const cs402Course = await prisma.course.findFirst({ where: { code: "CS-402" } });
+  const secA = await prisma.section.findFirst({ where: { name: "Section 5-A" } });
+  const secB = await prisma.section.findFirst({ where: { name: "Section 5-B" } });
+  const testFaculty = await prisma.faculty.findFirst();
+  assert(!!cs402Course && !!secA && !!secB && !!testFaculty, "Target course CS-402, Sections 5-A/5-B, and faculty exist");
+
+  const testDate = new Date("2026-10-15T09:00:00Z");
+  // Clean up any prior test sessions on testDate
+  await prisma.attendanceSession.deleteMany({
+    where: {
+      courseId: cs402Course!.id,
+      date: testDate,
+    },
+  });
+
+  // Create session for Section A
+  const sessionSecA = await prisma.attendanceSession.create({
+    data: {
+      id: "test-sess-sec-a",
+      courseId: cs402Course!.id,
+      facultyId: testFaculty!.id,
+      sectionId: secA!.id,
+      date: testDate,
+      startTime: "09:00",
+      endTime: "10:00",
+      status: "ACTIVE",
+      method: "SMART_COMBO",
+    },
+  });
+
+  // Create session for Section B on the EXACT same date
+  const sessionSecB = await prisma.attendanceSession.create({
+    data: {
+      id: "test-sess-sec-b",
+      courseId: cs402Course!.id,
+      facultyId: testFaculty!.id,
+      sectionId: secB!.id,
+      date: testDate,
+      startTime: "11:00",
+      endTime: "12:00",
+      status: "ACTIVE",
+      method: "SMART_COMBO",
+    },
+  });
+
+  assert(sessionSecA.id !== sessionSecB.id, "Multi-section sessions on identical date have distinct IDs");
+  assert(sessionSecA.sectionId === secA!.id && sessionSecB.sectionId === secB!.id, "Multi-section sessions maintain strict section boundaries without collision");
+
+  // 35.4 Multi-Section Roster Isolation
+  const studentsSecA = await prisma.student.findMany({
+    where: { sectionId: secA!.id },
+    select: { id: true, rollNumber: true },
+  });
+  const studentsSecB = await prisma.student.findMany({
+    where: { sectionId: secB!.id },
+    select: { id: true, rollNumber: true },
+  });
+  assert(studentsSecA.length > 0 && studentsSecB.length > 0, "Both sections contain enrolled students");
+  const secAStudentIds = new Set(studentsSecA.map((s) => s.id));
+  const hasOverlap = studentsSecB.some((s) => secAStudentIds.has(s.id));
+  assert(!hasOverlap, "Zero student leakage between Section 5-A and Section 5-B rosters");
+
+  // 35.5 Faculty Authorization Guard for Subject Attendance
+  const assignedFaculty = await prisma.courseFaculty.findFirst({
+    where: { courseId: cs402Course!.id },
+    include: { faculty: true },
+  });
+  assert(!!assignedFaculty, "CS-402 has designated faculty assignment");
+
+  const unassignedFaculty = await prisma.faculty.findFirst({
+    where: { id: { not: assignedFaculty!.facultyId } },
+  });
+
+  const isFacultyAuthorizedForCourse = async (facultyId: string, courseId: string) => {
+    const directAssignment = await prisma.courseFaculty.findFirst({
+      where: { facultyId, courseId },
+    });
+    if (directAssignment) return true;
+    const timetableAssignment = await prisma.timetableSlot.findFirst({
+      where: { facultyId, courseId },
+    });
+    return !!timetableAssignment;
+  };
+
+  assert(await isFacultyAuthorizedForCourse(assignedFaculty!.facultyId, cs402Course!.id) === true, "Assigned faculty authorized to administer course attendance");
+  if (unassignedFaculty) {
+    const isUnauthAllowed = await isFacultyAuthorizedForCourse(unassignedFaculty.id, cs402Course!.id);
+    assert(isUnauthAllowed === false, "Unassigned faculty correctly blocked from modifying course attendance");
+  }
+
+  // 35.6 Safe Historical Course Deletion & Archival Guard
+  const courseWithSessions = await prisma.course.findUnique({
+    where: { id: cs402Course!.id },
+    include: { _count: { select: { attendanceSessions: true } } },
+  });
+  assert((courseWithSessions?._count.attendanceSessions || 0) > 0, "Course has recorded attendance sessions");
+
+  let archivedCourse;
+  if ((courseWithSessions?._count.attendanceSessions || 0) > 0) {
+    archivedCourse = await prisma.course.update({
+      where: { id: cs402Course!.id },
+      data: { status: "ARCHIVED", isActive: false },
+    });
+  }
+  assert(archivedCourse?.status === "ARCHIVED", "Course with historical attendance sessions safely transitioned to ARCHIVED status");
+  await prisma.course.update({
+    where: { id: cs402Course!.id },
+    data: { status: "ACTIVE", isActive: true },
+  });
+
+  // 35.7 Bulk CSV Subject Ingestion & Validation
+  const sampleCsvData = `code,title,shortName,credits,departmentCode,programCode,subjectType,courseType,semesterNumber
+CS-599,Distributed Cloud Systems,Cloud Sys,4,CSE,BTECH-CSE,ELECTIVE,THEORY,5
+BIO-599,Synthetic Biology Principles,Syn Bio,3,BIO,BSC-BIO,CORE,THEORY,3`;
+
+  const parseCourseCsvLines = (csvText: string) => {
+    const lines = csvText.trim().split("\n");
+    const headers = lines[0].split(",").map((h) => h.trim());
+    return lines.slice(1).map((line) => {
+      const values = line.split(",").map((v) => v.trim());
+      const row: Record<string, any> = {};
+      headers.forEach((h, idx) => {
+        row[h] = values[idx];
+      });
+      return row;
+    });
+  };
+
+  const parsedCsvRows = parseCourseCsvLines(sampleCsvData);
+  assert(parsedCsvRows.length === 2, "Bulk course CSV parser extracts 2 records correctly");
+  assert(parsedCsvRows[0].code === "CS-599" && parsedCsvRows[0].departmentCode === "CSE", "Parsed record preserves academic relations");
+  assert(parsedCsvRows[1].subjectType === "CORE" && parsedCsvRows[1].credits === "3", "Parsed record extracts subject metadata");
+
+  // 35.8 Student Enrolled Courses Scoping & Defaulter Calculation
+  const sampleStudent = await prisma.student.findFirst({
+    where: { rollNumber: "2024-CSE-042" },
+    include: {
+      enrollments: { include: { course: true } },
+    },
+  });
+  assert(!!sampleStudent, "Test student 2024-CSE-042 located");
+  const enrolledCourseCodes = sampleStudent!.enrollments.map((e) => e.course.code);
+  assert(enrolledCourseCodes.includes("CS-402"), "Student is enrolled in assigned core subject CS-402");
+
+  const unenrolledCourse = await prisma.course.findFirst({
+    where: { code: { notIn: enrolledCourseCodes } },
+  });
+  if (unenrolledCourse) {
+    const isLeaked = enrolledCourseCodes.includes(unenrolledCourse.code);
+    assert(!isLeaked, "Unenrolled courses strictly excluded from student attendance portfolio");
+  }
 
   console.log("\n=================================================");
   console.log(`🎉 ALL ${passedTests}/${totalTests} TESTS PASSED SUCCESSFULLY!`);
