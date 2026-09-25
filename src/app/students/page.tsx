@@ -23,6 +23,10 @@ import {
   Award,
   TrendingUp,
   ShieldCheck,
+  Eye,
+  Phone,
+  Mail,
+  BookOpen,
 } from "lucide-react";
 
 export default function StudentsDirectoryPage() {
@@ -31,6 +35,8 @@ export default function StudentsDirectoryPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [filterDepartment, setFilterDepartment] = useState("ALL");
+  const [filterSection, setFilterSection] = useState("ALL");
+  const [quickDossierStudent, setQuickDossierStudent] = useState<any | null>(null);
   const [page, setPage] = useState(1);
   const [limit] = useState(10);
   const [pagination, setPagination] = useState({ page: 1, limit: 10, total: 0, totalPages: 1 });
@@ -82,6 +88,7 @@ export default function StudentsDirectoryPage() {
     setIsLoading(true);
     const params = new URLSearchParams();
     if (filterDepartment !== "ALL") params.append("department", filterDepartment);
+    if (filterSection !== "ALL") params.append("section", filterSection);
     if (searchQuery) params.append("search", searchQuery);
     params.append("page", String(page));
     params.append("limit", String(limit));
@@ -112,6 +119,7 @@ export default function StudentsDirectoryPage() {
                   program: "Computer Science & Engineering",
                   department: "CSE",
                   departmentName: "Computer Science",
+                  section: "Section 5-A",
                   semester: "Sem 1 (Sec A)",
                   cgpa: 3.8,
                   attendance: 100.0,
@@ -120,9 +128,13 @@ export default function StudentsDirectoryPage() {
               }
             }
 
-            // Filter according to department & search
+            // Filter according to department, section & search
             const filteredCustom = allCustom.filter((cs: any) => {
               if (filterDepartment !== "ALL" && cs.department !== filterDepartment) return false;
+              if (filterSection !== "ALL") {
+                const sec = (cs.section || cs.semester || "").toLowerCase();
+                if (!sec.includes(filterSection.toLowerCase().replace("section ", ""))) return false;
+              }
               if (searchQuery) {
                 const q = searchQuery.toLowerCase();
                 const matchName = cs.name?.toLowerCase().includes(q);
@@ -166,11 +178,11 @@ export default function StudentsDirectoryPage() {
 
   useEffect(() => {
     setPage(1);
-  }, [filterDepartment, searchQuery]);
+  }, [filterDepartment, filterSection, searchQuery]);
 
   useEffect(() => {
     fetchStudents();
-  }, [filterDepartment, searchQuery, page, refreshTrigger]);
+  }, [filterDepartment, filterSection, searchQuery, page, refreshTrigger]);
 
   const handleEnroll = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -429,17 +441,33 @@ export default function StudentsDirectoryPage() {
             />
           </div>
 
-          <div className="flex items-center gap-3">
-            <span className="text-xs font-bold text-charcoal-600 dark:text-charcoal-400">Department:</span>
-            <select
-              value={filterDepartment}
-              onChange={(e) => setFilterDepartment(e.target.value)}
-              className="text-xs bg-white dark:bg-charcoal-800 border border-border dark:border-charcoal-700 rounded-xl px-3 py-2 text-charcoal-800 dark:text-ivory-100 focus:outline-none focus:ring-1 focus:ring-rose-accent cursor-pointer"
-            >
-              <option value="ALL">All Departments</option>
-              <option value="CSE">Computer Science (CSE)</option>
-              <option value="BIO">Biotechnology (BIO)</option>
-            </select>
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-bold text-charcoal-600 dark:text-charcoal-400">Department:</span>
+              <select
+                value={filterDepartment}
+                onChange={(e) => setFilterDepartment(e.target.value)}
+                className="text-xs bg-white dark:bg-charcoal-800 border border-border dark:border-charcoal-700 rounded-xl px-3 py-2 text-charcoal-800 dark:text-ivory-100 focus:outline-none focus:ring-1 focus:ring-rose-accent cursor-pointer"
+              >
+                <option value="ALL">All Departments</option>
+                <option value="CSE">Computer Science (CSE)</option>
+                <option value="BIO">Biotechnology (BIO)</option>
+              </select>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-bold text-charcoal-600 dark:text-charcoal-400">Section:</span>
+              <select
+                value={filterSection}
+                onChange={(e) => setFilterSection(e.target.value)}
+                className="text-xs bg-white dark:bg-charcoal-800 border border-border dark:border-charcoal-700 rounded-xl px-3 py-2 text-charcoal-800 dark:text-ivory-100 focus:outline-none focus:ring-1 focus:ring-rose-accent cursor-pointer"
+              >
+                <option value="ALL">All Sections</option>
+                <option value="Section 5-A">Section 5-A</option>
+                <option value="Section 5-B">Section 5-B</option>
+                <option value="Section 3-A">Section 3-A</option>
+              </select>
+            </div>
           </div>
         </div>
 
@@ -512,6 +540,14 @@ export default function StudentsDirectoryPage() {
                       {student.status}
                     </span>
                     <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => setQuickDossierStudent(student)}
+                        className="min-h-[36px] px-2.5 py-1.5 rounded-xl bg-rose-container/60 dark:bg-rose-dark/30 text-rose-primary dark:text-rose-accent text-xs font-bold flex items-center gap-1 hover:bg-rose-container"
+                        title="Quick Dossier"
+                      >
+                        <Eye className="h-3.5 w-3.5" />
+                        <span>Quick</span>
+                      </button>
                       <Link
                         href={`/students/profile?id=${student.id}`}
                         className="min-h-[36px] px-3 py-1.5 rounded-xl bg-ivory-100 dark:bg-charcoal-800 text-charcoal-800 dark:text-ivory-200 text-xs font-bold flex items-center gap-1 hover:bg-rose-container"
@@ -624,6 +660,13 @@ export default function StudentsDirectoryPage() {
                       </td>
                       <td className="p-4 text-right">
                         <div className="flex items-center justify-end gap-2">
+                          <button
+                            onClick={() => setQuickDossierStudent(student)}
+                            className="p-1.5 rounded-lg text-charcoal-600 dark:text-charcoal-400 hover:text-rose-primary dark:hover:text-rose-accent hover:bg-rose-container/50 dark:hover:bg-charcoal-800 transition-colors"
+                            title="Quick Dossier Preview"
+                          >
+                            <Eye className="h-4 w-4" />
+                          </button>
                           <Link
                             href={`/students/profile?id=${student.id}`}
                             className="p-1.5 rounded-lg text-charcoal-600 dark:text-charcoal-400 hover:text-rose-primary dark:hover:text-rose-accent hover:bg-ivory-100 dark:hover:bg-charcoal-800 transition-colors"
@@ -860,6 +903,121 @@ export default function StudentsDirectoryPage() {
             </div>
           </form>
         </div>
+      </Modal>
+
+      {/* 3. Quick Dossier Inspection Modal */}
+      <Modal
+        isOpen={Boolean(quickDossierStudent)}
+        onClose={() => setQuickDossierStudent(null)}
+        title="Student Quick Dossier"
+        description="Instant academic telemetry, attendance health, and fee ledger status."
+      >
+        {quickDossierStudent && (
+          <div className="flex flex-col gap-4">
+            {/* Header info */}
+            <div className="flex items-center gap-3.5 p-3.5 rounded-2xl bg-ivory-50 dark:bg-charcoal-900 border border-border dark:border-charcoal-700">
+              <div className="h-12 w-12 rounded-xl bg-rose-container dark:bg-rose-dark/30 text-rose-primary dark:text-rose-accent flex items-center justify-center font-bold text-sm shrink-0 shadow-xs">
+                {quickDossierStudent.name.split(" ").map((n: string) => n[0]).join("").substring(0, 2)}
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center justify-between gap-2">
+                  <h3 className="text-sm font-bold text-charcoal-900 dark:text-ivory-100 truncate">
+                    {quickDossierStudent.name}
+                  </h3>
+                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                    quickDossierStudent.status === "DEFAULTER_ALERT"
+                      ? "bg-academic-danger-subtle text-academic-danger border border-red-200"
+                      : "bg-academic-success-subtle text-academic-success border border-green-200"
+                  }`}>
+                    {quickDossierStudent.status}
+                  </span>
+                </div>
+                <div className="flex flex-wrap items-center gap-x-2 text-[11px] text-charcoal-500 mt-0.5">
+                  <span className="font-mono font-semibold text-charcoal-700 dark:text-ivory-300">{quickDossierStudent.rollNo}</span>
+                  <span>•</span>
+                  <span>{quickDossierStudent.departmentName || quickDossierStudent.department}</span>
+                  <span>•</span>
+                  <span className="font-semibold text-rose-primary dark:text-rose-accent">{quickDossierStudent.section || quickDossierStudent.semester}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Quick Metrics Grid */}
+            <div className="grid grid-cols-3 gap-2.5">
+              <div className="p-3 rounded-xl bg-surface-soft dark:bg-charcoal-900/40 border border-border dark:border-charcoal-800 text-center">
+                <span className="text-[10px] font-bold text-charcoal-500 block uppercase">Attendance</span>
+                <span className={`text-base font-bold mt-0.5 block ${
+                  quickDossierStudent.attendance >= 75 ? "text-academic-success" : "text-academic-danger"
+                }`}>
+                  {Number(quickDossierStudent.attendance).toFixed(1)}%
+                </span>
+                <span className="text-[9px] text-charcoal-400">
+                  {quickDossierStudent.attendance >= 75 ? "Eligible" : "Defaulter"}
+                </span>
+              </div>
+
+              <div className="p-3 rounded-xl bg-surface-soft dark:bg-charcoal-900/40 border border-border dark:border-charcoal-800 text-center">
+                <span className="text-[10px] font-bold text-charcoal-500 block uppercase">Cumulative GPA</span>
+                <span className="text-base font-bold text-charcoal-900 dark:text-ivory-100 mt-0.5 block">
+                  {Number(quickDossierStudent.cgpa).toFixed(2)}
+                </span>
+                <span className="text-[9px] text-charcoal-400">Scale 4.00</span>
+              </div>
+
+              <div className="p-3 rounded-xl bg-surface-soft dark:bg-charcoal-900/40 border border-border dark:border-charcoal-800 text-center">
+                <span className="text-[10px] font-bold text-charcoal-500 block uppercase">Bursar Ledger</span>
+                <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full inline-block mt-1 ${
+                  quickDossierStudent.feeStatus === "PAID"
+                    ? "bg-academic-success-subtle text-academic-success"
+                    : "bg-academic-warning-subtle text-academic-warning"
+                }`}>
+                  {quickDossierStudent.feeStatus || "CLEARED"}
+                </span>
+                <span className="text-[9px] text-charcoal-400 block mt-0.5">Term Due</span>
+              </div>
+            </div>
+
+            {/* Contact & Parent Details */}
+            <div className="p-3.5 rounded-xl border border-border dark:border-charcoal-800 bg-surface-soft dark:bg-charcoal-900/20 flex flex-col gap-2 text-xs">
+              <div className="flex items-center justify-between">
+                <span className="text-charcoal-500 flex items-center gap-1.5 font-medium">
+                  <Mail className="h-3.5 w-3.5 text-rose-primary" /> Email
+                </span>
+                <span className="font-semibold text-charcoal-900 dark:text-ivory-100">{quickDossierStudent.email}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-charcoal-500 flex items-center gap-1.5 font-medium">
+                  <Phone className="h-3.5 w-3.5 text-rose-primary" /> Scholar Phone
+                </span>
+                <span className="font-semibold text-charcoal-900 dark:text-ivory-100">{quickDossierStudent.phone || "+1 (555) 019-2834"}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-charcoal-500 flex items-center gap-1.5 font-medium">
+                  <ShieldCheck className="h-3.5 w-3.5 text-academic-success" /> Admission Number
+                </span>
+                <span className="font-mono text-charcoal-700 dark:text-ivory-200">{quickDossierStudent.admissionNo || "ADM-2026-001"}</span>
+              </div>
+            </div>
+
+            {/* Actions */}
+            <div className="flex items-center justify-between pt-2 border-t border-border dark:border-charcoal-800">
+              <button
+                type="button"
+                onClick={() => setQuickDossierStudent(null)}
+                className="px-3.5 py-2 text-xs font-bold text-charcoal-600 dark:text-charcoal-400 hover:bg-ivory-100 dark:hover:bg-charcoal-800 rounded-xl"
+              >
+                Close
+              </button>
+              <Link
+                href={`/students/profile?id=${quickDossierStudent.id}`}
+                className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-rose-primary hover:bg-rose-dark text-white text-xs font-bold shadow-sm transition-all"
+              >
+                <span>Full 360° Profile</span>
+                <ArrowUpRight className="h-3.5 w-3.5" />
+              </Link>
+            </div>
+          </div>
+        )}
       </Modal>
     </AppShell>
   );

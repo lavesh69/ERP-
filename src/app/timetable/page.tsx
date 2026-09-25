@@ -37,6 +37,7 @@ export default function TimetablePage() {
   const [conflictError, setConflictError] = useState<string | null>(null);
 
   const [viewMode, setViewMode] = useState<"DAY" | "WEEK">("DAY");
+  const [selectedSection, setSelectedSection] = useState("ALL");
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
 
   const isSlotLive = (slot: any) => {
@@ -200,7 +201,18 @@ export default function TimetablePage() {
   };
 
   const days = ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY"];
-  const daySlots = slots.filter((s) => s.dayOfWeek === selectedDay);
+
+  const sectionFilteredSlots = slots.filter((s) => {
+    if (selectedSection !== "ALL") {
+      const slotSec = s.sectionName || "";
+      if (slotSec && !slotSec.toLowerCase().includes(selectedSection.toLowerCase().replace("section ", ""))) {
+        return false;
+      }
+    }
+    return true;
+  });
+
+  const daySlots = sectionFilteredSlots.filter((s) => s.dayOfWeek === selectedDay);
 
   return (
     <AppShell>
@@ -221,7 +233,22 @@ export default function TimetablePage() {
             </div>
           </div>
 
-          <div className="flex items-center gap-2 print:hidden">
+          <div className="flex flex-wrap items-center gap-2 print:hidden">
+            {/* Section Filter Dropdown */}
+            <div className="flex items-center gap-1.5 bg-ivory-100 dark:bg-charcoal-800 px-3 py-1.5 rounded-xl border border-border dark:border-charcoal-700">
+              <span className="text-[11px] font-bold text-charcoal-600 dark:text-charcoal-400">Section:</span>
+              <select
+                value={selectedSection}
+                onChange={(e) => setSelectedSection(e.target.value)}
+                className="text-xs bg-transparent text-charcoal-900 dark:text-ivory-100 font-bold focus:outline-none cursor-pointer"
+              >
+                <option value="ALL" className="dark:bg-charcoal-800">All Sections</option>
+                <option value="Section 5-A" className="dark:bg-charcoal-800">Section 5-A</option>
+                <option value="Section 5-B" className="dark:bg-charcoal-800">Section 5-B</option>
+                <option value="Section 3-A" className="dark:bg-charcoal-800">Section 3-A</option>
+              </select>
+            </div>
+
             {/* View Mode Toggle */}
             <div className="flex items-center bg-ivory-100 dark:bg-charcoal-800 p-1 rounded-xl border border-border dark:border-charcoal-700">
               <button
@@ -308,7 +335,7 @@ export default function TimetablePage() {
           /* WEEKLY GRID MATRIX VIEW */
           <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
             {days.map((day) => {
-              const daySlotsList = slots
+              const daySlotsList = sectionFilteredSlots
                 .filter((s) => s.dayOfWeek === day)
                 .sort((a, b) => a.startTime.localeCompare(b.startTime));
               return (

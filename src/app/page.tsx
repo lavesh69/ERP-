@@ -1344,8 +1344,104 @@ export default function DashboardPage() {
             </div>
           </div>
         ) : (
-          /* Institutional / Executive Main Grid */
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          /* Institutional / Executive Main View */
+          <div className="flex flex-col gap-6">
+            {/* Campus Attendance Trends & Telemetry Card */}
+            <div className="glass-panel p-5 rounded-2xl shadow-soft">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-border/70 dark:border-charcoal-800 mb-4 gap-2">
+                <div className="flex items-center gap-2.5">
+                  <div className="h-8 w-8 rounded-lg bg-emerald-500/10 text-academic-success flex items-center justify-center">
+                    <TrendingUp className="h-4 w-4" />
+                  </div>
+                  <div>
+                    <h3 className="text-xs font-bold text-charcoal-900 dark:text-ivory-100 uppercase tracking-wider flex items-center gap-2">
+                      Campus Attendance Velocity &amp; Biometric Telemetry
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold bg-academic-success-subtle text-academic-success border border-green-200 shrink-0">
+                        <span className="beacon-pulse" />
+                        42 IoT Scanners
+                      </span>
+                    </h3>
+                    <p className="text-[11px] text-charcoal-600 dark:text-charcoal-400">
+                      5-Day Biometric turnstile check-in velocity and cohort attendance health
+                    </p>
+                  </div>
+                </div>
+                <Link
+                  href="/attendance"
+                  className="text-xs font-bold text-rose-primary dark:text-rose-accent hover:underline shrink-0"
+                >
+                  Biometric Audit →
+                </Link>
+              </div>
+
+              {/* Graphical Trend Tiles */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3 pt-1">
+                {(data?.attendanceTrends || [
+                  { day: "Mon", rate: 94.2, present: 64, absent: 4 },
+                  { day: "Tue", rate: 96.0, present: 65, absent: 3 },
+                  { day: "Wed", rate: 92.8, present: 63, absent: 5 },
+                  { day: "Thu", rate: 95.5, present: 65, absent: 3 },
+                  { day: "Fri", rate: 93.9, present: 64, absent: 4 },
+                ]).map((trend: any, idx: number) => {
+                  const isPeak = trend.rate >= 96.0;
+                  return (
+                    <div
+                      key={idx}
+                      className={`p-3.5 rounded-xl border flex flex-col justify-between transition-all ${
+                        isPeak
+                          ? "bg-rose-50/40 dark:bg-rose-950/20 border-rose-300 dark:border-rose-900/50 shadow-xs"
+                          : "bg-surface-soft dark:bg-charcoal-900/30 border-border dark:border-charcoal-800"
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold text-charcoal-800 dark:text-ivory-200">
+                          {trend.day}
+                        </span>
+                        {isPeak ? (
+                          <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-rose-primary text-white">
+                            PEAK
+                          </span>
+                        ) : (
+                          <span className="text-[10px] font-semibold text-charcoal-500">
+                            {trend.present} / {trend.present + trend.absent}
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Vertical Rate Bar Indicator */}
+                      <div className="my-2.5">
+                        <div className="flex items-baseline justify-between mb-1">
+                          <span className="text-base font-display font-bold text-charcoal-900 dark:text-ivory-100">
+                            {trend.rate}%
+                          </span>
+                          <span className="text-[10px] text-academic-success font-semibold">
+                            {trend.absent} absent
+                          </span>
+                        </div>
+                        <div className="w-full bg-ivory-200 dark:bg-charcoal-700 h-2 rounded-full overflow-hidden">
+                          <div
+                            className={`h-full rounded-full transition-all duration-700 ${
+                              trend.rate >= 95 ? "bg-academic-success" : "bg-rose-primary"
+                            }`}
+                            style={{ width: `${trend.rate}%` }}
+                          />
+                        </div>
+                      </div>
+
+                      <div className="text-[10px] text-charcoal-500 dark:text-charcoal-400 flex items-center justify-between pt-1 border-t border-border/40 dark:border-charcoal-800">
+                        <span>Present: {trend.present}</span>
+                        <span className="font-semibold text-academic-success">
+                          {trend.rate >= 75 ? "Target Met" : "Deficit"}
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Institutional / Executive Main Grid */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
             {/* Real Today's Schedule */}
             <div className="lg:col-span-7 flex flex-col gap-4">
               <div className="bg-white dark:bg-[#1E191C] rounded-2xl border border-border dark:border-charcoal-800 shadow-soft p-5">
@@ -1485,6 +1581,7 @@ export default function DashboardPage() {
               </div>
             </div>
           </div>
+        </div>
         )}
       </div>
 

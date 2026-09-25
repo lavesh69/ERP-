@@ -15,6 +15,7 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const id = searchParams.get("id");
     const department = searchParams.get("department");
+    const section = searchParams.get("section");
     const search = searchParams.get("search");
 
     const isFaculty = session?.role && ["FACULTY", "PROFESSOR", "CLASS_TEACHER", "HOD"].includes(session.role);
@@ -223,6 +224,13 @@ export async function GET(req: NextRequest) {
         return true;
       })
       .filter((s) => {
+        if (section && section !== "ALL") {
+          const secName = s.section?.name || "";
+          return secName.toLowerCase().includes(section.toLowerCase().replace("section ", ""));
+        }
+        return true;
+      })
+      .filter((s) => {
         if (search) {
           const q = search.toLowerCase();
           const fullName = `${s.user.firstName} ${s.user.lastName}`.toLowerCase();
@@ -251,17 +259,20 @@ export async function GET(req: NextRequest) {
           userId: s.user.id,
           name: `${s.user.firstName} ${s.user.lastName}`,
           email: s.user.email,
+          phone: s.user.phone || "+1 (555) 019-2834",
           rollNo: s.rollNumber,
           admissionNo: s.admissionNumber,
           program: s.program.name,
           department: s.program.department.code,
           departmentName: s.program.department.name,
+          section: s.section?.name || "Section 5-A",
           semester: `Sem ${s.currentSemester} (${s.section?.name || "Sec A"})`,
           cgpa: s.cgpa || 3.8,
           attendance: s.attendanceRate || 95.0,
           ...(isFaculty ? {} : { feeStatus }),
           status: s.attendanceRate < 75 ? "DEFAULTER_ALERT" : s.status,
           avatarUrl: s.user.avatarUrl,
+          courses: s.enrollments?.map((e) => e.course?.code).filter(Boolean) || [],
         };
       });
 

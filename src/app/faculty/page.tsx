@@ -58,6 +58,34 @@ export default function FacultyPage() {
   const [specialization, setSpecialization] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Faculty Schedule Modal State
+  const [selectedFacultyForSchedule, setSelectedFacultyForSchedule] = useState<FacultyItem | null>(null);
+  const [facultySchedule, setFacultySchedule] = useState<any[]>([]);
+  const [isLoadingSchedule, setIsLoadingSchedule] = useState(false);
+
+  const handleOpenSchedule = async (faculty: FacultyItem) => {
+    setSelectedFacultyForSchedule(faculty);
+    setIsLoadingSchedule(true);
+    try {
+      const res = await fetch("/api/timetable");
+      if (res.ok) {
+        const data = await res.json();
+        const allSlots: any[] = data.slots || [];
+        const slotsForProf = allSlots.filter(
+          (s) =>
+            s.facultyId === faculty.id ||
+            s.facultyName?.toLowerCase().includes(faculty.name.toLowerCase()) ||
+            (faculty.courses && faculty.courses.includes(s.courseCode))
+        );
+        setFacultySchedule(slotsForProf);
+      }
+    } catch (e) {
+      console.error("Failed to load faculty schedule:", e);
+    } finally {
+      setIsLoadingSchedule(false);
+    }
+  };
+
   useEffect(() => {
     async function loadFaculty() {
       try {
@@ -332,6 +360,14 @@ export default function FacultyPage() {
                   </span>
 
                   <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => handleOpenSchedule(f)}
+                      className="flex items-center gap-1 px-2.5 py-1 rounded-xl bg-ivory-100 dark:bg-charcoal-700 hover:bg-rose-container dark:hover:bg-charcoal-600 text-charcoal-800 dark:text-ivory-100 text-xs font-bold border border-border dark:border-charcoal-600 transition-all"
+                      title="View Faculty Timetable"
+                    >
+                      <Calendar className="h-3.5 w-3.5 text-rose-primary dark:text-rose-accent" />
+                      <span>Schedule</span>
+                    </button>
                     <Link
                       href={`/faculty/${f.id}`}
                       className="flex items-center gap-1 px-2.5 py-1 rounded-xl bg-rose-container dark:bg-rose-dark/30 hover:bg-rose-primary hover:text-white text-rose-primary dark:text-rose-accent text-xs font-bold border border-rose-primary/20 transition-all"
@@ -467,6 +503,143 @@ export default function FacultyPage() {
               </button>
             </div>
           </form>
+        </Modal>
+
+        {/* Modal: Faculty Timetable & Schedule Dossier */}
+        <Modal
+          isOpen={Boolean(selectedFacultyForSchedule)}
+          onClose={() => setSelectedFacultyForSchedule(null)}
+          title={selectedFacultyForSchedule ? `Teaching Schedule: ${selectedFacultyForSchedule.name}` : "Faculty Timetable"}
+          description="Synchronized weekly lecture slots and classroom hall allocations."
+        >
+          {selectedFacultyForSchedule && (
+            <div className="flex flex-col gap-4 text-xs">
+              {/* Faculty Summary Banner */}
+              <div className="flex items-center gap-3.5 p-3.5 rounded-2xl bg-ivory-50 dark:bg-charcoal-900 border border-border dark:border-charcoal-700">
+                <div className="h-12 w-12 rounded-xl bg-rose-container dark:bg-rose-primary/20 text-rose-primary font-bold text-base flex items-center justify-center shrink-0">
+                  {selectedFacultyForSchedule.name
+                    .split(" ")
+                    .map((n) => n[0])
+                    .join("")
+                    .slice(0, 2)}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center justify-between gap-2">
+                    <h3 className="text-sm font-bold text-charcoal-900 dark:text-ivory-100 truncate">
+                      {selectedFacultyForSchedule.name}
+                    </h3>
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-ivory-100 dark:bg-charcoal-700 text-charcoal-700 dark:text-charcoal-300">
+                      {selectedFacultyForSchedule.department}
+                    </span>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-x-2 text-[11px] text-charcoal-500 mt-0.5">
+                    <span className="font-semibold text-charcoal-700 dark:text-ivory-300">{selectedFacultyForSchedule.designation}</span>
+                    <span>•</span>
+                    <span className="font-mono">{selectedFacultyForSchedule.employeeCode}</span>
+                    <span>•</span>
+                    <span>{selectedFacultyForSchedule.officeRoom}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Workload & Courses Strip */}
+              <div className="grid grid-cols-2 gap-2 text-xs">
+                <div className="p-2.5 rounded-xl bg-surface-soft dark:bg-charcoal-900/40 border border-border dark:border-charcoal-800">
+                  <span className="text-[10px] text-charcoal-500 uppercase font-bold block">Assigned Workload</span>
+                  <span className="font-bold text-charcoal-900 dark:text-ivory-100 mt-0.5 block">
+                    {selectedFacultyForSchedule.weeklyHours} Teaching hrs/week
+                  </span>
+                </div>
+                <div className="p-2.5 rounded-xl bg-surface-soft dark:bg-charcoal-900/40 border border-border dark:border-charcoal-800">
+                  <span className="text-[10px] text-charcoal-500 uppercase font-bold block">Specialization</span>
+                  <span className="font-semibold text-charcoal-900 dark:text-ivory-100 mt-0.5 block truncate">
+                    {selectedFacultyForSchedule.specialization}
+                  </span>
+                </div>
+              </div>
+
+              {/* Weekly Timetable Schedule Slots */}
+              <div>
+                <div className="flex items-center justify-between pb-2 border-b border-border dark:border-charcoal-700 mb-2.5">
+                  <span className="font-bold text-charcoal-900 dark:text-ivory-100 uppercase tracking-wider text-[11px]">
+                    Synchronized Lecture Slots
+                  </span>
+                  <span className="text-[10px] font-bold text-rose-primary dark:text-rose-accent">
+                    {facultySchedule.length} Slot(s) Active
+                  </span>
+                </div>
+
+                {isLoadingSchedule ? (
+                  <div className="py-8 text-center text-charcoal-400">Loading timetable slots...</div>
+                ) : facultySchedule.length === 0 ? (
+                  <div className="p-4 rounded-xl bg-ivory-50 dark:bg-charcoal-900 border border-border dark:border-charcoal-800 text-center">
+                    <p className="text-charcoal-500 text-xs">No active timetable slots allocated to this professor yet.</p>
+                    <Link
+                      href="/timetable"
+                      className="text-rose-primary dark:text-rose-accent font-bold mt-1 inline-block hover:underline text-xs"
+                    >
+                      Allocate slots in Timetable Engine →
+                    </Link>
+                  </div>
+                ) : (
+                  <div className="flex flex-col gap-2 max-h-64 overflow-y-auto pr-1">
+                    {facultySchedule.map((slot) => (
+                      <div
+                        key={slot.id}
+                        className="p-3 rounded-xl border border-border dark:border-charcoal-800 bg-surface-soft dark:bg-charcoal-900/30 flex items-center justify-between gap-3"
+                      >
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <span className="px-2 py-1 rounded-lg bg-rose-container dark:bg-rose-dark/30 text-rose-primary dark:text-rose-accent font-bold text-[10px] uppercase shrink-0">
+                            {slot.dayOfWeek?.slice(0, 3)}
+                          </span>
+                          <div className="min-w-0">
+                            <span className="font-bold text-charcoal-900 dark:text-ivory-100 block truncate">
+                              {slot.courseCode}: {slot.courseTitle}
+                            </span>
+                            <span className="text-[10px] text-charcoal-500 block">
+                              Venue: {slot.roomName} • {slot.sectionName || "Section 5-A"}
+                            </span>
+                          </div>
+                        </div>
+
+                        <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-academic-success-subtle text-academic-success border border-green-200 shrink-0">
+                          {slot.startTime} - {slot.endTime}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Modal Actions */}
+              <div className="flex items-center justify-between pt-2 border-t border-border dark:border-charcoal-700">
+                <button
+                  type="button"
+                  onClick={() => setSelectedFacultyForSchedule(null)}
+                  className="px-3.5 py-2 text-xs font-bold text-charcoal-600 dark:text-charcoal-400 hover:bg-ivory-100 dark:hover:bg-charcoal-800 rounded-xl"
+                >
+                  Close
+                </button>
+
+                <div className="flex items-center gap-2">
+                  <a
+                    href={`mailto:${selectedFacultyForSchedule.email}`}
+                    className="flex items-center gap-1 px-3 py-2 rounded-xl bg-ivory-100 dark:bg-charcoal-700 text-charcoal-800 dark:text-ivory-100 text-xs font-bold border border-border dark:border-charcoal-600"
+                  >
+                    <Mail className="h-3.5 w-3.5 text-rose-primary" />
+                    <span>Email</span>
+                  </a>
+                  <Link
+                    href={`/faculty/${selectedFacultyForSchedule.id}`}
+                    className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-rose-primary hover:bg-rose-dark text-white text-xs font-bold shadow-sm transition-all"
+                  >
+                    <span>Full Faculty Dossier</span>
+                    <ArrowUpRight className="h-3.5 w-3.5" />
+                  </Link>
+                </div>
+              </div>
+            </div>
+          )}
         </Modal>
       </div>
     </AppShell>
