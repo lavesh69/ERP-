@@ -208,7 +208,7 @@ export default function ResearchPage() {
 
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
-              <thead className="bg-ivory-100 dark:bg-charcoal-900 border-b border-border dark:border-charcoal-800 text-charcoal-600 dark:text-charcoal-400 font-bold uppercase tracking-wider text-[10px]">
+              <thead className="sticky top-0 z-10 bg-ivory-100/90 dark:bg-charcoal-900/90 backdrop-blur-md border-b border-border/80 dark:border-charcoal-800 text-charcoal-600 dark:text-charcoal-400 font-bold uppercase tracking-wider text-[10px]">
                 <tr>
                   <th className="p-3.5">Publication Title</th>
                   <th className="p-3.5">Authors</th>

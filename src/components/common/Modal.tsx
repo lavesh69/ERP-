@@ -54,7 +54,7 @@ export function Modal({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 overflow-y-auto">
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-charcoal-900/60 backdrop-blur-xs transition-opacity animate-in fade-in duration-200"
+        className="fixed inset-0 bg-charcoal-950/70 backdrop-blur-md transition-opacity animate-in fade-in duration-200"
         onClick={onClose}
         aria-hidden="true"
       />
@@ -65,9 +65,9 @@ export function Modal({
         role="dialog"
         aria-modal="true"
         aria-labelledby="modal-title"
-        className={`relative w-full ${maxWidthClasses[maxWidth]} bg-white dark:bg-[#231E21] rounded-2xl border border-border dark:border-charcoal-800 shadow-elevated p-4 sm:p-6 z-10 transition-all transform animate-in zoom-in-95 duration-200 max-h-[calc(100dvh-2rem)] overflow-y-auto`}
+        className={`relative w-full ${maxWidthClasses[maxWidth]} glass-panel rounded-3xl shadow-elevated p-4 sm:p-6 z-10 transition-all transform animate-in zoom-in-95 duration-200 max-h-[calc(100dvh-2rem)] overflow-y-auto`}
       >
-        <div className="flex items-start justify-between pb-3 sm:pb-4 border-b border-border dark:border-charcoal-800 gap-2">
+        <div className="flex items-start justify-between pb-3 sm:pb-4 border-b border-border/80 dark:border-charcoal-800 gap-2">
           <div className="min-w-0">
             <h3 id="modal-title" className="text-base font-display font-bold text-charcoal-900 dark:text-ivory-100 truncate">
               {title}
@@ -81,7 +81,7 @@ export function Modal({
           <button
             onClick={onClose}
             aria-label="Close dialog"
-            className="min-h-[40px] min-w-[40px] flex items-center justify-center p-2 rounded-xl text-charcoal-400 hover:text-charcoal-700 dark:hover:text-ivory-200 hover:bg-ivory-100 dark:hover:bg-charcoal-800 transition-colors shrink-0"
+            className="min-h-[40px] min-w-[40px] flex items-center justify-center p-2 rounded-xl text-charcoal-400 hover:text-rose-primary hover:bg-rose-container dark:hover:bg-rose-dark/30 transition-colors shrink-0"
           >
             <X className="h-4 w-4" />
           </button>

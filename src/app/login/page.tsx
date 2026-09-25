@@ -423,7 +423,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-ivory-50 via-ivory-100 to-ivory-200 dark:from-charcoal-950 dark:via-charcoal-900 dark:to-charcoal-950 flex flex-col justify-center py-8 sm:py-12 px-4 sm:px-6 lg:px-8 text-charcoal-900 dark:text-ivory-100 transition-colors duration-300 relative selection:bg-rose-light selection:text-rose-primary">
+    <div className="min-h-screen bg-gradient-to-br from-ivory-50 via-ivory-100 to-ivory-200 dark:from-charcoal-950 dark:via-charcoal-900 dark:to-charcoal-950 ambient-glow-mesh flex flex-col justify-center py-8 sm:py-12 px-4 sm:px-6 lg:px-8 text-charcoal-900 dark:text-ivory-100 transition-colors duration-300 relative selection:bg-rose-light selection:text-rose-primary">
       {/* Top Header Bar with Theme Switcher & Status */}
       <div className="absolute top-4 sm:top-6 left-4 right-4 sm:left-8 sm:right-8 flex items-center justify-between pointer-events-auto">
         <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/80 dark:bg-charcoal-900/80 backdrop-blur-md border border-border/80 dark:border-charcoal-800 shadow-soft text-[11px] font-semibold text-charcoal-600 dark:text-charcoal-300">
@@ -467,7 +467,7 @@ export default function LoginPage() {
 
       <div className="mt-6 sm:mt-8 sm:mx-auto sm:w-full sm:max-w-3xl">
         {/* Unified Primary Login Card */}
-        <div className="bg-white dark:bg-charcoal-800 py-8 px-6 shadow-elevated rounded-3xl sm:px-10 border border-border dark:border-charcoal-700 flex flex-col gap-6">
+        <div className="glass-panel py-8 px-6 shadow-elevated rounded-3xl sm:px-10 flex flex-col gap-6">
           {/* Error Alert Banner */}
           {errorMessage && (
             <div className="p-3.5 rounded-xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800/50 text-red-700 dark:text-red-300 text-xs font-semibold flex items-center gap-2">

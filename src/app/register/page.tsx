@@ -94,7 +94,7 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen bg-ivory-50 dark:bg-charcoal-900 flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8 text-charcoal-900 dark:text-ivory-100 transition-colors">
+    <div className="min-h-screen bg-gradient-to-br from-ivory-50 via-ivory-100 to-ivory-200 dark:from-charcoal-950 dark:via-charcoal-900 dark:to-charcoal-950 ambient-glow-mesh flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8 text-charcoal-900 dark:text-ivory-100 transition-colors">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <div className="flex justify-center">
           <div className="h-16 w-16 rounded-2xl bg-rose-primary text-white flex items-center justify-center shadow-lg shadow-rose-primary/30">
@@ -110,7 +110,7 @@ export default function RegisterPage() {
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-xl">
-        <div className="bg-white dark:bg-charcoal-800 py-8 px-6 shadow-elevated rounded-3xl sm:px-10 border border-border dark:border-charcoal-700">
+        <div className="glass-panel py-8 px-6 shadow-elevated rounded-3xl sm:px-10">
           {registeredData ? (
             /* Success State */
             <div className="space-y-6 text-center py-4">

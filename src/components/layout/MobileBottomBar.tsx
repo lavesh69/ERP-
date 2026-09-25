@@ -48,7 +48,7 @@ export function MobileBottomBar() {
   return (
     <nav
       aria-label="Mobile Navigation"
-      className="fixed bottom-0 left-0 right-0 z-30 h-16 bg-white/95 dark:bg-charcoal-900/95 backdrop-blur-md border-t border-border dark:border-charcoal-800 lg:hidden flex items-center justify-around px-2 pb-[max(0.25rem,env(safe-area-inset-bottom))] shadow-lg transition-colors duration-200"
+      className="fixed bottom-2.5 left-3 right-3 z-30 h-16 glass-panel rounded-2xl shadow-elevated border border-border/80 dark:border-charcoal-700/80 lg:hidden flex items-center justify-around px-2 pb-[max(0.25rem,env(safe-area-inset-bottom))] transition-all duration-200"
     >
       {navItems.map((item) => {
         const Icon = item.icon;
