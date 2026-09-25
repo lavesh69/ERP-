@@ -24,6 +24,7 @@ import {
   Sliders,
   FileCode,
   Video,
+  Trash2,
 } from "lucide-react";
 
 interface Chapter {
@@ -70,6 +71,12 @@ export default function LMSPage() {
   const [materialUrl, setMaterialUrl] = useState("");
   const [materialFileSize, setMaterialFileSize] = useState("1500");
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // New Module Creation State
+  const [isCreateModuleModalOpen, setIsCreateModuleModalOpen] = useState(false);
+  const [newModuleTitle, setNewModuleTitle] = useState("");
+  const [newModuleDuration, setNewModuleDuration] = useState("4 hours • 3 Topics");
+  const [newModuleObjectives, setNewModuleObjectives] = useState("");
 
   const isFacultyOrAdmin = ["FACULTY", "PROFESSOR", "HOD", "PRINCIPAL", "SUPER_ADMIN", "INSTITUTION_ADMIN"].includes(
     currentRole
@@ -200,6 +207,74 @@ export default function LMSPage() {
       showToast("Network error adding learning material", "error");
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleCreateModule = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newModuleTitle) {
+      showToast("Unit Title is required", "warning");
+      return;
+    }
+    try {
+      setIsSubmitting(true);
+      const res = await fetch("/api/lms", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "CREATE_MODULE",
+          courseCode: selectedCourse,
+          title: newModuleTitle,
+          description: newModuleDuration,
+          learningObjectives: newModuleObjectives,
+        }),
+      });
+      if (res.ok) {
+        showToast("New curriculum unit created successfully", "success");
+        setIsCreateModuleModalOpen(false);
+        setNewModuleTitle("");
+        setNewModuleObjectives("");
+        triggerRefresh();
+      } else {
+        const err = await res.json();
+        showToast(err.error || "Failed to create unit", "error");
+      }
+    } catch {
+      showToast("Network error creating unit", "error");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleDeleteChapter = async (chapterId: string, title: string) => {
+    if (!confirm(`Delete chapter "${title}"?`)) return;
+    try {
+      const res = await fetch(`/api/lms?chapterId=${chapterId}`, { method: "DELETE" });
+      if (res.ok) {
+        showToast("Chapter deleted from curriculum", "success");
+        triggerRefresh();
+      } else {
+        const err = await res.json();
+        showToast(err.error || "Failed to delete chapter", "error");
+      }
+    } catch {
+      showToast("Network error deleting chapter", "error");
+    }
+  };
+
+  const handleDeleteModule = async (moduleId: string, title: string) => {
+    if (!confirm(`Delete unit "${title}" and all its chapters?`)) return;
+    try {
+      const res = await fetch(`/api/lms?moduleId=${moduleId}`, { method: "DELETE" });
+      if (res.ok) {
+        showToast("Curriculum unit deleted", "success");
+        triggerRefresh();
+      } else {
+        const err = await res.json();
+        showToast(err.error || "Failed to delete unit", "error");
+      }
+    } catch {
+      showToast("Network error deleting unit", "error");
     }
   };
 
@@ -346,9 +421,20 @@ Verification Code: APX-LMS-2026-${Date.now()}
                   <h3 className="text-xs font-bold text-charcoal-900 dark:text-ivory-100 uppercase tracking-wider">
                     Curriculum Syllabus
                   </h3>
-                  <span className="text-[11px] text-charcoal-500 dark:text-charcoal-400 font-semibold">
-                    {modules.length} Units
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[11px] text-charcoal-500 dark:text-charcoal-400 font-semibold">
+                      {modules.length} Units
+                    </span>
+                    {isFacultyOrAdmin && (
+                      <button
+                        onClick={() => setIsCreateModuleModalOpen(true)}
+                        className="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-primary text-white hover:bg-rose-dark flex items-center gap-1 shadow-2xs transition-colors"
+                      >
+                        <Plus className="h-3 w-3" />
+                        <span>Add Unit</span>
+                      </button>
+                    )}
+                  </div>
                 </div>
 
                 <div className="flex flex-col gap-3">
@@ -402,6 +488,13 @@ Verification Code: APX-LMS-2026-${Date.now()}
                               <Plus className="h-3 w-3" />
                               <span>+ Material</span>
                             </button>
+                            <button
+                              onClick={() => handleDeleteModule(mod.id, mod.title)}
+                              title="Delete Unit"
+                              className="p-1 rounded text-[10px] text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 border border-transparent hover:border-red-200 transition-colors"
+                            >
+                              <Trash2 className="h-3 w-3" />
+                            </button>
                           </div>
                         )}
                       </div>
@@ -447,6 +540,15 @@ Verification Code: APX-LMS-2026-${Date.now()}
                               >
                                 <Check className="h-3 w-3" />
                               </button>
+                              {isFacultyOrAdmin && (
+                                <button
+                                  onClick={() => handleDeleteChapter(ch.id, ch.title)}
+                                  title="Delete Chapter"
+                                  className="h-5 w-5 rounded flex items-center justify-center text-charcoal-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors"
+                                >
+                                  <Trash2 className="h-3 w-3" />
+                                </button>
+                              )}
                             </div>
                           </div>
                         ))}
@@ -707,6 +809,73 @@ Verification Code: APX-LMS-2026-${Date.now()}
               className="px-4 py-2 rounded-xl text-xs font-bold bg-rose-primary hover:bg-rose-dark text-white shadow-xs disabled:opacity-50"
             >
               {isSubmitting ? "Uploading..." : "Publish Material"}
+            </button>
+          </div>
+        </form>
+      </Modal>
+
+      {/* Faculty Modal 3: Create Curriculum Unit / Module */}
+      <Modal
+        isOpen={isCreateModuleModalOpen}
+        onClose={() => setIsCreateModuleModalOpen(false)}
+        title="Add Curriculum Unit"
+        description="Structure a new syllabus unit, topic outlines, and accredited course learning outcomes."
+      >
+        <form onSubmit={handleCreateModule} className="flex flex-col gap-4 mt-2">
+          <div>
+            <label className="block text-xs font-bold text-charcoal-700 dark:text-ivory-200 mb-1">
+              Unit Title *
+            </label>
+            <input
+              type="text"
+              required
+              value={newModuleTitle}
+              onChange={(e) => setNewModuleTitle(e.target.value)}
+              placeholder="e.g. Unit IV: Graph Neural Networks & Geometric Deep Learning"
+              className="w-full px-3 py-2 text-xs rounded-xl border border-border dark:border-charcoal-700 bg-white dark:bg-charcoal-900 text-charcoal-900 dark:text-ivory-100 placeholder:text-charcoal-400 focus:outline-none focus:border-rose-primary"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold text-charcoal-700 dark:text-ivory-200 mb-1">
+              Duration & Estimated Topics
+            </label>
+            <input
+              type="text"
+              value={newModuleDuration}
+              onChange={(e) => setNewModuleDuration(e.target.value)}
+              placeholder="e.g. 5 hours • 3 Topics"
+              className="w-full px-3 py-2 text-xs rounded-xl border border-border dark:border-charcoal-700 bg-white dark:bg-charcoal-900 text-charcoal-900 dark:text-ivory-100 focus:outline-none focus:border-rose-primary"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold text-charcoal-700 dark:text-ivory-200 mb-1">
+              Learning Objectives & Accredited Outcomes (Optional)
+            </label>
+            <textarea
+              rows={3}
+              value={newModuleObjectives}
+              onChange={(e) => setNewModuleObjectives(e.target.value)}
+              placeholder="Describe foundational principles and accredited course outcomes (e.g. CO4: Formulate spectral graph convolutions)..."
+              className="w-full px-3 py-2 text-xs rounded-xl border border-border dark:border-charcoal-700 bg-white dark:bg-charcoal-900 text-charcoal-900 dark:text-ivory-100 placeholder:text-charcoal-400 focus:outline-none focus:border-rose-primary"
+            />
+          </div>
+
+          <div className="flex items-center justify-end gap-2 pt-3 border-t border-border dark:border-charcoal-800">
+            <button
+              type="button"
+              onClick={() => setIsCreateModuleModalOpen(false)}
+              className="px-4 py-2 rounded-xl text-xs font-bold border border-border dark:border-charcoal-700 text-charcoal-700 dark:text-ivory-200 hover:bg-surface-soft"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="px-4 py-2 rounded-xl text-xs font-bold bg-rose-primary hover:bg-rose-dark text-white shadow-xs disabled:opacity-50"
+            >
+              {isSubmitting ? "Creating..." : "Create Unit"}
             </button>
           </div>
         </form>

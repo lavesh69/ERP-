@@ -17,6 +17,7 @@ import {
   Sparkles,
   Check,
   Edit3,
+  Lock,
 } from "lucide-react";
 
 export default function AssignmentsPage() {
@@ -131,7 +132,7 @@ export default function AssignmentsPage() {
     }));
   };
 
-  const handleSaveGrade = async (submissionId: string, maxPoints: number) => {
+  const handleSaveGrade = async (submissionId: string, maxPoints: number, lock: boolean = false) => {
     const input = gradesMap[submissionId];
     if (!input || input.points === "") {
       showToast("Please enter marks before saving", "error");
@@ -153,11 +154,12 @@ export default function AssignmentsPage() {
           submissionId,
           gradePoints: pts,
           feedback: input.feedback || "Evaluated by faculty.",
+          lock,
         }),
       });
       const data = await res.json();
       if (res.ok) {
-        showToast(data.message || "Grade recorded successfully", "success");
+        showToast(data.message || (lock ? "Grade finalized and locked" : "Grade recorded successfully"), "success");
         triggerRefresh();
       } else {
         showToast(data.error || "Failed to record grade", "error");
@@ -517,14 +519,27 @@ export default function AssignmentsPage() {
                     </div>
                   </div>
 
-                  <div className="flex justify-end">
+                  <div className="flex items-center justify-end gap-2">
+                    {sub.feedback?.includes("[LOCKED]") && (
+                      <span className="flex items-center gap-1 text-[10px] font-bold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/30 px-2 py-0.5 rounded-md border border-amber-200 dark:border-amber-800">
+                        <Lock className="h-3 w-3" /> Locked
+                      </span>
+                    )}
                     <button
-                      onClick={() => handleSaveGrade(sub.id, selectedAssignment.maxPoints)}
+                      onClick={() => handleSaveGrade(sub.id, selectedAssignment.maxPoints, false)}
                       disabled={saving}
-                      className="flex items-center gap-1 px-3 py-1 text-[11px] font-bold bg-rose-primary hover:bg-rose-dark text-white rounded-lg shadow-xs disabled:opacity-50"
+                      className="flex items-center gap-1 px-2.5 py-1 text-[11px] font-bold bg-white dark:bg-charcoal-800 hover:bg-surface-soft text-charcoal-700 dark:text-ivory-200 border border-border dark:border-charcoal-700 rounded-lg shadow-2xs disabled:opacity-50 transition-colors"
                     >
                       <Check className="h-3 w-3" />
-                      <span>{saving ? "Saving..." : "Save Grade"}</span>
+                      <span>{saving ? "Saving..." : "Save Draft"}</span>
+                    </button>
+                    <button
+                      onClick={() => handleSaveGrade(sub.id, selectedAssignment.maxPoints, true)}
+                      disabled={saving}
+                      className="flex items-center gap-1 px-3 py-1 text-[11px] font-bold bg-rose-primary hover:bg-rose-dark text-white rounded-lg shadow-xs disabled:opacity-50 transition-colors"
+                    >
+                      <Lock className="h-3 w-3" />
+                      <span>Lock & Finalize</span>
                     </button>
                   </div>
                 </div>
