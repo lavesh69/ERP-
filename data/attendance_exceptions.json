@@ -1,0 +1,46 @@
+[
+  {
+    "category": "BLE_MISMATCH",
+    "institutionId": "inst-apex-01",
+    "actor": "std-proxy-04",
+    "actorRole": "STUDENT",
+    "sessionId": "sess-test-01",
+    "reason": "Bluetooth payload RSSI -98 dBm below threshold or beacon ID invalid",
+    "severity": "P2_MEDIUM",
+    "id": "exc-1790315715134-wb9mn",
+    "timestamp": "2026-09-25T05:55:15.134Z"
+  },
+  {
+    "category": "OUTSIDE_GEOFENCE",
+    "institutionId": "inst-apex-01",
+    "actor": "std-proxy-03",
+    "actorRole": "STUDENT",
+    "sessionId": "sess-test-01",
+    "reason": "Reported coordinates are 2450m outside designated lecture perimeter",
+    "severity": "P1_HIGH",
+    "id": "exc-1790315715129-gvox1",
+    "timestamp": "2026-09-25T05:55:15.129Z"
+  },
+  {
+    "category": "REPLAY_ATTEMPT",
+    "institutionId": "inst-apex-01",
+    "actor": "std-proxy-02",
+    "actorRole": "STUDENT",
+    "sessionId": "sess-test-01",
+    "reason": "Token nonce has already been claimed by another student session",
+    "severity": "P0_CRITICAL",
+    "id": "exc-1790315715124-sro9w",
+    "timestamp": "2026-09-25T05:55:15.124Z"
+  },
+  {
+    "category": "QR_FAILED",
+    "institutionId": "inst-apex-01",
+    "actor": "std-proxy-01",
+    "actorRole": "STUDENT",
+    "sessionId": "sess-test-01",
+    "reason": "Expired token HMAC timestamp signature mismatch",
+    "severity": "P1_HIGH",
+    "id": "exc-1790315715120-dqmu9",
+    "timestamp": "2026-09-25T05:55:15.120Z"
+  }
+]

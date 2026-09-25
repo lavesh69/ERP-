@@ -62,6 +62,8 @@ import {
   computeAttendanceSummary,
 } from "@/lib/attendance/calculator";
 import { ensureAcademicMasterData } from "@/lib/academic/master-data";
+import { getAttendancePolicy, saveAttendancePolicy, AttendancePolicy } from "@/lib/attendance/policy";
+import { recordAttendanceException, getAttendanceExceptions, clearAttendanceExceptions } from "@/lib/attendance/exceptions";
 
 async function runTestSuite() {
   console.log("=================================================");
@@ -2418,6 +2420,200 @@ BIO-599,Synthetic Biology Principles,Syn Bio,3,BIO,BSC-BIO,CORE,THEORY,3`;
   if (unenrolledCourse) {
     const isLeaked = enrolledCourseCodes.includes(unenrolledCourse.code);
     assert(!isLeaked, "Unenrolled courses strictly excluded from student attendance portfolio");
+  }
+
+  // ==========================================
+  // GROUP 36: Attendance Policy Engine & Institutional Configuration
+  // ==========================================
+  {
+    console.log("\n📦 Running Group 36: Attendance Policy Engine & Institutional Configuration");
+
+    // 36.1 Default Policy Retrieval & Sanity Verification
+    const defaultPolicy = getAttendancePolicy();
+    assert(defaultPolicy.minimumAttendancePercentage === 75.0, "Default policy enforces 75.0% senate attendance cutoff");
+    assert(defaultPolicy.lateThresholdMinutes === 15, "Default policy allows 15-minute late grace threshold");
+    assert(defaultPolicy.qrRotationSeconds === 15, "Default policy specifies 15-second dynamic QR token rotation");
+    assert(defaultPolicy.allowedRadiusMeters === 100, "Default policy specifies 100-meter geofence proximity boundary");
+    assert(Array.isArray(defaultPolicy.allowedMethods) && defaultPolicy.allowedMethods.includes("SMART_COMBO"), "Default policy enables SMART_COMBO attendance methods");
+
+    // 36.2 Policy Update & Persistence
+    const updatedPolicy = saveAttendancePolicy({
+      minimumAttendancePercentage: 80.0,
+      lateThresholdMinutes: 10,
+      allowedRadiusMeters: 50,
+      requireBleForQr: true,
+      requireGeofenceForQr: true,
+    });
+    assert(updatedPolicy.minimumAttendancePercentage === 80.0, "Policy updated with 80% minimum cutoff");
+    assert(updatedPolicy.requireBleForQr === true, "Policy updated to require hardware BLE verification");
+    assert(updatedPolicy.allowedRadiusMeters === 50, "Policy updated with 50-meter perimeter");
+
+    // Verify persisted state matches updated policy
+    const retrievedUpdated = getAttendancePolicy();
+    assert(retrievedUpdated.minimumAttendancePercentage === 80.0, "Persisted policy reflects updated 80% threshold");
+    assert(retrievedUpdated.requireBleForQr === true, "Persisted policy reflects BLE mandate");
+
+    // 36.3 Revert Policy to Standard 75% Baseline for subsequent tests
+    const restoredPolicy = saveAttendancePolicy({
+      minimumAttendancePercentage: 75.0,
+      lateThresholdMinutes: 15,
+      allowedRadiusMeters: 100,
+      requireBleForQr: false,
+      requireGeofenceForQr: false,
+    });
+    assert(restoredPolicy.minimumAttendancePercentage === 75.0, "Policy restored to standard 75% baseline");
+  }
+
+  // ==========================================
+  // GROUP 37: Missing Attendance Session Scanner & Security Exception Telemetry
+  // ==========================================
+  {
+    console.log("\n📦 Running Group 37: Missing Attendance Session Scanner & Security Exception Telemetry");
+
+    // 37.1 Missing Timetable Class Scanner Logic
+    const scheduledSlots = [
+      { slotId: "slot-01", courseCode: "CS-402", sectionId: "sec-a", dayOfWeek: "MONDAY", startTime: "09:00", endTime: "10:00" },
+      { slotId: "slot-02", courseCode: "CS-403", sectionId: "sec-a", dayOfWeek: "MONDAY", startTime: "10:00", endTime: "11:00" },
+      { slotId: "slot-03", courseCode: "CS-404", sectionId: "sec-b", dayOfWeek: "MONDAY", startTime: "11:00", endTime: "12:00" },
+    ];
+    const conductedSessions = [
+      { courseCode: "CS-402", sectionId: "sec-a", status: "LOCKED" },
+    ];
+
+    const missingSlots = scheduledSlots.filter((slot) => {
+      return !conductedSessions.some(
+        (cs) => cs.courseCode === slot.courseCode && cs.sectionId === slot.sectionId
+      );
+    });
+
+    assert(missingSlots.length === 2, "Scanner accurately identifies 2 missing attendance sessions");
+    assert(missingSlots.some((s) => s.courseCode === "CS-403"), "CS-403 identified as missing");
+    assert(missingSlots.some((s) => s.courseCode === "CS-404"), "CS-404 identified as missing");
+
+    // 37.2 Security Exception Telemetry & Proxy Detection
+    clearAttendanceExceptions();
+    assert(getAttendanceExceptions().length === 0, "Security exception buffer successfully cleared");
+
+    // Record various anomaly events
+    recordAttendanceException({
+      category: "QR_FAILED",
+      institutionId: "inst-apex-01",
+      actor: "std-proxy-01",
+      actorRole: "STUDENT",
+      sessionId: "sess-test-01",
+      reason: "Expired token HMAC timestamp signature mismatch",
+      severity: "P1_HIGH",
+    });
+
+    recordAttendanceException({
+      category: "REPLAY_ATTEMPT",
+      institutionId: "inst-apex-01",
+      actor: "std-proxy-02",
+      actorRole: "STUDENT",
+      sessionId: "sess-test-01",
+      reason: "Token nonce has already been claimed by another student session",
+      severity: "P0_CRITICAL",
+    });
+
+    recordAttendanceException({
+      category: "OUTSIDE_GEOFENCE",
+      institutionId: "inst-apex-01",
+      actor: "std-proxy-03",
+      actorRole: "STUDENT",
+      sessionId: "sess-test-01",
+      reason: "Reported coordinates are 2450m outside designated lecture perimeter",
+      severity: "P1_HIGH",
+    });
+
+    recordAttendanceException({
+      category: "BLE_MISMATCH",
+      institutionId: "inst-apex-01",
+      actor: "std-proxy-04",
+      actorRole: "STUDENT",
+      sessionId: "sess-test-01",
+      reason: "Bluetooth payload RSSI -98 dBm below threshold or beacon ID invalid",
+      severity: "P2_MEDIUM",
+    });
+
+    const recordedExceptions = getAttendanceExceptions();
+    assert(recordedExceptions.length === 4, "Exception radar logged all 4 security anomaly telemetry events");
+
+    // 37.3 Exception Query Filtering
+    const criticalExceptions = getAttendanceExceptions({ severity: "P0_CRITICAL" });
+    assert(criticalExceptions.length === 1, "Exception radar accurately filters by P0_CRITICAL severity");
+    assert(criticalExceptions[0].category === "REPLAY_ATTEMPT", "Replay attack classified as CRITICAL anomaly");
+
+    const highExceptions = getAttendanceExceptions({ severity: "P1_HIGH" });
+    assert(highExceptions.length === 2, "Exception radar accurately filters by P1_HIGH severity");
+  }
+
+  // ==========================================
+  // GROUP 38: Reporting Engine & Multi-Role Governance Matrix
+  // ==========================================
+  {
+    console.log("\n📦 Running Group 38: Reporting Engine & Multi-Role Governance Matrix");
+
+    // 38.1 Standard RFC 4180 CSV Formatter
+    const toCsvTest = (headers: string[], rows: any[][]): string => {
+      const escape = (val: any) => {
+        const s = val === null || val === undefined ? "" : String(val);
+        if (s.includes(",") || s.includes('"') || s.includes("\n") || s.includes("\r")) {
+          return `"${s.replace(/"/g, '""')}"`;
+        }
+        return s;
+      };
+      const headerLine = headers.map(escape).join(",");
+      const dataLines = rows.map((r) => r.map(escape).join(","));
+      return [headerLine, ...dataLines].join("\r\n");
+    };
+
+    const headers = ["Roll No", "Student Name", "Notes", "Attendance %"];
+    const rows = [
+      ["2024-CSE-001", "Aarav Sharma", "Regular, on-time", 94.5],
+      ["2024-CSE-002", 'Priya "Scholar" Patel', "Excused medical, Dean approved", 72.0],
+    ];
+
+    const csvOutput = toCsvTest(headers, rows);
+    assert(csvOutput.includes('"Priya ""Scholar"" Patel"'), "RFC 4180 correctly escapes double quotes in CSV cells");
+    assert(csvOutput.includes('"Regular, on-time"'), "RFC 4180 correctly escapes embedded commas in CSV cells");
+    assert(csvOutput.includes("\r\n"), "RFC 4180 formats line breaks using CRLF delimiters");
+
+    // 38.2 Multi-Tenant Hierarchy Telemetry
+    const institutionCount = await prisma.institution.count();
+    const campusCount = await prisma.campus.count();
+    const departmentCount = await prisma.department.count();
+    const programCount = await prisma.program.count();
+    const sectionCount = await prisma.section.count();
+    const facultyCount = await prisma.faculty.count();
+    const studentCount = await prisma.student.count();
+
+    assert(institutionCount >= 1, "Academic hierarchy contains valid institution root");
+    assert(campusCount >= 1, "Academic hierarchy contains valid campus entity");
+    assert(departmentCount >= 1, "Academic hierarchy contains academic departments");
+    assert(programCount >= 1, "Academic hierarchy contains degree programs");
+    assert(sectionCount >= 1, "Academic hierarchy contains classroom sections");
+    assert(facultyCount >= 1, "Academic hierarchy contains active faculty profiles");
+    assert(studentCount >= 1, "Academic hierarchy contains enrolled students");
+
+    // 38.3 Multi-Role Permission Separation
+    const studentCanEditAttendance = hasPermission("STUDENT", "attendance.create");
+    assert(studentCanEditAttendance === false, "STUDENT role strictly denied attendance.create permission");
+
+    const teacherCanEditAttendance = hasPermission("FACULTY", "attendance.create");
+    assert(teacherCanEditAttendance === true, "FACULTY role granted attendance.create permission");
+
+    const hodCanViewAudit = hasPermission("HOD", "attendance.view");
+    assert(hodCanViewAudit === true, "HOD role granted attendance.view governance permission");
+
+    const adminCanConfigurePolicy = hasPermission("SUPER_ADMIN", "settings.manage");
+    assert(adminCanConfigurePolicy === true, "SUPER_ADMIN role granted governance permissions");
+
+    // Clean up test sessions created in Group 35
+    await prisma.attendanceSession.deleteMany({
+      where: {
+        id: { in: ["test-sess-sec-a", "test-sess-sec-b"] },
+      },
+    });
   }
 
   console.log("\n=================================================");

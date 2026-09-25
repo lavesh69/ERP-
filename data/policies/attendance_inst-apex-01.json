@@ -1,0 +1,22 @@
+{
+  "institutionId": "inst-apex-01",
+  "minimumAttendancePercentage": 75,
+  "lateThresholdMinutes": 15,
+  "countLateAs": "PRESENT",
+  "countExcusedAs": "PRESENT",
+  "qrRotationSeconds": 15,
+  "qrExpirySeconds": 30,
+  "allowedRadiusMeters": 100,
+  "allowedMethods": [
+    "MANUAL",
+    "QR",
+    "BLE",
+    "GEOFENCE",
+    "SMART_COMBO"
+  ],
+  "requireBleForQr": false,
+  "requireGeofenceForQr": false,
+  "correctionWindowDays": 14,
+  "lockSessionAfterHours": 24,
+  "updatedAt": "2026-09-25T05:55:15.116Z"
+}

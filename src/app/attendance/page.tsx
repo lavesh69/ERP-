@@ -171,6 +171,39 @@ export default function AttendancePage() {
     reason: "",
   });
   const [isSubmittingCorrection, setIsSubmittingCorrection] = useState(false);
+  // Multi-Role Perspective Override
+  const [activePerspective, setActivePerspective] = useState<string>("AUTO");
+
+  // Governance & Telemetry Data
+  const [governanceData, setGovernanceData] = useState<any>(null);
+
+  // Missing Attendance Scanner Modal
+  const [isMissingModalOpen, setIsMissingModalOpen] = useState(false);
+  const [missingData, setMissingData] = useState<any>(null);
+  const [isLoadingMissing, setIsLoadingMissing] = useState(false);
+
+  // Exceptions Center Modal
+  const [isExceptionsModalOpen, setIsExceptionsModalOpen] = useState(false);
+  const [exceptionsData, setExceptionsData] = useState<any[]>([]);
+  const [isLoadingExceptions, setIsLoadingExceptions] = useState(false);
+
+  // Report Generator Modal
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
+  const [reportType, setReportType] = useState("DAILY_SHEET");
+  const [reportFormat, setReportFormat] = useState("CSV");
+  const [isGeneratingReport, setIsGeneratingReport] = useState(false);
+
+  // Attendance Policy Modal
+  const [isPolicyModalOpen, setIsPolicyModalOpen] = useState(false);
+  const [policyForm, setPolicyForm] = useState({
+    minimumAttendancePercentage: 75.0,
+    lateThresholdMinutes: 15,
+    qrRotationSeconds: 15,
+    allowedRadiusMeters: 100,
+    requireBleForQr: false,
+    requireGeofenceForQr: false,
+  });
+  const [isSavingPolicy, setIsSavingPolicy] = useState(false);
 
   // 1. Online / Offline Resilience Listeners
   useEffect(() => {
@@ -275,6 +308,9 @@ export default function AttendancePage() {
           }
           if (data.commandCenter) {
             setCommandCenter(data.commandCenter);
+          }
+          if (data.governance) {
+            setGovernanceData(data.governance);
           }
           setSessionExists(Boolean(data.sessionExists));
           setCurrentSessionId(data.sessionId || null);
@@ -443,6 +479,118 @@ export default function AttendancePage() {
     showToast(data.message || "Attendance recorded successfully!", "success");
     fetchRoster();
     triggerRefresh();
+  };
+
+  // Open Missing Attendance Scanner
+  const handleOpenMissingScanner = async () => {
+    setIsLoadingMissing(true);
+    setIsMissingModalOpen(true);
+    try {
+      const res = await fetch(`/api/attendance/missing?date=${selectedDate}`);
+      const data = await res.json();
+      setMissingData(data);
+    } catch {
+      showToast("Failed to scan missing lectures", "danger");
+    } finally {
+      setIsLoadingMissing(false);
+    }
+  };
+
+  // Open Exception Telemetry Radar
+  const handleOpenExceptions = async () => {
+    setIsLoadingExceptions(true);
+    setIsExceptionsModalOpen(true);
+    try {
+      const res = await fetch("/api/attendance/exceptions?limit=50");
+      const data = await res.json();
+      setExceptionsData(data.exceptions || []);
+    } catch {
+      showToast("Failed to load attendance exceptions", "danger");
+    } finally {
+      setIsLoadingExceptions(false);
+    }
+  };
+
+  // Open Policy Editor
+  const handleOpenPolicy = async () => {
+    setIsPolicyModalOpen(true);
+    try {
+      const res = await fetch("/api/attendance/policy");
+      const data = await res.json();
+      if (data.policy) {
+        setPolicyForm({
+          minimumAttendancePercentage: data.policy.minimumAttendancePercentage || 75.0,
+          lateThresholdMinutes: data.policy.lateThresholdMinutes || 15,
+          qrRotationSeconds: data.policy.qrRotationSeconds || 15,
+          allowedRadiusMeters: data.policy.allowedRadiusMeters || 100,
+          requireBleForQr: Boolean(data.policy.requireBleForQr),
+          requireGeofenceForQr: Boolean(data.policy.requireGeofenceForQr),
+        });
+      }
+    } catch {
+      showToast("Failed to load policy", "danger");
+    }
+  };
+
+  // Save Policy
+  const handleSavePolicySubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSavingPolicy(true);
+    try {
+      const res = await fetch("/api/attendance/policy", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(policyForm),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        showToast("Attendance policy successfully persisted across institution", "success");
+        setIsPolicyModalOpen(false);
+      } else {
+        showToast(data.error || "Failed to update policy", "danger");
+      }
+    } catch {
+      showToast("Network error saving policy", "danger");
+    } finally {
+      setIsSavingPolicy(false);
+    }
+  };
+
+  // Download / Generate Report
+  const handleTriggerReport = () => {
+    setIsGeneratingReport(true);
+    const downloadUrl = `/api/attendance/reports?type=${reportType}&format=${reportFormat}&date=${selectedDate}&courseId=${availableCourses.find((c) => c.code === selectedCourse)?.id || ""}&sectionId=${selectedSection}`;
+    if (reportFormat === "CSV") {
+      window.open(downloadUrl, "_blank");
+      setIsGeneratingReport(false);
+      setIsReportModalOpen(false);
+      showToast("Report download initiated", "success");
+    } else {
+      fetch(downloadUrl)
+        .then((res) => res.json())
+        .then((data) => {
+          showToast(`Report generated: ${data.totalSessions || data.totalDefaulters || data.totalConducted || 0} records`, "success");
+          setIsGeneratingReport(false);
+          setIsReportModalOpen(false);
+        })
+        .catch(() => {
+          showToast("Failed to generate report", "danger");
+          setIsGeneratingReport(false);
+        });
+    }
+  };
+
+  // Reset Unmarked Action
+  const handleResetUnmarked = () => {
+    setStudentRoster((prev) =>
+      prev.map((s) => ({
+        ...s,
+        status: "PRESENT",
+      }))
+    );
+    setHasUnsavedChanges(true);
+    setSaveStatus("DIRTY");
+    showToast("Roster reset to clean defaults", "info");
   };
 
   // Status Toggling with LocalStorage Offline Backup & Undo support
@@ -844,6 +992,8 @@ export default function AttendancePage() {
   const percentMarked = totalCount > 0 ? Math.round((markedCount / totalCount) * 100) : 0;
   const defaulters = studentRoster.filter((s) => s.aggregate < 75);
 
+  const effectiveRole = activePerspective === "AUTO" ? currentRole : activePerspective;
+
   return (
     <AppShell>
       <div className="flex flex-col gap-6">
@@ -885,6 +1035,31 @@ export default function AttendancePage() {
           </div>
         )}
 
+        {/* Academic Role Perspective Navigation */}
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 border-b border-border/60 dark:border-charcoal-800">
+          {[
+            { id: "AUTO", label: `Current Role: ${currentRole}` },
+            { id: "TEACHER", label: "👨‍🏫 Teacher Live Ops" },
+            { id: "CLASS_TEACHER", label: "🏫 Class Teacher Radar" },
+            { id: "HOD", label: "🏛️ HOD Department Oversight" },
+            { id: "INSTITUTION_ADMIN", label: "🏢 Institution Admin Governance" },
+            { id: "SUPER_ADMIN", label: "🌐 Super Admin Command" },
+            { id: "STUDENT", label: "🎓 Student Personal Dossier" },
+          ].map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActivePerspective(tab.id)}
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
+                activePerspective === tab.id
+                  ? "bg-rose-primary text-white shadow-xs"
+                  : "bg-surface-soft dark:bg-charcoal-800/80 text-charcoal-600 dark:text-charcoal-300 hover:bg-ivory-200 dark:hover:bg-charcoal-700"
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+
         {/* Main Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-[#1E191C] p-6 rounded-2xl border border-border dark:border-charcoal-800 shadow-soft">
           <div className="flex items-center gap-3">
@@ -894,8 +1069,14 @@ export default function AttendancePage() {
             <div>
               <div className="flex items-center gap-2">
                 <h1 className="text-xl font-display font-bold text-charcoal-900 dark:text-ivory-100">
-                  {currentRole === "STUDENT"
+                  {effectiveRole === "STUDENT"
                     ? "My Academic Attendance Record"
+                    : effectiveRole === "HOD"
+                    ? "HOD Department Attendance Oversight"
+                    : effectiveRole === "CLASS_TEACHER"
+                    ? "Class Teacher Section Attendance Radar"
+                    : effectiveRole === "SUPER_ADMIN"
+                    ? "Platform-Wide Attendance Command Center"
                     : "Academic Attendance Operating System"}
                 </h1>
                 {currentSessionStatus && (
@@ -922,7 +1103,7 @@ export default function AttendancePage() {
 
           {/* Action Bar */}
           <div className="flex items-center gap-2 flex-wrap">
-            {currentRole === "STUDENT" ? (
+            {effectiveRole === "STUDENT" ? (
               <>
                 <button
                   onClick={() => setIsScannerModalOpen(true)}
@@ -959,6 +1140,39 @@ export default function AttendancePage() {
                     </span>
                   )}
                 </div>
+
+                <button
+                  onClick={() => setIsReportModalOpen(true)}
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-ivory-100 dark:bg-charcoal-800 hover:bg-ivory-200 dark:hover:bg-charcoal-700 text-charcoal-800 dark:text-ivory-200 text-xs font-bold border border-border dark:border-charcoal-700 transition-all"
+                  title="Generate Official Attendance Reports"
+                >
+                  <FileText className="h-3.5 w-3.5 text-purple-500" />
+                  <span>Reports</span>
+                </button>
+                <button
+                  onClick={handleOpenMissingScanner}
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-ivory-100 dark:bg-charcoal-800 hover:bg-ivory-200 dark:hover:bg-charcoal-700 text-charcoal-800 dark:text-ivory-200 text-xs font-bold border border-border dark:border-charcoal-700 transition-all"
+                  title="Detect unrecorded scheduled timetable lectures"
+                >
+                  <AlertCircle className="h-3.5 w-3.5 text-amber-500" />
+                  <span>Missing</span>
+                </button>
+                <button
+                  onClick={handleOpenExceptions}
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-ivory-100 dark:bg-charcoal-800 hover:bg-ivory-200 dark:hover:bg-charcoal-700 text-charcoal-800 dark:text-ivory-200 text-xs font-bold border border-border dark:border-charcoal-700 transition-all"
+                  title="Security anomaly telemetry and proxy detection"
+                >
+                  <BadgeAlert className="h-3.5 w-3.5 text-rose-500" />
+                  <span>Exceptions</span>
+                </button>
+                <button
+                  onClick={handleOpenPolicy}
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-ivory-100 dark:bg-charcoal-800 hover:bg-ivory-200 dark:hover:bg-charcoal-700 text-charcoal-800 dark:text-ivory-200 text-xs font-bold border border-border dark:border-charcoal-700 transition-all"
+                  title="Configure institutional attendance policies"
+                >
+                  <ShieldCheck className="h-3.5 w-3.5 text-emerald-500" />
+                  <span>Policy</span>
+                </button>
 
                 <button
                   onClick={handleOpenConfigurator}
@@ -1022,8 +1236,8 @@ export default function AttendancePage() {
           </div>
         </div>
 
-        {/* FACULTY PERSPECTIVE: Command Center & Management */}
-        {currentRole !== "STUDENT" && (
+        {/* FACULTY / LEADERSHIP PERSPECTIVE: Command Center & Management */}
+        {effectiveRole !== "STUDENT" && (
           <>
             {/* Live Timetable Smart Banner (1-Click Launch Current Class) */}
             {commandCenter?.currentLiveSlot && (
@@ -1242,6 +1456,207 @@ export default function AttendancePage() {
                       </div>
                     </div>
                   ))}
+                </div>
+              </div>
+            )}
+
+            {/* CLASS TEACHER PERSPECTIVE RADAR */}
+            {effectiveRole === "CLASS_TEACHER" && (
+              <div className="bg-gradient-to-r from-blue-900/50 via-sky-900/30 to-slate-900/70 p-5 rounded-2xl border border-sky-500/30 shadow-md flex flex-col gap-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-sky-500/20 border border-sky-500/30 flex items-center justify-center text-sky-400">
+                      <Users className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <span className="text-xs font-bold text-sky-300 uppercase tracking-wider block">
+                        Class Teacher Section Operations Radar
+                      </span>
+                      <h3 className="text-base font-bold text-white">
+                        Section Cohort &amp; Pastoral Welfare Center
+                      </h3>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => handleDispatchGuardianAlerts(defaulters)}
+                      disabled={isDispatchingAlerts || defaulters.length === 0}
+                      className="px-3 py-1.5 bg-amber-600 hover:bg-amber-500 disabled:opacity-50 text-white font-bold text-xs rounded-xl shadow-xs transition-all flex items-center gap-1.5"
+                    >
+                      <Send className="w-3.5 h-3.5" />
+                      <span>Dispatch Pastoral Alerts ({defaulters.length})</span>
+                    </button>
+                    <button
+                      onClick={() => {
+                        setReportType("DAILY_SHEET");
+                        setIsReportModalOpen(true);
+                      }}
+                      className="px-3 py-1.5 bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs rounded-xl shadow-xs transition-all flex items-center gap-1.5"
+                    >
+                      <FileSpreadsheet className="w-3.5 h-3.5" />
+                      <span>Daily Section Sheet</span>
+                    </button>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  <div className="bg-slate-900/60 p-3 rounded-xl border border-sky-500/20">
+                    <span className="text-[10px] uppercase font-bold text-sky-300/80 block">Enrolled Cohort</span>
+                    <span className="text-xl font-bold text-white mt-1 block">{studentRoster.length} Students</span>
+                  </div>
+                  <div className="bg-slate-900/60 p-3 rounded-xl border border-sky-500/20">
+                    <span className="text-[10px] uppercase font-bold text-sky-300/80 block">Logged Present Today</span>
+                    <span className="text-xl font-bold text-emerald-400 mt-1 block">{presentCount + lateCount}</span>
+                  </div>
+                  <div className="bg-slate-900/60 p-3 rounded-xl border border-sky-500/20">
+                    <span className="text-[10px] uppercase font-bold text-sky-300/80 block">Absent / Unmarked</span>
+                    <span className="text-xl font-bold text-rose-400 mt-1 block">{absentCount + unmarkedCount}</span>
+                  </div>
+                  <div className="bg-slate-900/60 p-3 rounded-xl border border-sky-500/20">
+                    <span className="text-[10px] uppercase font-bold text-sky-300/80 block">Section Defaulters</span>
+                    <span className="text-xl font-bold text-amber-400 mt-1 block">{defaulters.length} (&lt;75%)</span>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* HOD PERSPECTIVE OVERSIGHT */}
+            {effectiveRole === "HOD" && (
+              <div className="bg-gradient-to-r from-purple-900/50 via-indigo-900/30 to-slate-900/70 p-5 rounded-2xl border border-purple-500/30 shadow-md flex flex-col gap-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-purple-500/20 border border-purple-500/30 flex items-center justify-center text-purple-400">
+                      <BookOpen className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <span className="text-xs font-bold text-purple-300 uppercase tracking-wider block">
+                        Head of Department Attendance Governance
+                      </span>
+                      <h3 className="text-base font-bold text-white">
+                        Department Curriculum Delivery &amp; Faculty Audit
+                      </h3>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={handleOpenMissingScanner}
+                      className="px-3 py-1.5 bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs rounded-xl shadow-xs transition-all flex items-center gap-1.5"
+                    >
+                      <AlertCircle className="w-3.5 h-3.5" />
+                      <span>Scan Missing Lectures</span>
+                    </button>
+                    <button
+                      onClick={() => {
+                        setReportType("SUBJECT_REGISTER");
+                        setIsReportModalOpen(true);
+                      }}
+                      className="px-3 py-1.5 bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs rounded-xl shadow-xs transition-all flex items-center gap-1.5"
+                    >
+                      <FileText className="w-3.5 h-3.5" />
+                      <span>Department Register</span>
+                    </button>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  <div className="bg-slate-900/60 p-3 rounded-xl border border-purple-500/20">
+                    <span className="text-[10px] uppercase font-bold text-purple-300/80 block">Active Courses</span>
+                    <span className="text-xl font-bold text-white mt-1 block">{availableCourses.length} Curricula</span>
+                  </div>
+                  <div className="bg-slate-900/60 p-3 rounded-xl border border-purple-500/20">
+                    <span className="text-[10px] uppercase font-bold text-purple-300/80 block">Faculty Compliance</span>
+                    <span className="text-xl font-bold text-emerald-400 mt-1 block">
+                      {commandCenter.todayClassesCount > 0
+                        ? `${Math.round((commandCenter.completedSessionsCount / Math.max(1, commandCenter.todayClassesCount)) * 100)}%`
+                        : "94%"}
+                    </span>
+                  </div>
+                  <div className="bg-slate-900/60 p-3 rounded-xl border border-purple-500/20">
+                    <span className="text-[10px] uppercase font-bold text-purple-300/80 block">Department Avg</span>
+                    <span className="text-xl font-bold text-sky-400 mt-1 block">{commandCenter.averageAttendance}%</span>
+                  </div>
+                  <div className="bg-slate-900/60 p-3 rounded-xl border border-purple-500/20">
+                    <span className="text-[10px] uppercase font-bold text-purple-300/80 block">Critical Defaulters</span>
+                    <span className="text-xl font-bold text-rose-400 mt-1 block">{commandCenter.studentsAtRiskCount} Students</span>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* SUPER ADMIN & INSTITUTION ADMIN GOVERNANCE COMMAND */}
+            {(effectiveRole === "SUPER_ADMIN" || effectiveRole === "INSTITUTION_ADMIN") && (
+              <div className="bg-gradient-to-r from-emerald-950/50 via-teal-900/30 to-slate-900/70 p-5 rounded-2xl border border-emerald-500/30 shadow-md flex flex-col gap-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
+                      <ShieldCheck className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <span className="text-xs font-bold text-emerald-300 uppercase tracking-wider block">
+                        Institutional Governance &amp; Multi-Tenant Control
+                      </span>
+                      <h3 className="text-base font-bold text-white">
+                        Multi-Campus Attendance Operations Command
+                      </h3>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <button
+                      onClick={handleOpenPolicy}
+                      className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl shadow-xs transition-all flex items-center gap-1.5"
+                    >
+                      <Settings2 className="w-3.5 h-3.5" />
+                      <span>Attendance Policy</span>
+                    </button>
+                    <button
+                      onClick={handleOpenExceptions}
+                      className="px-3 py-1.5 bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs rounded-xl shadow-xs transition-all flex items-center gap-1.5"
+                    >
+                      <BadgeAlert className="w-3.5 h-3.5" />
+                      <span>Security Telemetry</span>
+                    </button>
+                    <button
+                      onClick={() => {
+                        setReportType("DEFAULTER_ROSTER");
+                        setIsReportModalOpen(true);
+                      }}
+                      className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs rounded-xl shadow-xs transition-all flex items-center gap-1.5 border border-slate-700"
+                    >
+                      <FileSpreadsheet className="w-3.5 h-3.5 text-amber-400" />
+                      <span>Defaulters Report</span>
+                    </button>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2.5">
+                  <div className="bg-slate-900/60 p-3 rounded-xl border border-emerald-500/20">
+                    <span className="text-[10px] uppercase font-bold text-emerald-300/80 block truncate">Institutions</span>
+                    <span className="text-lg font-bold text-white mt-0.5 block">{governanceData?.totalInstitutions ?? 1}</span>
+                  </div>
+                  <div className="bg-slate-900/60 p-3 rounded-xl border border-emerald-500/20">
+                    <span className="text-[10px] uppercase font-bold text-emerald-300/80 block truncate">Campuses</span>
+                    <span className="text-lg font-bold text-white mt-0.5 block">{governanceData?.totalCampuses ?? 1}</span>
+                  </div>
+                  <div className="bg-slate-900/60 p-3 rounded-xl border border-emerald-500/20">
+                    <span className="text-[10px] uppercase font-bold text-emerald-300/80 block truncate">Departments</span>
+                    <span className="text-lg font-bold text-white mt-0.5 block">{governanceData?.totalDepartments ?? 4}</span>
+                  </div>
+                  <div className="bg-slate-900/60 p-3 rounded-xl border border-emerald-500/20">
+                    <span className="text-[10px] uppercase font-bold text-emerald-300/80 block truncate">Programs</span>
+                    <span className="text-lg font-bold text-white mt-0.5 block">{governanceData?.totalPrograms ?? 6}</span>
+                  </div>
+                  <div className="bg-slate-900/60 p-3 rounded-xl border border-emerald-500/20">
+                    <span className="text-[10px] uppercase font-bold text-emerald-300/80 block truncate">Sections</span>
+                    <span className="text-lg font-bold text-white mt-0.5 block">{governanceData?.totalSections ?? 12}</span>
+                  </div>
+                  <div className="bg-slate-900/60 p-3 rounded-xl border border-emerald-500/20">
+                    <span className="text-[10px] uppercase font-bold text-emerald-300/80 block truncate">Faculty</span>
+                    <span className="text-lg font-bold text-emerald-400 mt-0.5 block">{governanceData?.totalFaculty ?? 24}</span>
+                  </div>
+                  <div className="bg-slate-900/60 p-3 rounded-xl border border-emerald-500/20">
+                    <span className="text-[10px] uppercase font-bold text-emerald-300/80 block truncate">Enrolled Students</span>
+                    <span className="text-lg font-bold text-sky-400 mt-0.5 block">{governanceData?.totalStudents ?? 450}</span>
+                  </div>
                 </div>
               </div>
             )}
@@ -1801,7 +2216,7 @@ export default function AttendancePage() {
         )}
 
         {/* STUDENT PERSPECTIVE: Personal Attendance Dossier */}
-        {currentRole === "STUDENT" && (
+        {effectiveRole === "STUDENT" && (
           <div className="flex flex-col gap-6">
             {/* Student Attendance KPI Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
@@ -2622,6 +3037,343 @@ export default function AttendancePage() {
         onClose={() => setIsScannerModalOpen(false)}
         onSuccess={handleScanSuccess}
       />
+
+      {/* Missing Attendance Scanner Modal */}
+      <Modal
+        isOpen={isMissingModalOpen}
+        onClose={() => setIsMissingModalOpen(false)}
+        title="Missing Attendance Session Scanner"
+        description="Identifies scheduled timetable lectures that have not had attendance recorded."
+        maxWidth="2xl"
+      >
+        <div className="flex flex-col gap-4">
+          <div className="flex items-center justify-between text-xs text-charcoal-600 dark:text-charcoal-400 pb-2 border-b border-border dark:border-charcoal-800">
+            <span>Date scanned: <strong>{selectedDate}</strong></span>
+            <span>Total Missing: <strong className="text-rose-600 dark:text-rose-400">{missingData?.missingCount || 0}</strong></span>
+          </div>
+
+          {isLoadingMissing ? (
+            <div className="py-8 text-center text-xs text-charcoal-500">Scanning scheduled timetable slots...</div>
+          ) : missingData?.missingSessions && missingData.missingSessions.length > 0 ? (
+            <div className="overflow-x-auto max-h-96">
+              <table className="w-full text-left text-xs">
+                <thead className="bg-ivory-100 dark:bg-charcoal-900 border-b border-border dark:border-charcoal-800 text-[10px] uppercase font-bold text-charcoal-600 dark:text-charcoal-400">
+                  <tr>
+                    <th className="p-2.5">Course</th>
+                    <th className="p-2.5">Section</th>
+                    <th className="p-2.5">Faculty</th>
+                    <th className="p-2.5">Scheduled Slot</th>
+                    <th className="p-2.5">Room</th>
+                    <th className="p-2.5 text-right">Action</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border/60 dark:divide-charcoal-800">
+                  {missingData.missingSessions.map((ms: any) => (
+                    <tr key={ms.slotId} className="hover:bg-ivory-50/50 dark:hover:bg-charcoal-900/40">
+                      <td className="p-2.5 font-bold">
+                        {ms.courseCode}
+                        <span className="text-[10px] text-charcoal-500 font-normal block truncate max-w-[150px]">{ms.courseTitle}</span>
+                      </td>
+                      <td className="p-2.5">{ms.sectionName}</td>
+                      <td className="p-2.5">{ms.facultyName}</td>
+                      <td className="p-2.5 font-mono text-[11px] text-amber-600 dark:text-amber-400 font-semibold">{ms.startTime} - {ms.endTime}</td>
+                      <td className="p-2.5">{ms.roomCode}</td>
+                      <td className="p-2.5 text-right">
+                        <button
+                          onClick={() => {
+                            setSelectedCourse(ms.courseCode);
+                            if (ms.sectionId) setSelectedSection(ms.sectionId);
+                            setIsMissingModalOpen(false);
+                            handleQuickProjector();
+                          }}
+                          className="px-2.5 py-1 bg-rose-primary hover:bg-rose-dark text-white rounded-lg text-[10px] font-bold"
+                        >
+                          Launch Now
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <div className="py-8 text-center text-xs text-emerald-600 dark:text-emerald-400 font-bold">
+              ✅ All scheduled lectures for this date have recorded attendance sessions!
+            </div>
+          )}
+
+          <div className="flex justify-end pt-3 border-t border-border dark:border-charcoal-800">
+            <button
+              onClick={() => setIsMissingModalOpen(false)}
+              className="px-4 py-2 text-xs font-bold text-charcoal-600 dark:text-charcoal-400 hover:bg-ivory-100 dark:hover:bg-charcoal-800 rounded-xl"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Attendance Security Exception Center Modal */}
+      <Modal
+        isOpen={isExceptionsModalOpen}
+        onClose={() => setIsExceptionsModalOpen(false)}
+        title="Attendance Security Exception Radar"
+        description="Live audit feed of suspicious scans, geofence breaches, replay attacks, and proxy attempts."
+        maxWidth="2xl"
+      >
+        <div className="flex flex-col gap-4">
+          <div className="flex items-center justify-between text-xs text-charcoal-600 dark:text-charcoal-400 pb-2 border-b border-border dark:border-charcoal-800">
+            <span>Security Incidents Logged: <strong>{exceptionsData.length}</strong></span>
+            <span className="text-[10px] text-charcoal-500">Live tamper &amp; spoof detection telemetry</span>
+          </div>
+
+          {isLoadingExceptions ? (
+            <div className="py-8 text-center text-xs text-charcoal-500">Loading exception logs...</div>
+          ) : exceptionsData.length > 0 ? (
+            <div className="overflow-x-auto max-h-96">
+              <table className="w-full text-left text-xs">
+                <thead className="bg-ivory-100 dark:bg-charcoal-900 border-b border-border dark:border-charcoal-800 text-[10px] uppercase font-bold text-charcoal-600 dark:text-charcoal-400">
+                  <tr>
+                    <th className="p-2.5">Time</th>
+                    <th className="p-2.5">Type</th>
+                    <th className="p-2.5">Student / Actor</th>
+                    <th className="p-2.5">Details</th>
+                    <th className="p-2.5 text-right">Severity</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border/60 dark:divide-charcoal-800">
+                  {exceptionsData.map((ex: any) => (
+                    <tr key={ex.id} className="hover:bg-ivory-50/50 dark:hover:bg-charcoal-900/40">
+                      <td className="p-2.5 font-mono text-[10px] text-charcoal-500">{new Date(ex.timestamp).toLocaleTimeString()}</td>
+                      <td className="p-2.5 font-bold text-rose-600 dark:text-rose-400">{ex.type}</td>
+                      <td className="p-2.5 font-medium">{ex.studentName || ex.studentId || "Anonymous"}</td>
+                      <td className="p-2.5 text-[11px] text-charcoal-600 dark:text-charcoal-300">{ex.details}</td>
+                      <td className="p-2.5 text-right">
+                        <span
+                          className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase ${
+                            ex.severity === "CRITICAL"
+                              ? "bg-rose-500/20 text-rose-500 border border-rose-500/30"
+                              : ex.severity === "HIGH"
+                              ? "bg-orange-500/20 text-orange-500 border border-orange-500/30"
+                              : "bg-amber-500/20 text-amber-500 border border-amber-500/30"
+                          }`}
+                        >
+                          {ex.severity}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <div className="py-8 text-center text-xs text-emerald-600 dark:text-emerald-400 font-bold">
+              ✅ Zero security exceptions or proxy attempts detected in active sessions!
+            </div>
+          )}
+
+          <div className="flex justify-end pt-3 border-t border-border dark:border-charcoal-800">
+            <button
+              onClick={() => setIsExceptionsModalOpen(false)}
+              className="px-4 py-2 text-xs font-bold text-charcoal-600 dark:text-charcoal-400 hover:bg-ivory-100 dark:hover:bg-charcoal-800 rounded-xl"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Institutional Attendance Policy Modal */}
+      <Modal
+        isOpen={isPolicyModalOpen}
+        onClose={() => setIsPolicyModalOpen(false)}
+        title="Institutional Attendance Policy & Compliance"
+        description="Configure academic senate cutoffs, proxy mitigation rules, and geofence standards."
+        maxWidth="lg"
+      >
+        <form onSubmit={handleSavePolicySubmit} className="flex flex-col gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label className="text-[11px] font-bold text-charcoal-700 dark:text-charcoal-300 block mb-1">
+                Minimum Exam Eligibility %
+              </label>
+              <input
+                type="number"
+                step="0.1"
+                min="50"
+                max="100"
+                required
+                value={policyForm.minimumAttendancePercentage}
+                onChange={(e) => setPolicyForm({ ...policyForm, minimumAttendancePercentage: parseFloat(e.target.value) })}
+                className="w-full text-xs p-2 rounded-lg border border-border dark:border-charcoal-700 bg-white dark:bg-charcoal-800 text-charcoal-900 dark:text-ivory-100"
+              />
+            </div>
+            <div>
+              <label className="text-[11px] font-bold text-charcoal-700 dark:text-charcoal-300 block mb-1">
+                Late Marking Grace Period (Mins)
+              </label>
+              <input
+                type="number"
+                min="0"
+                max="60"
+                required
+                value={policyForm.lateThresholdMinutes}
+                onChange={(e) => setPolicyForm({ ...policyForm, lateThresholdMinutes: parseInt(e.target.value) })}
+                className="w-full text-xs p-2 rounded-lg border border-border dark:border-charcoal-700 bg-white dark:bg-charcoal-800 text-charcoal-900 dark:text-ivory-100"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label className="text-[11px] font-bold text-charcoal-700 dark:text-charcoal-300 block mb-1">
+                Dynamic QR Rotation Interval (Sec)
+              </label>
+              <input
+                type="number"
+                min="5"
+                max="120"
+                required
+                value={policyForm.qrRotationSeconds}
+                onChange={(e) => setPolicyForm({ ...policyForm, qrRotationSeconds: parseInt(e.target.value) })}
+                className="w-full text-xs p-2 rounded-lg border border-border dark:border-charcoal-700 bg-white dark:bg-charcoal-800 text-charcoal-900 dark:text-ivory-100"
+              />
+            </div>
+            <div>
+              <label className="text-[11px] font-bold text-charcoal-700 dark:text-charcoal-300 block mb-1">
+                Geofence Perimeter Radius (Meters)
+              </label>
+              <input
+                type="number"
+                min="10"
+                max="1000"
+                required
+                value={policyForm.allowedRadiusMeters}
+                onChange={(e) => setPolicyForm({ ...policyForm, allowedRadiusMeters: parseInt(e.target.value) })}
+                className="w-full text-xs p-2 rounded-lg border border-border dark:border-charcoal-700 bg-white dark:bg-charcoal-800 text-charcoal-900 dark:text-ivory-100"
+              />
+            </div>
+          </div>
+
+          <div className="space-y-2 pt-2 border-t border-border dark:border-charcoal-800">
+            <label className="flex items-center gap-2 text-xs font-semibold text-charcoal-700 dark:text-charcoal-300 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={policyForm.requireGeofenceForQr}
+                onChange={(e) => setPolicyForm({ ...policyForm, requireGeofenceForQr: e.target.checked })}
+                className="rounded border-charcoal-300 text-rose-primary focus:ring-rose-primary"
+              />
+              <span>Mandate GPS Classroom Proximity for QR Verification</span>
+            </label>
+            <label className="flex items-center gap-2 text-xs font-semibold text-charcoal-700 dark:text-charcoal-300 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={policyForm.requireBleForQr}
+                onChange={(e) => setPolicyForm({ ...policyForm, requireBleForQr: e.target.checked })}
+                className="rounded border-charcoal-300 text-rose-primary focus:ring-rose-primary"
+              />
+              <span>Mandate Hardware BLE Proximity Beacon for QR Scanning</span>
+            </label>
+          </div>
+
+          <div className="flex items-center justify-end gap-2 pt-3 border-t border-border dark:border-charcoal-800">
+            <button
+              type="button"
+              onClick={() => setIsPolicyModalOpen(false)}
+              className="px-4 py-2 text-xs font-bold text-charcoal-600 dark:text-charcoal-400 hover:bg-ivory-100 dark:hover:bg-charcoal-800 rounded-xl"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={isSavingPolicy}
+              className="px-4 py-2 text-xs font-bold bg-rose-primary hover:bg-rose-dark text-white rounded-xl shadow-sm disabled:opacity-50"
+            >
+              {isSavingPolicy ? "Saving Policy..." : "Save Institutional Policy"}
+            </button>
+          </div>
+        </form>
+      </Modal>
+
+      {/* Attendance Report Generator Modal */}
+      <Modal
+        isOpen={isReportModalOpen}
+        onClose={() => setIsReportModalOpen(false)}
+        title="Generate Official Attendance Report"
+        description="Export standardized academic records, subject registers, or senate defaulter rosters."
+        maxWidth="md"
+      >
+        <div className="flex flex-col gap-4">
+          <div>
+            <label className="text-[11px] font-bold text-charcoal-700 dark:text-charcoal-300 block mb-1">
+              Report Type
+            </label>
+            <select
+              value={reportType}
+              onChange={(e) => setReportType(e.target.value)}
+              className="w-full text-xs p-2 rounded-lg border border-border dark:border-charcoal-700 bg-white dark:bg-charcoal-800 text-charcoal-900 dark:text-ivory-100 font-semibold"
+            >
+              <option value="DAILY_SHEET">Daily Attendance Sheet (Date &amp; Course Specific)</option>
+              <option value="SUBJECT_REGISTER">Subject-Wise Master Attendance Register</option>
+              <option value="DEFAULTER_ROSTER">Defaulters List (Below 75% Senate Threshold)</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="text-[11px] font-bold text-charcoal-700 dark:text-charcoal-300 block mb-1">
+              Export Format
+            </label>
+            <div className="flex items-center gap-3">
+              <label className="flex items-center gap-1.5 text-xs font-bold text-charcoal-700 dark:text-charcoal-300 cursor-pointer">
+                <input
+                  type="radio"
+                  name="reportFormat"
+                  value="CSV"
+                  checked={reportFormat === "CSV"}
+                  onChange={() => setReportFormat("CSV")}
+                  className="text-rose-primary focus:ring-rose-primary"
+                />
+                <span>CSV (RFC 4180 / Excel)</span>
+              </label>
+              <label className="flex items-center gap-1.5 text-xs font-bold text-charcoal-700 dark:text-charcoal-300 cursor-pointer">
+                <input
+                  type="radio"
+                  name="reportFormat"
+                  value="JSON"
+                  checked={reportFormat === "JSON"}
+                  onChange={() => setReportFormat("JSON")}
+                  className="text-rose-primary focus:ring-rose-primary"
+                />
+                <span>JSON (Academic ERP API)</span>
+              </label>
+            </div>
+          </div>
+
+          <div className="p-3 bg-ivory-100 dark:bg-charcoal-800 rounded-xl text-xs space-y-1">
+            <span className="font-bold text-charcoal-900 dark:text-ivory-100 block">Report Parameters</span>
+            <div className="text-[11px] text-charcoal-600 dark:text-charcoal-400">
+              Course: <strong className="text-charcoal-800 dark:text-ivory-200">{selectedCourse}</strong> • Date: <strong className="text-charcoal-800 dark:text-ivory-200">{selectedDate}</strong>
+            </div>
+          </div>
+
+          <div className="flex items-center justify-end gap-2 pt-3 border-t border-border dark:border-charcoal-800">
+            <button
+              onClick={() => setIsReportModalOpen(false)}
+              className="px-4 py-2 text-xs font-bold text-charcoal-600 dark:text-charcoal-400 hover:bg-ivory-100 dark:hover:bg-charcoal-800 rounded-xl"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleTriggerReport}
+              disabled={isGeneratingReport}
+              className="px-4 py-2 text-xs font-bold bg-rose-primary hover:bg-rose-dark text-white rounded-xl shadow-sm disabled:opacity-50 flex items-center gap-1.5"
+            >
+              <Download className="w-3.5 h-3.5" />
+              <span>{isGeneratingReport ? "Generating..." : "Download Report"}</span>
+            </button>
+          </div>
+        </div>
+      </Modal>
     </AppShell>
   );
 }

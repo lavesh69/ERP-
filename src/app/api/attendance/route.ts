@@ -10,6 +10,7 @@ import {
   SENATE_EXAM_THRESHOLD,
 } from "@/lib/attendance/calculator";
 import { ensureAcademicMasterData } from "@/lib/academic/master-data";
+import { getAttendanceExceptions } from "@/lib/attendance/exceptions";
 
 export const dynamic = "force-dynamic";
 
@@ -736,6 +737,16 @@ export async function GET(req: NextRequest) {
         status: p.status,
         date: p.createdAt.toISOString().split("T")[0],
       })),
+      governance: {
+        totalInstitutions: await prisma.institution.count(),
+        totalCampuses: await prisma.campus.count(),
+        totalDepartments: await prisma.department.count(),
+        totalPrograms: await prisma.program.count(),
+        totalSections: await prisma.section.count(),
+        totalFaculty: await prisma.faculty.count(),
+        totalStudents: await prisma.student.count(),
+        recentExceptions: getAttendanceExceptions({ limit: 8 }),
+      },
     });
   } catch (error) {
     logger.error("Attendance GET API Error:", error);
