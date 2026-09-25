@@ -5,6 +5,7 @@ import { enrollStudentSchema } from "@/lib/validation/schemas";
 import { hashPassword } from "@/lib/auth/password";
 import { logger } from "@/lib/logging/logger";
 import { requireAdminAuth, getOptionalSession } from "@/lib/auth/admin-guard";
+import { ensureAcademicMasterData } from "@/lib/academic/master-data";
 
 export async function GET(req: NextRequest) {
   try {
@@ -187,7 +188,7 @@ export async function GET(req: NextRequest) {
       };
     }
 
-    const students = await prisma.student.findMany({
+    let students = await prisma.student.findMany({
       where: studentsWhere,
       include: {
         user: true,
@@ -198,6 +199,21 @@ export async function GET(req: NextRequest) {
       },
       orderBy: { createdAt: "desc" },
     });
+
+    if (students.length < 5) {
+      await ensureAcademicMasterData();
+      students = await prisma.student.findMany({
+        where: studentsWhere,
+        include: {
+          user: true,
+          program: { include: { department: true } },
+          section: true,
+          fees: { include: { feeStructure: true } },
+          enrollments: { include: { course: true } },
+        },
+        orderBy: { createdAt: "desc" },
+      });
+    }
 
     const formatted = students
       .filter((s) => {

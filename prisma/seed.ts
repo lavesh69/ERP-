@@ -1,5 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import crypto from "crypto";
+import { FULL_COHORT_STUDENTS, hashCohortPassword } from "../src/lib/academic/full-cohort";
 
 const prisma = new PrismaClient();
 
@@ -244,13 +245,15 @@ async function main() {
     },
   });
 
+  const cohortHash = hashCohortPassword();
+
   // Student User
   const studentUser = await prisma.user.create({
     data: {
       id: "usr-stu-01",
       institutionId: institution.id,
       email: "alex.mercer@apex.edu",
-      passwordHash: demoHash,
+      passwordHash: cohortHash,
       firstName: "Alex",
       lastName: "Mercer",
       role: "STUDENT",
@@ -280,7 +283,7 @@ async function main() {
       id: "usr-stu-02",
       institutionId: institution.id,
       email: "ethan.hunt@apex.edu",
-      passwordHash: demoHash,
+      passwordHash: cohortHash,
       firstName: "Ethan",
       lastName: "Hunt",
       role: "STUDENT",
@@ -302,6 +305,37 @@ async function main() {
       status: "ACTIVE",
     },
   });
+
+  // Full Section 5-A Cohort (60+ real students with @gmail.com accounts & password Ilikesonpapdi115500)
+  for (const cStu of FULL_COHORT_STUDENTS.slice(2)) {
+    const u = await prisma.user.create({
+      data: {
+        id: cStu.userId,
+        institutionId: institution.id,
+        email: cStu.email,
+        passwordHash: cohortHash,
+        firstName: cStu.firstName,
+        lastName: cStu.lastName,
+        role: "STUDENT",
+        isActive: true,
+      },
+    });
+    await prisma.student.create({
+      data: {
+        id: cStu.id,
+        userId: u.id,
+        programId: progBTech.id,
+        sectionId: sectionA.id,
+        rollNumber: cStu.rollNumber,
+        admissionNumber: cStu.admissionNumber,
+        admissionDate: new Date("2024-08-01"),
+        currentSemester: 5,
+        cgpa: cStu.cgpa,
+        attendanceRate: cStu.attendanceRate,
+        status: "ACTIVE",
+      },
+    });
+  }
 
   // Parent User
   const parentUser = await prisma.user.create({
@@ -392,6 +426,33 @@ async function main() {
       status: "ENROLLED",
     },
   });
+
+  // Enroll all other Section 5-A students into CS-402 and CS-301
+  const allSecAStudents = await prisma.student.findMany({
+    where: { sectionId: sectionA.id },
+  });
+  for (const s of allSecAStudents) {
+    if (s.id !== student.id) {
+      await prisma.enrollment.create({
+        data: {
+          studentId: s.id,
+          courseId: courseCS402.id,
+          grade: "A",
+          gradePoint: 8.5,
+          status: "ENROLLED",
+        },
+      });
+      await prisma.enrollment.create({
+        data: {
+          studentId: s.id,
+          courseId: courseCS301.id,
+          grade: "A",
+          gradePoint: 8.5,
+          status: "ENROLLED",
+        },
+      });
+    }
+  }
 
   // 10. Timetable Slots
   await prisma.timetableSlot.create({

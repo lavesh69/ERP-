@@ -505,6 +505,38 @@ export async function GET(req: NextRequest) {
       );
     }
 
+    // Auto-heal if full cohort is missing in section 5-A / course
+    if (enrollmentsToUse.length < 5) {
+      await ensureAcademicMasterData();
+      const refreshedCourse = await prisma.course.findUnique({
+        where: { id: course.id },
+        include: {
+          department: true,
+          faculty: { include: { faculty: { include: { user: true } } } },
+          semester: {
+            include: { program: true, sections: true },
+          },
+          enrollments: {
+            include: {
+              student: {
+                include: { user: true, section: true },
+              },
+            },
+          },
+          attendanceSessions: {
+            orderBy: { date: "desc" },
+            take: 10,
+          },
+        },
+      });
+      if (refreshedCourse) {
+        course = refreshedCourse;
+        enrollmentsToUse = targetSection
+          ? refreshedCourse.enrollments.filter((e) => e.student.sectionId === targetSection.id)
+          : refreshedCourse.enrollments;
+      }
+    }
+
     // Command Center: Today's Timetable Slots & Live Detection
     const daysOfWeek = ["SUNDAY", "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY"];
     const todayDayOfWeek = daysOfWeek[new Date().getDay()];

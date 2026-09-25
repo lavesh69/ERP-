@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/db/prisma";
+import { seedCohortStudents } from "./full-cohort";
 
 /**
  * CLASSROOM Academic OS — Central Academic Master Data Synchronizer
@@ -933,6 +934,12 @@ export async function ensureAcademicMasterData() {
   const secCs5A = sectionMap["sec-cs-5a"];
   const secCs5B = sectionMap["sec-cs-5b"];
   const secBio3A = sectionMap["sec-bio-3a"];
+  const progCsId = programMap["BTECH-CSE"];
+
+  // Seed full cohort (65+ students with password Ilikesonpapdi115500 enrolled into Section 5-A)
+  if (secCs5A && progCsId) {
+    await seedCohortStudents(prisma, institution.id, progCsId, secCs5A);
+  }
 
   // Alex Mercer (CSE, Section 5-A)
   const alexStudent = await prisma.student.findFirst({
@@ -1046,7 +1053,7 @@ export async function ensureAcademicMasterData() {
     });
   }
 
-  const progCsId = programMap["BTECH-CSE"];
+  // Rohan Sharma (CSE, Section 5-B)
   let rohanStudent = await prisma.student.findUnique({ where: { userId: rohanUser.id } });
   if (!rohanStudent && progCsId) {
     rohanStudent = await prisma.student.create({
