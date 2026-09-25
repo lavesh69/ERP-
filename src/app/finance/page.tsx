@@ -230,7 +230,7 @@ This is an electronically generated official university receipt.`;
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="bg-white dark:bg-charcoal-800 p-5 rounded-2xl border border-border dark:border-charcoal-700 shadow-soft">
+            <div className="glass-panel glass-card-hover p-5 rounded-2xl shadow-soft">
               <span className="text-xs font-bold text-charcoal-600 dark:text-charcoal-400 uppercase">
                 Total Revenue Collected
               </span>
@@ -242,7 +242,7 @@ This is an electronically generated official university receipt.`;
               </span>
             </div>
 
-            <div className="bg-white dark:bg-charcoal-800 p-5 rounded-2xl border border-border dark:border-charcoal-700 shadow-soft">
+            <div className="glass-panel glass-card-hover p-5 rounded-2xl shadow-soft">
               <span className="text-xs font-bold text-charcoal-600 dark:text-charcoal-400 uppercase">
                 Outstanding Installments
               </span>
@@ -254,7 +254,7 @@ This is an electronically generated official university receipt.`;
               </span>
             </div>
 
-            <div className="bg-white dark:bg-charcoal-800 p-5 rounded-2xl border border-border dark:border-charcoal-700 shadow-soft">
+            <div className="glass-panel glass-card-hover p-5 rounded-2xl shadow-soft">
               <span className="text-xs font-bold text-charcoal-600 dark:text-charcoal-400 uppercase">
                 Total Billed Receivables
               </span>
@@ -269,7 +269,7 @@ This is an electronically generated official university receipt.`;
         )}
 
         {/* Search & Student Ledgers Table */}
-        <div className="bg-white dark:bg-charcoal-800 rounded-2xl border border-border dark:border-charcoal-700 shadow-soft overflow-hidden">
+        <div className="glass-panel rounded-2xl shadow-card overflow-hidden">
           <div className="p-4 border-b border-border dark:border-charcoal-700 bg-surface-soft dark:bg-charcoal-800/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="flex items-center gap-2">
               <span className="text-xs font-bold text-charcoal-900 dark:text-ivory-100">

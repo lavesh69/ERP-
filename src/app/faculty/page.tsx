@@ -174,7 +174,7 @@ export default function FacultyPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="bg-white dark:bg-charcoal-800 p-5 rounded-2xl border border-border dark:border-charcoal-700 shadow-soft">
+            <div className="glass-panel glass-card-hover p-5 rounded-2xl shadow-soft">
               <span className="text-xs font-bold text-charcoal-600 dark:text-charcoal-400 uppercase">
                 Active Faculty Members
               </span>
@@ -186,7 +186,7 @@ export default function FacultyPage() {
               </span>
             </div>
 
-            <div className="bg-white dark:bg-charcoal-800 p-5 rounded-2xl border border-border dark:border-charcoal-700 shadow-soft">
+            <div className="glass-panel glass-card-hover p-5 rounded-2xl shadow-soft">
               <span className="text-xs font-bold text-charcoal-600 dark:text-charcoal-400 uppercase">
                 Weekly Teaching Hours
               </span>
@@ -198,7 +198,7 @@ export default function FacultyPage() {
               </span>
             </div>
 
-            <div className="bg-white dark:bg-charcoal-800 p-5 rounded-2xl border border-border dark:border-charcoal-700 shadow-soft">
+            <div className="glass-panel glass-card-hover p-5 rounded-2xl shadow-soft">
               <span className="text-xs font-bold text-charcoal-600 dark:text-charcoal-400 uppercase">
                 Course Allocations
               </span>
@@ -261,7 +261,7 @@ export default function FacultyPage() {
             {filtered.map((f) => (
               <div
                 key={f.id}
-                className="bg-white dark:bg-charcoal-800 p-5 rounded-2xl border border-border dark:border-charcoal-700 shadow-soft flex flex-col justify-between gap-4"
+                className="glass-panel glass-card-hover p-5 rounded-2xl shadow-soft flex flex-col justify-between gap-4"
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex items-center gap-3">

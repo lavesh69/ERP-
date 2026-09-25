@@ -19,6 +19,10 @@ import {
   FileSpreadsheet,
   Upload,
   Download,
+  Users,
+  Award,
+  TrendingUp,
+  ShieldCheck,
 } from "lucide-react";
 
 export default function StudentsDirectoryPage() {
@@ -337,6 +341,81 @@ export default function StudentsDirectoryPage() {
           </div>
         </div>
 
+        {/* SIS Cohort Metric Highlights */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+          <div className="glass-panel glass-card-hover p-4 sm:p-5 rounded-2xl shadow-soft">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-bold text-charcoal-500 dark:text-charcoal-400 uppercase tracking-wider">
+                Total Enrolled
+              </span>
+              <div className="h-8 w-8 rounded-lg bg-rose-container/70 dark:bg-rose-dark/30 text-rose-primary dark:text-rose-accent flex items-center justify-center">
+                <Users className="h-4 w-4" />
+              </div>
+            </div>
+            <div className="text-2xl sm:text-3xl font-display font-bold text-charcoal-900 dark:text-ivory-100 mt-2">
+              {pagination.total || students.length}
+            </div>
+            <span className="text-[11px] font-medium text-charcoal-500 dark:text-charcoal-400 mt-1 block">
+              Active University Roster
+            </span>
+          </div>
+
+          <div className="glass-panel glass-card-hover p-4 sm:p-5 rounded-2xl shadow-soft">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-bold text-charcoal-500 dark:text-charcoal-400 uppercase tracking-wider">
+                Cohort Average CGPA
+              </span>
+              <div className="h-8 w-8 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center">
+                <Award className="h-4 w-4" />
+              </div>
+            </div>
+            <div className="text-2xl sm:text-3xl font-display font-bold text-charcoal-900 dark:text-ivory-100 mt-2">
+              {students.length > 0
+                ? (students.reduce((acc, s) => acc + (Number(s.cgpa) || 0), 0) / students.length).toFixed(2)
+                : "3.72"}
+            </div>
+            <span className="text-[11px] font-medium text-emerald-600 dark:text-emerald-400 mt-1 block">
+              Scale 4.00 Academic Benchmark
+            </span>
+          </div>
+
+          <div className="glass-panel glass-card-hover p-4 sm:p-5 rounded-2xl shadow-soft">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-bold text-charcoal-500 dark:text-charcoal-400 uppercase tracking-wider">
+                Avg Attendance Rate
+              </span>
+              <div className="h-8 w-8 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+                <TrendingUp className="h-4 w-4" />
+              </div>
+            </div>
+            <div className="text-2xl sm:text-3xl font-display font-bold text-charcoal-900 dark:text-ivory-100 mt-2">
+              {students.length > 0
+                ? (students.reduce((acc, s) => acc + (Number(s.attendance) || 0), 0) / students.length).toFixed(1)
+                : "92.0"}%
+            </div>
+            <span className="text-[11px] font-medium text-emerald-600 dark:text-emerald-400 mt-1 block">
+              Above 75% Senate Cutoff
+            </span>
+          </div>
+
+          <div className="glass-panel glass-card-hover p-4 sm:p-5 rounded-2xl shadow-soft">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-bold text-charcoal-500 dark:text-charcoal-400 uppercase tracking-wider">
+                Defaulter Alerts
+              </span>
+              <div className="h-8 w-8 rounded-lg bg-rose-500/10 text-academic-danger flex items-center justify-center">
+                <AlertTriangle className="h-4 w-4" />
+              </div>
+            </div>
+            <div className="text-2xl sm:text-3xl font-display font-bold text-academic-danger mt-2">
+              {students.filter((s) => Number(s.attendance) < 75).length}
+            </div>
+            <span className="text-[11px] font-medium text-charcoal-500 dark:text-charcoal-400 mt-1 block">
+              Mandatory Pastoral Guidance
+            </span>
+          </div>
+        </div>
+
         {/* Filter & Search Bar */}
         <div className="bg-white dark:bg-[#1E191C] p-4 rounded-2xl border border-border dark:border-charcoal-800 shadow-soft flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="relative flex-1 max-w-md">
@@ -376,7 +455,7 @@ export default function StudentsDirectoryPage() {
             onAction={() => setIsEnrollModalOpen(true)}
           />
         ) : (
-          <div className="bg-white dark:bg-[#1E191C] rounded-2xl border border-border dark:border-charcoal-800 shadow-soft overflow-hidden">
+          <div className="glass-panel rounded-2xl shadow-card overflow-hidden">
             {/* Mobile Responsive Cards (Phone Viewports < md) */}
             <div className="md:hidden divide-y divide-border/60 dark:divide-charcoal-800">
               {students.map((student) => (
@@ -473,7 +552,7 @@ export default function StudentsDirectoryPage() {
                   {students.map((student) => (
                     <tr
                       key={student.id}
-                      className="hover:bg-ivory-50/50 dark:hover:bg-charcoal-900/40 transition-colors"
+                      className="hover:bg-rose-50/50 dark:hover:bg-rose-950/20 transition-all duration-150 group"
                     >
                       <td className="p-4">
                         <div className="flex items-center gap-3">

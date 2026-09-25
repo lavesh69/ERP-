@@ -277,7 +277,7 @@ export default function DashboardPage() {
           /* Faculty Perspective KPIs */
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {/* Assigned Courses */}
-            <div className="bg-white dark:bg-[#1E191C] p-5 rounded-2xl border border-border dark:border-charcoal-800 shadow-soft flex flex-col justify-between hover:shadow-card transition-all">
+            <div className="glass-panel glass-card-hover p-5 rounded-2xl shadow-soft flex flex-col justify-between">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-charcoal-600 dark:text-charcoal-400 uppercase tracking-wider">
                   Assigned Classes
@@ -302,7 +302,7 @@ export default function DashboardPage() {
             </div>
 
             {/* Total Enrolled Students */}
-            <div className="bg-white dark:bg-[#1E191C] p-5 rounded-2xl border border-border dark:border-charcoal-800 shadow-soft flex flex-col justify-between hover:shadow-card transition-all">
+            <div className="glass-panel glass-card-hover p-5 rounded-2xl shadow-soft flex flex-col justify-between">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-charcoal-600 dark:text-charcoal-400 uppercase tracking-wider">
                   Enrolled Scholars
@@ -329,7 +329,7 @@ export default function DashboardPage() {
             </div>
 
             {/* Pending Grading Queue */}
-            <div className="bg-white dark:bg-[#1E191C] p-5 rounded-2xl border border-border dark:border-charcoal-800 shadow-soft flex flex-col justify-between hover:shadow-card transition-all">
+            <div className="glass-panel glass-card-hover p-5 rounded-2xl shadow-soft flex flex-col justify-between">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-charcoal-600 dark:text-charcoal-400 uppercase tracking-wider">
                   Pending Grading
@@ -354,7 +354,7 @@ export default function DashboardPage() {
             </div>
 
             {/* Defaulter Risk Scholars */}
-            <div className="bg-white dark:bg-[#1E191C] p-5 rounded-2xl border border-border dark:border-charcoal-800 shadow-soft flex flex-col justify-between hover:shadow-card transition-all">
+            <div className="glass-panel glass-card-hover p-5 rounded-2xl shadow-soft flex flex-col justify-between">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-charcoal-600 dark:text-charcoal-400 uppercase tracking-wider">
                   Defaulter Watch
@@ -388,7 +388,7 @@ export default function DashboardPage() {
           /* Student Perspective KPIs */
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {/* Biometric Attendance Rate */}
-            <div className="bg-white dark:bg-[#1E191C] p-5 rounded-2xl border border-border dark:border-charcoal-800 shadow-soft flex flex-col justify-between hover:shadow-card transition-all">
+            <div className="glass-panel glass-card-hover p-5 rounded-2xl shadow-soft flex flex-col justify-between">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-charcoal-600 dark:text-charcoal-400 uppercase tracking-wider">
                   My Attendance Rate
@@ -421,7 +421,7 @@ export default function DashboardPage() {
             </div>
 
             {/* Enrolled Courses */}
-            <div className="bg-white dark:bg-[#1E191C] p-5 rounded-2xl border border-border dark:border-charcoal-800 shadow-soft flex flex-col justify-between hover:shadow-card transition-all">
+            <div className="glass-panel glass-card-hover p-5 rounded-2xl shadow-soft flex flex-col justify-between">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-charcoal-600 dark:text-charcoal-400 uppercase tracking-wider">
                   Enrolled Subjects
@@ -446,7 +446,7 @@ export default function DashboardPage() {
             </div>
 
             {/* Pending Assignments */}
-            <div className="bg-white dark:bg-[#1E191C] p-5 rounded-2xl border border-border dark:border-charcoal-800 shadow-soft flex flex-col justify-between hover:shadow-card transition-all">
+            <div className="glass-panel glass-card-hover p-5 rounded-2xl shadow-soft flex flex-col justify-between">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-charcoal-600 dark:text-charcoal-400 uppercase tracking-wider">
                   Due Assignments
@@ -471,7 +471,7 @@ export default function DashboardPage() {
             </div>
 
             {/* Bursar Balance */}
-            <div className="bg-white dark:bg-[#1E191C] p-5 rounded-2xl border border-border dark:border-charcoal-800 shadow-soft flex flex-col justify-between hover:shadow-card transition-all">
+            <div className="glass-panel glass-card-hover p-5 rounded-2xl shadow-soft flex flex-col justify-between">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-charcoal-600 dark:text-charcoal-400 uppercase tracking-wider">
                   Bursar Standing
@@ -507,7 +507,7 @@ export default function DashboardPage() {
           /* Admin / Executive Overview KPIs */
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {/* Total Students */}
-            <div className="bg-white dark:bg-[#1E191C] p-5 rounded-2xl border border-border dark:border-charcoal-800 shadow-soft flex flex-col justify-between hover:shadow-card transition-all">
+            <div className="glass-panel glass-card-hover p-5 rounded-2xl shadow-soft flex flex-col justify-between">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-charcoal-600 dark:text-charcoal-400 uppercase tracking-wider">
                   Total Students
@@ -534,7 +534,7 @@ export default function DashboardPage() {
             </div>
 
             {/* Campus Attendance Rate */}
-            <div className="bg-white dark:bg-[#1E191C] p-5 rounded-2xl border border-border dark:border-charcoal-800 shadow-soft flex flex-col justify-between hover:shadow-card transition-all">
+            <div className="glass-panel glass-card-hover p-5 rounded-2xl shadow-soft flex flex-col justify-between">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-charcoal-600 dark:text-charcoal-400 uppercase tracking-wider">
                   Campus Attendance
@@ -561,7 +561,7 @@ export default function DashboardPage() {
             </div>
 
             {/* Active Courses */}
-            <div className="bg-white dark:bg-[#1E191C] p-5 rounded-2xl border border-border dark:border-charcoal-800 shadow-soft flex flex-col justify-between hover:shadow-card transition-all">
+            <div className="glass-panel glass-card-hover p-5 rounded-2xl shadow-soft flex flex-col justify-between">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-charcoal-600 dark:text-charcoal-400 uppercase tracking-wider">
                   Active Courses
@@ -588,7 +588,7 @@ export default function DashboardPage() {
             </div>
 
             {/* Fee Collection & Financials */}
-            <div className="bg-white dark:bg-[#1E191C] p-5 rounded-2xl border border-border dark:border-charcoal-800 shadow-soft flex flex-col justify-between hover:shadow-card transition-all">
+            <div className="glass-panel glass-card-hover p-5 rounded-2xl shadow-soft flex flex-col justify-between">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-charcoal-600 dark:text-charcoal-400 uppercase tracking-wider">
                   Bursar Collection

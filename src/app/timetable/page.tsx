@@ -206,7 +206,7 @@ export default function TimetablePage() {
     <AppShell>
       <div className="flex flex-col gap-6">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-[#1E191C] p-6 rounded-2xl border border-border dark:border-charcoal-800 shadow-soft print:border-none print:shadow-none print:p-2">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 glass-panel p-6 rounded-2xl shadow-soft print:border-none print:shadow-none print:p-2">
           <div className="flex items-center gap-3">
             <div className="h-12 w-12 rounded-xl bg-rose-primary text-white flex items-center justify-center shadow-md shadow-rose-primary/20 print:hidden">
               <CalendarIcon className="h-6 w-6" />
@@ -314,7 +314,7 @@ export default function TimetablePage() {
               return (
                 <div
                   key={day}
-                  className="bg-white dark:bg-[#1E191C] rounded-2xl border border-border dark:border-charcoal-800 p-4 flex flex-col gap-3 shadow-soft"
+                  className="glass-panel rounded-2xl p-4 flex flex-col gap-3 shadow-soft"
                 >
                   <div className="flex items-center justify-between pb-2 border-b border-border dark:border-charcoal-800">
                     <span className="text-xs font-display font-bold text-charcoal-900 dark:text-ivory-100">
@@ -403,10 +403,10 @@ export default function TimetablePage() {
               return (
               <div
                 key={slot.id}
-                className={`bg-white dark:bg-[#1E191C] p-5 rounded-2xl border shadow-soft flex flex-col justify-between hover:shadow-card transition-all relative group ${
+                className={`glass-panel glass-card-hover p-5 rounded-2xl shadow-soft flex flex-col justify-between relative group ${
                   live
-                    ? "border-red-400 dark:border-red-700 ring-2 ring-red-500/20"
-                    : "border-border dark:border-charcoal-800"
+                    ? "border-red-400 dark:border-red-700 ring-2 ring-red-500/20 shadow-md"
+                    : ""
                 }`}
               >
                 <div>
