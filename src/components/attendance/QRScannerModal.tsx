@@ -314,37 +314,81 @@ export default function QRScannerModal({
         {/* Body Content */}
         <div className="p-6 flex flex-col items-center">
           {scanResult ? (
-            /* Success Card */
-            <div className="w-full flex flex-col items-center py-6 text-center animate-in zoom-in-95 duration-200">
-              <div className="w-20 h-20 rounded-full bg-emerald-500/10 border-2 border-emerald-500/30 flex items-center justify-center text-emerald-400 mb-4 shadow-lg shadow-emerald-500/10">
-                <CheckCircle2 className="w-10 h-10" />
+            /* Success Card: Digital Attendance Receipt */
+            <div className="w-full flex flex-col items-center py-2 text-center animate-in zoom-in-95 duration-200">
+              <div className="w-16 h-16 rounded-full bg-emerald-500/10 border-2 border-emerald-500/30 flex items-center justify-center text-emerald-400 mb-3 shadow-lg shadow-emerald-500/10">
+                <CheckCircle2 className="w-8 h-8" />
               </div>
 
               <h4 className="text-xl font-bold text-white mb-1">
                 {scanResult.alreadyMarked ? "Already Verified!" : "Attendance Marked!"}
               </h4>
-              <p className="text-sm text-slate-400 mb-6 max-w-xs">
+              <p className="text-xs text-slate-400 mb-4 max-w-xs">
                 {scanResult.message || "Your attendance record has been cryptographically confirmed on the academic ledger."}
               </p>
 
-              <div className="w-full bg-slate-800/60 border border-slate-700/60 rounded-2xl p-4 text-left space-y-3 mb-6">
-                <div className="flex justify-between items-center text-sm border-b border-slate-700/40 pb-2">
+              {/* Digital Receipt Card */}
+              <div className="w-full bg-slate-950/70 border border-slate-700/60 rounded-2xl p-4 text-left space-y-2.5 mb-5 shadow-inner">
+                <div className="flex justify-between items-center pb-2 border-b border-slate-800">
+                  <span className="text-[11px] font-mono uppercase tracking-wider text-slate-400">Digital Receipt</span>
+                  <span className="font-mono text-xs font-semibold text-indigo-400 bg-indigo-500/10 border border-indigo-500/20 px-2 py-0.5 rounded-full">
+                    {scanResult.receipt?.receiptId || `REC-${(scanResult.record?.id || "OK").slice(-8).toUpperCase()}`}
+                  </span>
+                </div>
+
+                <div className="flex justify-between items-center text-xs">
                   <span className="text-slate-400">Student:</span>
-                  <span className="font-semibold text-white">{scanResult.student?.name} ({scanResult.student?.rollNumber})</span>
+                  <span className="font-semibold text-white">
+                    {scanResult.student?.name} <span className="text-slate-400 font-normal">({scanResult.student?.rollNumber})</span>
+                  </span>
                 </div>
-                <div className="flex justify-between items-center text-sm border-b border-slate-700/40 pb-2">
+
+                <div className="flex justify-between items-center text-xs">
                   <span className="text-slate-400">Course:</span>
-                  <span className="font-semibold text-indigo-400">{scanResult.course?.code} - {scanResult.course?.title}</span>
+                  <span className="font-semibold text-indigo-300 truncate max-w-[200px]">
+                    {scanResult.course?.code} - {scanResult.course?.title}
+                  </span>
                 </div>
-                <div className="flex justify-between items-center text-sm">
-                  <span className="text-slate-400">Verification:</span>
-                  <div className="flex items-center gap-1.5">
-                    <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 flex items-center gap-1">
-                      <ShieldCheck className="w-3.5 h-3.5" />
-                      {scanResult.record?.verificationMethod || "QR_HMAC"}
+
+                <div className="flex justify-between items-center text-xs">
+                  <span className="text-slate-400">Date & Time:</span>
+                  <span className="font-medium text-slate-300">
+                    {scanResult.receipt?.date || scanResult.session?.date || "Today"} • {scanResult.receipt?.time || "Verified"}
+                  </span>
+                </div>
+
+                <div className="flex justify-between items-center text-xs">
+                  <span className="text-slate-400">Status:</span>
+                  <span className={`px-2 py-0.5 rounded-full text-[11px] font-semibold uppercase ${
+                    (scanResult.receipt?.status || scanResult.record?.status) === "LATE"
+                      ? "bg-amber-500/20 text-amber-300 border border-amber-500/30"
+                      : "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30"
+                  }`}>
+                    {scanResult.receipt?.status || scanResult.record?.status || "PRESENT"}
+                  </span>
+                </div>
+
+                <div className="flex justify-between items-center text-xs pt-1 border-t border-slate-800">
+                  <span className="text-slate-400">Verification Factors:</span>
+                  <div className="flex items-center gap-1.5 flex-wrap justify-end">
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center gap-1">
+                      <ShieldCheck className="w-3 h-3" />
+                      {scanResult.receipt?.verificationMethod || scanResult.record?.verificationMethod || "QR"}
                     </span>
+                    {scanResult.record?.distanceMeters !== null && scanResult.record?.distanceMeters !== undefined && (
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-slate-800 text-slate-300 border border-slate-700">
+                        {scanResult.record.distanceMeters}m geofence
+                      </span>
+                    )}
                   </div>
                 </div>
+
+                {scanResult.student?.newAttendanceRate !== undefined && (
+                  <div className="flex justify-between items-center text-xs pt-1 border-t border-slate-800">
+                    <span className="text-slate-400">Updated Attendance:</span>
+                    <span className="font-bold text-emerald-400">{scanResult.student.newAttendanceRate}%</span>
+                  </div>
+                )}
               </div>
 
               <button
@@ -352,9 +396,9 @@ export default function QRScannerModal({
                   stopCamera();
                   onClose();
                 }}
-                className="w-full py-3 px-4 bg-emerald-600 hover:bg-emerald-500 text-white font-medium rounded-xl transition-colors shadow-lg shadow-emerald-600/20"
+                className="w-full py-3 px-4 bg-emerald-600 hover:bg-emerald-500 text-white font-medium rounded-xl transition-colors shadow-lg shadow-emerald-600/20 text-sm"
               >
-                Done
+                Close & View Attendance
               </button>
             </div>
           ) : (

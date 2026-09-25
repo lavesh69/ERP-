@@ -273,10 +273,10 @@ export async function PATCH(req: NextRequest) {
 
   try {
     const body = await req.json();
-    const { sessionId, action } = body; // action: "PAUSE", "RESUME", "CLOSE"
+    const { sessionId, action } = body; // action: "PAUSE", "RESUME", "CLOSE", "LOCK", "REOPEN"
 
     if (!sessionId || !action) {
-      return NextResponse.json({ error: "sessionId and action (PAUSE, RESUME, CLOSE) are required" }, { status: 400 });
+      return NextResponse.json({ error: "sessionId and action (PAUSE, RESUME, CLOSE, LOCK, REOPEN) are required" }, { status: 400 });
     }
 
     const session = await prisma.attendanceSession.findUnique({
@@ -287,31 +287,85 @@ export async function PATCH(req: NextRequest) {
       return NextResponse.json({ error: "Attendance session not found" }, { status: 404 });
     }
 
+    const upperAction = action.toUpperCase();
     let updateData: any = {};
+    let autoAbsenceCount = 0;
 
-    switch (action.toUpperCase()) {
+    switch (upperAction) {
       case "PAUSE":
-        updateData = { status: "PAUSED", qrCodeToken: null };
+        updateData = { status: "PAUSED", qrCodeToken: null, qrExpiresAt: null };
         break;
       case "RESUME":
+      case "REOPEN": {
         const newQr = generateRotatingQrToken(session.id, session.qrRotationSeconds);
         updateData = {
           status: "ACTIVE",
+          closedAt: null,
           qrCodeToken: newQr.token,
           qrNonce: newQr.nonce,
           qrExpiresAt: new Date(newQr.expiresAt * 1000),
         };
         break;
+      }
       case "CLOSE":
+      case "LOCK": {
         updateData = {
-          status: "CLOSED",
+          status: upperAction === "LOCK" ? "LOCKED" : "CLOSED",
           closedAt: new Date(),
           qrCodeToken: null,
           qrExpiresAt: null,
         };
+
+        // System Absence Engine: Enrolled students with no record are marked ABSENT
+        const enrollments = await prisma.enrollment.findMany({
+          where: { courseId: session.courseId, status: "ENROLLED" },
+          select: { studentId: true },
+        });
+
+        const existingRecords = await prisma.attendanceRecord.findMany({
+          where: { sessionId: session.id },
+          select: { studentId: true },
+        });
+
+        const recordedIds = new Set(existingRecords.map((r) => r.studentId));
+        const unmarkedEnrollees = enrollments.filter((e) => !recordedIds.has(e.studentId));
+
+        if (unmarkedEnrollees.length > 0) {
+          await prisma.attendanceRecord.createMany({
+            data: unmarkedEnrollees.map((e) => ({
+              sessionId: session.id,
+              studentId: e.studentId,
+              status: "ABSENT",
+              remarks: "Auto-marked absent by System on session closure",
+              markedBy: "SYSTEM_AUTO_CLOSE",
+              verificationMethod: "SYSTEM",
+            })),
+          });
+
+          autoAbsenceCount = unmarkedEnrollees.length;
+
+          // Recalculate attendance rates for newly absent students
+          for (const e of unmarkedEnrollees) {
+            const allRecs = await prisma.attendanceRecord.findMany({
+              where: { studentId: e.studentId },
+            });
+            const presentCount = allRecs.filter(
+              (r) => r.status === "PRESENT" || r.status === "LATE" || r.status === "EXCUSED"
+            ).length;
+            const rate = allRecs.length > 0 ? Number(((presentCount / allRecs.length) * 100).toFixed(1)) : 100.0;
+            await prisma.student.update({
+              where: { id: e.studentId },
+              data: { attendanceRate: rate },
+            });
+          }
+        }
         break;
+      }
       default:
-        return NextResponse.json({ error: `Invalid action: ${action}. Must be PAUSE, RESUME, or CLOSE.` }, { status: 400 });
+        return NextResponse.json(
+          { error: `Invalid action: ${action}. Must be PAUSE, RESUME, CLOSE, LOCK, or REOPEN.` },
+          { status: 400 }
+        );
     }
 
     const updated = await prisma.attendanceSession.update({
@@ -319,9 +373,10 @@ export async function PATCH(req: NextRequest) {
       data: updateData,
     });
 
-    logger.security(`ATTENDANCE_SESSION_${action.toUpperCase()}`, auth.payload.email || "faculty", {
+    logger.security(`ATTENDANCE_SESSION_${upperAction}`, auth.payload.email || "faculty", {
       sessionId,
       newStatus: updated.status,
+      autoAbsenceCount,
     });
 
     return NextResponse.json({
@@ -330,6 +385,7 @@ export async function PATCH(req: NextRequest) {
         id: updated.id,
         status: updated.status,
         closedAt: updated.closedAt,
+        autoAbsenceCount,
       },
     });
   } catch (error) {

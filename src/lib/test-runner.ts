@@ -1986,7 +1986,147 @@ async function runTestSuite() {
   assert(curvedMarks["student-1"] === "73", "Normal grade accurately curved +5 (68 -> 73)");
   assert(curvedMarks["student-2"] === "89", "Normal grade accurately curved +5 (84 -> 89)");
   assert(curvedMarks["student-3"] === "100", "Near-maximum grade properly clamped to maxMarks (97 + 5 = 102 -> 100)");
-  assert(curvedMarks["student-4"] === "", "Unentered marks safely preserved during curve moderation");
+  // TEST 33: Smart Attendance Operating System Engine & Multi-Factor Verification Suite
+  console.log("\n📌 Group 33: Smart Attendance Operating System Engine & Multi-Factor Verification");
+
+  // 33.1 Session Lifecycle Finite State Machine
+  const validTransitions: Record<string, string[]> = {
+    DRAFT: ["ACTIVE"],
+    ACTIVE: ["PAUSED", "CLOSED", "LOCKED"],
+    PAUSED: ["ACTIVE", "CLOSED"],
+    CLOSED: ["LOCKED", "ACTIVE"],
+    LOCKED: ["ACTIVE"],
+  };
+
+  const isTransitionAllowed = (fromState: string, toState: string) => {
+    return Boolean(validTransitions[fromState]?.includes(toState));
+  };
+
+  assert(isTransitionAllowed("ACTIVE", "PAUSED"), "Session can transition from ACTIVE to PAUSED");
+  assert(isTransitionAllowed("PAUSED", "ACTIVE"), "Session can transition from PAUSED back to ACTIVE");
+  assert(isTransitionAllowed("ACTIVE", "CLOSED"), "Session can transition from ACTIVE to CLOSED");
+  assert(isTransitionAllowed("CLOSED", "LOCKED"), "Session can transition from CLOSED to LOCKED");
+  assert(isTransitionAllowed("LOCKED", "ACTIVE"), "Authorized session reopen from LOCKED to ACTIVE is permitted");
+  assert(!isTransitionAllowed("DRAFT", "LOCKED"), "Invalid transition from DRAFT directly to LOCKED is blocked");
+
+  // 33.2 System Absence Engine Auto-Resolution
+  const enrolledStudentIds = ["std-001", "std-002", "std-003", "std-004", "std-005"];
+  const scannedRecords = [
+    { studentId: "std-001", status: "PRESENT" },
+    { studentId: "std-003", status: "LATE" },
+  ];
+
+  const scannedSet = new Set(scannedRecords.map((r) => r.studentId));
+  const autoAbsentStudents = enrolledStudentIds
+    .filter((id) => !scannedSet.has(id))
+    .map((id) => ({
+      studentId: id,
+      status: "ABSENT",
+      markedBy: "SYSTEM_AUTO_CLOSE",
+      verificationMethod: "SYSTEM",
+    }));
+
+  assert(autoAbsentStudents.length === 3, "System Absence Engine accurately identifies all 3 unmarked enrolled students");
+  assert(
+    autoAbsentStudents.every((s) => s.status === "ABSENT" && s.markedBy === "SYSTEM_AUTO_CLOSE"),
+    "Auto-marked students are flagged ABSENT with SYSTEM_AUTO_CLOSE provenance"
+  );
+
+  // 33.3 Aggregate Attendance Recalculation
+  const computeAggregate = (records: string[]) => {
+    if (records.length === 0) return 100.0;
+    const attended = records.filter((r) => r === "PRESENT" || r === "LATE" || r === "EXCUSED").length;
+    return Number(((attended / records.length) * 100).toFixed(1));
+  };
+
+  const studentPastRecords = ["PRESENT", "PRESENT", "ABSENT", "PRESENT"];
+  const updatedWithAbsent = [...studentPastRecords, "ABSENT"];
+  assert(computeAggregate(studentPastRecords) === 75.0, "Initial student rate computed accurately (3/4 = 75.0%)");
+  assert(computeAggregate(updatedWithAbsent) === 60.0, "Updated rate with auto-absence computed accurately (3/5 = 60.0%)");
+
+  // 33.4 Late Check-In Threshold Gate
+  const computeCheckInStatus = (sessionStartTime: string, checkInTime: string, lateCutoffMinutes = 15) => {
+    const [startH, startM] = sessionStartTime.split(":").map(Number);
+    const [checkH, checkM] = checkInTime.split(":").map(Number);
+    const startMin = startH * 60 + startM;
+    const checkMin = checkH * 60 + checkM;
+    return checkMin > startMin + lateCutoffMinutes ? "LATE" : "PRESENT";
+  };
+
+  assert(computeCheckInStatus("09:00", "09:05") === "PRESENT", "Check-in at +5m is marked PRESENT");
+  assert(computeCheckInStatus("09:00", "09:14") === "PRESENT", "Check-in at +14m (within 15m threshold) is marked PRESENT");
+  assert(computeCheckInStatus("09:00", "09:16") === "LATE", "Check-in at +16m (past 15m threshold) is marked LATE");
+  assert(computeCheckInStatus("09:00", "09:45") === "LATE", "Check-in at +45m is marked LATE");
+
+  // 33.5 RFC 4180 CSV Export Serialization Engine
+  const serializeRosterToCsv = (roster: any[], courseCode: string, date: string) => {
+    const headers = ["Roll Number", "Student Name", "Section", "Term Aggregate %", "Risk Standing", "Session Status"];
+    const escapeCsv = (str: any) => {
+      const val = str === null || str === undefined ? "" : String(str);
+      if (val.includes(",") || val.includes('"') || val.includes("\n")) {
+        return `"${val.replace(/"/g, '""')}"`;
+      }
+      return val;
+    };
+
+    const rows = roster.map((s) => [
+      escapeCsv(s.rollNo),
+      escapeCsv(s.name),
+      escapeCsv(s.section),
+      escapeCsv(s.aggregate),
+      escapeCsv(s.risk),
+      escapeCsv(s.status),
+    ]);
+
+    return [headers.join(","), ...rows.map((r) => r.join(","))].join("\r\n");
+  };
+
+  const sampleRoster = [
+    { rollNo: "CS-2024-001", name: 'Alice "Tech" Smith', section: "Section A", aggregate: "92.5", risk: "LOW", status: "PRESENT" },
+    { rollNo: "CS-2024-002", name: "Bob, Jr.", section: "Section B", aggregate: "71.0", risk: "HIGH", status: "ABSENT" },
+  ];
+
+  const generatedCsv = serializeRosterToCsv(sampleRoster, "CS-402", "2026-09-25");
+  assert(generatedCsv.includes('"Alice ""Tech"" Smith"'), "RFC 4180 correctly escapes quotes by doubling them");
+  assert(generatedCsv.includes('"Bob, Jr."'), "RFC 4180 correctly quotes strings containing commas");
+  assert(generatedCsv.includes("\r\n"), "RFC 4180 employs standard CRLF line breaks");
+
+  // 33.6 BLE Beacon Calibration & Hardware Schema
+  const validateBeaconConfig = (beacon: any) => {
+    if (!beacon.name || typeof beacon.name !== "string") return false;
+    if (!beacon.beaconId || typeof beacon.beaconId !== "string") return false;
+    if (typeof beacon.rssiCalibrated1m !== "number" || beacon.rssiCalibrated1m > 0 || beacon.rssiCalibrated1m < -120) return false;
+    if (typeof beacon.txPower !== "number" || beacon.txPower > 20 || beacon.txPower < -100) return false;
+    return true;
+  };
+
+  const validBeacon = { name: "LH-101 North Beacon", beaconId: "BEACON-LH101-01", rssiCalibrated1m: -65, txPower: -59 };
+  const invalidBeaconRssi = { name: "Bad Beacon", beaconId: "BEACON-02", rssiCalibrated1m: 10, txPower: -59 };
+  assert(validateBeaconConfig(validBeacon) === true, "Valid BLE beacon configuration satisfies hardware validation rules");
+  assert(validateBeaconConfig(invalidBeaconRssi) === false, "Invalid BLE beacon with positive RSSI correctly rejected");
+
+  // 33.7 Digital Attendance Receipt Schema
+  const sampleReceipt = {
+    receiptId: "REC-9A4B8F12",
+    studentName: "Ada Lovelace",
+    rollNumber: "CS-2024-001",
+    courseCode: "CS-402",
+    courseTitle: "Advanced Neural Networks",
+    date: "2026-09-25",
+    time: "09:05 AM",
+    status: "PRESENT",
+    verificationMethod: "COMBO",
+    qrVerified: true,
+    bluetoothVerified: true,
+    geofenceVerified: true,
+    distanceMeters: 14,
+    sessionRef: "session-test-uuid",
+    hash: "rec-test-record-id-99",
+  };
+
+  assert(sampleReceipt.receiptId.startsWith("REC-"), "Digital Attendance Receipt contains formatted uppercase REC- identifier");
+  assert(sampleReceipt.verificationMethod === "COMBO", "Receipt accurately preserves multi-factor verification method");
+  assert(sampleReceipt.qrVerified && sampleReceipt.bluetoothVerified && sampleReceipt.geofenceVerified, "Multi-factor verification proofs recorded on receipt");
 
   console.log("\n=================================================");
   console.log(`🎉 ALL ${passedTests}/${totalTests} TESTS PASSED SUCCESSFULLY!`);

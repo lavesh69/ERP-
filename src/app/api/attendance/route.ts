@@ -179,14 +179,91 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "Course not found" }, { status: 404 });
     }
 
-    const roster = course.enrollments.map((enr) => ({
-      studentId: enr.student.id,
-      name: `${enr.student.user.firstName} ${enr.student.user.lastName}`,
-      rollNo: enr.student.rollNumber,
-      section: enr.student.section?.name || "Section A",
-      aggregate: enr.student.attendanceRate || 92.0,
-      status: "PRESENT",
-    }));
+    // Command Center: Today's Timetable Slots & Live Detection
+    const daysOfWeek = ["SUNDAY", "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY"];
+    const todayDayOfWeek = daysOfWeek[new Date().getDay()];
+    const todaySlots = await prisma.timetableSlot.findMany({
+      where: { dayOfWeek: todayDayOfWeek },
+      include: { course: true, section: true, room: true },
+    });
+
+    const now = new Date();
+    const currentMinutes = now.getHours() * 60 + now.getMinutes();
+    let currentLiveSlot: any = null;
+    for (const slot of todaySlots) {
+      const [sH, sM] = (slot.startTime || "00:00").split(":").map(Number);
+      const [eH, eM] = (slot.endTime || "00:00").split(":").map(Number);
+      if (currentMinutes >= sH * 60 + sM && currentMinutes <= eH * 60 + eM) {
+        currentLiveSlot = {
+          courseCode: slot.course.code,
+          courseTitle: slot.course.title,
+          sectionName: slot.section.name,
+          roomName: slot.room.name,
+          roomId: slot.roomId,
+          startTime: slot.startTime,
+          endTime: slot.endTime,
+        };
+        break;
+      }
+    }
+
+    // Sessions metrics for today
+    const startOfToday = new Date();
+    startOfToday.setHours(0, 0, 0, 0);
+    const endOfToday = new Date();
+    endOfToday.setHours(23, 59, 59, 999);
+
+    const todaySessions = await prisma.attendanceSession.findMany({
+      where: { date: { gte: startOfToday, lte: endOfToday } },
+    });
+
+    const activeSessionsCount = await prisma.attendanceSession.count({
+      where: { status: "ACTIVE" },
+    });
+    const completedSessionsCount = todaySessions.filter(
+      (s) => s.status === "SUBMITTED" || s.status === "CLOSED" || s.status === "LOCKED"
+    ).length;
+    const pendingSessionsCount = Math.max(0, todaySlots.length - completedSessionsCount);
+
+    // Selected Date Session Lookup
+    const selectedDateStr = searchParams.get("date");
+    const targetDate = selectedDateStr ? new Date(selectedDateStr) : new Date();
+    const startOfTarget = new Date(targetDate);
+    startOfTarget.setHours(0, 0, 0, 0);
+    const endOfTarget = new Date(targetDate);
+    endOfTarget.setHours(23, 59, 59, 999);
+
+    const existingSessionToday = await prisma.attendanceSession.findFirst({
+      where: {
+        courseId: course.id,
+        date: { gte: startOfTarget, lte: endOfTarget },
+      },
+      include: {
+        records: true,
+      },
+    });
+
+    // Student Roster with Risk and Last Attendance
+    const roster = course.enrollments.map((enr) => {
+      const existingRec = existingSessionToday?.records.find((r) => r.studentId === enr.student.id);
+      const aggregate = enr.student.attendanceRate ?? 92.0;
+      const risk = aggregate < 75 ? "HIGH" : aggregate < 80 ? "MEDIUM" : "LOW";
+
+      return {
+        studentId: enr.student.id,
+        name: `${enr.student.user.firstName} ${enr.student.user.lastName}`,
+        rollNo: enr.student.rollNumber,
+        section: enr.student.section?.name || "Section A",
+        aggregate,
+        risk,
+        status: existingRec?.status || "PRESENT",
+        lastAttendance: "Recent",
+      };
+    });
+
+    const rates = course.enrollments.map((e) => e.student.attendanceRate ?? 92.0);
+    const avgRate = rates.length > 0 ? Number((rates.reduce((a, b) => a + b, 0) / rates.length).toFixed(1)) : 92.0;
+    const studentsAtRiskCount = rates.filter((r) => r < 75).length;
 
     return NextResponse.json({
       perspective: "FACULTY",
@@ -200,6 +277,18 @@ export async function GET(req: NextRequest) {
         code: course.code,
         title: course.title,
       },
+      commandCenter: {
+        todayClassesCount: todaySlots.length,
+        sessionsActiveCount: activeSessionsCount,
+        completedSessionsCount,
+        pendingSessionsCount,
+        averageAttendance: avgRate,
+        studentsAtRiskCount,
+        currentLiveSlot,
+      },
+      sessionExists: Boolean(existingSessionToday),
+      sessionId: existingSessionToday?.id || null,
+      sessionStatus: existingSessionToday?.status || null,
       roster,
       pastSessionsCount: course.attendanceSessions.length,
       recentSessions: course.attendanceSessions.map((s) => ({
@@ -225,7 +314,7 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json();
-    const { courseCode, date, records, lectureTime, sectionName } = body;
+    const { courseCode, date, records, lectureTime, sectionName, sessionAction = "SAVE" } = body;
 
     if (!courseCode || !records || !Array.isArray(records)) {
       return NextResponse.json(
@@ -239,6 +328,7 @@ export async function POST(req: NextRequest) {
       include: {
         faculty: true,
         department: true,
+        enrollments: { select: { studentId: true } },
       },
     });
 
@@ -271,6 +361,26 @@ export async function POST(req: NextRequest) {
       },
     });
 
+    // Absence Engine: Include all enrolled students not explicitly checked
+    const submittedStudentIds = new Set(records.map((r: any) => r.studentId));
+    const allEnrolledIds = course.enrollments.map((e) => e.studentId);
+    const allFinalRecords = [...records];
+
+    if (sessionAction === "CLOSE" || sessionAction === "LOCK") {
+      for (const enrolledId of allEnrolledIds) {
+        if (!submittedStudentIds.has(enrolledId)) {
+          allFinalRecords.push({
+            studentId: enrolledId,
+            status: "ABSENT",
+            remarks: "Marked absent automatically by System Absence Engine upon session close",
+          });
+        }
+      }
+    }
+
+    const targetSessionStatus =
+      sessionAction === "LOCK" ? "LOCKED" : sessionAction === "CLOSE" ? "CLOSED" : "SUBMITTED";
+
     let session = null;
     if (existingSession) {
       // Overwrite/update existing session records
@@ -279,14 +389,22 @@ export async function POST(req: NextRequest) {
       });
 
       await prisma.attendanceRecord.createMany({
-        data: records.map((r: { studentId: string; status: string }) => ({
+        data: allFinalRecords.map((r: { studentId: string; status: string; remarks?: string }) => ({
           sessionId: existingSession.id,
           studentId: r.studentId,
           status: r.status || "PRESENT",
+          remarks: r.remarks || null,
+          markedBy: auth.payload.email,
         })),
       });
 
-      session = existingSession;
+      session = await prisma.attendanceSession.update({
+        where: { id: existingSession.id },
+        data: {
+          status: targetSessionStatus,
+          closedAt: sessionAction === "CLOSE" || sessionAction === "LOCK" ? new Date() : existingSession.closedAt,
+        },
+      });
     } else {
       // Create fresh session
       session = await prisma.attendanceSession.create({
@@ -298,11 +416,14 @@ export async function POST(req: NextRequest) {
           startTime: lectureTime || "09:00",
           endTime: "10:30",
           method: "MANUAL",
-          status: "SUBMITTED",
+          status: targetSessionStatus,
+          closedAt: sessionAction === "CLOSE" || sessionAction === "LOCK" ? new Date() : null,
           records: {
-            create: records.map((r: { studentId: string; status: string }) => ({
+            create: allFinalRecords.map((r: { studentId: string; status: string; remarks?: string }) => ({
               studentId: r.studentId,
               status: r.status || "PRESENT",
+              remarks: r.remarks || null,
+              markedBy: auth.payload.email,
             })),
           },
         },
@@ -310,7 +431,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Automatically recalculate and update aggregate attendance rate on each student record
-    for (const r of records) {
+    for (const r of allFinalRecords) {
       const allStudentRecords = await prisma.attendanceRecord.findMany({
         where: { studentId: r.studentId },
       });
@@ -331,15 +452,17 @@ export async function POST(req: NextRequest) {
     logger.info("Attendance submitted", {
       courseCode,
       date: sessionDate.toISOString().split("T")[0],
-      recordsCount: records.length,
+      recordsCount: allFinalRecords.length,
+      sessionStatus: targetSessionStatus,
       actor: auth.payload.email,
     });
 
     return NextResponse.json({
       success: true,
-      message: `Attendance synchronized for ${records.length} students.`,
+      message: `Attendance synchronized for ${allFinalRecords.length} students. Status: ${targetSessionStatus}`,
       sessionId: session.id,
-      recordedCount: records.length,
+      sessionStatus: targetSessionStatus,
+      recordedCount: allFinalRecords.length,
     });
   } catch (error: any) {
     logger.error("Attendance POST API Error:", error);

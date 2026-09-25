@@ -214,7 +214,20 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // Step 9: Determine composite verification method
+    // Step 9: Check Late arrival threshold (e.g. > 15 mins past start time)
+    let recordStatus = "PRESENT";
+    if (session.startTime && session.startTime.includes(":")) {
+      const [startH, startM] = session.startTime.split(":").map(Number);
+      const now = new Date();
+      const sessionStartMin = startH * 60 + startM;
+      const currentMin = now.getHours() * 60 + now.getMinutes();
+      const isToday = session.date.toISOString().split("T")[0] === now.toISOString().split("T")[0];
+      if (isToday && currentMin > sessionStartMin + 15) {
+        recordStatus = "LATE";
+      }
+    }
+
+    // Step 10: Determine composite verification method
     let verificationMethod = "QR";
     if (bluetoothVerified && geofenceVerified) {
       verificationMethod = "COMBO";
@@ -224,12 +237,12 @@ export async function POST(req: NextRequest) {
       verificationMethod = "GEOFENCE";
     }
 
-    // Step 10: Atomic Record Creation
+    // Step 11: Atomic Record Creation
     const record = await prisma.attendanceRecord.create({
       data: {
         sessionId: session.id,
         studentId: student.id,
-        status: "PRESENT",
+        status: recordStatus,
         verificationMethod,
         qrVerified: true,
         bluetoothVerified,
@@ -241,6 +254,21 @@ export async function POST(req: NextRequest) {
       },
     });
 
+    // Step 12: Recalculate Student Aggregate Attendance Rate
+    const allStudentRecords = await prisma.attendanceRecord.findMany({
+      where: { studentId: student.id },
+    });
+    const presentCount = allStudentRecords.filter(
+      (r) => r.status === "PRESENT" || r.status === "LATE" || r.status === "EXCUSED"
+    ).length;
+    const updatedRate = allStudentRecords.length > 0
+      ? Number(((presentCount / allStudentRecords.length) * 100).toFixed(1))
+      : 100.0;
+    await prisma.student.update({
+      where: { id: student.id },
+      data: { attendanceRate: updatedRate },
+    });
+
     logger.security("STUDENT_QR_ATTENDANCE_VERIFIED", student.user.email, {
       studentId: student.id,
       sessionId: session.id,
@@ -248,11 +276,36 @@ export async function POST(req: NextRequest) {
       verificationMethod,
       distanceMeters,
       bluetoothVerified,
+      status: recordStatus,
     });
+
+    const nowFormattedTime = new Date().toLocaleTimeString("en-US", {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+    });
+
+    const receipt = {
+      receiptId: `REC-${record.id.slice(-8).toUpperCase()}`,
+      studentName: `${student.user.firstName} ${student.user.lastName}`,
+      rollNumber: student.rollNumber,
+      courseCode: session.course.code,
+      courseTitle: session.course.title,
+      date: session.date.toISOString().split("T")[0],
+      time: nowFormattedTime,
+      status: record.status,
+      verificationMethod,
+      qrVerified: true,
+      bluetoothVerified,
+      geofenceVerified,
+      distanceMeters,
+      sessionRef: session.id,
+      hash: record.id,
+    };
 
     return NextResponse.json({
       success: true,
-      message: "Attendance recorded successfully",
+      message: `Attendance recorded successfully as ${record.status}`,
       record: {
         id: record.id,
         status: record.status,
@@ -263,10 +316,12 @@ export async function POST(req: NextRequest) {
         geofenceVerified: record.geofenceVerified,
         distanceMeters: record.distanceMeters,
       },
+      receipt,
       student: {
         id: student.id,
         name: `${student.user.firstName} ${student.user.lastName}`,
         rollNumber: student.rollNumber,
+        newAttendanceRate: updatedRate,
       },
       course: {
         code: session.course.code,

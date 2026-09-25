@@ -1,136 +1,131 @@
-# CLASSROOM ERP — SMART ATTENDANCE ARCHITECTURAL SPECIFICATION
-DYNAMIC QR ROTATION • BLUETOOTH BLE • GEOFENCING • ANTI-PROXY AUDIT • PETITIONS
+# CLASSROOM ERP — ATTENDANCE OPERATING SYSTEM ARCHITECTURE
+## Multi-Factor Dynamic Verification, Telemetry & Decision Engine Specification
 
-## 1. Executive Overview
+---
 
-The **Classroom ERP Smart Attendance System** represents a multi-modal, zero-trust attendance verification engine. Designed to eliminate student proxy marking, buddy punching, and out-of-classroom check-ins, the engine leverages four verification layers that can operate independently or in conjunction (`SMART_COMBO`).
+### 1. Academic Hierarchy & Attendance Domain Topology
 
-```
-                               ┌────────────────────────────────┐
-                               │   FACULTY PROJECTOR / CONSOLE  │
-                               │   - Active Attendance Session  │
-                               │   - Rotating QR (15s Window)   │
-                               │   - BLE Beacon Broadcaster     │
-                               └───────────────┬────────────────┘
-                                               │
-                                 Cryptographic Challenge
-                                               │
-                 ┌─────────────────────────────┼─────────────────────────────┐
-                 │                             │                             │
-                 ▼                             ▼                             ▼
-       ┌───────────────────┐         ┌───────────────────┐         ┌───────────────────┐
-       │   1. ROTATING QR  │         │  2. GPS GEOFENCE  │         │  3. BLUETOOTH BLE │
-       │  APX_ATT_V2 Token │         │  Haversine Radius │         │  RSSI Proximity   │
-       │  15s Auto-Refresh │         │  <= 75 Meters     │         │  Threshold: -78dBm│
-       └─────────┬─────────┘         └─────────┬─────────┘         └─────────┬─────────┘
-                 │                             │                             │
-                 └─────────────────────────────┼─────────────────────────────┘
-                                               │
-                                               ▼
-                               ┌────────────────────────────────┐
-                               │   POST /api/attendance/verify   │
-                               │   - Replay Attack Rejection    │
-                               │   - Unique Constraint Check    │
-                               │   - Audit Telemetry Logging    │
-                               └────────────────┬───────────────┘
-                                                ▼
-                               ┌────────────────────────────────┐
-                               │    DATABASE ATTENDANCE RECORD   │
-                               │    Status: PRESENT / LATE       │
-                               │    Badges: [QR] [GPS] [BLE]    │
-                               └────────────────────────────────┘
+```mermaid
+graph TD
+    Inst[Institution: Apex University] --> Camp[Campus: South Delhi Main]
+    Camp --> Dept[Department: Computer Science & AI]
+    Dept --> Prog[Program: B.Tech Computer Science]
+    Prog --> AY[Academic Year: 2026-2027]
+    AY --> Sem[Semester: Fall 5th]
+    Sem --> Course[Course: CS-402 Advanced Neural Networks]
+    Course --> Sec[Section: 5-A]
+    Sec --> Room[Room: Turing Lecture Hall 101]
+    Sec --> Stud[Enrolled Students Roster]
+    Room --> Ble[BLE Hardware Beacon: UUID / RSSI]
+    Room --> Geo[GPS Coordinates: Lat / Lng / Radius]
 ```
 
 ---
 
-## 2. Core Verification Vectors
+### 2. Multi-Factor Verification & Decision Flow Pipeline
 
-### 2.1 Vector 1: Dynamic Rotating QR (`APX_ATT_V2`)
-- **Protocol**: `APX_ATT_V2.<sessionId>.<courseId>.<nonce>.<expiresAt>.<signature>`
-- **Token Rotation Interval**: Default 15 seconds (configurable from 10s to 60s).
-- **HMAC-SHA256 Cryptography**: Signed using `ATTENDANCE_SECRET_KEY` on the server.
-- **Constant-Time Verification**: Verification utilizes `crypto.timingSafeEqual` to eliminate timing attacks.
-- **Replay Protection**: Expired tokens or tokens older than current timestamp are immediately rejected.
+```mermaid
+sequenceDiagram
+    autonumber
+    actor T as Faculty / Teacher
+    participant UI as Classroom ERP Frontend
+    participant API as Attendance API Gateway
+    participant DB as PostgreSQL / Neon
+    actor S as Enrolled Student
 
-### 2.2 Vector 2: Geofence Validation (Haversine Formula)
-- **Algorithm**: Great-circle distance computation between instructor lecture hall and student coordinates:
-  $$\Delta \sigma = 2 \arcsin \sqrt{\sin^2\left(\frac{\Delta \phi}{2}\right) + \cos \phi_1 \cos \phi_2 \sin^2\left(\frac{\Delta \lambda}{2}\right)}$$
-  $$d = R \cdot \Delta \sigma$$
-- **Threshold**: Default radius $r \le 75\text{ m}$.
-- **Accuracy Verification**: Enforces mobile browser geolocation accuracy threshold ($< 50\text{ m}$) to prevent GPS mock/spoofing tools.
+    Note over T,UI: 1. Smart Session Initialization
+    T->>UI: Selects Course / Clicks "Start Attendance"
+    UI->>API: POST /api/attendance/sessions (Course, Room, Method, Cutoffs)
+    API->>DB: Validate Teacher Assignment & Timetable Slot
+    API->>DB: Create AttendanceSession (Status: ACTIVE)
+    API->>API: Generate Initial Dynamic QR Token (APX_ATT_V2)
+    API-->>UI: Session Created with Rotating Token
 
-### 2.3 Vector 3: Web Bluetooth (BLE Proximity)
-- **Challenge-Response**: Server issues a cryptographic BLE challenge `BLE_CHALLENGE.<sessionId>.<studentId>.<timestamp>.<signature>`.
-- **Hardware Integration**: Uses standard Web Bluetooth API (`navigator.bluetooth`) on Android, iOS (Chrome/Bluefy), macOS, and Windows.
-- **RSSI Proximity Boundary**: Validated RSSI threshold (default $\ge -78\text{ dBm}$) ensuring the student's device is physically inside the designated classroom perimeter.
+    Note over T,UI: 2. Dynamic QR Projection & Rotation
+    UI->>UI: Fullscreen Projector Mode Active
+    loop Every 15-45 Seconds
+        UI->>API: GET /api/attendance/sessions/:id/qr
+        API->>API: Check Window & Rotate Token with HMAC Nonce
+        API-->>UI: New QR Token + Live Present Count
+    end
 
-### 2.4 Vector 4: Multi-Factor Combo Verification (`SMART_COMBO`)
-- Instructor can enforce any combination:
-  - `QR_ONLY`: Dynamic rotating QR code.
-  - `QR_AND_GEOFENCE`: QR code + student must be inside the GPS radius.
-  - `SMART_COMBO`: All three factors (QR code + GPS radius + Bluetooth proximity) required for highest security exams and labs.
+    Note over S,API: 3. Multi-Factor Student Check-In
+    S->>UI: Opens Scanner on Mobile Device
+    UI->>UI: Activates Rear Camera Stream (jsQR)
+    UI->>UI: Reads GPS Coordinates & Web Bluetooth Beacon
+    S->>API: POST /api/attendance/qr/verify (Token, SessionId, GPS, BLE)
+    API->>DB: Authenticate Student from JWT Cookie
+    API->>DB: Verify Active Course Enrollment
+    API->>API: Validate Cryptographic QR Signature & Expiration Window
+    API->>API: Calculate Server Haversine Distance (GPS vs Room)
+    API->>API: Validate BLE Challenge-Response & RSSI Perimeter
+    API->>DB: Atomic Transaction: Insert AttendanceRecord & Update Aggregate
+    API-->>S: HTTP 200 OK + Digital Attendance Receipt
 
----
-
-## 3. Database Architecture & Integrity Constraints
-
-### Database Schema Models
-```prisma
-model AttendanceSession {
-  id                  String   @id @default(uuid())
-  courseId            String
-  facultyId           String
-  sectionId           String
-  date                DateTime
-  startTime           String
-  endTime             String
-  method              String   @default("MANUAL") // MANUAL, QR, BLUETOOTH, GEOFENCE, SMART_COMBO
-  qrRotationSeconds   Int      @default(15)
-  allowedRadiusMeters Float    @default(75.0)
-  latitude            Float?
-  longitude           Float?
-  bleRequired         Boolean  @default(false)
-  geofenceRequired    Boolean  @default(false)
-  status              String   @default("ACTIVE") // ACTIVE, CLOSED, CANCELLED
-
-  course              Course   @relation(...)
-  faculty             Faculty  @relation(...)
-  section             Section  @relation(...)
-  records             AttendanceRecord[]
-}
-
-model AttendanceRecord {
-  id                 String    @id @default(uuid())
-  sessionId          String
-  studentId          String
-  status             String    @default("PRESENT") // PRESENT, ABSENT, LATE, EXCUSED
-  remarks            String?
-  verificationMethod String    @default("MANUAL")
-  qrVerified         Boolean   @default(false)
-  bluetoothVerified  Boolean   @default(false)
-  geofenceVerified   Boolean   @default(false)
-  distanceMeters     Float?
-  verifiedAt         DateTime?
-  markedBy           String?   // "STUDENT_SELF_SCAN", "FACULTY_MANUAL"
-
-  session            AttendanceSession @relation(...)
-  student            Student           @relation(...)
-
-  @@unique([sessionId, studentId]) // Strictly prevents duplicate attendance
-}
+    Note over T,DB: 4. Session Finalization & Absence Engine
+    T->>UI: Clicks "Close & Lock Session"
+    UI->>API: PATCH /api/attendance/sessions (action: "CLOSE")
+    API->>DB: Atomically Mark All Unchecked Enrolled Students as ABSENT
+    API->>DB: Transition Session Status to LOCKED
+    API-->>UI: Session Finalized & Locked
 ```
 
 ---
 
-## 4. Attendance Petition & Automated Rectification Workflow
+### 3. Verification Modes & Governance Policy
 
-When a student has an unexcused absence due to authorized medical leave, sports representation, or hardware discrepancy:
-1. **Submission**:
-   - Student submits request via `POST /api/students/requests` with type `ATTENDANCE_CORRECTION`, including explanation and medical attachment URL.
-2. **Review & Approval**:
-   - Faculty or Academic Advisor reviews petition via `PATCH /api/students/requests`.
-3. **Automated Ledger Update**:
-   - On approval (`status: "APPROVED"`), the API automatically updates the corresponding `AttendanceRecord` to `EXCUSED` or `PRESENT`.
-   - The record remarks are annotated with the request tracking ID: `Approved correction via request <id>`.
-4. **Audit Trail**:
-   - Generates an immutable `AuditLog` entry (`action: "ATTENDANCE_CHANGED"`) documenting previous status, new status, reviewer ID, and timestamp.
+| Mode | Required Multi-Factor Checkpoints | Use Case | Security Level |
+|---|---|---|---|
+| **`MANUAL`** | Faculty direct roster check-in | Small lab groups, outdoor practicum | Standard |
+| **`QR`** | Authenticated session + Dynamic Rotating QR | General university lectures | High |
+| **`QR_GEOFENCE`** | Dynamic QR + Server-side Haversine Distance Verification | Large lecture halls, auditorium classes | Very High |
+| **`QR_BLE`** | Dynamic QR + Web Bluetooth Beacon Challenge Proof | High-security exam halls, specialized computing labs | Extremely High |
+| **`SMART_COMBO`** | Dynamic QR + GPS Geofence (<100m) + BLE Beacon RSSI | Enterprise campus defense against proxy and spoofing | Maximum Military Grade |
+
+---
+
+### 4. Data Models & Entity Relationships
+
+- **`AttendanceSession`**:
+  - `id`: UUID Primary Key
+  - `courseId`, `facultyId`, `sectionId`, `roomId`
+  - `date`: Session calendar date
+  - `startTime`, `endTime`: Scheduled instruction window
+  - `method`: `MANUAL` \| `QR` \| `SMART_COMBO`
+  - `status`: `DRAFT` \| `ACTIVE` \| `PAUSED` \| `SUBMITTED` \| `LOCKED` \| `CLOSED`
+  - `qrCodeToken`, `qrNonce`, `qrExpiresAt`, `qrRotationSeconds`
+  - `latitude`, `longitude`, `allowedRadiusMeters`
+  - `bleDeviceId`, `bleBeaconId`, `bleRequired`, `geofenceRequired`
+  - `closedAt`, `createdAt`, `updatedAt`
+
+- **`AttendanceRecord`**:
+  - `id`: UUID Primary Key
+  - `sessionId`: Foreign Key to `AttendanceSession` (Cascade Delete)
+  - `studentId`: Foreign Key to `Student` (Cascade Delete)
+  - `status`: `PRESENT` \| `ABSENT` \| `LATE` \| `EXCUSED`
+  - `verificationMethod`: `MANUAL` \| `QR` \| `BLUETOOTH` \| `GEOFENCE` \| `COMBO`
+  - `qrVerified`, `bluetoothVerified`, `geofenceVerified`: Booleans
+  - `distanceMeters`: Server-calculated proximity (GPS)
+  - `markedBy`: `STUDENT_SELF_SCAN` \| `FACULTY_MANUAL` \| `SYSTEM_ABSENCE_ENGINE`
+  - `timestamp`: Verified timestamp
+  - **Constraint**: `@@unique([sessionId, studentId])` (Prevents duplicate check-ins)
+
+- **`BleDevice`**:
+  - `id`: UUID Primary Key
+  - `roomId`: Foreign Key to `Room`
+  - `name`: Hardware identifier (e.g. `Turing-Hall-Beacon-01`)
+  - `serviceUuid`, `characteristicUuid`, `beaconIdentifier`
+  - `rssiThreshold`: Default -80 dBm
+  - `isActive`: Boolean
+
+---
+
+### 5. Absence & Late Arrival Rules
+1. **Late Threshold**:
+   - A configurable window (default: 10 minutes from session start).
+   - Check-ins received within `0` to `thresholdMins` are marked **`PRESENT`**.
+   - Check-ins received after `thresholdMins` but before session closure are marked **`LATE`**.
+2. **System Absence Engine**:
+   - When faculty transitions the session to `CLOSED`, any student enrolled in the course section who has no corresponding `AttendanceRecord` is automatically created as **`ABSENT`**.
+3. **Excused Status**:
+   - Students with approved `ATTENDANCE_CORRECTION` petitions or verified medical leaves are recorded as **`EXCUSED`**, contributing to numerator attendance credit under university Senate regulations.
