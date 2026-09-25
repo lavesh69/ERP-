@@ -1172,6 +1172,52 @@ export default function DashboardPage() {
                   ))}
                 </div>
               </div>
+
+              {/* Degree Audit & Graduation Roadmap */}
+              <div className="bg-white dark:bg-[#1E191C] rounded-2xl border border-border dark:border-charcoal-800 shadow-soft p-5">
+                <div className="flex items-center justify-between pb-3 border-b border-border/70 dark:border-charcoal-800 mb-4">
+                  <div className="flex items-center gap-2">
+                    <Award className="h-4 w-4 text-rose-primary dark:text-rose-accent" />
+                    <h3 className="text-xs font-bold text-charcoal-900 dark:text-ivory-100 uppercase tracking-wider">
+                      Degree Audit &amp; Graduation Roadmap
+                    </h3>
+                  </div>
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-academic-success-subtle text-academic-success border border-green-200">
+                    On Track for 2028 Convocation
+                  </span>
+                </div>
+
+                <div className="flex flex-col gap-3">
+                  <div className="grid grid-cols-3 gap-2">
+                    <div className="p-3 rounded-xl bg-surface-soft dark:bg-charcoal-900/40 border border-border dark:border-charcoal-800 text-center">
+                      <span className="text-[10px] text-charcoal-500 font-bold uppercase block">Core Credits</span>
+                      <span className="text-sm font-bold text-charcoal-900 dark:text-ivory-100 font-mono">68 / 80</span>
+                      <div className="w-full bg-ivory-200 dark:bg-charcoal-700 h-1 rounded-full mt-1.5 overflow-hidden">
+                        <div className="bg-rose-primary h-full rounded-full" style={{ width: "85%" }} />
+                      </div>
+                    </div>
+                    <div className="p-3 rounded-xl bg-surface-soft dark:bg-charcoal-900/40 border border-border dark:border-charcoal-800 text-center">
+                      <span className="text-[10px] text-charcoal-500 font-bold uppercase block">Electives</span>
+                      <span className="text-sm font-bold text-charcoal-900 dark:text-ivory-100 font-mono">18 / 24</span>
+                      <div className="w-full bg-ivory-200 dark:bg-charcoal-700 h-1 rounded-full mt-1.5 overflow-hidden">
+                        <div className="bg-indigo-600 h-full rounded-full" style={{ width: "75%" }} />
+                      </div>
+                    </div>
+                    <div className="p-3 rounded-xl bg-surface-soft dark:bg-charcoal-900/40 border border-border dark:border-charcoal-800 text-center">
+                      <span className="text-[10px] text-charcoal-500 font-bold uppercase block">Lab / Capstone</span>
+                      <span className="text-sm font-bold text-charcoal-900 dark:text-ivory-100 font-mono">12 / 16</span>
+                      <div className="w-full bg-ivory-200 dark:bg-charcoal-700 h-1 rounded-full mt-1.5 overflow-hidden">
+                        <div className="bg-emerald-600 h-full rounded-full" style={{ width: "75%" }} />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between text-[11px] text-charcoal-600 dark:text-charcoal-400 pt-1">
+                    <span>Degree Completion: <strong className="text-charcoal-900 dark:text-ivory-100 font-mono">98 / 120 Total Credits (81.6%)</strong></span>
+                    <span className="font-bold text-academic-success">Cumulative CGPA: 3.82</span>
+                  </div>
+                </div>
+              </div>
             </div>
 
             {/* Upcoming Deadlines, Exams & Petitions */}

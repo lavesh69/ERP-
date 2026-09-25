@@ -25,9 +25,13 @@ interface ActiveLoan {
   studentName: string;
   rollNo: string;
   dueDate: string;
+  issuedAt?: string;
   isOverdue?: boolean;
   daysOverdue?: number;
   accruedFine?: number;
+  renewalsUsed?: number;
+  maxRenewals?: number;
+  canRenew?: boolean;
 }
 
 interface LibraryBookItem {
@@ -201,6 +205,34 @@ export default function LibraryPage() {
       }
     } catch (err) {
       showToast("Network error returning book", "error");
+    }
+  };
+
+  const [isRenewing, setIsRenewing] = useState<string | null>(null);
+
+  const handleRenewBook = async (loanId: string, bookTitle: string) => {
+    setIsRenewing(loanId);
+    try {
+      const res = await fetch("/api/library", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "RENEW",
+          loanId,
+        }),
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        showToast(data.message || `Renewed loan for "${bookTitle}"`, "success");
+        triggerRefresh();
+      } else {
+        showToast(data.error || "Failed to renew book loan", "error");
+      }
+    } catch {
+      showToast("Network error renewing book loan", "error");
+    } finally {
+      setIsRenewing(null);
     }
   };
 
@@ -430,7 +462,20 @@ export default function LibraryPage() {
                                     </span>
                                   )}
                                 </div>
-                                {!isStudent && (
+                                {isStudent ? (
+                                  <button
+                                    disabled={!l.canRenew || isRenewing === l.id}
+                                    onClick={() => handleRenewBook(l.id, b.title)}
+                                    className={`px-2 py-0.5 rounded text-[10px] font-bold transition-all ${
+                                      l.canRenew
+                                        ? "bg-emerald-600 hover:bg-emerald-500 text-white shadow-xs"
+                                        : "bg-ivory-200 dark:bg-charcoal-700 text-charcoal-400 cursor-not-allowed"
+                                    }`}
+                                    title={l.canRenew ? `Renew loan by 14 days (${l.renewalsUsed || 0}/3 renewals used)` : "Maximum renewal limit reached (3/3)"}
+                                  >
+                                    {isRenewing === l.id ? "Renewing..." : l.canRenew ? `Renew (${l.renewalsUsed || 0}/3)` : "Max Renewals"}
+                                  </button>
+                                ) : (
                                   <button
                                     onClick={() => handleReturnBook(l.id, b.title)}
                                     className="px-2 py-0.5 rounded bg-rose-primary hover:bg-rose-dark text-white text-[10px] font-bold"

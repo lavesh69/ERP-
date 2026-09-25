@@ -79,6 +79,17 @@ export async function GET(req: NextRequest) {
 
     const institution = await prisma.institution.findFirst();
 
+    // Compute candidate course attendance to determine exam clearance standing
+    const studentAttendance = await prisma.attendanceRecord.findMany({
+      where: { studentId: student.id, session: { courseId: exam.courseId } },
+    });
+    const totalAtt = studentAttendance.length;
+    const presentAtt = studentAttendance.filter(
+      (a) => a.status === "PRESENT" || a.status === "LATE" || a.status === "EXCUSED"
+    ).length;
+    const attRate = totalAtt > 0 ? (presentAtt / totalAtt) * 100 : 85.0;
+    const isDefaulter = attRate < 75.0;
+
     const hallTicket = {
       ticketNumber: `HT-FALL26-${exam.course.code}-${student.rollNumber.replace(/[^a-zA-Z0-9]/g, "")}`,
       candidate: {
@@ -107,8 +118,13 @@ export async function GET(req: NextRequest) {
       verification: {
         issuedAt: new Date().toISOString(),
         authSignature: `APX-SIG-${Date.now().toString(36).toUpperCase()}-${student.id.substring(0, 6).toUpperCase()}`,
-        status: "OFFICIALLY_VERIFIED",
+        status: isDefaulter ? "PROVISIONAL_CONDITIONAL" : "OFFICIALLY_VERIFIED",
         seal: "APEX-CONTROLLER-OF-EXAMINATIONS",
+        isDefaulter,
+        attendanceRate: Number(attRate.toFixed(1)),
+        conditionNote: isDefaulter
+          ? `PROVISIONAL ADMITTANCE: Course attendance (${attRate.toFixed(1)}%) is below 75% Senate threshold. Entry requires Dean Condonation.`
+          : null,
       },
       guidelines: [
         "1. Candidate must present this Admit Card along with their Biometric RFID Smart Card at the entrance.",

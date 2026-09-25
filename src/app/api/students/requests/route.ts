@@ -5,7 +5,15 @@ import { logAuditEvent } from "@/lib/audit/logger";
 import { z } from "zod";
 
 const createRequestSchema = z.object({
-  type: z.enum(["LEAVE", "ATTENDANCE_CORRECTION", "DOCUMENT_REQUEST", "CERTIFICATE", "ACADEMIC_CORRECTION"]),
+  type: z.enum([
+    "LEAVE",
+    "ATTENDANCE_CORRECTION",
+    "DOCUMENT_REQUEST",
+    "CERTIFICATE",
+    "ACADEMIC_CORRECTION",
+    "RE_EVALUATION",
+    "ELECTIVE_CHANGE",
+  ]),
   title: z.string().min(3, "Title must be at least 3 characters").max(100),
   reason: z.string().min(10, "Reason must be at least 10 characters").max(1000),
   attachmentUrl: z.string().optional(),

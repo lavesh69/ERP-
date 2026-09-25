@@ -26,7 +26,14 @@ export async function GET(req: NextRequest) {
           include: {
             enrollments: {
               include: {
-                student: { include: { user: true } },
+                student: {
+                  include: {
+                    user: true,
+                    attendance: {
+                      include: { session: true },
+                    },
+                  },
+                },
               },
             },
           },
@@ -81,6 +88,12 @@ export async function GET(req: NextRequest) {
         ? []
         : e.course.enrollments.map((enr) => {
             const existingResult = e.results.find((r) => r.studentId === enr.student.id);
+            const courseAtt = (enr.student.attendance || []).filter((a: any) => a.session?.courseId === e.courseId);
+            const totalAtt = courseAtt.length;
+            const presentAtt = courseAtt.filter((a: any) => a.status === "PRESENT" || a.status === "LATE" || a.status === "EXCUSED").length;
+            const attRate = totalAtt > 0 ? (presentAtt / totalAtt) * 100 : 85.0;
+            const isAttendanceDefaulter = attRate < 75.0;
+
             return {
               studentId: enr.student.id,
               name: `${enr.student.user.firstName} ${enr.student.user.lastName}`,
@@ -88,6 +101,8 @@ export async function GET(req: NextRequest) {
               currentMarks: existingResult ? existingResult.marksObtained : null,
               gradeLetter: existingResult ? existingResult.gradeLetter : null,
               isPublished: existingResult ? existingResult.publishedAt !== null : false,
+              attendancePercent: Number(attRate.toFixed(1)),
+              isAttendanceDefaulter,
             };
           });
 

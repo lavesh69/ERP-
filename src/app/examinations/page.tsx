@@ -21,6 +21,7 @@ import {
   ShieldCheck,
   Ticket,
   Printer,
+  AlertTriangle,
 } from "lucide-react";
 
 export default function ExaminationsPage() {
@@ -161,9 +162,38 @@ export default function ExaminationsPage() {
     }
   };
 
+  const [isSubmittingPetition, setIsSubmittingPetition] = useState(false);
+
+  const handleRequestReEvaluation = async (examTitle: string, courseCode: string, marks: number, total: number) => {
+    setIsSubmittingPetition(true);
+    try {
+      const res = await fetch("/api/students/requests", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          type: "RE_EVALUATION",
+          title: `Re-evaluation: ${courseCode} - ${examTitle}`,
+          reason: `Formal application for answer script scrutiny and mark re-tabulation for ${examTitle}. Scored: ${marks}/${total}.`,
+        }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        showToast("Formal re-evaluation petition submitted to Controller of Examinations", "success");
+        triggerRefresh();
+      } else {
+        showToast(data.error || "Failed to submit petition", "danger");
+      }
+    } catch {
+      showToast("Network error submitting re-evaluation request", "danger");
+    } finally {
+      setIsSubmittingPetition(false);
+    }
+  };
+
   const handleDownloadAdmitCard = () => {
     if (!hallTicketData) return;
     const t = hallTicketData;
+    const isDefaulter = t.verification?.isDefaulter;
     const content = `================================================================================
                     APEX UNIVERSITY OF SCIENCE & TECHNOLOGY
                        OFFICE OF THE REGISTRAR & CONTROLLER
@@ -173,7 +203,7 @@ HALL TICKET NUMBER : ${t.ticketNumber}
 DATE OF ISSUE      : ${new Date(t.verification.issuedAt).toLocaleDateString("en-US", { dateStyle: "full" })}
 VERIFICATION CODE  : ${t.verification.authSignature}
 STATUS             : ${t.verification.status}
-
+${isDefaulter ? `WATERMARK          : *** PROVISIONAL — SUBJECT TO DEAN CONDONATION (ATTENDANCE: ${t.verification.attendanceRate}%) ***\nCONDITIONAL NOTE   : ${t.verification.conditionNote}\n` : ""}
 --------------------------------------------------------------------------------
 1. CANDIDATE PROFILE
 --------------------------------------------------------------------------------
@@ -203,6 +233,7 @@ ${t.guidelines.join("\n")}
 ================================================================================
 Digitally certified by Autonomous Examination Engine
 Controller Seal: [APEX-SEAL-VERIFIED]
+${isDefaulter ? "WARNING: Candidate attendance is below 75% Senate threshold. Subject to Dean condonation." : ""}
 ================================================================================`;
 
     const blob = new Blob([content], { type: "text/plain" });
@@ -299,9 +330,18 @@ Controller Seal: [APEX-SEAL-VERIFIED]
                           {r.marksObtained} / {e.totalMarks} Marks
                         </span>
                       </div>
-                      <span className="text-[10px] text-charcoal-400 italic">
-                        {r.remarks || "Certified Academic Record"}
-                      </span>
+                      <div className="flex items-center justify-between pt-1 border-t border-border/40 dark:border-charcoal-800">
+                        <span className="text-[10px] text-charcoal-400 italic">
+                          {r.remarks || "Certified Academic Record"}
+                        </span>
+                        <button
+                          disabled={isSubmittingPetition}
+                          onClick={() => handleRequestReEvaluation(e.title, e.courseCode, r.marksObtained, e.totalMarks)}
+                          className="text-[10px] font-bold text-rose-primary dark:text-rose-accent hover:underline flex items-center gap-1"
+                        >
+                          Request Scrutiny →
+                        </button>
+                      </div>
                     </div>
                   ))
                 )}
@@ -527,7 +567,18 @@ Controller Seal: [APEX-SEAL-VERIFIED]
                   {selectedExam.classRoster.map((st: any) => (
                     <tr key={st.studentId} className="hover:bg-ivory-50/50 dark:hover:bg-charcoal-800/40">
                       <td className="p-3 font-bold text-charcoal-900 dark:text-ivory-100">
-                        {st.name}
+                        <div className="flex items-center gap-2">
+                          <span>{st.name}</span>
+                          {st.isAttendanceDefaulter ? (
+                            <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-academic-danger-subtle text-academic-danger border border-red-200" title="Course attendance below 75% cutoff">
+                              Shortage ({st.attendancePercent}%)
+                            </span>
+                          ) : st.attendancePercent ? (
+                            <span className="text-[10px] text-charcoal-400 font-mono font-normal">
+                              ({st.attendancePercent}%)
+                            </span>
+                          ) : null}
+                        </div>
                       </td>
                       <td className="p-3 font-mono text-[11px] text-charcoal-600 dark:text-charcoal-400">
                         {st.rollNumber}
@@ -621,11 +672,33 @@ Controller Seal: [APEX-SEAL-VERIFIED]
                   {hallTicketData.ticketNumber}
                 </span>
               </div>
-              <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-academic-success-subtle text-academic-success border border-green-300 dark:border-green-800 flex items-center gap-1">
-                <ShieldCheck className="h-3.5 w-3.5" />
+              <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold flex items-center gap-1 ${
+                hallTicketData.verification.isDefaulter
+                  ? "bg-academic-danger-subtle text-academic-danger border border-red-300 dark:border-red-800"
+                  : "bg-academic-success-subtle text-academic-success border border-green-300 dark:border-green-800"
+              }`}>
+                {hallTicketData.verification.isDefaulter ? (
+                  <AlertTriangle className="h-3.5 w-3.5 text-academic-danger" />
+                ) : (
+                  <ShieldCheck className="h-3.5 w-3.5" />
+                )}
                 <span>{hallTicketData.verification.status}</span>
               </span>
             </div>
+
+            {hallTicketData.verification?.isDefaulter && (
+              <div className="p-3.5 rounded-xl bg-academic-danger-subtle dark:bg-red-950/40 border border-red-300 dark:border-red-800 flex items-start gap-2.5">
+                <AlertTriangle className="h-4 w-4 text-academic-danger shrink-0 mt-0.5" />
+                <div className="flex flex-col gap-1">
+                  <span className="font-bold text-academic-danger uppercase text-[10px] tracking-wider">
+                    PROVISIONAL ADMIT CARD — ATTENDANCE CONDONATION REQUIRED
+                  </span>
+                  <p className="text-[11px] text-charcoal-700 dark:text-ivory-200">
+                    Candidate course attendance ({hallTicketData.verification.attendanceRate}%) is below the mandatory 75% Senate threshold. Entry to exam hall is conditional upon Dean condonation approval.
+                  </p>
+                </div>
+              </div>
+            )}
 
             {/* Candidate & Seat Allotment Grid */}
             <div className="grid grid-cols-2 gap-3 p-3.5 rounded-xl bg-ivory-50/70 dark:bg-charcoal-800/60 border border-border/60 dark:border-charcoal-700">

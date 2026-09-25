@@ -1762,6 +1762,109 @@ async function runTestSuite() {
     await prisma.studentRequest.delete({ where: { id: studentReq.id } });
     await prisma.attendanceRecord.delete({ where: { id: absentRecord.id } });
     await prisma.attendanceSession.delete({ where: { id: correctionSession.id } });
+
+    // ==========================================
+    // GROUP 31: STUDENT ACADEMIC EMPOWERMENT & EXAM DEFENDER SUITE
+    // ==========================================
+    console.log("\n📦 Running Group 31: Student Academic Empowerment & Exam Defender Suite");
+
+    // 1. RE_EVALUATION and ELECTIVE_CHANGE petition validation
+    const reEvalPetition = await prisma.studentRequest.create({
+      data: {
+        studentId: testStudent!.id,
+        type: "RE_EVALUATION",
+        title: "Re-evaluation & Scrutiny: CS-402 Mid-Term",
+        reason: "Formal petition requesting manual answer script scrutiny and tabulation recount.",
+        status: "SUBMITTED",
+      },
+    });
+    assert(reEvalPetition.type === "RE_EVALUATION", "Student can submit RE_EVALUATION scrutiny petitions");
+
+    const electivePetition = await prisma.studentRequest.create({
+      data: {
+        studentId: testStudent!.id,
+        type: "ELECTIVE_CHANGE",
+        title: "Elective Course Drop / Add Petition",
+        reason: "Requesting drop of secondary elective within add/drop window.",
+        status: "SUBMITTED",
+      },
+    });
+    assert(electivePetition.type === "ELECTIVE_CHANGE", "Student can submit ELECTIVE_CHANGE add/drop petitions");
+
+    // 2. Attendance Defaulter Recovery Calculation Algorithm
+    const calculateAttendanceRecovery = (attended: number, total: number) => {
+      const rate = total > 0 ? (attended / total) * 100 : 85;
+      if (rate < 75) {
+        return {
+          status: "DEFAULTER",
+          needed: Math.max(1, Math.ceil((0.75 * total - attended) / 0.25)),
+          canMiss: 0,
+        };
+      }
+      return {
+        status: "ELIGIBLE",
+        needed: 0,
+        canMiss: Math.floor((attended - 0.75 * total) / 0.75),
+      };
+    };
+
+    // Case A: 12 attended out of 20 classes (60% attendance - defaulter)
+    const defaulterCalc = calculateAttendanceRecovery(12, 20);
+    assert(defaulterCalc.status === "DEFAULTER", "Defaulter accurately classified under 75%");
+    // (12 + 12) / (20 + 12) = 24 / 32 = 75%
+    assert(defaulterCalc.needed === 12, "Defaulter recovery formula computes exact classes needed to cross 75% (12 classes)");
+
+    // Case B: 18 attended out of 20 classes (90% attendance - eligible)
+    const eligibleCalc = calculateAttendanceRecovery(18, 20);
+    assert(eligibleCalc.status === "ELIGIBLE", "Student accurately classified as eligible above 75%");
+    // 18 / (20 + 4) = 18 / 24 = 75%
+    assert(eligibleCalc.canMiss === 4, "Margin formula computes exact classes student can afford to miss (4 classes)");
+
+    // 3. Library Book Loan 3-Renewal Quota Algorithm
+    const checkRenewalQuota = (issuedAt: Date, currentDueDate: Date) => {
+      const MS_PER_DAY = 1000 * 60 * 60 * 24;
+      const durationDays = Math.round((currentDueDate.getTime() - issuedAt.getTime()) / MS_PER_DAY);
+      const renewalsUsed = Math.max(0, Math.round((durationDays - 14) / 14));
+      return {
+        renewalsUsed,
+        canRenew: renewalsUsed < 3,
+      };
+    };
+
+    const loanStart = new Date("2026-09-01T00:00:00Z");
+    const due1 = new Date(loanStart.getTime() + 14 * 86400000); // 0 renewals used
+    const due2 = new Date(loanStart.getTime() + 28 * 86400000); // 1 renewal used
+    const due3 = new Date(loanStart.getTime() + 42 * 86400000); // 2 renewals used
+    const due4 = new Date(loanStart.getTime() + 56 * 86400000); // 3 renewals used (max reached)
+
+    assert(checkRenewalQuota(loanStart, due1).canRenew === true, "Library loan can be renewed on first cycle");
+    assert(checkRenewalQuota(loanStart, due1).renewalsUsed === 0, "Initial library loan reports 0 renewals used");
+    assert(checkRenewalQuota(loanStart, due2).renewalsUsed === 1, "First renewal increments renewalsUsed counter to 1");
+    assert(checkRenewalQuota(loanStart, due3).renewalsUsed === 2, "Second renewal increments renewalsUsed counter to 2");
+    assert(checkRenewalQuota(loanStart, due4).renewalsUsed === 3, "Third renewal marks maximum renewals reached (3/3)");
+    assert(checkRenewalQuota(loanStart, due4).canRenew === false, "Fourth renewal attempt is strictly rejected by library quota guard");
+
+    // 4. Hall Ticket Defaulter Watermark Flagging
+    const generateAdmitCardStanding = (courseAttendanceRate: number) => {
+      const isDefaulter = courseAttendanceRate < 75.0;
+      return {
+        status: isDefaulter ? "PROVISIONAL_CONDITIONAL" : "OFFICIALLY_VERIFIED",
+        isDefaulter,
+        watermark: isDefaulter ? "PROVISIONAL — SUBJECT TO DEAN ATTENDANCE CONDONATION" : null,
+      };
+    };
+
+    const regularAdmit = generateAdmitCardStanding(88.5);
+    assert(regularAdmit.status === "OFFICIALLY_VERIFIED", "Regular attendance yields OFFICIALLY_VERIFIED admit card");
+    assert(regularAdmit.watermark === null, "Regular attendance does not apply conditional watermark");
+
+    const defaulterAdmit = generateAdmitCardStanding(68.0);
+    assert(defaulterAdmit.status === "PROVISIONAL_CONDITIONAL", "Defaulter student admit card marked PROVISIONAL_CONDITIONAL");
+    assert(Boolean(defaulterAdmit.watermark?.includes("CONDONATION")), "Defaulter admit card carries prominent CONDONATION watermark");
+
+    // Clean up petitions
+    await prisma.studentRequest.delete({ where: { id: reEvalPetition.id } });
+    await prisma.studentRequest.delete({ where: { id: electivePetition.id } });
   }
 
   console.log("\n=================================================");

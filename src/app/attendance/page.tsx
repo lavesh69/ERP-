@@ -375,6 +375,7 @@ export default function AttendancePage() {
                       <th className="p-3.5 text-center">Lectures Attended</th>
                       <th className="p-3.5 text-center">Attendance %</th>
                       <th className="p-3.5 text-center">Eligibility Standing</th>
+                      <th className="p-3.5 text-center">Recovery / Safe Margin</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border/60 dark:divide-charcoal-800 text-charcoal-900 dark:text-ivory-100">
@@ -411,6 +412,28 @@ export default function AttendancePage() {
                           >
                             {c.isDefaulter ? "DEFAULTER" : "ELIGIBLE"}
                           </span>
+                        </td>
+                        <td className="p-3.5 text-center">
+                          {(() => {
+                            const att = c.attendedClasses || 0;
+                            const tot = c.totalClasses || 0;
+                            if (tot === 0) return <span className="text-charcoal-400 text-[10px]">No sessions</span>;
+                            if (c.attendanceRate < 75) {
+                              const needed = Math.max(1, Math.ceil((0.75 * tot - att) / 0.25));
+                              return (
+                                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800" title="Must attend next consecutive classes without missing">
+                                  Attend next {needed} classes
+                                </span>
+                              );
+                            } else {
+                              const canMiss = Math.floor((att - 0.75 * tot) / 0.75);
+                              return (
+                                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800" title="Can safely miss classes and remain >= 75%">
+                                  {canMiss > 0 ? `Can miss ${canMiss} safely` : "On threshold"}
+                                </span>
+                              );
+                            }
+                          })()}
                         </td>
                       </tr>
                     ))}
@@ -562,6 +585,16 @@ export default function AttendancePage() {
                     Pastoral Outreach Required
                   </span>
                 </div>
+                {defaulters.length > 0 && (
+                  <button
+                    onClick={() => handleDispatchGuardianAlerts(defaulters)}
+                    disabled={isDispatchingAlerts}
+                    className="mt-2 text-[10px] font-bold px-2.5 py-1 rounded-lg bg-academic-danger hover:bg-red-700 active:scale-[0.98] text-white shadow-xs transition-all disabled:opacity-50 flex items-center gap-1.5"
+                  >
+                    <Send className="h-3 w-3" />
+                    <span>{isDispatchingAlerts ? "Dispatching..." : "Send Guardian Notice"}</span>
+                  </button>
+                )}
               </div>
             </div>
 
