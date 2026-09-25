@@ -1570,7 +1570,7 @@ Registrar Stamp: [APEX-ACADEMIC-SEAL]
                 />
               </div>
             ) : (
-              <div className="w-48 h-48 flex items-center justify-center bg-ivory-100 rounded-xl text-xs text-charcoal-500">
+              <div className="w-48 h-48 flex items-center justify-center bg-ivory-100 dark:bg-charcoal-800 rounded-xl text-xs text-charcoal-500 dark:text-charcoal-400">
                 Generating QR...
               </div>
             )}

@@ -7,6 +7,7 @@ import { Modal } from "@/components/common/Modal";
 import { SkeletonCard, SkeletonTable } from "@/components/common/SkeletonLoader";
 import { EmptyState } from "@/components/common/EmptyState";
 import { Pagination } from "@/components/common/Pagination";
+import { Breadcrumbs } from "@/components/common/Breadcrumbs";
 import {
   CreditCard,
   DollarSign,
@@ -189,8 +190,9 @@ This is an electronically generated official university receipt.`;
   return (
     <AppShell>
       <div className="flex flex-col gap-6">
+        <Breadcrumbs />
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-charcoal-800 p-6 rounded-2xl border border-border dark:border-charcoal-700 shadow-soft">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 glass-panel p-6 rounded-2xl shadow-soft">
           <div className="flex items-center gap-3">
             <div className="h-12 w-12 rounded-xl bg-rose-primary text-white flex items-center justify-center shadow-md shadow-rose-primary/20">
               <CreditCard className="h-6 w-6" />

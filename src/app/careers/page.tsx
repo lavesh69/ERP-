@@ -6,6 +6,7 @@ import { useApp } from "@/context/AppContext";
 import { Modal } from "@/components/common/Modal";
 import { SkeletonCard, SkeletonTable } from "@/components/common/SkeletonLoader";
 import { EmptyState } from "@/components/common/EmptyState";
+import { Breadcrumbs } from "@/components/common/Breadcrumbs";
 import {
   Briefcase,
   Building,
@@ -149,6 +150,7 @@ export default function CareersPage() {
   return (
     <AppShell>
       <div className="flex flex-col gap-6">
+        <Breadcrumbs />
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 glass-panel p-6 rounded-2xl shadow-soft">
           <div className="flex items-center gap-3">

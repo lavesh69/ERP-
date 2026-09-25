@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { AppShell } from "@/components/layout/AppShell";
 import { useApp } from "@/context/AppContext";
 import { Modal } from "@/components/common/Modal";
+import { Breadcrumbs } from "@/components/common/Breadcrumbs";
 import {
   ShieldAlert,
   Building2,
@@ -534,8 +535,9 @@ export default function SuperAdminPage() {
   return (
     <AppShell>
       <div className="flex flex-col gap-6">
+        <Breadcrumbs />
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-[#1E191C] p-6 rounded-2xl border border-border dark:border-charcoal-800 shadow-soft">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 glass-panel p-6 rounded-2xl shadow-soft">
           <div className="flex items-center gap-3">
             <div className="h-12 w-12 rounded-xl bg-rose-primary text-white flex items-center justify-center shadow-md shadow-rose-primary/20">
               <ShieldAlert className="h-6 w-6" />

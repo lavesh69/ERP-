@@ -5,6 +5,7 @@ import { AppShell } from "@/components/layout/AppShell";
 import { useApp } from "@/context/AppContext";
 import { Modal } from "@/components/common/Modal";
 import { SkeletonTable } from "@/components/common/SkeletonLoader";
+import { Breadcrumbs } from "@/components/common/Breadcrumbs";
 import {
   CheckSquare,
   QrCode,
@@ -1055,6 +1056,7 @@ export default function AttendancePage() {
   return (
     <AppShell>
       <div className="flex flex-col gap-6">
+        <Breadcrumbs />
         {/* Offline Banner */}
         {!isOnline && (
           <div className="bg-amber-500 text-white px-4 py-2.5 rounded-xl flex items-center justify-between text-xs font-bold shadow-md animate-in fade-in">
@@ -1068,15 +1070,15 @@ export default function AttendancePage() {
 
         {/* Offline Draft Recovery Banner */}
         {hasOfflineDraft && isOnline && (
-          <div className="bg-indigo-600 text-white px-4 py-2.5 rounded-xl flex items-center justify-between text-xs font-bold shadow-md animate-in fade-in">
+          <div className="bg-gradient-to-r from-rose-primary to-rose-accent text-white px-4 py-2.5 rounded-xl flex items-center justify-between text-xs font-bold shadow-soft animate-in fade-in">
             <div className="flex items-center gap-2">
-              <RefreshCw className="w-4 h-4 animate-spin" />
+              <RefreshCw className="w-4 h-4 animate-spin text-white" />
               <span>Cached offline attendance marks detected for this lecture.</span>
             </div>
             <div className="flex items-center gap-2">
               <button
                 onClick={handleRestoreDraft}
-                className="px-3 py-1 bg-white text-indigo-700 font-bold rounded-lg text-xs hover:bg-slate-100"
+                className="px-3 py-1 bg-white dark:bg-charcoal-900 text-rose-primary dark:text-rose-accent font-bold rounded-lg text-xs hover:bg-ivory-100 dark:hover:bg-charcoal-800 shadow-xs transition-colors"
               >
                 Restore Draft
               </button>
