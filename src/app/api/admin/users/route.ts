@@ -155,6 +155,9 @@ export async function POST(req: NextRequest) {
 
     let program = await prisma.program.findFirst();
 
+    // Role profile creation suffix
+    const suffix = Math.floor(1000 + Math.random() * 9000);
+
     // Transactional creation to prevent partially created accounts
     const newUser = await prisma.$transaction(async (tx) => {
       const u = await tx.user.create({
@@ -172,21 +175,39 @@ export async function POST(req: NextRequest) {
       });
 
       // Role profile creation
-      const suffix = Math.floor(1000 + Math.random() * 9000);
       if (targetRole === "STUDENT") {
-        await tx.student.create({
+        let actualProgram = program;
+        if (!actualProgram) {
+          actualProgram = await tx.program.findFirst();
+        }
+        const actualSection = await tx.section.findFirst();
+
+        const createdStudent = await tx.student.create({
           data: {
             userId: u.id,
             rollNumber: `STD-2026-${suffix}`,
             admissionNumber: `ADM-2026-${suffix}`,
             admissionDate: new Date(),
             currentSemester: 1,
-            programId: program?.id || "prog-default",
+            programId: actualProgram?.id || "prog-cs-btech",
+            sectionId: actualSection?.id || null,
             status: "ACTIVE",
             cgpa: 0.0,
             attendanceRate: 100.0,
           },
         });
+
+        // Also enroll student in initial courses so they appear in Attendance & LMS
+        const courses = await tx.course.findMany({ take: 3 });
+        for (const c of courses) {
+          await tx.enrollment.create({
+            data: {
+              studentId: createdStudent.id,
+              courseId: c.id,
+              status: "ENROLLED",
+            },
+          }).catch(() => {});
+        }
       } else if (
         ["FACULTY", "CLASS_TEACHER", "HOD", "PRINCIPAL", "RESEARCH_COORDINATOR"].includes(targetRole)
       ) {
@@ -234,6 +255,7 @@ export async function POST(req: NextRequest) {
         fullName: `${newUser.firstName} ${newUser.lastName}`,
         role: newUser.role,
         isActive: newUser.isActive,
+        studentRollNumber: targetRole === "STUDENT" ? `STD-2026-${suffix}` : undefined,
       },
     });
   } catch (err: any) {

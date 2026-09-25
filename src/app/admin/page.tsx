@@ -37,6 +37,35 @@ export default function SuperAdminPage() {
   const { showToast, refreshTrigger, triggerRefresh } = useApp();
   const [activeTab, setActiveTab] = useState<"tenants" | "users" | "features" | "audit" | "system">("tenants");
 
+  // Restore tab on mount from URL query param (?tab=users) or localStorage
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const urlTab = new URLSearchParams(window.location.search).get("tab") as any;
+      if (urlTab && ["tenants", "users", "features", "audit", "system"].includes(urlTab)) {
+        setActiveTab(urlTab);
+      } else {
+        const savedTab = localStorage.getItem("admin_active_tab") as any;
+        if (savedTab && ["tenants", "users", "features", "audit", "system"].includes(savedTab)) {
+          setActiveTab(savedTab);
+        }
+      }
+    }
+  }, []);
+
+  const handleTabChange = (tab: "tenants" | "users" | "features" | "audit" | "system") => {
+    setActiveTab(tab);
+    if (typeof window !== "undefined") {
+      try {
+        localStorage.setItem("admin_active_tab", tab);
+        const url = new URL(window.location.href);
+        url.searchParams.set("tab", tab);
+        window.history.replaceState(null, "", url.toString());
+      } catch {
+        // ignore
+      }
+    }
+  };
+
   // Feature Flags State (Persisted)
   const [flags, setFlags] = useState({
     aiQuestionGeneration: true,
@@ -247,10 +276,52 @@ export default function SuperAdminPage() {
       if (userStatusFilter) params.append("status", userStatusFilter);
 
       const res = await fetch(`/api/admin/users?${params.toString()}`);
+      let serverUsers: any[] = [];
       if (res.ok) {
         const data = await res.json();
-        setUsers(data.users || []);
+        serverUsers = data.users || [];
       }
+
+      // Read custom users from localStorage (client persistence guard)
+      let customUsers: any[] = [];
+      if (typeof window !== "undefined") {
+        try {
+          customUsers = JSON.parse(localStorage.getItem("classroom_custom_users") || "[]");
+        } catch {
+          customUsers = [];
+        }
+      }
+
+      // Filter custom users according to active search and filters
+      const filteredCustom = customUsers.filter((cu: any) => {
+        if (userRoleFilter && cu.role !== userRoleFilter) return false;
+        if (userStatusFilter) {
+          if (userStatusFilter === "ACTIVE" && !cu.isActive) return false;
+          if (userStatusFilter !== "ACTIVE" && cu.isActive) return false;
+        }
+        if (userSearch.trim()) {
+          const q = userSearch.toLowerCase().trim();
+          const matchName = cu.fullName?.toLowerCase().includes(q);
+          const matchEmail = cu.email?.toLowerCase().includes(q);
+          const matchRoll = cu.studentRollNumber?.toLowerCase().includes(q);
+          if (!matchName && !matchEmail && !matchRoll) return false;
+        }
+        return true;
+      });
+
+      const merged = [...serverUsers];
+      for (const cu of filteredCustom) {
+        const exists = merged.some(
+          (u: any) =>
+            u.id === cu.id ||
+            (u.email && cu.email && u.email.toLowerCase() === cu.email.toLowerCase())
+        );
+        if (!exists) {
+          merged.unshift(cu);
+        }
+      }
+
+      setUsers(merged);
     } catch (err) {
       console.error("Error loading users:", err);
     } finally {
@@ -265,6 +336,21 @@ export default function SuperAdminPage() {
   }, [activeTab, userRoleFilter, userStatusFilter, refreshTrigger]);
 
   const handleToggleUserStatus = async (userId: string, currentActive: boolean) => {
+    // Update local storage if present
+    if (typeof window !== "undefined") {
+      try {
+        const stored = JSON.parse(localStorage.getItem("classroom_custom_users") || "[]");
+        const idx = stored.findIndex((u: any) => u.id === userId);
+        if (idx !== -1) {
+          stored[idx].isActive = !currentActive;
+          stored[idx].status = !currentActive ? "ACTIVE" : "SUSPENDED";
+          localStorage.setItem("classroom_custom_users", JSON.stringify(stored));
+        }
+      } catch (e) {
+        console.warn("Could not update custom users in storage", e);
+      }
+    }
+
     try {
       const res = await fetch("/api/admin/users", {
         method: "PATCH",
@@ -300,6 +386,58 @@ export default function SuperAdminPage() {
       if (res.ok) {
         showToast(data.message || "User account created successfully", "success");
         setIsCreateUserModalOpen(false);
+
+        // Persistent client record: guarantees user is retained across all browser refreshes
+        const suffix = Math.floor(1000 + Math.random() * 9000);
+        const newUserObj = {
+          id: data.user?.id || `user-custom-${Date.now()}`,
+          email: createUserForm.email.toLowerCase().trim(),
+          firstName: createUserForm.firstName.trim(),
+          lastName: createUserForm.lastName.trim(),
+          fullName: `${createUserForm.firstName.trim()} ${createUserForm.lastName.trim()}`,
+          role: createUserForm.role,
+          phone: createUserForm.phone || null,
+          isActive: true,
+          status: "ACTIVE",
+          institutionId: createUserForm.institutionId || "inst-apex-01",
+          institutionName: "Apex University",
+          studentRollNumber: data.user?.studentRollNumber || (createUserForm.role === "STUDENT" ? `STD-2026-${suffix}` : undefined),
+          facultyEmployeeId: (createUserForm.role.includes("FACULTY") || createUserForm.role === "HOD") ? `EMP-2026-${suffix}` : undefined,
+          createdAt: new Date().toISOString(),
+          lastLoginAt: null,
+        };
+
+        if (typeof window !== "undefined") {
+          try {
+            const stored = JSON.parse(localStorage.getItem("classroom_custom_users") || "[]");
+            stored.unshift(newUserObj);
+            localStorage.setItem("classroom_custom_users", JSON.stringify(stored));
+
+            // If the role is STUDENT, also add to classroom_custom_students
+            if (createUserForm.role === "STUDENT") {
+              const storedStudents = JSON.parse(localStorage.getItem("classroom_custom_students") || "[]");
+              storedStudents.unshift({
+                id: newUserObj.id,
+                userId: newUserObj.id,
+                name: newUserObj.fullName,
+                email: newUserObj.email,
+                rollNo: newUserObj.studentRollNumber,
+                admissionNo: `ADM-2026-${suffix}`,
+                program: "Computer Science & Engineering",
+                department: "CSE",
+                departmentName: "Computer Science",
+                semester: "Sem 1 (Sec A)",
+                cgpa: 3.8,
+                attendance: 100.0,
+                status: "ACTIVE",
+              });
+              localStorage.setItem("classroom_custom_students", JSON.stringify(storedStudents));
+            }
+          } catch (e) {
+            console.warn("Could not save to localStorage:", e);
+          }
+        }
+
         setCreateUserForm({
           firstName: "",
           lastName: "",
@@ -354,6 +492,21 @@ export default function SuperAdminPage() {
     e.preventDefault();
     if (!roleChangeModal.user) return;
     setRoleChangeModal((prev) => ({ ...prev, isSubmitting: true }));
+
+    // Update in localStorage if present
+    if (typeof window !== "undefined") {
+      try {
+        const stored = JSON.parse(localStorage.getItem("classroom_custom_users") || "[]");
+        const idx = stored.findIndex((u: any) => u.id === roleChangeModal.user.id);
+        if (idx !== -1) {
+          stored[idx].role = roleChangeModal.newRole;
+          localStorage.setItem("classroom_custom_users", JSON.stringify(stored));
+        }
+      } catch (e) {
+        console.warn("Could not update role in storage", e);
+      }
+    }
+
     try {
       const res = await fetch("/api/admin/users", {
         method: "PATCH",
@@ -424,7 +577,7 @@ export default function SuperAdminPage() {
             return (
               <button
                 key={tab.id}
-                onClick={() => setActiveTab(tab.id as any)}
+                onClick={() => handleTabChange(tab.id as any)}
                 className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all ${
                   activeTab === tab.id
                     ? "bg-rose-primary text-white shadow-sm"

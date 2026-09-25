@@ -314,6 +314,8 @@ export async function POST(req: NextRequest) {
     // C1: Real PBKDF2 hash — never store plaintext or placeholder
     const passwordHash = await hashPassword("Classroom@2026");
 
+    const sec = await prisma.section.findFirst();
+
     const studentUser = await prisma.user.create({
       data: {
         institutionId: institution.id,
@@ -325,6 +327,7 @@ export async function POST(req: NextRequest) {
         studentProfile: {
           create: {
             programId: program.id,
+            sectionId: sec?.id || null,
             rollNumber,
             admissionNumber,
             admissionDate: new Date(),
@@ -337,6 +340,20 @@ export async function POST(req: NextRequest) {
       },
       include: { studentProfile: true },
     });
+
+    // Auto-enroll in active courses for the department
+    if (studentUser.studentProfile) {
+      const courses = await prisma.course.findMany({ take: 3 });
+      for (const c of courses) {
+        await prisma.enrollment.create({
+          data: {
+            studentId: studentUser.studentProfile.id,
+            courseId: c.id,
+            status: "ENROLLED",
+          },
+        }).catch(() => {});
+      }
+    }
 
     // C4: Structured audit log
     logger.info("Student enrolled", { email, rollNumber, programId: program.id, actor: auth.payload.email });

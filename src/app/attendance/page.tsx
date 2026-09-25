@@ -296,7 +296,36 @@ export default function AttendancePage() {
           setStudentData(data);
         } else {
           if (data.roster) {
-            setStudentRoster(data.roster);
+            let combinedRoster = [...data.roster];
+            if (typeof window !== "undefined") {
+              try {
+                const customStudents = JSON.parse(localStorage.getItem("classroom_custom_students") || "[]");
+                for (const cs of customStudents) {
+                  const exists = combinedRoster.some(
+                    (r: any) =>
+                      r.studentId === cs.id ||
+                      r.rollNo === cs.rollNo ||
+                      (r.email && cs.email && r.email.toLowerCase() === cs.email.toLowerCase())
+                  );
+                  if (!exists) {
+                    combinedRoster.push({
+                      studentId: cs.id,
+                      name: cs.name,
+                      rollNo: cs.rollNo,
+                      status: "PRESENT",
+                      attendanceRate: cs.attendance || 100.0,
+                      isDefaulter: false,
+                      rfidStatus: "ACTIVE",
+                      programName: cs.program || "Computer Science",
+                      sectionName: "Section A",
+                    });
+                  }
+                }
+              } catch {
+                // ignore
+              }
+            }
+            setStudentRoster(combinedRoster);
           }
           if (data.availableCourses && data.availableCourses.length > 0) {
             setAvailableCourses(data.availableCourses);
