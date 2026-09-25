@@ -63,6 +63,8 @@ import {
 } from "@/lib/attendance/calculator";
 import { ensureAcademicMasterData } from "@/lib/academic/master-data";
 import { getAttendancePolicy, saveAttendancePolicy, AttendancePolicy } from "@/lib/attendance/policy";
+import { NextRequest } from "next/server";
+import { POST as handleDispatchDefaulters, GET as handleGetDefaulterAlerts } from "@/app/api/attendance/defaulters/route";
 import { recordAttendanceException, getAttendanceExceptions, clearAttendanceExceptions } from "@/lib/attendance/exceptions";
 
 async function runTestSuite() {
@@ -2607,6 +2609,67 @@ BIO-599,Synthetic Biology Principles,Syn Bio,3,BIO,BSC-BIO,CORE,THEORY,3`;
 
     const adminCanConfigurePolicy = hasPermission("SUPER_ADMIN", "settings.manage");
     assert(adminCanConfigurePolicy === true, "SUPER_ADMIN role granted governance permissions");
+
+    // =========================================================================
+    // 39. Pastoral Guardian Outreach & Attendance Defaulter Alerts Engine
+    // =========================================================================
+    console.log("\n📦 Running Group 39: Pastoral Guardian Outreach & Attendance Defaulter Alerts Engine");
+
+    // 39.1 Dispatch pastoral alert batch across Email, SMS & Portal
+    const req = new NextRequest("http://localhost:3000/api/attendance/defaulters", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        courseCode: "CS-402",
+        courseTitle: "Advanced Neural Networks",
+        defaulters: [
+          { name: "Ethan Hunt", aggregate: 64.2, rollNo: "2024CS001" },
+          { name: "Kunal Kamra", aggregate: 71.5, rollNo: "2024CS002" },
+          { name: "Prithvi Shaw", aggregate: 70.0, rollNo: "2024CS003" },
+        ],
+        channels: ["EMAIL", "SMS", "PORTAL"],
+        customMessage: "Immediate meeting with Course Coordinator required.",
+        urgencyLevel: "WARNING",
+      }),
+    });
+
+    const res = await handleDispatchDefaulters(req);
+    const data = await res.json();
+
+    assert(res.status === 200, "Defaulter alert API returns 200 OK");
+    assert(data.success === true, "Alert batch dispatch response reports success");
+    assert(typeof data.batchId === "string" && data.batchId.startsWith("ALERT-BATCH-"), "Alert response contains formatted ALERT-BATCH- identifier");
+    assert(data.totalRecipients === 3, "All 3 defaulters processed in dispatch batch");
+    assert(data.recipients[0].name === "Ethan Hunt", "First recipient is Ethan Hunt");
+    assert(data.recipients[0].emailStatus === "SENT", "Email transmission status is SENT");
+    assert(data.recipients[0].smsStatus === "DELIVERED", "SMS transmission status is DELIVERED");
+    assert(data.recipients[0].portalStatus === "POSTED", "Portal notice status is POSTED");
+    assert(data.recipients[0].recoveryClasses > 0, "Recovery classes needed is calculated and positive");
+
+    // 39.2 Verify email logged to Outbox
+    const outbox = getOutboxEmails();
+    const alertEmail = outbox.find((e) => e.to.includes("ethan.hunt") || e.subject.includes("Ethan Hunt"));
+    assert(alertEmail !== undefined, "Formal attendance warning email persisted to outbox JSON storage");
+    assert(alertEmail!.type === "NOTIFICATION", "Outbox email categorized under NOTIFICATION type");
+    assert(alertEmail!.subject.includes("75% Threshold Deficit"), "Email subject references mandatory 75% Senate threshold");
+    assert(alertEmail!.html.includes("64.2%"), "Email HTML body contains scholar aggregate percentage");
+
+    // 39.3 Verify institutional announcement for PARENTS
+    const parentNotice = await prisma.announcement.findFirst({
+      where: {
+        targetAudience: "PARENTS",
+        title: { contains: "Defaulters" },
+      },
+      orderBy: { createdAt: "desc" },
+    });
+    assert(parentNotice !== null, "Institutional announcement generated for PARENTS target audience");
+
+    // 39.4 GET route returns alert history
+    const getReq = new NextRequest("http://localhost:3000/api/attendance/defaulters", { method: "GET" });
+    const getRes = await handleGetDefaulterAlerts(getReq);
+    const getData = await getRes.json();
+    assert(getRes.status === 200, "GET /api/attendance/defaulters returns 200 OK");
+    assert(Array.isArray(getData.announcements), "GET route returns announcements array");
 
     // Clean up test sessions created in Group 35
     await prisma.attendanceSession.deleteMany({

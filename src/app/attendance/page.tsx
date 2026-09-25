@@ -44,6 +44,12 @@ import {
   UserX,
   FileText,
   BadgeAlert,
+  Mail,
+  Smartphone,
+  MessageSquare,
+  CheckCheck,
+  Bell,
+  ExternalLink,
 } from "lucide-react";
 import QRScannerModal from "@/components/attendance/QRScannerModal";
 import ProjectorModeModal from "@/components/attendance/ProjectorModeModal";
@@ -88,6 +94,17 @@ export default function AttendancePage() {
   const [isSaving, setIsSaving] = useState(false);
   const [isClosingSession, setIsClosingSession] = useState(false);
   const [isDispatchingAlerts, setIsDispatchingAlerts] = useState(false);
+  const [isGuardianModalOpen, setIsGuardianModalOpen] = useState(false);
+  const [guardianAlertChannels, setGuardianAlertChannels] = useState<string[]>(["EMAIL", "SMS", "PORTAL"]);
+  const [guardianCustomMessage, setGuardianCustomMessage] = useState("");
+  const [guardianUrgency, setGuardianUrgency] = useState<"WARNING" | "CRITICAL">("WARNING");
+  const [dispatchReceipt, setDispatchReceipt] = useState<any | null>(null);
+  const [lastDispatchedSummary, setLastDispatchedSummary] = useState<{
+    count: number;
+    time: string;
+    batchId: string;
+    channels: string[];
+  } | null>(null);
 
   // Unsaved Changes & Offline Tracking
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
@@ -920,25 +937,69 @@ export default function AttendancePage() {
     showToast("Attendance CSV report downloaded successfully!", "success");
   };
 
-  // Pastoral Outreach Alerts
-  const handleDispatchGuardianAlerts = async (defaultersList: any[]) => {
+  // Pastoral Outreach Alerts & Modal Workflow
+  const handleOpenGuardianModal = () => {
+    setIsGuardianModalOpen(true);
+  };
+
+  const handleDispatchGuardianAlerts = (_defaultersList?: any[]) => {
+    handleOpenGuardianModal();
+  };
+
+  const handleConfirmDispatchAlerts = async () => {
+    if (guardianAlertChannels.length === 0) {
+      showToast("Please select at least one delivery channel (Email, SMS, or Portal)", "warning");
+      return;
+    }
+    if (defaulters.length === 0) {
+      showToast("No scholars currently identified below the 75% threshold", "info");
+      return;
+    }
+
     try {
       setIsDispatchingAlerts(true);
+      const activeCourseMeta = availableCourses.find((c) => c.code === selectedCourse);
+
+      const payload = {
+        courseCode: selectedCourse,
+        courseTitle: activeCourseMeta?.title || "Academic Module",
+        defaulters: defaulters.map((d) => {
+          const attendedEst = Math.round((d.aggregate / 100) * 40);
+          const recoveryClasses = calculateClassesNeededToRecover(attendedEst, 40, 75);
+          return {
+            studentId: d.studentId,
+            name: d.name,
+            rollNo: d.rollNo,
+            aggregate: d.aggregate,
+            recoveryClasses: Math.max(1, recoveryClasses),
+            phone: d.phone,
+            parentEmail: d.parentEmail,
+          };
+        }),
+        channels: guardianAlertChannels,
+        customMessage: guardianCustomMessage.trim() || undefined,
+        urgencyLevel: guardianUrgency,
+      };
+
       const res = await fetch("/api/attendance/defaulters", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          courseCode: selectedCourse,
-          defaulters: defaultersList.map((d) => ({ name: d.name, aggregate: d.aggregate })),
-        }),
+        body: JSON.stringify(payload),
       });
 
-      if (res.ok) {
-        const data = await res.json();
-        showToast(data.message || "Pastoral guardian notifications dispatched!", "success");
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setDispatchReceipt(data);
+        const now = new Date();
+        setLastDispatchedSummary({
+          count: data.totalRecipients || defaulters.length,
+          time: now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+          batchId: data.batchId,
+          channels: data.channels || guardianAlertChannels,
+        });
+        showToast(data.message || "Pastoral guardian notifications dispatched successfully!", "success");
       } else {
-        const err = await res.json();
-        showToast(err.error || "Failed to dispatch alerts", "error");
+        showToast(data.error || "Failed to dispatch pastoral alerts", "error");
       }
     } catch {
       showToast("Network error dispatching guardian alerts", "error");
@@ -2258,29 +2319,92 @@ export default function AttendancePage() {
 
             {/* Defaulter Alert Banner */}
             {defaulters.length > 0 && (
-              <div className="bg-amber-50 dark:bg-amber-950/30 p-5 rounded-2xl border border-amber-200 dark:border-amber-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-xl bg-academic-warning text-white flex items-center justify-center shrink-0">
-                    <AlertTriangle className="h-5 w-5" />
+              <div
+                className={`p-5 rounded-2xl border flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-all shadow-xs ${
+                  lastDispatchedSummary
+                    ? "bg-emerald-50/90 dark:bg-emerald-950/30 border-emerald-300 dark:border-emerald-800"
+                    : "bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-800"
+                }`}
+              >
+                <div className="flex items-start sm:items-center gap-3">
+                  <div
+                    className={`h-10 w-10 rounded-xl text-white flex items-center justify-center shrink-0 shadow-xs ${
+                      lastDispatchedSummary
+                        ? "bg-emerald-600 dark:bg-emerald-700"
+                        : "bg-academic-warning"
+                    }`}
+                  >
+                    {lastDispatchedSummary ? (
+                      <CheckCheck className="h-5 w-5" />
+                    ) : (
+                      <AlertTriangle className="h-5 w-5" />
+                    )}
                   </div>
                   <div>
-                    <span className="text-xs font-bold text-amber-900 dark:text-amber-200 block">
-                      {defaulters.length} Student(s) Below 75% Examination Attendance Threshold
-                    </span>
-                    <p className="text-[11px] text-amber-800 dark:text-amber-300">
-                      Defaulters: {defaulters.map((d) => `${d.name} (${d.aggregate}%)`).join(", ")}. Send automated pastoral notification to registered parent guardians.
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span
+                        className={`text-xs font-bold block ${
+                          lastDispatchedSummary
+                            ? "text-emerald-950 dark:text-emerald-200"
+                            : "text-amber-900 dark:text-amber-200"
+                        }`}
+                      >
+                        {defaulters.length} Student(s) Below 75% Examination Attendance Threshold
+                      </span>
+                      {lastDispatchedSummary && (
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700">
+                          Dispatched at {lastDispatchedSummary.time}
+                        </span>
+                      )}
+                    </div>
+                    <p
+                      className={`text-[11px] mt-0.5 ${
+                        lastDispatchedSummary
+                          ? "text-emerald-800 dark:text-emerald-300"
+                          : "text-amber-800 dark:text-amber-300"
+                      }`}
+                    >
+                      Defaulters:{" "}
+                      <span className="font-semibold">
+                        {defaulters.map((d) => `${d.name} (${d.aggregate}%)`).join(", ")}
+                      </span>
+                      .{" "}
+                      {lastDispatchedSummary
+                        ? `Pastoral alert batch ${lastDispatchedSummary.batchId} dispatched via ${lastDispatchedSummary.channels.join(", ")}.`
+                        : "Review recovery pathways and dispatch official pastoral notices to registered parent guardians."}
                     </p>
                   </div>
                 </div>
 
-                <button
-                  onClick={() => handleDispatchGuardianAlerts(defaulters)}
-                  disabled={isDispatchingAlerts}
-                  className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-academic-warning hover:bg-amber-700 text-white text-xs font-bold shadow-sm transition-all shrink-0 disabled:opacity-50"
-                >
-                  <Send className="h-3.5 w-3.5" />
-                  <span>{isDispatchingAlerts ? "Dispatching..." : "Dispatch Guardian Alerts"}</span>
-                </button>
+                <div className="flex items-center gap-2 self-end sm:self-auto shrink-0">
+                  {lastDispatchedSummary && (
+                    <button
+                      onClick={() => setIsGuardianModalOpen(true)}
+                      className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-emerald-100 dark:bg-emerald-900/50 hover:bg-emerald-200 dark:hover:bg-emerald-900 text-emerald-900 dark:text-emerald-200 text-xs font-bold border border-emerald-300 dark:border-emerald-700 transition-all shadow-xs"
+                    >
+                      <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+                      <span>View Receipt</span>
+                    </button>
+                  )}
+                  <button
+                    onClick={handleOpenGuardianModal}
+                    disabled={isDispatchingAlerts}
+                    className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-white text-xs font-bold shadow-sm transition-all shrink-0 disabled:opacity-50 ${
+                      lastDispatchedSummary
+                        ? "bg-charcoal-800 hover:bg-charcoal-900 dark:bg-charcoal-700"
+                        : "bg-academic-warning hover:bg-amber-700"
+                    }`}
+                  >
+                    <Send className="h-3.5 w-3.5" />
+                    <span>
+                      {isDispatchingAlerts
+                        ? "Dispatching..."
+                        : lastDispatchedSummary
+                        ? "Re-dispatch Alerts"
+                        : "Dispatch Guardian Alerts"}
+                    </span>
+                  </button>
+                </div>
               </div>
             )}
           </>
@@ -3902,6 +4026,380 @@ export default function AttendancePage() {
               <span>{isGeneratingReport ? "Exporting..." : "Download Official Report"}</span>
             </button>
           </div>
+        </div>
+      </Modal>
+
+      {/* Pastoral Guardian Outreach Modal */}
+      <Modal
+        isOpen={isGuardianModalOpen}
+        onClose={() => setIsGuardianModalOpen(false)}
+        title={dispatchReceipt ? "Guardian Outreach Dispatch Receipt" : "Dispatch Pastoral Guardian Alerts"}
+        description={
+          dispatchReceipt
+            ? `Official outreach batch ${dispatchReceipt.batchId} was successfully executed and logged.`
+            : `Review scholars below the 75% attendance criteria and dispatch multi-channel warnings directly to parent guardians.`
+        }
+        maxWidth="2xl"
+      >
+        <div className="flex flex-col gap-5">
+          {!dispatchReceipt ? (
+            <>
+              {/* Context Summary Banner */}
+              <div className="bg-amber-50 dark:bg-amber-950/40 p-4 rounded-xl border border-amber-200 dark:border-amber-800/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-lg bg-amber-600 text-white flex items-center justify-center font-bold shrink-0">
+                    <AlertTriangle className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <span className="font-bold text-amber-900 dark:text-amber-200 block">
+                      {selectedCourse} — {availableCourses.find((c) => c.code === selectedCourse)?.title || "Active Module"}
+                    </span>
+                    <span className="text-[11px] text-amber-800 dark:text-amber-400">
+                      Senate Examination Threshold: <strong>75.0%</strong> | Total Defaulters: <strong>{defaulters.length} scholars</strong>
+                    </span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-1.5 self-start sm:self-auto">
+                  <span className="px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-rose-100 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800">
+                    {defaulters.length} At Risk
+                  </span>
+                </div>
+              </div>
+
+              {/* Defaulter Scholars Review List */}
+              <div>
+                <label className="text-[11px] font-bold text-charcoal-700 dark:text-charcoal-300 block mb-2 uppercase tracking-wider">
+                  Target Recipient Scholars &amp; Recovery Trajectory
+                </label>
+                <div className="max-h-56 overflow-y-auto space-y-2 pr-1 border border-border dark:border-charcoal-800 rounded-xl p-2 bg-surface-soft/40 dark:bg-charcoal-900/50">
+                  {defaulters.map((d: any, idx: number) => {
+                    const attendedEst = Math.round((d.aggregate / 100) * 40);
+                    const recovery = calculateClassesNeededToRecover(attendedEst, 40, 75);
+                    const guardianEmail = d.parentEmail || `${d.name.toLowerCase().replace(/[^a-z0-9]/g, ".")}.guardian@campus.edu`;
+                    const guardianPhone = d.phone || "+91 98765 43210";
+
+                    return (
+                      <div
+                        key={d.studentId || idx}
+                        className="p-3 rounded-xl bg-white dark:bg-charcoal-800 border border-border dark:border-charcoal-700/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-amber-500 to-rose-500 text-white font-black text-xs flex items-center justify-center shrink-0">
+                            {d.name.split(" ").map((n: string) => n[0]).join("").slice(0, 2)}
+                          </div>
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs font-bold text-charcoal-900 dark:text-ivory-100">{d.name}</span>
+                              <span className="text-[10px] text-charcoal-500 font-mono">({d.rollNo || "N/A"})</span>
+                            </div>
+                            <div className="flex items-center gap-2 mt-0.5 text-[11px] text-charcoal-600 dark:text-charcoal-400">
+                              <span className="flex items-center gap-1 font-mono">
+                                <Mail className="w-3 h-3 text-charcoal-400" />
+                                {guardianEmail}
+                              </span>
+                              <span>•</span>
+                              <span className="flex items-center gap-1 font-mono">
+                                <Smartphone className="w-3 h-3 text-charcoal-400" />
+                                {guardianPhone}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-3 self-end sm:self-auto shrink-0">
+                          <div className="text-right">
+                            <span className="px-2 py-0.5 rounded-lg text-xs font-black bg-rose-50 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-900/60 block">
+                              {d.aggregate}%
+                            </span>
+                            <span className="text-[9px] text-amber-700 dark:text-amber-400 block mt-0.5 font-bold">
+                              +{Math.max(1, recovery)} classes needed
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Delivery Channels Selector */}
+              <div>
+                <label className="text-[11px] font-bold text-charcoal-700 dark:text-charcoal-300 block mb-2 uppercase tracking-wider">
+                  Outreach Channels (Multi-Channel Dispatch)
+                </label>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                  <label
+                    className={`p-3 rounded-xl border cursor-pointer flex items-start gap-2.5 transition-all ${
+                      guardianAlertChannels.includes("EMAIL")
+                        ? "border-rose-primary bg-rose-primary/5 dark:bg-rose-950/20 text-rose-primary font-bold shadow-xs"
+                        : "border-border dark:border-charcoal-700 bg-surface-soft/60 text-charcoal-700 dark:text-charcoal-300"
+                    }`}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={guardianAlertChannels.includes("EMAIL")}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setGuardianAlertChannels([...guardianAlertChannels, "EMAIL"]);
+                        } else {
+                          setGuardianAlertChannels(guardianAlertChannels.filter((c) => c !== "EMAIL"));
+                        }
+                      }}
+                      className="rounded border-charcoal-300 text-rose-primary focus:ring-rose-primary mt-0.5"
+                    />
+                    <div className="text-left text-xs">
+                      <div className="flex items-center gap-1.5 font-bold">
+                        <Mail className="w-3.5 h-3.5" />
+                        <span>Official Email</span>
+                      </div>
+                      <span className="text-[10px] text-charcoal-500 font-normal block mt-0.5">
+                        Logs formal letter to Outbox
+                      </span>
+                    </div>
+                  </label>
+
+                  <label
+                    className={`p-3 rounded-xl border cursor-pointer flex items-start gap-2.5 transition-all ${
+                      guardianAlertChannels.includes("SMS")
+                        ? "border-rose-primary bg-rose-primary/5 dark:bg-rose-950/20 text-rose-primary font-bold shadow-xs"
+                        : "border-border dark:border-charcoal-700 bg-surface-soft/60 text-charcoal-700 dark:text-charcoal-300"
+                    }`}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={guardianAlertChannels.includes("SMS")}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setGuardianAlertChannels([...guardianAlertChannels, "SMS"]);
+                        } else {
+                          setGuardianAlertChannels(guardianAlertChannels.filter((c) => c !== "SMS"));
+                        }
+                      }}
+                      className="rounded border-charcoal-300 text-rose-primary focus:ring-rose-primary mt-0.5"
+                    />
+                    <div className="text-left text-xs">
+                      <div className="flex items-center gap-1.5 font-bold">
+                        <Smartphone className="w-3.5 h-3.5" />
+                        <span>SMS / WhatsApp</span>
+                      </div>
+                      <span className="text-[10px] text-charcoal-500 font-normal block mt-0.5">
+                        Urgent mobile gateway alert
+                      </span>
+                    </div>
+                  </label>
+
+                  <label
+                    className={`p-3 rounded-xl border cursor-pointer flex items-start gap-2.5 transition-all ${
+                      guardianAlertChannels.includes("PORTAL")
+                        ? "border-rose-primary bg-rose-primary/5 dark:bg-rose-950/20 text-rose-primary font-bold shadow-xs"
+                        : "border-border dark:border-charcoal-700 bg-surface-soft/60 text-charcoal-700 dark:text-charcoal-300"
+                    }`}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={guardianAlertChannels.includes("PORTAL")}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setGuardianAlertChannels([...guardianAlertChannels, "PORTAL"]);
+                        } else {
+                          setGuardianAlertChannels(guardianAlertChannels.filter((c) => c !== "PORTAL"));
+                        }
+                      }}
+                      className="rounded border-charcoal-300 text-rose-primary focus:ring-rose-primary mt-0.5"
+                    />
+                    <div className="text-left text-xs">
+                      <div className="flex items-center gap-1.5 font-bold">
+                        <Bell className="w-3.5 h-3.5" />
+                        <span>Parent Portal</span>
+                      </div>
+                      <span className="text-[10px] text-charcoal-500 font-normal block mt-0.5">
+                        In-App notice &amp; announcements
+                      </span>
+                    </div>
+                  </label>
+                </div>
+              </div>
+
+              {/* Urgency & Directive Message */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <label className="text-[11px] font-bold text-charcoal-700 dark:text-charcoal-300 uppercase tracking-wider">
+                    Pastoral Advisory Note &amp; Instructions
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setGuardianUrgency("WARNING")}
+                      className={`px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all ${
+                        guardianUrgency === "WARNING"
+                          ? "bg-amber-600 text-white shadow-xs"
+                          : "text-charcoal-500 hover:text-charcoal-700"
+                      }`}
+                    >
+                      Warning Advisory
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setGuardianUrgency("CRITICAL")}
+                      className={`px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all ${
+                        guardianUrgency === "CRITICAL"
+                          ? "bg-rose-600 text-white shadow-xs"
+                          : "text-charcoal-500 hover:text-charcoal-700"
+                      }`}
+                    >
+                      Critical Exam Detention
+                    </button>
+                  </div>
+                </div>
+
+                <textarea
+                  value={guardianCustomMessage}
+                  onChange={(e) => setGuardianCustomMessage(e.target.value)}
+                  placeholder="Optional custom pastoral remark for guardians (e.g. 'Mandatory meeting scheduled with Academic Dean on Friday at 3:00 PM')..."
+                  rows={2}
+                  className="w-full text-xs p-3 rounded-xl border border-border dark:border-charcoal-700 bg-white dark:bg-charcoal-800 text-charcoal-900 dark:text-ivory-100 placeholder:text-charcoal-400 focus:outline-none focus:border-rose-primary"
+                />
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex items-center justify-between pt-3 border-t border-border dark:border-charcoal-800">
+                <button
+                  type="button"
+                  onClick={() => setIsGuardianModalOpen(false)}
+                  className="px-4 py-2 text-xs font-bold text-charcoal-600 dark:text-charcoal-400 hover:bg-ivory-100 dark:hover:bg-charcoal-800 rounded-xl transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handleConfirmDispatchAlerts}
+                  disabled={isDispatchingAlerts || defaulters.length === 0}
+                  className="px-5 py-2.5 text-xs font-bold bg-gradient-to-r from-amber-600 via-rose-primary to-rose-dark hover:shadow-md text-white rounded-xl shadow-sm disabled:opacity-50 flex items-center gap-2 transition-all"
+                >
+                  <Send className="w-3.5 h-3.5" />
+                  <span>
+                    {isDispatchingAlerts
+                      ? "Dispatching Pastoral Alerts..."
+                      : `Confirm & Dispatch Alerts (${defaulters.length} Guardians)`}
+                  </span>
+                </button>
+              </div>
+            </>
+          ) : (
+            /* Dispatch Receipt View */
+            <>
+              <div className="bg-emerald-50 dark:bg-emerald-950/40 p-5 rounded-2xl border border-emerald-200 dark:border-emerald-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="flex items-center gap-3.5">
+                  <div className="w-11 h-11 rounded-xl bg-emerald-600 text-white flex items-center justify-center font-bold shrink-0 shadow-xs">
+                    <CheckCheck className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <span className="text-sm font-black text-emerald-950 dark:text-emerald-200 block">
+                      Pastoral Alerts Successfully Dispatched!
+                    </span>
+                    <p className="text-xs text-emerald-800 dark:text-emerald-300 mt-0.5">
+                      Batch Ref: <code className="font-mono font-bold">{dispatchReceipt.batchId}</code> •{" "}
+                      {dispatchReceipt.totalRecipients} guardian(s) reached.
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-1.5 flex-wrap self-start sm:self-auto">
+                  {dispatchReceipt.channels?.map((ch: string) => (
+                    <span
+                      key={ch}
+                      className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-100 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-200 border border-emerald-300 dark:border-emerald-700"
+                    >
+                      ✓ {ch}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              {/* Delivery Table */}
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="text-[11px] font-bold text-charcoal-700 dark:text-charcoal-300 uppercase tracking-wider">
+                    Transmission &amp; Delivery Ledgers
+                  </label>
+                  <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold flex items-center gap-1">
+                    <CheckCircle2 className="w-3 h-3" />
+                    Emails saved to Outbox
+                  </span>
+                </div>
+
+                <div className="border border-border dark:border-charcoal-800 rounded-xl overflow-hidden bg-white dark:bg-charcoal-900/40">
+                  <div className="max-h-56 overflow-y-auto">
+                    <table className="w-full text-left text-xs border-collapse">
+                      <thead>
+                        <tr className="bg-surface-soft/60 dark:bg-charcoal-800/80 text-[10px] font-bold uppercase tracking-wider text-charcoal-600 dark:text-charcoal-400 border-b border-border dark:border-charcoal-800">
+                          <th className="py-2.5 px-3">Scholar</th>
+                          <th className="py-2.5 px-3">Aggregate</th>
+                          <th className="py-2.5 px-3">Email Transmission</th>
+                          <th className="py-2.5 px-3">SMS Gateway</th>
+                          <th className="py-2.5 px-3">Portal Post</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-border dark:divide-charcoal-800">
+                        {dispatchReceipt.recipients?.map((rec: any, i: number) => (
+                          <tr key={i} className="hover:bg-surface-soft/40 dark:hover:bg-charcoal-800/40">
+                            <td className="py-2 px-3 font-semibold text-charcoal-900 dark:text-ivory-100">
+                              <div>{rec.name}</div>
+                              <span className="text-[10px] text-charcoal-500 font-mono">{rec.rollNo}</span>
+                            </td>
+                            <td className="py-2 px-3">
+                              <span className="px-2 py-0.5 rounded text-[10px] font-black bg-rose-50 text-rose-600 dark:bg-rose-950/60 dark:text-rose-400 border border-rose-200 dark:border-rose-900/60">
+                                {rec.aggregate}%
+                              </span>
+                            </td>
+                            <td className="py-2 px-3">
+                              <span className="text-emerald-600 dark:text-emerald-400 font-bold text-[11px] block">
+                                ✓ {rec.emailStatus}
+                              </span>
+                              <span className="text-[9px] text-charcoal-500 font-mono block">
+                                {rec.emailMessageId?.slice(0, 16)}...
+                              </span>
+                            </td>
+                            <td className="py-2 px-3">
+                              <span className="text-sky-600 dark:text-sky-400 font-bold text-[11px] block">
+                                ✓ {rec.smsStatus}
+                              </span>
+                              <span className="text-[9px] text-charcoal-500 font-mono block">
+                                {rec.smsReference || "DISPATCHED"}
+                              </span>
+                            </td>
+                            <td className="py-2 px-3">
+                              <span className="text-purple-600 dark:text-purple-400 font-bold text-[11px]">
+                                ✓ {rec.portalStatus}
+                              </span>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+
+              {/* Receipt Footer Actions */}
+              <div className="flex items-center justify-between pt-3 border-t border-border dark:border-charcoal-800">
+                <button
+                  type="button"
+                  onClick={() => setDispatchReceipt(null)}
+                  className="px-4 py-2 text-xs font-bold text-charcoal-600 dark:text-charcoal-400 hover:bg-ivory-100 dark:hover:bg-charcoal-800 rounded-xl transition-colors"
+                >
+                  Send Another Notice
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setIsGuardianModalOpen(false)}
+                  className="px-6 py-2.5 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl shadow-xs transition-all flex items-center gap-1.5"
+                >
+                  <Check className="w-3.5 h-3.5" />
+                  <span>Done</span>
+                </button>
+              </div>
+            </>
+          )}
         </div>
       </Modal>
     </AppShell>
