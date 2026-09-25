@@ -2,6 +2,13 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db/prisma";
 import { getOptionalSession, requireFacultyOrAdminAuth } from "@/lib/auth/admin-guard";
 import { logger } from "@/lib/logging/logger";
+import {
+  calculateAttendancePercentage,
+  isDefaulter,
+  calculateClassesNeededToRecover,
+  calculateSafeAbsencesAllowed,
+  SENATE_EXAM_THRESHOLD,
+} from "@/lib/attendance/calculator";
 
 export async function GET(req: NextRequest) {
   try {
@@ -99,13 +106,36 @@ export async function GET(req: NextRequest) {
 
       const subjectBreakdown = Object.values(subjectMap).map((s) => {
         const attended = s.present + s.late + s.excused;
-        const percentage = s.total > 0 ? Number(((attended / s.total) * 100).toFixed(1)) : 100.0;
+        const percentage = calculateAttendancePercentage(attended, s.total);
+        const defaulter = isDefaulter(percentage, SENATE_EXAM_THRESHOLD);
+        const classesNeededToRecover = defaulter
+          ? calculateClassesNeededToRecover(attended, s.total, SENATE_EXAM_THRESHOLD)
+          : 0;
+        const safeAbsencesAllowed = !defaulter
+          ? calculateSafeAbsencesAllowed(attended, s.total, SENATE_EXAM_THRESHOLD)
+          : 0;
+
         return {
           ...s,
           percentage,
-          isDefaulter: percentage < 75.0,
+          isDefaulter: defaulter,
+          requiredThreshold: SENATE_EXAM_THRESHOLD,
+          classesNeededToRecover,
+          safeAbsencesAllowed,
         };
       });
+
+      const allAttended = records.filter(
+        (r) => r.status === "PRESENT" || r.status === "LATE" || r.status === "EXCUSED"
+      ).length;
+      const overallRate = calculateAttendancePercentage(allAttended, records.length);
+      const overallDefaulter = isDefaulter(overallRate, SENATE_EXAM_THRESHOLD);
+      const overallNeeded = overallDefaulter
+        ? calculateClassesNeededToRecover(allAttended, records.length, SENATE_EXAM_THRESHOLD)
+        : 0;
+      const overallSafe = !overallDefaulter
+        ? calculateSafeAbsencesAllowed(allAttended, records.length, SENATE_EXAM_THRESHOLD)
+        : 0;
 
       return NextResponse.json({
         perspective: "STUDENT",
@@ -113,11 +143,40 @@ export async function GET(req: NextRequest) {
           id: student.id,
           name: `${student.user.firstName} ${student.user.lastName}`,
           rollNumber: student.rollNumber,
-          attendanceRate: student.attendanceRate || 92.0,
+          attendanceRate: overallRate,
         },
-        overallRate: student.attendanceRate || 92.0,
+        overallAttendance: {
+          aggregateRate: overallRate,
+          attendedLectures: allAttended,
+          totalLectures: records.length,
+          isDefaulter: overallDefaulter,
+          requiredRate: SENATE_EXAM_THRESHOLD,
+          classesNeededToRecover: overallNeeded,
+          safeAbsencesAllowed: overallSafe,
+        },
+        overallRate,
         subjectBreakdown,
+        courseWiseAttendance: subjectBreakdown.map((sb) => ({
+          courseCode: sb.courseCode,
+          courseTitle: sb.courseTitle,
+          credits: 4,
+          facultyName: "Assigned Professor",
+          attendedClasses: sb.present + sb.late + sb.excused,
+          totalClasses: sb.total,
+          attendanceRate: sb.percentage,
+          isDefaulter: sb.isDefaulter,
+          classesNeededToRecover: sb.classesNeededToRecover,
+          safeAbsencesAllowed: sb.safeAbsencesAllowed,
+        })),
         recentRecords: records.slice(0, 30).map((r) => ({
+          id: r.id,
+          courseCode: r.session.course.code,
+          courseTitle: r.session.course.title,
+          date: r.session.date.toISOString().split("T")[0],
+          status: r.status,
+          method: r.session.method,
+        })),
+        recentSessions: records.slice(0, 30).map((r) => ({
           id: r.id,
           courseCode: r.session.course.code,
           courseTitle: r.session.course.title,
@@ -285,6 +344,32 @@ export async function GET(req: NextRequest) {
         averageAttendance: avgRate,
         studentsAtRiskCount,
         currentLiveSlot,
+        todayClasses: todaySlots.map((slot) => {
+          const matchingSession = todaySessions.find(
+            (s) => s.courseId === slot.courseId && s.sectionId === slot.sectionId
+          );
+          return {
+            slotId: slot.id,
+            subject: slot.course.title,
+            courseCode: slot.course.code,
+            courseId: slot.courseId,
+            section: slot.section?.name || "Section A",
+            sectionId: slot.sectionId,
+            room: slot.room ? `${slot.room.code} - ${slot.room.name}` : "Lecture Hall",
+            roomId: slot.roomId,
+            scheduledTime: `${slot.startTime} - ${slot.endTime}`,
+            startTime: slot.startTime,
+            endTime: slot.endTime,
+            dayOfWeek: slot.dayOfWeek,
+            faculty: "Assigned Faculty",
+            enrolledCount: course.enrollments.length || 45,
+            sessionStatus: matchingSession?.status || "NOT_STARTED",
+            sessionId: matchingSession?.id || null,
+            attendanceStatus: matchingSession
+              ? `${matchingSession.status}`
+              : "Pending",
+          };
+        }),
       },
       sessionExists: Boolean(existingSessionToday),
       sessionId: existingSessionToday?.id || null,
@@ -360,6 +445,18 @@ export async function POST(req: NextRequest) {
         date: { gte: startOfDay, lte: endOfDay },
       },
     });
+
+    // Finalization & Lock Protection (GAP-01)
+    if (existingSession && (existingSession.status === "LOCKED" || existingSession.status === "FINALIZED")) {
+      return NextResponse.json(
+        {
+          error: `Attendance session is ${existingSession.status}. Direct modifications are locked to prevent tampering. Please file an official Attendance Correction Petition.`,
+          sessionId: existingSession.id,
+          sessionStatus: existingSession.status,
+        },
+        { status: 403 }
+      );
+    }
 
     // Absence Engine: Include all enrolled students not explicitly checked
     const submittedStudentIds = new Set(records.map((r: any) => r.studentId));

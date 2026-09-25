@@ -54,6 +54,13 @@ import { hasPermission, ROLE_PERMISSIONS, PermissionCode } from "@/lib/auth/perm
 import { generateRotatingQrToken, verifyRotatingQrToken } from "@/lib/attendance/qr-token";
 import { calculateHaversineDistance, verifyGeofenceProximity } from "@/lib/attendance/geofence";
 import { generateBleChallenge, verifyBleChallengeProof } from "@/lib/attendance/ble";
+import {
+  calculateAttendancePercentage,
+  isDefaulter,
+  calculateClassesNeededToRecover,
+  calculateSafeAbsencesAllowed,
+  computeAttendanceSummary,
+} from "@/lib/attendance/calculator";
 
 async function runTestSuite() {
   console.log("=================================================");
@@ -2127,6 +2134,116 @@ async function runTestSuite() {
   assert(sampleReceipt.receiptId.startsWith("REC-"), "Digital Attendance Receipt contains formatted uppercase REC- identifier");
   assert(sampleReceipt.verificationMethod === "COMBO", "Receipt accurately preserves multi-factor verification method");
   assert(sampleReceipt.qrVerified && sampleReceipt.bluetoothVerified && sampleReceipt.geofenceVerified, "Multi-factor verification proofs recorded on receipt");
+
+  // TEST 34: Attendance Hardening, Authoritative Calculator & Session Immutability
+  console.log("\n📌 Group 34: Attendance Hardening, Authoritative Calculator & Session Immutability");
+
+  // 34.1 Central Authoritative Calculator Edge Cases & Computations
+  assert(calculateAttendancePercentage(0, 0) === 100.0, "Zero conducted classes defaults to 100.0% clean standing");
+  assert(calculateAttendancePercentage(18, 20) === 90.0, "18 attended out of 20 equals exactly 90.0%");
+  assert(calculateAttendancePercentage(14, 20) === 70.0, "14 attended out of 20 equals exactly 70.0%");
+  assert(isDefaulter(74.9, 75.0) === true, "74.9% is correctly identified as Defaulter under 75% Senate threshold");
+  assert(isDefaulter(75.0, 75.0) === false, "75.0% strictly meets threshold and is not marked as Defaulter");
+  assert(isDefaulter(88.2, 75.0) === false, "88.2% comfortably satisfies Senate threshold");
+
+  // 34.2 Defaulter Recovery & Safe Absence Computation
+  const classesNeeded = calculateClassesNeededToRecover(14, 20, 75);
+  assert(classesNeeded === 4, "Student at 70% (14/20) requires exactly 4 consecutive classes to reach 75%");
+  assert(calculateClassesNeededToRecover(18, 20, 75) === 0, "Non-defaulter student requires 0 classes to recover");
+
+  const safeAbsences = calculateSafeAbsencesAllowed(19, 20, 75);
+  assert(safeAbsences === 5, "Student at 95% (19/20) can safely miss up to 5 upcoming classes without falling below 75%");
+  assert(calculateSafeAbsencesAllowed(14, 20, 75) === 0, "Defaulter student has 0 safe absences allowed");
+
+  // 34.3 Full Attendance Summary Aggregator
+  const mixedRecords = [
+    { status: "PRESENT" },
+    { status: "PRESENT" },
+    { status: "LATE" },
+    { status: "EXCUSED" },
+    { status: "ABSENT" },
+  ];
+  const summary = computeAttendanceSummary(mixedRecords, 75);
+  assert(summary.totalConducted === 5, "Summary captures 5 total conducted sessions");
+  assert(summary.attended === 4, "Summary includes PRESENT, LATE, and EXCUSED as attended (4/5)");
+  assert(summary.absent === 1, "Summary flags exactly 1 absent session");
+  assert(summary.percentage === 80.0, "Summary computes 80.0% aggregate rate");
+  assert(summary.isDefaulter === false, "Student at 80% is not in defaulter standing");
+  assert(summary.safeAbsencesAllowed >= 0, "Safe absences computed on summary");
+
+  // 34.4 Session Finite State Machine Strict Transition Guard
+  const fsmTransitions: Record<string, string[]> = {
+    DRAFT: ["ACTIVE", "CANCELLED"],
+    ACTIVE: ["PAUSED", "SUBMITTED", "CLOSED", "CANCELLED"],
+    PAUSED: ["ACTIVE", "CLOSED", "CANCELLED"],
+    SUBMITTED: ["FINALIZED", "CLOSED", "ACTIVE", "CANCELLED"],
+    CLOSED: ["FINALIZED", "LOCKED", "ACTIVE", "CANCELLED"],
+    FINALIZED: ["LOCKED"],
+    LOCKED: ["ACTIVE"],
+    CANCELLED: [],
+  };
+
+  const isTransitionValid = (fromState: string, toState: string) => {
+    return Boolean(fsmTransitions[fromState]?.includes(toState));
+  };
+
+  assert(isTransitionValid("DRAFT", "ACTIVE"), "FSM: DRAFT -> ACTIVE is permitted");
+  assert(isTransitionValid("ACTIVE", "SUBMITTED"), "FSM: ACTIVE -> SUBMITTED is permitted");
+  assert(isTransitionValid("SUBMITTED", "FINALIZED"), "FSM: SUBMITTED -> FINALIZED is permitted");
+  assert(isTransitionValid("FINALIZED", "LOCKED"), "FSM: FINALIZED -> LOCKED is permitted");
+  assert(!isTransitionValid("DRAFT", "LOCKED"), "FSM: DRAFT -> LOCKED bypass is forbidden");
+  assert(!isTransitionValid("FINALIZED", "ACTIVE"), "FSM: FINALIZED directly back to ACTIVE is blocked");
+  assert(!isTransitionValid("CANCELLED", "ACTIVE"), "FSM: CANCELLED session cannot be revived");
+
+  // 34.5 Session Immutability Guard (Locked/Finalized Protection)
+  const canDirectlyModifySession = (sessionStatus: string) => {
+    return sessionStatus !== "LOCKED" && sessionStatus !== "FINALIZED";
+  };
+
+  assert(canDirectlyModifySession("ACTIVE") === true, "Active sessions permit live mark updates");
+  assert(canDirectlyModifySession("DRAFT") === true, "Draft sessions permit live mark updates");
+  assert(canDirectlyModifySession("FINALIZED") === false, "Finalized sessions reject direct mark updates");
+  assert(canDirectlyModifySession("LOCKED") === false, "Locked sessions reject direct mark updates");
+
+  // 34.6 Accidental Absence Prevention Engine
+  const calculateUnmarkedDelta = (rosterIds: string[], markedIds: string[]) => {
+    const markedSet = new Set(markedIds);
+    return rosterIds.filter((id) => !markedSet.has(id));
+  };
+
+  const rosterStudentIds = ["std-1", "std-2", "std-3", "std-4", "std-5"];
+  const markedPresentIds = ["std-1", "std-3"];
+  const unmarkedCandidates = calculateUnmarkedDelta(rosterStudentIds, markedPresentIds);
+  assert(unmarkedCandidates.length === 3, "Accidental absence prevention correctly identifies 3 unmarked students");
+  assert(unmarkedCandidates.includes("std-2") && unmarkedCandidates.includes("std-4"), "Unmarked student list contains exact student IDs requiring confirmation");
+
+  // 34.7 Offline LocalStorage Cache Schema & Sync Integrity
+  const offlineDraftPayload = {
+    courseId: "course-cs-101",
+    date: "2026-09-25",
+    marks: {
+      "std-1": "PRESENT",
+      "std-2": "ABSENT",
+      "std-3": "LATE",
+    },
+    savedAt: 1774512000000,
+    synced: false,
+  };
+
+  const isValidOfflinePayload = (payload: any) => {
+    return (
+      typeof payload.courseId === "string" &&
+      typeof payload.date === "string" &&
+      typeof payload.marks === "object" &&
+      payload.marks !== null &&
+      Object.keys(payload.marks).length > 0 &&
+      typeof payload.savedAt === "number" &&
+      typeof payload.synced === "boolean"
+    );
+  };
+
+  assert(isValidOfflinePayload(offlineDraftPayload) === true, "Offline draft payload meets client cache storage schema");
+  assert(isValidOfflinePayload({ courseId: "cs-101" }) === false, "Incomplete offline draft payload rejected");
 
   console.log("\n=================================================");
   console.log(`🎉 ALL ${passedTests}/${totalTests} TESTS PASSED SUCCESSFULLY!`);

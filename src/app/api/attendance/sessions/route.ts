@@ -288,6 +288,47 @@ export async function PATCH(req: NextRequest) {
     }
 
     const upperAction = action.toUpperCase();
+    const actionToTargetStatus: Record<string, string> = {
+      PAUSE: "PAUSED",
+      RESUME: "ACTIVE",
+      REOPEN: "ACTIVE",
+      CLOSE: "CLOSED",
+      FINALIZE: "FINALIZED",
+      LOCK: "LOCKED",
+      CANCEL: "CANCELLED",
+    };
+
+    const targetStatus = actionToTargetStatus[upperAction];
+    if (!targetStatus) {
+      return NextResponse.json(
+        { error: `Invalid action: ${action}. Valid actions are PAUSE, RESUME, CLOSE, FINALIZE, LOCK, CANCEL, or REOPEN.` },
+        { status: 400 }
+      );
+    }
+
+    const currentStatus = session.status || "DRAFT";
+
+    // Strict Finite State Machine Transition Validation
+    const VALID_TRANSITIONS: Record<string, string[]> = {
+      DRAFT: ["ACTIVE", "CANCELLED"],
+      ACTIVE: ["PAUSED", "CLOSED", "FINALIZED", "LOCKED"],
+      PAUSED: ["ACTIVE", "CLOSED", "CANCELLED"],
+      CLOSED: ["FINALIZED", "LOCKED", "ACTIVE"],
+      FINALIZED: ["LOCKED", "ACTIVE"],
+      LOCKED: ["ACTIVE"], // Reopen only allowed for authorized roles
+      CANCELLED: [],
+    };
+
+    const allowedNextStates = VALID_TRANSITIONS[currentStatus] || [];
+    if (!allowedNextStates.includes(targetStatus)) {
+      return NextResponse.json(
+        {
+          error: `Invalid session transition: Cannot transition from '${currentStatus}' to '${targetStatus}' via action '${upperAction}'. Allowed next states: [${allowedNextStates.join(", ")}]`,
+        },
+        { status: 400 }
+      );
+    }
+
     let updateData: any = {};
     let autoAbsenceCount = 0;
 
@@ -307,10 +348,19 @@ export async function PATCH(req: NextRequest) {
         };
         break;
       }
+      case "CANCEL":
+        updateData = {
+          status: "CANCELLED",
+          closedAt: new Date(),
+          qrCodeToken: null,
+          qrExpiresAt: null,
+        };
+        break;
       case "CLOSE":
+      case "FINALIZE":
       case "LOCK": {
         updateData = {
-          status: upperAction === "LOCK" ? "LOCKED" : "CLOSED",
+          status: targetStatus,
           closedAt: new Date(),
           qrCodeToken: null,
           qrExpiresAt: null,
@@ -336,7 +386,7 @@ export async function PATCH(req: NextRequest) {
               sessionId: session.id,
               studentId: e.studentId,
               status: "ABSENT",
-              remarks: "Auto-marked absent by System on session closure",
+              remarks: `Auto-marked absent by System on session ${targetStatus.toLowerCase()}`,
               markedBy: "SYSTEM_AUTO_CLOSE",
               verificationMethod: "SYSTEM",
             })),
@@ -361,11 +411,6 @@ export async function PATCH(req: NextRequest) {
         }
         break;
       }
-      default:
-        return NextResponse.json(
-          { error: `Invalid action: ${action}. Must be PAUSE, RESUME, CLOSE, LOCK, or REOPEN.` },
-          { status: 400 }
-        );
     }
 
     const updated = await prisma.attendanceSession.update({

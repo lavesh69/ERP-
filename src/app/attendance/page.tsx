@@ -35,9 +35,24 @@ import {
   FileSpreadsheet,
   AlertCircle,
   HelpCircle,
+  WifiOff,
+  RefreshCw,
+  ArrowUpDown,
+  BookOpen,
+  UserCheck,
+  UserX,
+  FileText,
+  BadgeAlert,
 } from "lucide-react";
 import QRScannerModal from "@/components/attendance/QRScannerModal";
 import ProjectorModeModal from "@/components/attendance/ProjectorModeModal";
+import {
+  calculateAttendancePercentage,
+  isDefaulter,
+  calculateClassesNeededToRecover,
+  calculateSafeAbsencesAllowed,
+  SENATE_EXAM_THRESHOLD,
+} from "@/lib/attendance/calculator";
 
 export default function AttendancePage() {
   const { showToast, triggerRefresh, currentRole, currentUser } = useApp();
@@ -61,6 +76,8 @@ export default function AttendancePage() {
     averageAttendance: 92.0,
     studentsAtRiskCount: 0,
     currentLiveSlot: null,
+    todayClasses: [],
+    pendingCorrections: [],
   });
 
   const [isLoading, setIsLoading] = useState(true);
@@ -68,10 +85,17 @@ export default function AttendancePage() {
   const [isClosingSession, setIsClosingSession] = useState(false);
   const [isDispatchingAlerts, setIsDispatchingAlerts] = useState(false);
 
-  // Search & Filters
+  // Unsaved Changes & Offline Tracking
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [saveStatus, setSaveStatus] = useState<"SAVED" | "DIRTY" | "SAVING" | "ERROR">("SAVED");
+  const [isOnline, setIsOnline] = useState<boolean>(true);
+  const [hasOfflineDraft, setHasOfflineDraft] = useState<boolean>(false);
+
+  // Search, Filters & Sorting
   const [searchQuery, setSearchQuery] = useState("");
   const [riskFilter, setRiskFilter] = useState<"ALL" | "HIGH" | "MEDIUM" | "LOW">("ALL");
-  const [statusFilter, setStatusFilter] = useState<"ALL" | "PRESENT" | "ABSENT" | "LATE" | "EXCUSED">("ALL");
+  const [statusFilter, setStatusFilter] = useState<"ALL" | "PRESENT" | "ABSENT" | "LATE" | "EXCUSED" | "UNMARKED">("ALL");
+  const [sortBy, setSortBy] = useState<"ROLL_ASC" | "ROLL_DESC" | "NAME_ASC" | "ATT_ASC" | "ATT_DESC">("ROLL_ASC");
   const [hoveredStudentId, setHoveredStudentId] = useState<string | null>(null);
 
   // Undo History
@@ -104,6 +128,16 @@ export default function AttendancePage() {
     rssiCalibrated1m: -65,
   });
 
+  // Calendar Day Details Modal (Student)
+  const [selectedCalendarDay, setSelectedCalendarDay] = useState<{
+    date: string;
+    dayName: string;
+    status: string;
+    courseCode?: string;
+    courseTitle?: string;
+    method?: string;
+  } | null>(null);
+
   // Confirmation Dialog
   const [confirmDialog, setConfirmDialog] = useState<{
     isOpen: boolean;
@@ -119,6 +153,11 @@ export default function AttendancePage() {
     onConfirm: () => {},
   });
 
+  // Teacher Review Petition Modal
+  const [reviewingPetition, setReviewingPetition] = useState<any | null>(null);
+  const [petitionRemarks, setPetitionRemarks] = useState("");
+  const [isResolvingPetition, setIsResolvingPetition] = useState(false);
+
   // Correction Request State (Student)
   const [isCorrectionModalOpen, setIsCorrectionModalOpen] = useState(false);
   const [correctionForm, setCorrectionForm] = useState({
@@ -128,10 +167,52 @@ export default function AttendancePage() {
   });
   const [isSubmittingCorrection, setIsSubmittingCorrection] = useState(false);
 
-  // Keyboard navigation listener for hotkeys (P, A, L, E)
+  // 1. Online / Offline Resilience Listeners
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      setIsOnline(navigator.onLine);
+      const handleOnline = () => {
+        setIsOnline(true);
+        showToast("Network connection restored.", "success");
+      };
+      const handleOffline = () => {
+        setIsOnline(false);
+        showToast("Network dropped. Marks will be cached locally.", "warning");
+      };
+      window.addEventListener("online", handleOnline);
+      window.addEventListener("offline", handleOffline);
+
+      // Check for cached offline draft
+      const draftKey = `classroom_attendance_draft_${selectedCourse}_${selectedDate}`;
+      const savedDraft = localStorage.getItem(draftKey);
+      if (savedDraft) {
+        setHasOfflineDraft(true);
+      }
+
+      return () => {
+        window.removeEventListener("online", handleOnline);
+        window.removeEventListener("offline", handleOffline);
+      };
+    }
+  }, [selectedCourse, selectedDate]);
+
+  // 2. Unsaved Changes Guard: beforeunload listener
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (hasUnsavedChanges) {
+        e.preventDefault();
+        e.returnValue = "You have unsaved attendance marks. Are you sure you want to leave?";
+        return e.returnValue;
+      }
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [hasUnsavedChanges]);
+
+  // 3. Keyboard navigation listener for hotkeys (P, A, L, E)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Don't trigger if user is typing in an input or textarea
       if (
         e.target instanceof HTMLInputElement ||
         e.target instanceof HTMLTextAreaElement ||
@@ -168,7 +249,7 @@ export default function AttendancePage() {
     fetch(`/api/attendance?courseCode=${selectedCourse}&date=${selectedDate}`)
       .then((res) => res.json())
       .then((data) => {
-        if (data.role === "STUDENT") {
+        if (data.role === "STUDENT" || data.perspective === "STUDENT") {
           setStudentData(data);
         } else {
           if (data.roster) {
@@ -183,6 +264,8 @@ export default function AttendancePage() {
           setSessionExists(Boolean(data.sessionExists));
           setCurrentSessionId(data.sessionId || null);
           setCurrentSessionStatus(data.sessionStatus || null);
+          setHasUnsavedChanges(false);
+          setSaveStatus("SAVED");
         }
         setIsLoading(false);
       })
@@ -343,15 +426,35 @@ export default function AttendancePage() {
     triggerRefresh();
   };
 
-  // Status Toggling with Undo support
+  // Status Toggling with LocalStorage Offline Backup & Undo support
   const toggleStatus = (studentId: string, newStatus: "PRESENT" | "ABSENT" | "LATE" | "EXCUSED") => {
+    // If session is locked or finalized, block editing
+    if (currentSessionStatus === "LOCKED" || currentSessionStatus === "FINALIZED") {
+      showToast(`Session is ${currentSessionStatus}. Modifying finalized records requires an approved petition.`, "warning");
+      return;
+    }
+
     setStudentRoster((prev) => {
       const existing = prev.find((s) => s.studentId === studentId);
       if (existing) {
         setHistoryStack((h) => [{ studentId, prevStatus: existing.status }, ...h.slice(0, 19)]);
       }
-      return prev.map((s) => (s.studentId === studentId ? { ...s, status: newStatus } : s));
+      const updated = prev.map((s) => (s.studentId === studentId ? { ...s, status: newStatus } : s));
+
+      // Backup draft in localStorage for offline resilience
+      if (typeof window !== "undefined") {
+        try {
+          localStorage.setItem(`classroom_attendance_draft_${selectedCourse}_${selectedDate}`, JSON.stringify(updated));
+        } catch (e) {
+          // ignore storage limit
+        }
+      }
+
+      return updated;
     });
+
+    setHasUnsavedChanges(true);
+    setSaveStatus("DIRTY");
   };
 
   const handleUndo = () => {
@@ -361,11 +464,40 @@ export default function AttendancePage() {
       prev.map((s) => (s.studentId === lastAction.studentId ? { ...s, status: lastAction.prevStatus } : s))
     );
     setHistoryStack(rest);
+    setHasUnsavedChanges(true);
+    setSaveStatus("DIRTY");
     showToast("Reverted last attendance mark", "info");
+  };
+
+  // Restore cached offline draft
+  const handleRestoreDraft = () => {
+    if (typeof window !== "undefined") {
+      const draftKey = `classroom_attendance_draft_${selectedCourse}_${selectedDate}`;
+      const saved = localStorage.getItem(draftKey);
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            setStudentRoster(parsed);
+            setHasUnsavedChanges(true);
+            setSaveStatus("DIRTY");
+            setHasOfflineDraft(false);
+            showToast("Offline draft marks restored. Click 'Save Roster' to sync.", "info");
+          }
+        } catch (e) {
+          console.error("Draft parse error:", e);
+        }
+      }
+    }
   };
 
   // Mass Marking with Confirmation Dialog
   const promptMarkAll = (status: "PRESENT" | "ABSENT") => {
+    if (currentSessionStatus === "LOCKED" || currentSessionStatus === "FINALIZED") {
+      showToast(`Session is ${currentSessionStatus}. Modifying finalized records is locked.`, "warning");
+      return;
+    }
+
     setConfirmDialog({
       isOpen: true,
       title: `Confirm Mark All as ${status}`,
@@ -373,15 +505,57 @@ export default function AttendancePage() {
       confirmText: `Mark All ${status}`,
       onConfirm: () => {
         setStudentRoster((prev) => prev.map((s) => ({ ...s, status })));
+        setHasUnsavedChanges(true);
+        setSaveStatus("DIRTY");
         setConfirmDialog((c) => ({ ...c, isOpen: false }));
         showToast(`Marked all students as ${status}`, "info");
       },
     });
   };
 
+  // Prevent Accidental Absence: Explicit Confirmation with dynamic student count (GAP-06)
+  const promptMarkRemainingAbsent = () => {
+    if (currentSessionStatus === "LOCKED" || currentSessionStatus === "FINALIZED") {
+      showToast(`Session is ${currentSessionStatus}. Editing is locked.`, "warning");
+      return;
+    }
+
+    const unmarked = studentRoster.filter(
+      (s) => s.status !== "PRESENT" && s.status !== "LATE" && s.status !== "ABSENT" && s.status !== "EXCUSED"
+    );
+    const count = unmarked.length;
+
+    if (count === 0) {
+      showToast("All enrolled students have already been marked.", "info");
+      return;
+    }
+
+    setConfirmDialog({
+      isOpen: true,
+      title: "Confirm Mark Remaining as Absent",
+      message: `You are about to mark ${count} currently unmarked student(s) as ABSENT. Please confirm this action.`,
+      confirmText: `Mark ${count} Absent`,
+      onConfirm: () => {
+        setStudentRoster((prev) =>
+          prev.map((s) => {
+            if (s.status !== "PRESENT" && s.status !== "LATE" && s.status !== "ABSENT" && s.status !== "EXCUSED") {
+              return { ...s, status: "ABSENT" };
+            }
+            return s;
+          })
+        );
+        setHasUnsavedChanges(true);
+        setSaveStatus("DIRTY");
+        setConfirmDialog((c) => ({ ...c, isOpen: false }));
+        showToast(`Marked ${count} unmarked students as Absent`, "info");
+      },
+    });
+  };
+
   // Save Attendance to Database
-  const handleSaveAttendance = async (action: "SAVE" | "CLOSE" | "LOCK" = "SAVE") => {
+  const handleSaveAttendance = async (action: "SAVE" | "CLOSE" | "FINALIZED" | "LOCK" = "SAVE") => {
     setIsSaving(true);
+    setSaveStatus("SAVING");
     try {
       const res = await fetch("/api/attendance", {
         method: "POST",
@@ -389,7 +563,7 @@ export default function AttendancePage() {
         body: JSON.stringify({
           courseCode: selectedCourse,
           date: selectedDate,
-          sessionAction: action,
+          sessionAction: action === "FINALIZED" ? "CLOSE" : action,
           records: studentRoster.map((s) => ({
             studentId: s.studentId,
             status: s.status,
@@ -404,12 +578,21 @@ export default function AttendancePage() {
             : `Attendance recorded for ${data.recordedCount} students in academic database`,
           "success"
         );
+        setHasUnsavedChanges(false);
+        setSaveStatus("SAVED");
+        // Clear cached local draft
+        if (typeof window !== "undefined") {
+          localStorage.removeItem(`classroom_attendance_draft_${selectedCourse}_${selectedDate}`);
+          setHasOfflineDraft(false);
+        }
         triggerRefresh();
         fetchRoster();
       } else {
+        setSaveStatus("ERROR");
         showToast(data.error || "Failed to save attendance", "danger");
       }
     } catch {
+      setSaveStatus("ERROR");
       showToast("Network error saving attendance", "danger");
     } finally {
       setIsSaving(false);
@@ -453,7 +636,6 @@ export default function AttendancePage() {
             setIsClosingSession(false);
           }
         } else {
-          // If no formal session created yet, save as LOCKED
           await handleSaveAttendance("LOCK");
           setIsClosingSession(false);
         }
@@ -572,19 +754,65 @@ export default function AttendancePage() {
     }
   };
 
-  // Filtered Roster Calculations
-  const filteredRoster = studentRoster.filter((s) => {
-    const matchesSearch =
-      searchQuery.trim() === "" ||
-      s.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      s.rollNo.toLowerCase().includes(searchQuery.toLowerCase());
+  // Teacher Review Petition Action (Approve / Reject)
+  const handleResolvePetition = async (status: "APPROVED" | "REJECTED") => {
+    if (!reviewingPetition) return;
+    setIsResolvingPetition(true);
+    try {
+      const res = await fetch("/api/students/requests", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          requestId: reviewingPetition.id,
+          status,
+          correctionStatus: "EXCUSED",
+          reviewerRemarks: petitionRemarks || (status === "APPROVED" ? "Approved by course professor" : "Rejected upon record review"),
+        }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        showToast(`Petition ${status.toLowerCase()} successfully`, "success");
+        setReviewingPetition(null);
+        setPetitionRemarks("");
+        fetchRoster();
+      } else {
+        showToast(data.error || "Failed to update petition", "danger");
+      }
+    } catch {
+      showToast("Network error updating petition", "danger");
+    } finally {
+      setIsResolvingPetition(false);
+    }
+  };
 
-    const studentRisk = s.risk || (s.aggregate < 75 ? "HIGH" : s.aggregate < 80 ? "MEDIUM" : "LOW");
-    const matchesRisk = riskFilter === "ALL" || studentRisk === riskFilter;
-    const matchesStatus = statusFilter === "ALL" || s.status === statusFilter;
+  // Filtered and Sorted Roster
+  const filteredRoster = studentRoster
+    .filter((s) => {
+      const matchesSearch =
+        searchQuery.trim() === "" ||
+        s.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        s.rollNo.toLowerCase().includes(searchQuery.toLowerCase());
 
-    return matchesSearch && matchesRisk && matchesStatus;
-  });
+      const studentRisk = s.risk || (s.aggregate < 75 ? "HIGH" : s.aggregate < 80 ? "MEDIUM" : "LOW");
+      const matchesRisk = riskFilter === "ALL" || studentRisk === riskFilter;
+
+      let matchesStatus = true;
+      if (statusFilter === "UNMARKED") {
+        matchesStatus = s.status !== "PRESENT" && s.status !== "LATE" && s.status !== "ABSENT" && s.status !== "EXCUSED";
+      } else if (statusFilter !== "ALL") {
+        matchesStatus = s.status === statusFilter;
+      }
+
+      return matchesSearch && matchesRisk && matchesStatus;
+    })
+    .sort((a, b) => {
+      if (sortBy === "ROLL_ASC") return a.rollNo.localeCompare(b.rollNo);
+      if (sortBy === "ROLL_DESC") return b.rollNo.localeCompare(a.rollNo);
+      if (sortBy === "NAME_ASC") return a.name.localeCompare(b.name);
+      if (sortBy === "ATT_ASC") return Number(a.aggregate) - Number(b.aggregate);
+      if (sortBy === "ATT_DESC") return Number(b.aggregate) - Number(a.aggregate);
+      return 0;
+    });
 
   const presentCount = studentRoster.filter((s) => s.status === "PRESENT").length;
   const lateCount = studentRoster.filter((s) => s.status === "LATE").length;
@@ -592,13 +820,51 @@ export default function AttendancePage() {
   const excusedCount = studentRoster.filter((s) => s.status === "EXCUSED").length;
   const totalCount = studentRoster.length;
   const markedCount = presentCount + lateCount + absentCount + excusedCount;
+  const unmarkedCount = Math.max(0, totalCount - markedCount);
   const percentMarked = totalCount > 0 ? Math.round((markedCount / totalCount) * 100) : 0;
-  const attendanceRate = totalCount > 0 ? (((presentCount + lateCount) / totalCount) * 100).toFixed(1) : "0.0";
   const defaulters = studentRoster.filter((s) => s.aggregate < 75);
 
   return (
     <AppShell>
       <div className="flex flex-col gap-6">
+        {/* Offline Banner */}
+        {!isOnline && (
+          <div className="bg-amber-500 text-white px-4 py-2.5 rounded-xl flex items-center justify-between text-xs font-bold shadow-md animate-in fade-in">
+            <div className="flex items-center gap-2">
+              <WifiOff className="w-4 h-4" />
+              <span>Offline Mode: Attendance marks are being preserved safely in local storage.</span>
+            </div>
+            <span className="text-[11px] font-mono bg-amber-600 px-2 py-0.5 rounded">Auto-sync armed</span>
+          </div>
+        )}
+
+        {/* Offline Draft Recovery Banner */}
+        {hasOfflineDraft && isOnline && (
+          <div className="bg-indigo-600 text-white px-4 py-2.5 rounded-xl flex items-center justify-between text-xs font-bold shadow-md animate-in fade-in">
+            <div className="flex items-center gap-2">
+              <RefreshCw className="w-4 h-4 animate-spin" />
+              <span>Cached offline attendance marks detected for this lecture.</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handleRestoreDraft}
+                className="px-3 py-1 bg-white text-indigo-700 font-bold rounded-lg text-xs hover:bg-slate-100"
+              >
+                Restore Draft
+              </button>
+              <button
+                onClick={() => {
+                  localStorage.removeItem(`classroom_attendance_draft_${selectedCourse}_${selectedDate}`);
+                  setHasOfflineDraft(false);
+                }}
+                className="text-xs text-indigo-200 hover:text-white underline"
+              >
+                Discard
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Main Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-[#1E191C] p-6 rounded-2xl border border-border dark:border-charcoal-800 shadow-soft">
           <div className="flex items-center gap-3">
@@ -617,7 +883,7 @@ export default function AttendancePage() {
                     className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold tracking-wider uppercase border ${
                       currentSessionStatus === "ACTIVE"
                         ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/30 animate-pulse"
-                        : currentSessionStatus === "LOCKED" || currentSessionStatus === "CLOSED"
+                        : currentSessionStatus === "LOCKED" || currentSessionStatus === "FINALIZED" || currentSessionStatus === "CLOSED"
                         ? "bg-slate-800 text-slate-300 border-slate-700"
                         : "bg-indigo-500/20 text-indigo-400 border-indigo-500/30"
                     }`}
@@ -654,13 +920,33 @@ export default function AttendancePage() {
               </>
             ) : (
               <>
+                {/* Save Status Badge */}
+                <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-border dark:border-charcoal-700 text-xs font-medium">
+                  {saveStatus === "DIRTY" ? (
+                    <span className="flex items-center gap-1 text-amber-500">
+                      <span className="h-2 w-2 rounded-full bg-amber-500 animate-ping" />
+                      Unsaved changes
+                    </span>
+                  ) : saveStatus === "SAVING" ? (
+                    <span className="flex items-center gap-1 text-indigo-400">
+                      <RefreshCw className="w-3 h-3 animate-spin" />
+                      Saving to ledger...
+                    </span>
+                  ) : (
+                    <span className="flex items-center gap-1 text-emerald-500">
+                      <Check className="w-3.5 h-3.5" />
+                      Saved
+                    </span>
+                  )}
+                </div>
+
                 <button
                   onClick={handleOpenConfigurator}
                   className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-ivory-100 dark:bg-charcoal-800 hover:bg-ivory-200 dark:hover:bg-charcoal-700 text-charcoal-800 dark:text-ivory-200 text-xs font-bold border border-border dark:border-charcoal-700 transition-all"
                   title="Configure smart session parameters (Geofence, BLE, Rotation)"
                 >
                   <Settings2 className="h-3.5 w-3.5 text-indigo-500" />
-                  <span>Session Config</span>
+                  <span>Config</span>
                 </button>
                 <button
                   onClick={handleOpenBleManager}
@@ -696,7 +982,7 @@ export default function AttendancePage() {
                 </button>
                 <button
                   onClick={() => handleSaveAttendance("SAVE")}
-                  disabled={isSaving || studentRoster.length === 0}
+                  disabled={isSaving || studentRoster.length === 0 || currentSessionStatus === "LOCKED" || currentSessionStatus === "FINALIZED"}
                   className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-rose-primary hover:bg-rose-dark active:scale-[0.98] text-white text-xs font-bold shadow-sm transition-all disabled:opacity-50"
                 >
                   <Save className="h-4 w-4" />
@@ -704,7 +990,7 @@ export default function AttendancePage() {
                 </button>
                 <button
                   onClick={promptCloseAndLockSession}
-                  disabled={isClosingSession || studentRoster.length === 0}
+                  disabled={isClosingSession || studentRoster.length === 0 || currentSessionStatus === "LOCKED"}
                   className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-900 dark:bg-black hover:bg-slate-800 text-white text-xs font-bold shadow-sm transition-all disabled:opacity-50 border border-slate-700"
                   title="Close session & run System Absence Engine"
                 >
@@ -719,7 +1005,7 @@ export default function AttendancePage() {
         {/* FACULTY PERSPECTIVE: Command Center & Management */}
         {currentRole !== "STUDENT" && (
           <>
-            {/* Live Timetable Smart Banner (1-Click Start Live Class) */}
+            {/* Live Timetable Smart Banner (1-Click Launch Current Class) */}
             {commandCenter?.currentLiveSlot && (
               <div className="bg-gradient-to-r from-indigo-900/60 via-purple-900/40 to-slate-900/80 p-4 rounded-2xl border border-indigo-500/30 shadow-lg flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="flex items-center gap-3">
@@ -808,7 +1094,135 @@ export default function AttendancePage() {
               </div>
             </div>
 
-            {/* Course & Date Selector Strip */}
+            {/* Today's Daily Schedule Cards (GAP-03) */}
+            {commandCenter.todayClasses && commandCenter.todayClasses.length > 0 && (
+              <div className="bg-white dark:bg-[#1E191C] p-4 rounded-2xl border border-border dark:border-charcoal-800 shadow-soft flex flex-col gap-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Calendar className="w-4 h-4 text-indigo-500" />
+                    <span className="text-xs font-bold text-charcoal-900 dark:text-ivory-100 uppercase tracking-wider">
+                      Today&apos;s Class Schedule &amp; Attendance Desk
+                    </span>
+                  </div>
+                  <span className="text-[10px] text-charcoal-500">
+                    {commandCenter.todayClasses.length} lecture(s) scheduled for today
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                  {commandCenter.todayClasses.map((cls: any) => {
+                    const isSelected = selectedCourse === cls.courseCode;
+                    return (
+                      <div
+                        key={cls.slotId}
+                        className={`p-3.5 rounded-xl border transition-all flex flex-col justify-between gap-3 ${
+                          isSelected
+                            ? "bg-indigo-500/5 border-indigo-500/40 shadow-xs"
+                            : "bg-surface-soft dark:bg-charcoal-900/30 border-border dark:border-charcoal-800"
+                        }`}
+                      >
+                        <div className="flex items-start justify-between gap-2">
+                          <div>
+                            <span className="text-xs font-bold text-charcoal-900 dark:text-ivory-100 block">
+                              {cls.courseCode}: {cls.subject}
+                            </span>
+                            <span className="text-[11px] text-charcoal-500 block">
+                              {cls.section} • {cls.room}
+                            </span>
+                            <span className="text-[10px] font-mono text-indigo-500 font-semibold block mt-0.5">
+                              {cls.scheduledTime} ({cls.enrolledCount} Students Enrolled)
+                            </span>
+                          </div>
+
+                          <span
+                            className={`px-2 py-0.5 rounded-full text-[9px] font-bold uppercase shrink-0 ${
+                              cls.sessionStatus === "ACTIVE"
+                                ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 animate-pulse"
+                                : cls.sessionStatus === "LOCKED" || cls.sessionStatus === "FINALIZED" || cls.sessionStatus === "CLOSED"
+                                ? "bg-slate-800 text-slate-300 border border-slate-700"
+                                : "bg-amber-500/20 text-amber-400 border border-amber-500/30"
+                            }`}
+                          >
+                            {cls.sessionStatus === "NOT_STARTED" ? "Pending" : cls.sessionStatus}
+                          </span>
+                        </div>
+
+                        <div className="flex items-center gap-1.5 pt-2 border-t border-border/60 dark:border-charcoal-800">
+                          <button
+                            onClick={() => {
+                              setSelectedCourse(cls.courseCode);
+                              if (cls.sessionStatus === "ACTIVE" || cls.sessionStatus === "NOT_STARTED") {
+                                handleQuickProjector();
+                              }
+                            }}
+                            className="flex-1 py-1.5 px-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-[10px] rounded-lg transition-colors flex items-center justify-center gap-1"
+                          >
+                            <QrCode className="w-3 h-3" />
+                            <span>{cls.sessionStatus === "ACTIVE" ? "Projector" : "Start QR"}</span>
+                          </button>
+                          <button
+                            onClick={() => setSelectedCourse(cls.courseCode)}
+                            className="py-1.5 px-2.5 bg-ivory-100 dark:bg-charcoal-800 hover:bg-ivory-200 dark:hover:bg-charcoal-700 text-charcoal-700 dark:text-charcoal-300 font-bold text-[10px] rounded-lg transition-colors"
+                          >
+                            Roster
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Teacher In-App Attendance Corrections Desk (GAP-09) */}
+            {commandCenter.pendingCorrections && commandCenter.pendingCorrections.length > 0 && (
+              <div className="bg-amber-50/60 dark:bg-amber-950/20 p-4 rounded-2xl border border-amber-200 dark:border-amber-800/40 shadow-soft flex flex-col gap-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <BadgeAlert className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+                    <span className="text-xs font-bold text-amber-900 dark:text-amber-200 uppercase tracking-wider">
+                      Pending Student Attendance Discrepancy Petitions ({commandCenter.pendingCorrections.length})
+                    </span>
+                  </div>
+                  <span className="text-[10px] text-amber-700 dark:text-amber-400 font-medium">
+                    Formal correction requests requiring faculty endorsement
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
+                  {commandCenter.pendingCorrections.map((petition: any) => (
+                    <div
+                      key={petition.id}
+                      className="p-3 rounded-xl bg-white dark:bg-charcoal-900 border border-amber-200/80 dark:border-amber-800/60 flex items-start justify-between gap-3 text-xs"
+                    >
+                      <div className="space-y-1">
+                        <div className="font-bold text-charcoal-900 dark:text-ivory-100">
+                          {petition.studentName}{" "}
+                          <span className="font-mono text-charcoal-500 font-normal">({petition.rollNumber})</span>
+                        </div>
+                        <p className="text-[11px] text-charcoal-600 dark:text-charcoal-400 italic">
+                          &ldquo;{petition.reason}&rdquo;
+                        </p>
+                        <span className="text-[10px] font-mono text-charcoal-400 block">
+                          Filed: {petition.createdAt}
+                        </span>
+                      </div>
+
+                      <div className="flex flex-col gap-1 shrink-0">
+                        <button
+                          onClick={() => setReviewingPetition(petition)}
+                          className="px-2.5 py-1 bg-academic-success hover:bg-emerald-600 text-white font-bold text-[10px] rounded-lg transition-colors"
+                        >
+                          Review &amp; Resolve
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Course & Date Filter Strip */}
             <div className="bg-white dark:bg-[#1E191C] p-4 rounded-2xl border border-border dark:border-charcoal-800 shadow-soft flex flex-wrap items-center justify-between gap-4">
               <div className="flex items-center gap-3">
                 <Filter className="h-4 w-4 text-charcoal-400" />
@@ -849,6 +1263,13 @@ export default function AttendancePage() {
                   className="text-xs font-semibold px-2.5 py-1.5 rounded-lg bg-academic-success-subtle dark:bg-green-950/40 text-academic-success border border-green-300 dark:border-green-800 hover:bg-green-100 transition-colors"
                 >
                   Mark All Present
+                </button>
+                <button
+                  onClick={promptMarkRemainingAbsent}
+                  className="text-xs font-semibold px-2.5 py-1.5 rounded-lg bg-academic-warning-subtle dark:bg-amber-950/40 text-academic-warning border border-amber-300 dark:border-amber-800 hover:bg-amber-100 transition-colors"
+                  title="Mark remaining unmarked students absent with explicit confirmation"
+                >
+                  Mark Remaining Absent ({unmarkedCount})
                 </button>
                 <button
                   onClick={() => promptMarkAll("ABSENT")}
@@ -917,7 +1338,7 @@ export default function AttendancePage() {
               </div>
             </div>
 
-            {/* Roster Controls: Search, Risk Filters, and Live Stats */}
+            {/* Roster Controls: Search, Risk Filters, Sorting & Live Stats */}
             <div className="bg-white dark:bg-[#1E191C] p-4 rounded-2xl border border-border dark:border-charcoal-800 shadow-soft flex flex-col gap-3">
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 {/* Search Bar */}
@@ -940,35 +1361,25 @@ export default function AttendancePage() {
                   )}
                 </div>
 
-                {/* Filter Pills */}
+                {/* Filter & Sort Bar */}
                 <div className="flex items-center gap-2 flex-wrap text-xs">
-                  <div className="flex items-center rounded-xl border border-border dark:border-charcoal-700 p-0.5 bg-ivory-50 dark:bg-charcoal-800">
-                    <button
-                      onClick={() => setRiskFilter("ALL")}
-                      className={`px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all ${
-                        riskFilter === "ALL" ? "bg-white dark:bg-charcoal-700 text-charcoal-900 dark:text-white shadow-xs" : "text-charcoal-500"
-                      }`}
+                  {/* Sort Dropdown */}
+                  <div className="flex items-center gap-1.5 bg-ivory-50 dark:bg-charcoal-800 border border-border dark:border-charcoal-700 rounded-xl px-2.5 py-1.5 text-xs">
+                    <ArrowUpDown className="w-3 h-3 text-charcoal-500" />
+                    <select
+                      value={sortBy}
+                      onChange={(e: any) => setSortBy(e.target.value)}
+                      className="bg-transparent font-semibold text-charcoal-800 dark:text-ivory-200 outline-hidden text-[11px]"
                     >
-                      All Risks
-                    </button>
-                    <button
-                      onClick={() => setRiskFilter("HIGH")}
-                      className={`px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all ${
-                        riskFilter === "HIGH" ? "bg-rose-500 text-white shadow-xs" : "text-charcoal-500"
-                      }`}
-                    >
-                      High (&lt;75%)
-                    </button>
-                    <button
-                      onClick={() => setRiskFilter("MEDIUM")}
-                      className={`px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all ${
-                        riskFilter === "MEDIUM" ? "bg-amber-500 text-white shadow-xs" : "text-charcoal-500"
-                      }`}
-                    >
-                      Medium (75-80%)
-                    </button>
+                      <option value="ROLL_ASC">Roll No (Asc)</option>
+                      <option value="ROLL_DESC">Roll No (Desc)</option>
+                      <option value="NAME_ASC">Name (A-Z)</option>
+                      <option value="ATT_ASC">Attendance % (Low-High)</option>
+                      <option value="ATT_DESC">Attendance % (High-Low)</option>
+                    </select>
                   </div>
 
+                  {/* Status Pills */}
                   <div className="flex items-center rounded-xl border border-border dark:border-charcoal-700 p-0.5 bg-ivory-50 dark:bg-charcoal-800">
                     <button
                       onClick={() => setStatusFilter("ALL")}
@@ -976,7 +1387,15 @@ export default function AttendancePage() {
                         statusFilter === "ALL" ? "bg-white dark:bg-charcoal-700 text-charcoal-900 dark:text-white shadow-xs" : "text-charcoal-500"
                       }`}
                     >
-                      All Status
+                      All
+                    </button>
+                    <button
+                      onClick={() => setStatusFilter("UNMARKED")}
+                      className={`px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all ${
+                        statusFilter === "UNMARKED" ? "bg-amber-600 text-white shadow-xs" : "text-charcoal-500"
+                      }`}
+                    >
+                      Unmarked ({unmarkedCount})
                     </button>
                     <button
                       onClick={() => setStatusFilter("PRESENT")}
@@ -1000,9 +1419,9 @@ export default function AttendancePage() {
 
               {/* Live Count Strip & Progress Bar */}
               <div className="pt-2 border-t border-border/70 dark:border-charcoal-800 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
-                <div className="flex items-center gap-3 flex-wrap">
+                <div className="flex items-center gap-2.5 flex-wrap">
                   <span className="font-bold text-charcoal-700 dark:text-charcoal-300">
-                    Live Session Stats:
+                    Roster Counters:
                   </span>
                   <span className="px-2 py-0.5 rounded-full font-bold text-[11px] bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
                     Present: {presentCount}
@@ -1016,6 +1435,11 @@ export default function AttendancePage() {
                   <span className="px-2 py-0.5 rounded-full font-bold text-[11px] bg-blue-500/10 text-blue-500 border border-blue-500/20">
                     Excused: {excusedCount}
                   </span>
+                  {unmarkedCount > 0 && (
+                    <span className="px-2 py-0.5 rounded-full font-bold text-[11px] bg-charcoal-100 dark:bg-charcoal-700 text-charcoal-700 dark:text-charcoal-300">
+                      Unmarked: {unmarkedCount}
+                    </span>
+                  )}
                   <span className="text-charcoal-500 text-[11px] font-mono">
                     ({markedCount}/{totalCount} Marked • {percentMarked}%)
                   </span>
@@ -1035,7 +1459,7 @@ export default function AttendancePage() {
                 <div className="p-3.5 sm:p-4 border-b border-border dark:border-charcoal-800 bg-surface-soft dark:bg-charcoal-900/40 flex items-center justify-between gap-2">
                   <div>
                     <span className="text-xs font-bold text-charcoal-900 dark:text-ivory-100 block">
-                      Enrolled Roster: {selectedCourse} • {selectedDate} ({filteredRoster.length} students)
+                      Enrolled Class Roster: {selectedCourse} • {selectedDate} ({filteredRoster.length} students)
                     </span>
                     <span className="text-[11px] text-charcoal-600 dark:text-charcoal-400">
                       Hover a row and press keyboard hotkeys, or click status buttons.
@@ -1048,81 +1472,89 @@ export default function AttendancePage() {
 
                 {/* Mobile Touch-First Roster Cards (< md) */}
                 <div className="md:hidden divide-y divide-border/60 dark:divide-charcoal-800">
-                  {filteredRoster.map((s) => (
-                    <div
-                      key={s.studentId}
-                      className="p-3.5 space-y-2.5"
-                      onMouseEnter={() => setHoveredStudentId(s.studentId)}
-                      onMouseLeave={() => setHoveredStudentId(null)}
-                    >
-                      <div className="flex items-center justify-between gap-2">
-                        <div>
-                          <span className="font-bold text-sm text-charcoal-900 dark:text-ivory-100 block">{s.name}</span>
-                          <span className="text-[11px] font-mono text-charcoal-500">{s.rollNo}</span>
+                  {filteredRoster.map((s) => {
+                    const initials = s.name.split(" ").map((n: string) => n[0]).join("").slice(0, 2);
+                    return (
+                      <div
+                        key={s.studentId}
+                        className="p-3.5 space-y-2.5"
+                        onMouseEnter={() => setHoveredStudentId(s.studentId)}
+                        onMouseLeave={() => setHoveredStudentId(null)}
+                      >
+                        <div className="flex items-center justify-between gap-2">
+                          <div className="flex items-center gap-2.5">
+                            <div className="w-8 h-8 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 font-bold text-xs flex items-center justify-center shrink-0">
+                              {initials}
+                            </div>
+                            <div>
+                              <span className="font-bold text-sm text-charcoal-900 dark:text-ivory-100 block">{s.name}</span>
+                              <span className="text-[11px] font-mono text-charcoal-500">{s.rollNo}</span>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <span className="text-xs font-bold text-charcoal-900 dark:text-ivory-100 block">{Number(s.aggregate).toFixed(1)}%</span>
+                            <span
+                              className={`text-[9px] font-bold px-2 py-0.5 rounded-full inline-block ${
+                                s.aggregate >= 75
+                                  ? "bg-academic-success-subtle text-academic-success"
+                                  : "bg-academic-danger-subtle text-academic-danger"
+                              }`}
+                            >
+                              {s.aggregate >= 75 ? "ELIGIBLE" : "DEFAULTER"}
+                            </span>
+                          </div>
                         </div>
-                        <div className="text-right">
-                          <span className="text-xs font-bold text-charcoal-900 dark:text-ivory-100 block">{Number(s.aggregate).toFixed(1)}%</span>
-                          <span
-                            className={`text-[9px] font-bold px-2 py-0.5 rounded-full inline-block ${
-                              s.aggregate >= 75
-                                ? "bg-academic-success-subtle text-academic-success"
-                                : "bg-academic-danger-subtle text-academic-danger"
+
+                        {/* 4 Status Touch Buttons */}
+                        <div className="grid grid-cols-4 gap-1 p-1 rounded-xl bg-ivory-100 dark:bg-charcoal-900 border border-border dark:border-charcoal-800">
+                          <button
+                            type="button"
+                            onClick={() => toggleStatus(s.studentId, "PRESENT")}
+                            className={`min-h-[38px] flex items-center justify-center rounded-lg text-[11px] font-bold transition-all ${
+                              s.status === "PRESENT"
+                                ? "bg-academic-success text-white shadow-xs"
+                                : "text-charcoal-600 dark:text-charcoal-400 hover:bg-white dark:hover:bg-charcoal-800"
                             }`}
                           >
-                            {s.aggregate >= 75 ? "ELIGIBLE" : "DEFAULTER"}
-                          </span>
+                            Present
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => toggleStatus(s.studentId, "LATE")}
+                            className={`min-h-[38px] flex items-center justify-center rounded-lg text-[11px] font-bold transition-all ${
+                              s.status === "LATE"
+                                ? "bg-academic-warning text-white shadow-xs"
+                                : "text-charcoal-600 dark:text-charcoal-400 hover:bg-white dark:hover:bg-charcoal-800"
+                            }`}
+                          >
+                            Late
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => toggleStatus(s.studentId, "ABSENT")}
+                            className={`min-h-[38px] flex items-center justify-center rounded-lg text-[11px] font-bold transition-all ${
+                              s.status === "ABSENT"
+                                ? "bg-academic-danger text-white shadow-xs"
+                                : "text-charcoal-600 dark:text-charcoal-400 hover:bg-white dark:hover:bg-charcoal-800"
+                            }`}
+                          >
+                            Absent
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => toggleStatus(s.studentId, "EXCUSED")}
+                            className={`min-h-[38px] flex items-center justify-center rounded-lg text-[11px] font-bold transition-all ${
+                              s.status === "EXCUSED"
+                                ? "bg-blue-600 text-white shadow-xs"
+                                : "text-charcoal-600 dark:text-charcoal-400 hover:bg-white dark:hover:bg-charcoal-800"
+                            }`}
+                          >
+                            Excused
+                          </button>
                         </div>
                       </div>
-
-                      {/* 4 Status Touch Buttons */}
-                      <div className="grid grid-cols-4 gap-1 p-1 rounded-xl bg-ivory-100 dark:bg-charcoal-900 border border-border dark:border-charcoal-800">
-                        <button
-                          type="button"
-                          onClick={() => toggleStatus(s.studentId, "PRESENT")}
-                          className={`min-h-[38px] flex items-center justify-center rounded-lg text-[11px] font-bold transition-all ${
-                            s.status === "PRESENT"
-                              ? "bg-academic-success text-white shadow-xs"
-                              : "text-charcoal-600 dark:text-charcoal-400 hover:bg-white dark:hover:bg-charcoal-800"
-                          }`}
-                        >
-                          Present
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => toggleStatus(s.studentId, "LATE")}
-                          className={`min-h-[38px] flex items-center justify-center rounded-lg text-[11px] font-bold transition-all ${
-                            s.status === "LATE"
-                              ? "bg-academic-warning text-white shadow-xs"
-                              : "text-charcoal-600 dark:text-charcoal-400 hover:bg-white dark:hover:bg-charcoal-800"
-                          }`}
-                        >
-                          Late
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => toggleStatus(s.studentId, "ABSENT")}
-                          className={`min-h-[38px] flex items-center justify-center rounded-lg text-[11px] font-bold transition-all ${
-                            s.status === "ABSENT"
-                              ? "bg-academic-danger text-white shadow-xs"
-                              : "text-charcoal-600 dark:text-charcoal-400 hover:bg-white dark:hover:bg-charcoal-800"
-                          }`}
-                        >
-                          Absent
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => toggleStatus(s.studentId, "EXCUSED")}
-                          className={`min-h-[38px] flex items-center justify-center rounded-lg text-[11px] font-bold transition-all ${
-                            s.status === "EXCUSED"
-                              ? "bg-blue-600 text-white shadow-xs"
-                              : "text-charcoal-600 dark:text-charcoal-400 hover:bg-white dark:hover:bg-charcoal-800"
-                          }`}
-                        >
-                          Excused
-                        </button>
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
 
                 {/* Desktop Full Table (>= md) */}
@@ -1130,7 +1562,7 @@ export default function AttendancePage() {
                   <table className="w-full text-left text-xs">
                     <thead className="bg-ivory-100 dark:bg-charcoal-900 border-b border-border dark:border-charcoal-800 text-charcoal-600 dark:text-charcoal-400 font-bold uppercase tracking-wider text-[10px]">
                       <tr>
-                        <th className="p-3.5">Student Name</th>
+                        <th className="p-3.5">Student Profile</th>
                         <th className="p-3.5">Roll Number</th>
                         <th className="p-3.5 text-center">Semester Aggregate</th>
                         <th className="p-3.5 text-center">Risk Classification</th>
@@ -1140,6 +1572,7 @@ export default function AttendancePage() {
                     <tbody className="divide-y divide-border/60 dark:divide-charcoal-800 text-charcoal-900 dark:text-ivory-100">
                       {filteredRoster.map((s) => {
                         const isHovered = hoveredStudentId === s.studentId;
+                        const initials = s.name.split(" ").map((n: string) => n[0]).join("").slice(0, 2);
                         return (
                           <tr
                             key={s.studentId}
@@ -1149,10 +1582,16 @@ export default function AttendancePage() {
                               isHovered ? "bg-indigo-50/50 dark:bg-indigo-950/20" : "hover:bg-ivory-50/50 dark:hover:bg-charcoal-900/40"
                             }`}
                           >
-                            <td className="p-3.5 font-bold flex items-center gap-2">
-                              <span>{s.name}</span>
+                            <td className="p-3.5 font-bold flex items-center gap-2.5">
+                              <div className="w-7 h-7 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 font-bold text-[11px] flex items-center justify-center shrink-0">
+                                {initials}
+                              </div>
+                              <div>
+                                <span>{s.name}</span>
+                                <span className="text-[10px] text-charcoal-400 block font-normal">ID: {s.studentId.slice(0, 8)}</span>
+                              </div>
                               {isHovered && (
-                                <span className="text-[10px] font-mono font-normal text-indigo-500 border border-indigo-400/30 px-1.5 py-0.5 rounded">
+                                <span className="text-[9px] font-mono font-normal text-indigo-500 border border-indigo-400/30 px-1 py-0.5 rounded ml-1">
                                   Press P / A / L / E
                                 </span>
                               )}
@@ -1326,7 +1765,7 @@ export default function AttendancePage() {
                     Subject-Wise Attendance Breakdown
                   </h3>
                   <p className="text-xs text-charcoal-500">
-                    Continuous monitoring per course as registered by respective professors
+                    Authoritative tracking based on central academic attendance calculation service
                   </p>
                 </div>
                 <button
@@ -1365,7 +1804,7 @@ export default function AttendancePage() {
                         </td>
                         <td className="p-3.5 text-center">
                           <div className="flex items-center justify-center gap-2">
-                            <span className="font-bold font-mono">{c.attendanceRate.toFixed(1)}%</span>
+                            <span className="font-bold font-mono">{Number(c.attendanceRate).toFixed(1)}%</span>
                             <div className="w-16 bg-ivory-200 dark:bg-charcoal-700 h-1.5 rounded-full overflow-hidden">
                               <div
                                 className={`h-full rounded-full ${
@@ -1388,33 +1827,23 @@ export default function AttendancePage() {
                           </span>
                         </td>
                         <td className="p-3.5 text-center">
-                          {(() => {
-                            const att = c.attendedClasses || 0;
-                            const tot = c.totalClasses || 0;
-                            if (tot === 0)
-                              return <span className="text-charcoal-400 text-[10px]">No sessions</span>;
-                            if (c.attendanceRate < 75) {
-                              const needed = Math.max(1, Math.ceil((0.75 * tot - att) / 0.25));
-                              return (
-                                <span
-                                  className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800"
-                                  title="Must attend next consecutive classes without missing"
-                                >
-                                  Attend next {needed} classes
-                                </span>
-                              );
-                            } else {
-                              const canMiss = Math.floor((att - 0.75 * tot) / 0.75);
-                              return (
-                                <span
-                                  className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800"
-                                  title="Can safely miss classes and remain >= 75%"
-                                >
-                                  {canMiss > 0 ? `Can miss ${canMiss} safely` : "On threshold"}
-                                </span>
-                              );
-                            }
-                          })()}
+                          {c.totalClasses === 0 ? (
+                            <span className="text-charcoal-400 text-[10px]">No sessions</span>
+                          ) : c.isDefaulter ? (
+                            <span
+                              className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800"
+                              title="Must attend next consecutive classes without missing"
+                            >
+                              Attend next {c.classesNeededToRecover || 1} classes
+                            </span>
+                          ) : (
+                            <span
+                              className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800"
+                              title="Can safely miss classes and remain >= 75%"
+                            >
+                              {c.safeAbsencesAllowed > 0 ? `Can miss ${c.safeAbsencesAllowed} safely` : "On threshold"}
+                            </span>
+                          )}
                         </td>
                       </tr>
                     ))}
@@ -1458,7 +1887,7 @@ export default function AttendancePage() {
               </div>
             </div>
 
-            {/* 30-Day Continuous Attendance Heatmap Grid */}
+            {/* 30-Day Attendance Calendar Grid (Zero Fake Modulo - GAP-05) */}
             <div className="bg-white dark:bg-[#1E191C] rounded-2xl border border-border dark:border-charcoal-800 shadow-soft p-5">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-border/70 dark:border-charcoal-800 mb-4">
                 <div>
@@ -1467,10 +1896,10 @@ export default function AttendancePage() {
                     <span>30-Day Biometric &amp; Lecture Attendance Timeline</span>
                   </h3>
                   <p className="text-xs text-charcoal-500">
-                    Continuous chronological activity record across RFID smart turnstiles and lecture halls
+                    Chronological ledger record. Tap any session day to inspect attendance details.
                   </p>
                 </div>
-                <div className="flex items-center gap-3 text-[10px] font-bold">
+                <div className="flex items-center gap-3 text-[10px] font-bold flex-wrap">
                   <span className="flex items-center gap-1.5">
                     <span className="h-2.5 w-2.5 rounded bg-emerald-500 inline-block" /> Present
                   </span>
@@ -1481,7 +1910,10 @@ export default function AttendancePage() {
                     <span className="h-2.5 w-2.5 rounded bg-rose-500 inline-block" /> Absent
                   </span>
                   <span className="flex items-center gap-1.5">
-                    <span className="h-2.5 w-2.5 rounded bg-ivory-300 dark:bg-charcoal-700 inline-block" /> Recess
+                    <span className="h-2.5 w-2.5 rounded bg-blue-500 inline-block" /> Excused
+                  </span>
+                  <span className="flex items-center gap-1.5">
+                    <span className="h-2.5 w-2.5 rounded bg-ivory-300 dark:bg-charcoal-700 inline-block" /> No Class
                   </span>
                 </div>
               </div>
@@ -1493,27 +1925,26 @@ export default function AttendancePage() {
                   dayDate.setDate(dayDate.getDate() - (29 - idx));
                   const dateStr = dayDate.toISOString().split("T")[0];
                   const isWeekend = [0, 6].includes(dayDate.getDay());
+                  const isFuture = dayDate > new Date();
 
                   const matchedSession = studentData?.recentSessions?.find((s: any) =>
                     s.date && s.date.startsWith(dateStr)
                   );
 
-                  let status = isWeekend
-                    ? "WEEKEND"
-                    : matchedSession?.status ||
-                      (idx % 7 === 1 ? "ABSENT" : idx % 11 === 0 ? "LATE" : "PRESENT");
+                  let status = "NO_CLASS";
+                  if (isFuture) status = "FUTURE";
+                  else if (isWeekend) status = "WEEKEND";
+                  else if (matchedSession) status = matchedSession.status;
 
-                  let bgClass =
-                    "bg-ivory-100 dark:bg-charcoal-800 text-charcoal-400 border-border dark:border-charcoal-700";
+                  let bgClass = "bg-ivory-100 dark:bg-charcoal-800 text-charcoal-400 border-border dark:border-charcoal-700";
                   if (status === "PRESENT")
-                    bgClass =
-                      "bg-emerald-500/15 border-emerald-300 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300";
+                    bgClass = "bg-emerald-500/15 border-emerald-300 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300";
                   else if (status === "LATE")
-                    bgClass =
-                      "bg-amber-500/15 border-amber-300 dark:border-amber-800 text-amber-700 dark:text-amber-300";
+                    bgClass = "bg-amber-500/15 border-amber-300 dark:border-amber-800 text-amber-700 dark:text-amber-300";
                   else if (status === "ABSENT")
-                    bgClass =
-                      "bg-rose-500/15 border-rose-300 dark:border-rose-800 text-rose-700 dark:text-rose-300";
+                    bgClass = "bg-rose-500/15 border-rose-300 dark:border-rose-800 text-rose-700 dark:text-rose-300";
+                  else if (status === "EXCUSED")
+                    bgClass = "bg-blue-500/15 border-blue-300 dark:border-blue-800 text-blue-700 dark:text-blue-300";
 
                   const dayName = dayDate.toLocaleDateString("en-US", { weekday: "short" });
                   const dayNum = dayDate.getDate();
@@ -1521,13 +1952,23 @@ export default function AttendancePage() {
                   return (
                     <div
                       key={dateStr}
+                      onClick={() =>
+                        setSelectedCalendarDay({
+                          date: dateStr,
+                          dayName,
+                          status,
+                          courseCode: matchedSession?.courseCode,
+                          courseTitle: matchedSession?.courseTitle,
+                          method: matchedSession?.method || "BIOMETRIC_OR_QR",
+                        })
+                      }
                       className={`p-2 rounded-xl border flex flex-col items-center justify-center gap-0.5 text-center transition-transform hover:scale-105 cursor-pointer ${bgClass}`}
                       title={`${dateStr} (${dayName}): ${status}`}
                     >
                       <span className="text-[9px] uppercase font-bold text-charcoal-500">{dayName}</span>
                       <span className="text-xs font-bold font-mono">{dayNum}</span>
                       <span className="text-[9px] font-bold">
-                        {status === "WEEKEND" ? "Off" : status === "PRESENT" ? "✓" : status === "LATE" ? "Late" : "✗"}
+                        {status === "WEEKEND" ? "Off" : status === "NO_CLASS" ? "—" : status === "FUTURE" ? "·" : status === "PRESENT" ? "✓" : status === "LATE" ? "Late" : status === "EXCUSED" ? "Ex" : "✗"}
                       </span>
                     </div>
                   );
@@ -1537,6 +1978,111 @@ export default function AttendancePage() {
           </div>
         )}
       </div>
+
+      {/* Date Details Modal (Student) */}
+      <Modal
+        isOpen={Boolean(selectedCalendarDay)}
+        onClose={() => setSelectedCalendarDay(null)}
+        title={`Academic Session: ${selectedCalendarDay?.date || ""}`}
+        description={`Record verified for ${selectedCalendarDay?.dayName || ""}`}
+        maxWidth="sm"
+      >
+        <div className="flex flex-col gap-3 py-2 text-xs">
+          <div className="flex justify-between items-center py-1.5 border-b border-border dark:border-charcoal-800">
+            <span className="text-charcoal-500">Session Status:</span>
+            <span className={`px-2 py-0.5 rounded-full font-bold uppercase ${
+              selectedCalendarDay?.status === "PRESENT"
+                ? "bg-emerald-500/20 text-emerald-400"
+                : selectedCalendarDay?.status === "LATE"
+                ? "bg-amber-500/20 text-amber-400"
+                : selectedCalendarDay?.status === "ABSENT"
+                ? "bg-rose-500/20 text-rose-400"
+                : "bg-slate-800 text-slate-300"
+            }`}>
+              {selectedCalendarDay?.status}
+            </span>
+          </div>
+
+          {selectedCalendarDay?.courseCode && (
+            <div className="flex justify-between items-center py-1.5 border-b border-border dark:border-charcoal-800">
+              <span className="text-charcoal-500">Course:</span>
+              <span className="font-semibold text-charcoal-900 dark:text-ivory-100">
+                {selectedCalendarDay.courseCode}: {selectedCalendarDay.courseTitle}
+              </span>
+            </div>
+          )}
+
+          <div className="flex justify-between items-center py-1.5">
+            <span className="text-charcoal-500">Verification Source:</span>
+            <span className="font-mono text-charcoal-700 dark:text-charcoal-300">
+              {selectedCalendarDay?.method || "Academic Timetable"}
+            </span>
+          </div>
+
+          <button
+            onClick={() => setSelectedCalendarDay(null)}
+            className="w-full mt-3 py-2 bg-indigo-600 text-white font-bold rounded-xl text-xs"
+          >
+            Close Details
+          </button>
+        </div>
+      </Modal>
+
+      {/* Review Student Petition Modal (Teacher) */}
+      <Modal
+        isOpen={Boolean(reviewingPetition)}
+        onClose={() => setReviewingPetition(null)}
+        title="Review Attendance Discrepancy Petition"
+        description="Formal petition filed by enrolled student to excuse or correct an absence."
+        maxWidth="md"
+      >
+        <div className="flex flex-col gap-3 text-xs">
+          <div className="p-3 bg-surface-soft dark:bg-charcoal-800/60 rounded-xl space-y-1.5">
+            <div className="flex justify-between">
+              <span className="text-charcoal-500">Student:</span>
+              <span className="font-bold text-charcoal-900 dark:text-ivory-100">{reviewingPetition?.studentName} ({reviewingPetition?.rollNumber})</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-charcoal-500">Petition Subject:</span>
+              <span className="font-semibold text-indigo-400">{reviewingPetition?.title}</span>
+            </div>
+            <div className="pt-1 text-charcoal-700 dark:text-charcoal-300">
+              <span className="font-bold text-charcoal-500 block mb-0.5">Justification:</span>
+              &ldquo;{reviewingPetition?.reason}&rdquo;
+            </div>
+          </div>
+
+          <div>
+            <label className="text-xs font-bold text-charcoal-700 dark:text-charcoal-300 block mb-1">
+              Faculty Endorsement Remarks
+            </label>
+            <textarea
+              rows={2}
+              placeholder="e.g. Medical documentation confirmed by campus clinic. Attendance status updated to EXCUSED."
+              value={petitionRemarks}
+              onChange={(e) => setPetitionRemarks(e.target.value)}
+              className="w-full p-2 text-xs rounded-xl border border-border dark:border-charcoal-700 bg-white dark:bg-charcoal-800 text-charcoal-900 dark:text-ivory-100"
+            />
+          </div>
+
+          <div className="flex items-center justify-end gap-2 pt-3 border-t border-border dark:border-charcoal-800">
+            <button
+              onClick={() => handleResolvePetition("REJECTED")}
+              disabled={isResolvingPetition}
+              className="px-3.5 py-2 text-xs font-bold bg-rose-500/10 text-rose-500 hover:bg-rose-500/20 rounded-xl"
+            >
+              Reject Petition
+            </button>
+            <button
+              onClick={() => handleResolvePetition("APPROVED")}
+              disabled={isResolvingPetition}
+              className="px-4 py-2 text-xs font-bold bg-academic-success hover:bg-emerald-600 text-white rounded-xl shadow-xs"
+            >
+              {isResolvingPetition ? "Updating..." : "Approve as EXCUSED"}
+            </button>
+          </div>
+        </div>
+      </Modal>
 
       {/* Session Configurator Modal */}
       <Modal
@@ -1669,7 +2215,6 @@ export default function AttendancePage() {
         maxWidth="xl"
       >
         <div className="flex flex-col gap-4">
-          {/* Registered Beacons Table */}
           <div className="border border-border dark:border-charcoal-700 rounded-xl overflow-hidden">
             <div className="p-3 bg-surface-soft dark:bg-charcoal-800 font-bold text-xs flex justify-between items-center">
               <span>Deployed Beacons ({bleDevices.length})</span>
