@@ -36,7 +36,20 @@ export default function AssignmentsPage() {
   // Student Submission Form State
   const [submitContent, setSubmitContent] = useState("");
   const [submitFileUrl, setSubmitFileUrl] = useState("");
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 25 * 1024 * 1024) {
+      showToast("File size exceeds 25MB maximum limit", "error");
+      return;
+    }
+    setSelectedFile(file);
+    setSubmitFileUrl(`/uploads/assignments/${encodeURIComponent(file.name)}`);
+    showToast(`Attached ${file.name} (${(file.size / (1024 * 1024)).toFixed(2)} MB)`, "success");
+  };
 
   // Faculty Grading Form State: { [submissionId: string]: { points: string; feedback: string } }
   const [gradesMap, setGradesMap] = useState<Record<string, { points: string; feedback: string }>>({});
@@ -252,18 +265,36 @@ export default function AssignmentsPage() {
 
                     {/* Student Status Badge */}
                     {isStudent && mySub && (
-                      <div className="mt-3 p-2 rounded-xl bg-academic-success-subtle border border-green-200 text-[11px] text-academic-success font-semibold flex items-center justify-between">
-                        <span className="flex items-center gap-1">
-                          <CheckCircle2 className="h-3.5 w-3.5" />
-                          Submitted
-                        </span>
-                        {mySub.gradePoints !== null && mySub.gradePoints !== undefined ? (
-                          <span className="font-bold">
-                            Score: {mySub.gradePoints} / {asg.maxPoints}
+                      <div className="mt-3 p-2.5 rounded-xl bg-academic-success-subtle border border-green-200 dark:border-green-800 text-[11px] text-academic-success font-semibold flex flex-col gap-1.5">
+                        <div className="flex items-center justify-between">
+                          <span className="flex items-center gap-1">
+                            <CheckCircle2 className="h-3.5 w-3.5" />
+                            Submitted
                           </span>
-                        ) : (
-                          <span className="text-charcoal-500 font-normal">Pending Faculty Review</span>
-                        )}
+                          {mySub.gradePoints !== null && mySub.gradePoints !== undefined ? (
+                            <span className="font-bold">
+                              Score: {mySub.gradePoints} / {asg.maxPoints}
+                            </span>
+                          ) : (
+                            <span className="text-charcoal-500 font-normal">Pending Faculty Review</span>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-2 flex-wrap text-[10px]">
+                          {mySub.isLate ? (
+                            <span className="px-1.5 py-0.5 rounded bg-academic-danger-subtle text-academic-danger border border-red-200 font-bold">
+                              Late Submission
+                            </span>
+                          ) : (
+                            <span className="px-1.5 py-0.5 rounded bg-academic-success-subtle text-academic-success border border-green-200 font-bold">
+                              On Time
+                            </span>
+                          )}
+                          {mySub.similarityScore !== undefined && mySub.similarityScore !== null && (
+                            <span className="px-1.5 py-0.5 rounded bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 border border-indigo-200 font-mono">
+                              Similarity: {mySub.similarityScore}%
+                            </span>
+                          )}
+                        </div>
                       </div>
                     )}
                   </div>
@@ -403,12 +434,41 @@ export default function AssignmentsPage() {
         isOpen={isSubmitModalOpen}
         onClose={() => setIsSubmitModalOpen(false)}
         title={`Submit: ${selectedAssignment?.title || "Assignment"}`}
-        description="Submit your coursework solution writeup or repository URL."
+        description="Submit your coursework solution writeup, source archive, or repository URL."
       >
         <form onSubmit={handleSubmitAssignment} className="flex flex-col gap-3">
+          {selectedAssignment?.dueDate && new Date() > new Date(selectedAssignment.dueDate) && (
+            <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 flex items-center gap-2 text-xs text-amber-800 dark:text-amber-300">
+              <AlertCircle className="h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" />
+              <div>
+                <span className="font-bold block">Past Due Date Notice</span>
+                <span>The published deadline has elapsed. Submissions submitted now will be recorded with a <strong>Late Submission</strong> marker.</span>
+              </div>
+            </div>
+          )}
+
           <div>
             <label className="text-[11px] font-bold text-charcoal-700 dark:text-charcoal-300 block mb-1">
-              Deliverable File / GitHub Repository URL
+              Deliverable File / Source Archive (Max 25MB)
+            </label>
+            <div className="border-2 border-dashed border-border dark:border-charcoal-700 rounded-xl p-3 flex flex-col items-center justify-center gap-1.5 bg-ivory-50/50 dark:bg-charcoal-900/40 hover:border-rose-primary transition-colors cursor-pointer relative mb-2">
+              <input
+                type="file"
+                onChange={handleFileChange}
+                accept=".pdf,.zip,.tar.gz,.py,.ipynb,.java,.cpp,.ts,.js,.docx"
+                className="absolute inset-0 opacity-0 cursor-pointer"
+              />
+              <Upload className="h-5 w-5 text-rose-accent" />
+              <span className="text-xs font-semibold text-charcoal-700 dark:text-charcoal-300">
+                {selectedFile ? selectedFile.name : "Click or drop course deliverable here"}
+              </span>
+              <span className="text-[10px] text-charcoal-400">
+                {selectedFile ? `${(selectedFile.size / 1024).toFixed(1)} KB selected` : "Supports PDF, Code Archives, ZIP, Jupyter Notebooks (Max 25MB)"}
+              </span>
+            </div>
+
+            <label className="text-[11px] font-bold text-charcoal-700 dark:text-charcoal-300 block mb-1">
+              Or Deliverable / Repository URL
             </label>
             <input
               type="text"
@@ -476,19 +536,68 @@ export default function AssignmentsPage() {
                 >
                   <div className="flex items-center justify-between">
                     <div>
-                      <span className="font-bold text-xs text-charcoal-900 dark:text-ivory-100 block">
-                        {sub.studentName}
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <span className="font-bold text-xs text-charcoal-900 dark:text-ivory-100 block">
+                          {sub.studentName}
+                        </span>
+                        {sub.rollNumber && (
+                          <span className="text-[10px] font-mono text-charcoal-500 font-bold">
+                            ({sub.rollNumber})
+                          </span>
+                        )}
+                        {sub.isLate ? (
+                          <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-academic-danger-subtle text-academic-danger border border-red-200">
+                            LATE SUBMISSION
+                          </span>
+                        ) : (
+                          <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-academic-success-subtle text-academic-success border border-green-200">
+                            ON TIME
+                          </span>
+                        )}
+                      </div>
                       <span className="text-[10px] text-charcoal-500">
                         Submitted: {new Date(sub.submittedAt).toLocaleString()}
                       </span>
                     </div>
-                    {sub.gradePoints !== null && sub.gradePoints !== undefined && (
-                      <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-academic-success-subtle text-academic-success">
-                        Graded: {sub.gradePoints} / {selectedAssignment.maxPoints}
-                      </span>
-                    )}
+                    <div className="flex items-center gap-2">
+                      {sub.similarityScore !== undefined && sub.similarityScore !== null && (
+                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold border ${
+                          sub.similarityScore > 25 
+                            ? "bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-300 border-red-200" 
+                            : "bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 border-indigo-200"
+                        }`}>
+                          Similarity: {sub.similarityScore}%
+                        </span>
+                      )}
+                      {sub.gradePoints !== null && sub.gradePoints !== undefined && (
+                        <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-academic-success-subtle text-academic-success">
+                          Graded: {sub.gradePoints} / {selectedAssignment.maxPoints}
+                        </span>
+                      )}
+                    </div>
                   </div>
+
+                  {/* Submission artifact link & content */}
+                  {(sub.content || sub.fileUrl) && (
+                    <div className="p-2.5 rounded-lg bg-white dark:bg-charcoal-800 border border-border/80 dark:border-charcoal-700 text-xs">
+                      {sub.content && (
+                        <p className="text-charcoal-700 dark:text-charcoal-300 text-[11px] mb-1 line-clamp-2">
+                          <span className="font-bold text-charcoal-500">Notes:</span> {sub.content}
+                        </p>
+                      )}
+                      {sub.fileUrl && (
+                        <a
+                          href={sub.fileUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="inline-flex items-center gap-1.5 text-[11px] font-bold text-rose-primary dark:text-rose-accent hover:underline"
+                        >
+                          <FileText className="h-3.5 w-3.5" />
+                          <span>Inspect Student Deliverable ({sub.fileUrl.split("/").pop() || "File"})</span>
+                        </a>
+                      )}
+                    </div>
+                  )}
 
                   <div className="grid grid-cols-3 gap-2">
                     <div>

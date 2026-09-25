@@ -42,6 +42,34 @@ export default function ExaminationsPage() {
   // Batch Roster Grading state
   const [batchMarks, setBatchMarks] = useState<Record<string, string>>({});
   const [isSavingBatch, setIsSavingBatch] = useState(false);
+  const [curveAmount, setCurveAmount] = useState<string>("5");
+
+  const handleApplyCurve = () => {
+    if (!selectedExam) return;
+    const addMarks = Number(curveAmount);
+    if (isNaN(addMarks) || addMarks <= 0) {
+      showToast("Please enter a positive number of moderation marks", "error");
+      return;
+    }
+
+    const maxMarks = selectedExam.totalMarks || 100;
+    let adjustedCount = 0;
+
+    setBatchMarks((prev) => {
+      const updated = { ...prev };
+      Object.keys(updated).forEach((stId) => {
+        if (updated[stId] !== "" && !isNaN(Number(updated[stId]))) {
+          const current = Number(updated[stId]);
+          const curved = Math.min(maxMarks, current + addMarks);
+          updated[stId] = String(curved);
+          adjustedCount++;
+        }
+      });
+      return updated;
+    });
+
+    showToast(`Moderated +${addMarks} marks for ${adjustedCount} candidates (clamped to max ${maxMarks})`, "success");
+  };
 
   // Hall Ticket state
   const [isHallTicketModalOpen, setIsHallTicketModalOpen] = useState(false);
@@ -553,7 +581,36 @@ ${isDefaulter ? "WARNING: Candidate attendance is below 75% Senate threshold. Su
               No students enrolled in this course roster yet.
             </p>
           ) : (
-            <div className="max-h-[380px] overflow-y-auto rounded-xl border border-border dark:border-charcoal-800">
+            <>
+              {/* Batch Grade Moderation / Curve Toolbar */}
+              <div className="flex flex-wrap items-center justify-between gap-2 p-2.5 rounded-xl bg-ivory-50 dark:bg-charcoal-900 border border-border dark:border-charcoal-800 text-xs">
+                <div className="flex items-center gap-2">
+                  <TrendingUp className="h-4 w-4 text-rose-primary" />
+                  <span className="font-bold text-charcoal-800 dark:text-ivory-200">
+                    Faculty Moderation / Curve Tool:
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-[11px] text-charcoal-500">Uniform Curve:</span>
+                  <input
+                    type="number"
+                    min="1"
+                    max="20"
+                    value={curveAmount}
+                    onChange={(e) => setCurveAmount(e.target.value)}
+                    className="w-16 px-2 py-1 text-xs font-bold rounded-lg border border-border dark:border-charcoal-700 bg-white dark:bg-charcoal-800 text-charcoal-900 dark:text-ivory-100"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleApplyCurve}
+                    className="px-3 py-1 text-xs font-bold rounded-lg bg-rose-container dark:bg-rose-dark/30 hover:bg-rose-primary hover:text-white text-rose-primary dark:text-rose-accent border border-rose-accent/30 transition-all"
+                  >
+                    Apply Curve (+{curveAmount})
+                  </button>
+                </div>
+              </div>
+
+              <div className="max-h-[380px] overflow-y-auto rounded-xl border border-border dark:border-charcoal-800">
               <table className="w-full text-left border-collapse text-xs">
                 <thead>
                   <tr className="bg-surface-soft dark:bg-charcoal-800 text-charcoal-600 dark:text-charcoal-400 font-bold border-b border-border dark:border-charcoal-700">
@@ -619,6 +676,7 @@ ${isDefaulter ? "WARNING: Candidate attendance is below 75% Senate threshold. Su
                 </tbody>
               </table>
             </div>
+            </>
           )}
 
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-3 border-t border-border dark:border-charcoal-800">

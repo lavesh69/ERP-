@@ -18,6 +18,8 @@ import {
   Printer,
   Trash2,
   LayoutGrid,
+  Download,
+  Radio,
 } from "lucide-react";
 
 export default function TimetablePage() {
@@ -36,6 +38,83 @@ export default function TimetablePage() {
 
   const [viewMode, setViewMode] = useState<"DAY" | "WEEK">("DAY");
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
+
+  const isSlotLive = (slot: any) => {
+    const now = new Date();
+    const daysOfWeek = ["SUNDAY", "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY"];
+    const todayName = daysOfWeek[now.getDay()];
+    if (slot.dayOfWeek !== todayName) return false;
+
+    const currentMinutes = now.getHours() * 60 + now.getMinutes();
+    const [startH, startM] = (slot.startTime || "00:00").split(":").map(Number);
+    const [endH, endM] = (slot.endTime || "00:00").split(":").map(Number);
+    const slotStart = startH * 60 + startM;
+    const slotEnd = endH * 60 + endM;
+
+    return currentMinutes >= slotStart && currentMinutes <= slotEnd;
+  };
+
+  const handleExportICS = () => {
+    if (slots.length === 0) {
+      showToast("No timetable slots to export", "error");
+      return;
+    }
+
+    const dayMap: Record<string, string> = {
+      MONDAY: "MO",
+      TUESDAY: "TU",
+      WEDNESDAY: "WE",
+      THURSDAY: "TH",
+      FRIDAY: "FR",
+      SATURDAY: "SA",
+      SUNDAY: "SU",
+    };
+
+    const icsLines = [
+      "BEGIN:VCALENDAR",
+      "VERSION:2.0",
+      "PRODID:-//Classroom Academic OS//Timetable Calendar 2026//EN",
+      "CALSCALE:GREGORIAN",
+      "METHOD:PUBLISH",
+      "X-WR-CALNAME:Classroom Academic Schedule",
+    ];
+
+    slots.forEach((s) => {
+      const byDay = dayMap[s.dayOfWeek] || "MO";
+      const startParts = (s.startTime || "09:00").split(":");
+      const endParts = (s.endTime || "10:30").split(":");
+      const startStr = `20260901T${startParts[0]}${startParts[1]}00`;
+      const endStr = `20260901T${endParts[0]}${endParts[1]}00`;
+
+      icsLines.push(
+        "BEGIN:VEVENT",
+        `UID:class-${s.id || Math.random().toString(36).substring(7)}@classroom.edu`,
+        `DTSTAMP:${new Date().toISOString().replace(/[-:]/g, "").split(".")[0]}Z`,
+        `DTSTART:${startStr}`,
+        `DTEND:${endStr}`,
+        `RRULE:FREQ=WEEKLY;BYDAY=${byDay}`,
+        `SUMMARY:${s.courseCode}: ${s.courseTitle}`,
+        `DESCRIPTION:Instructor: ${s.facultyName || "Faculty"} | Room: ${s.roomName || "Room"}`,
+        `LOCATION:${s.roomName || "Campus Lecture Hall"}`,
+        "STATUS:CONFIRMED",
+        "END:VEVENT"
+      );
+    });
+
+    icsLines.push("END:VCALENDAR");
+
+    const blob = new Blob([icsLines.join("\r\n")], { type: "text/calendar;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `academic-timetable.ics`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    showToast("Timetable exported to RFC-5545 iCalendar (.ics)", "success");
+  };
 
   // Form State
   const [formData, setFormData] = useState({
@@ -178,6 +257,16 @@ export default function TimetablePage() {
               <span className="hidden sm:inline">Print</span>
             </button>
 
+            {/* Export .ics Button */}
+            <button
+              onClick={handleExportICS}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white dark:bg-charcoal-800 border border-border dark:border-charcoal-700 hover:bg-ivory-100 dark:hover:bg-charcoal-700 text-charcoal-700 dark:text-ivory-200 text-xs font-bold transition-all"
+              title="Export to iCalendar (.ics)"
+            >
+              <Download className="h-4 w-4 text-rose-primary" />
+              <span className="hidden sm:inline">Export (.ics)</span>
+            </button>
+
             {!isStudent && (
               <button
                 onClick={() => {
@@ -242,15 +331,29 @@ export default function TimetablePage() {
                         No classes scheduled
                       </p>
                     ) : (
-                      daySlotsList.map((slot) => (
+                      daySlotsList.map((slot) => {
+                        const live = isSlotLive(slot);
+                        return (
                         <div
                           key={slot.id}
-                          className="p-3 rounded-xl bg-ivory-50 dark:bg-[#252024] border border-border/80 dark:border-charcoal-700 flex flex-col gap-1.5 relative group"
+                          className={`p-3 rounded-xl bg-ivory-50 dark:bg-[#252024] border flex flex-col gap-1.5 relative group transition-all ${
+                            live
+                              ? "border-red-400 dark:border-red-700 ring-2 ring-red-500/20 shadow-sm"
+                              : "border-border/80 dark:border-charcoal-700"
+                          }`}
                         >
                           <div className="flex items-center justify-between">
-                            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-rose-container dark:bg-rose-dark/30 text-rose-primary dark:text-rose-accent">
-                              {slot.courseCode}
-                            </span>
+                            <div className="flex items-center gap-1.5">
+                              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-rose-container dark:bg-rose-dark/30 text-rose-primary dark:text-rose-accent">
+                                {slot.courseCode}
+                              </span>
+                              {live && (
+                                <span className="flex items-center gap-1 text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-red-500 text-white animate-pulse">
+                                  <span className="h-1 w-1 rounded-full bg-white animate-ping" />
+                                  LIVE
+                                </span>
+                              )}
+                            </div>
                             <span className="text-[10px] font-bold text-charcoal-600 dark:text-charcoal-400">
                               {slot.startTime} - {slot.endTime}
                             </span>
@@ -276,7 +379,8 @@ export default function TimetablePage() {
                             </button>
                           )}
                         </div>
-                      ))
+                      );
+                    })
                     )}
                   </div>
                 </div>
@@ -294,16 +398,30 @@ export default function TimetablePage() {
         ) : (
           /* SINGLE DAY VIEW */
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {daySlots.map((slot) => (
+            {daySlots.map((slot) => {
+              const live = isSlotLive(slot);
+              return (
               <div
                 key={slot.id}
-                className="bg-white dark:bg-[#1E191C] p-5 rounded-2xl border border-border dark:border-charcoal-800 shadow-soft flex flex-col justify-between hover:shadow-card transition-all relative group"
+                className={`bg-white dark:bg-[#1E191C] p-5 rounded-2xl border shadow-soft flex flex-col justify-between hover:shadow-card transition-all relative group ${
+                  live
+                    ? "border-red-400 dark:border-red-700 ring-2 ring-red-500/20"
+                    : "border-border dark:border-charcoal-800"
+                }`}
               >
                 <div>
                   <div className="flex items-center justify-between pb-3 border-b border-border dark:border-charcoal-800 mb-3">
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-rose-container dark:bg-rose-dark/30 text-rose-primary dark:text-rose-accent">
-                      {slot.courseCode}
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-rose-container dark:bg-rose-dark/30 text-rose-primary dark:text-rose-accent">
+                        {slot.courseCode}
+                      </span>
+                      {live && (
+                        <span className="flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-500 text-white animate-pulse shadow-xs">
+                          <span className="h-1.5 w-1.5 rounded-full bg-white animate-ping" />
+                          LIVE NOW
+                        </span>
+                      )}
+                    </div>
                     <div className="flex items-center gap-2">
                       <span className="text-xs font-bold text-academic-success flex items-center gap-1">
                         <Clock className="h-3.5 w-3.5" />
@@ -348,7 +466,8 @@ export default function TimetablePage() {
                   </span>
                 </div>
               </div>
-            ))}
+            );
+          })}
           </div>
         )}
       </div>

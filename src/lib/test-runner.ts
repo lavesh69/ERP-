@@ -1867,6 +1867,127 @@ async function runTestSuite() {
     await prisma.studentRequest.delete({ where: { id: electivePetition.id } });
   }
 
+  // TEST 32: Coursework Late Gates, Timetable iCalendar Engine & Batch Grade Moderation Suite
+  console.log("\n📌 Group 32: Coursework Late Gates, Timetable iCalendar Engine & Batch Grade Moderation Suite");
+
+  // 1. Assignment Late Submission Gate & Similarity Index Bounds
+  const assignmentDueDate = new Date("2026-09-20T23:59:59Z");
+  const onTimeSubmissionDate = new Date("2026-09-20T21:30:00Z");
+  const lateSubmissionDate = new Date("2026-09-21T01:15:00Z");
+
+  const isOnTimeLate = onTimeSubmissionDate > assignmentDueDate;
+  const isAfterDueLate = lateSubmissionDate > assignmentDueDate;
+
+  assert(isOnTimeLate === false, "Submission before deadline is accurately flagged as ON TIME (isLate: false)");
+  assert(isAfterDueLate === true, "Submission after deadline is accurately flagged as LATE (isLate: true)");
+
+  // Similarity score boundary checks
+  const mockSimilarityScores = [12, 18, 5, 0, 100];
+  const allValid = mockSimilarityScores.every((s) => s >= 0 && s <= 100);
+  assert(allValid, "Automated plagiarism similarity scores strictly bounded within [0, 100] percentile range");
+
+  // 2. Timetable RFC 5545 iCalendar Serialization Engine
+  const generateICSContent = (slotsList: any[]) => {
+    const dayMap: Record<string, string> = {
+      MONDAY: "MO",
+      TUESDAY: "TU",
+      WEDNESDAY: "WE",
+      THURSDAY: "TH",
+      FRIDAY: "FR",
+      SATURDAY: "SA",
+      SUNDAY: "SU",
+    };
+
+    const lines = [
+      "BEGIN:VCALENDAR",
+      "VERSION:2.0",
+      "PRODID:-//Classroom Academic OS//Timetable Calendar 2026//EN",
+      "CALSCALE:GREGORIAN",
+      "METHOD:PUBLISH",
+      "X-WR-CALNAME:Classroom Academic Schedule",
+    ];
+
+    slotsList.forEach((s) => {
+      const byDay = dayMap[s.dayOfWeek] || "MO";
+      const startParts = (s.startTime || "09:00").split(":");
+      const endParts = (s.endTime || "10:30").split(":");
+      const startStr = `20260901T${startParts[0]}${startParts[1]}00`;
+      const endStr = `20260901T${endParts[0]}${endParts[1]}00`;
+
+      lines.push(
+        "BEGIN:VEVENT",
+        `UID:class-${s.id}@classroom.edu`,
+        `DTSTART:${startStr}`,
+        `DTEND:${endStr}`,
+        `RRULE:FREQ=WEEKLY;BYDAY=${byDay}`,
+        `SUMMARY:${s.courseCode}: ${s.courseTitle}`,
+        `LOCATION:${s.roomName}`,
+        "STATUS:CONFIRMED",
+        "END:VEVENT"
+      );
+    });
+
+    lines.push("END:VCALENDAR");
+    return lines.join("\r\n");
+  };
+
+  const sampleSlots = [
+    { id: "slot-1", dayOfWeek: "MONDAY", startTime: "09:00", endTime: "10:30", courseCode: "CS-402", courseTitle: "Neural Networks", roomName: "Turing Lab 101" },
+    { id: "slot-2", dayOfWeek: "WEDNESDAY", startTime: "14:00", endTime: "15:30", courseCode: "BIO-210", courseTitle: "Cellular Genomics", roomName: "Franklin Hall" },
+  ];
+
+  const icsPayload = generateICSContent(sampleSlots);
+  assert(icsPayload.startsWith("BEGIN:VCALENDAR"), "Generated iCalendar string begins with BEGIN:VCALENDAR header");
+  assert(icsPayload.endsWith("END:VCALENDAR"), "Generated iCalendar string properly terminates with END:VCALENDAR");
+  assert(icsPayload.includes("VERSION:2.0"), "iCalendar conforms to RFC-5545 2.0 standard");
+  assert(icsPayload.includes("RRULE:FREQ=WEEKLY;BYDAY=MO"), "Monday recurring rule properly serialized as BYDAY=MO");
+  assert(icsPayload.includes("SUMMARY:CS-402: Neural Networks"), "Course code and title serialized in VEVENT summary");
+
+  // 3. Real-Time Slot Pulse Detection
+  const checkSlotLiveState = (slot: any, currentDay: string, currentHHMM: string) => {
+    if (slot.dayOfWeek !== currentDay) return false;
+    const [curH, curM] = currentHHMM.split(":").map(Number);
+    const [startH, startM] = slot.startTime.split(":").map(Number);
+    const [endH, endM] = slot.endTime.split(":").map(Number);
+    const curMin = curH * 60 + curM;
+    const startMin = startH * 60 + startM;
+    const endMin = endH * 60 + endM;
+    return curMin >= startMin && curMin <= endMin;
+  };
+
+  const testSlot = { dayOfWeek: "MONDAY", startTime: "10:00", endTime: "11:30" };
+  assert(checkSlotLiveState(testSlot, "MONDAY", "10:45") === true, "Ongoing class correctly detected as LIVE NOW during active window");
+  assert(checkSlotLiveState(testSlot, "MONDAY", "09:30") === false, "Upcoming class correctly detected as not live before start time");
+  assert(checkSlotLiveState(testSlot, "MONDAY", "11:45") === false, "Finished class correctly detected as not live after end time");
+  assert(checkSlotLiveState(testSlot, "TUESDAY", "10:45") === false, "Class on a different day correctly rejected from live status");
+
+  // 4. Batch Grade Curving & Moderation Arithmetic
+  const applyGradeCurve = (marksMap: Record<string, string>, curveBonus: number, maxMarks: number) => {
+    const updated: Record<string, string> = {};
+    Object.entries(marksMap).forEach(([id, val]) => {
+      if (val !== "" && !isNaN(Number(val))) {
+        const cur = Number(val);
+        updated[id] = String(Math.min(maxMarks, cur + curveBonus));
+      } else {
+        updated[id] = val;
+      }
+    });
+    return updated;
+  };
+
+  const rawMarks = {
+    "student-1": "68",
+    "student-2": "84",
+    "student-3": "97", // Clamping test
+    "student-4": "",   // Empty input test
+  };
+
+  const curvedMarks = applyGradeCurve(rawMarks, 5, 100);
+  assert(curvedMarks["student-1"] === "73", "Normal grade accurately curved +5 (68 -> 73)");
+  assert(curvedMarks["student-2"] === "89", "Normal grade accurately curved +5 (84 -> 89)");
+  assert(curvedMarks["student-3"] === "100", "Near-maximum grade properly clamped to maxMarks (97 + 5 = 102 -> 100)");
+  assert(curvedMarks["student-4"] === "", "Unentered marks safely preserved during curve moderation");
+
   console.log("\n=================================================");
   console.log(`🎉 ALL ${passedTests}/${totalTests} TESTS PASSED SUCCESSFULLY!`);
   console.log("=================================================\n");

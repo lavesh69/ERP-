@@ -1292,19 +1292,84 @@ Registrar Stamp: [APEX-ACADEMIC-SEAL]
                     <div className="flex items-center justify-between pt-3 border-t border-border/60 dark:border-charcoal-700 text-[10px] text-charcoal-400">
                       <span>Logged: {new Date(req.createdAt).toLocaleDateString("en-US", { dateStyle: "medium" })}</span>
 
-                      {currentRole !== "STUDENT" && req.status === "SUBMITTED" && (
-                        <button
-                          onClick={() => {
-                            setSelectedRequestForReview(req);
-                            setReviewStatus("APPROVED");
-                            setReviewRemarks("");
-                            setIsReviewModalOpen(true);
-                          }}
-                          className="px-3 py-1 rounded-lg text-xs font-bold bg-rose-container dark:bg-rose-dark/30 hover:bg-rose-primary hover:text-white text-rose-primary dark:text-rose-accent transition-colors border border-rose-accent/30"
-                        >
-                          Review &amp; Resolve
-                        </button>
-                      )}
+                      <div className="flex items-center gap-2">
+                        {req.status === "APPROVED" && (
+                          <button
+                            onClick={() => {
+                              const printWindow = window.open("", "_blank");
+                              if (!printWindow) return;
+                              printWindow.document.write(`
+                                <html>
+                                  <head>
+                                    <title>Academic Resolution Certificate - ${req.title}</title>
+                                    <style>
+                                      body { font-family: 'Times New Roman', serif; padding: 40px; color: #1e191c; line-height: 1.6; }
+                                      .header { text-align: center; border-bottom: 2px solid #9B1B30; padding-bottom: 20px; margin-bottom: 30px; }
+                                      .badge { color: #9B1B30; font-size: 22px; font-weight: bold; letter-spacing: 1px; }
+                                      .title { font-size: 18px; font-weight: bold; margin: 20px 0; text-align: center; text-transform: uppercase; }
+                                      .content { margin: 20px 0; font-size: 14px; }
+                                      .meta { background: #fdf6f0; padding: 15px; border-left: 4px solid #9B1B30; margin: 20px 0; font-size: 13px; }
+                                      .footer { margin-top: 50px; display: flex; justify-content: space-between; font-size: 12px; }
+                                      .seal { border: 1px dashed #9B1B30; padding: 15px; text-align: center; border-radius: 8px; width: 180px; }
+                                    </style>
+                                  </head>
+                                  <body>
+                                    <div class="header">
+                                      <div class="badge">APEX UNIVERSITY ACADEMIC SENATE</div>
+                                      <div style="font-size: 12px; color: #666;">OFFICE OF THE ACADEMIC REGISTRAR & DEAN OF STUDIES</div>
+                                    </div>
+                                    <div class="title">OFFICIAL RESOLUTION & ACTION CERTIFICATE</div>
+                                    <div class="content">
+                                      <p>This document certifies that the formal academic petition filed by <strong>${req.studentName || student?.name || "Candidate"}</strong> (Roll Number: <strong>${req.rollNumber || student?.rollNo || "N/A"}</strong>) has undergone official administrative review and has been officially granted.</p>
+                                    </div>
+                                    <div class="meta">
+                                      <strong>Petition Title:</strong> ${req.title}<br/>
+                                      <strong>Category:</strong> ${req.type.replace(/_/g, " ")}<br/>
+                                      <strong>Filing Date:</strong> ${new Date(req.createdAt).toLocaleDateString()}<br/>
+                                      <strong>Resolution Status:</strong> GRANTED & RATIFIED<br/>
+                                      <strong>Dean / Faculty Finding:</strong> ${req.reviewerRemarks || "Approved as per Academic Regulations and Senate Standing Order."}
+                                    </div>
+                                    <div class="content">
+                                      <p>The student information system and academic transcripts have been synchronized accordingly.</p>
+                                    </div>
+                                    <div class="footer">
+                                      <div>
+                                        <p>Certified Electronic Record</p>
+                                        <p>Reference: RES-${req.id.substring(0, 8).toUpperCase()}</p>
+                                      </div>
+                                      <div class="seal">
+                                        <strong>OFFICIALLY SEALED</strong><br/>
+                                        Classroom Academic OS<br/>
+                                        Verified Digitally
+                                      </div>
+                                    </div>
+                                    <script>window.print();</script>
+                                  </body>
+                                </html>
+                              `);
+                              printWindow.document.close();
+                            }}
+                            className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-bold bg-academic-success-subtle text-academic-success border border-green-200 hover:bg-green-100 transition-colors"
+                          >
+                            <Download className="h-3 w-3" />
+                            <span>Resolution Certificate</span>
+                          </button>
+                        )}
+
+                        {currentRole !== "STUDENT" && req.status === "SUBMITTED" && (
+                          <button
+                            onClick={() => {
+                              setSelectedRequestForReview(req);
+                              setReviewStatus("APPROVED");
+                              setReviewRemarks("");
+                              setIsReviewModalOpen(true);
+                            }}
+                            className="px-3 py-1 rounded-lg text-xs font-bold bg-rose-container dark:bg-rose-dark/30 hover:bg-rose-primary hover:text-white text-rose-primary dark:text-rose-accent transition-colors border border-rose-accent/30"
+                          >
+                            Review &amp; Resolve
+                          </button>
+                        )}
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -1338,9 +1403,13 @@ Registrar Stamp: [APEX-ACADEMIC-SEAL]
             >
               <option value="LEAVE">Leave of Absence / Medical Exemption</option>
               <option value="ATTENDANCE_CORRECTION">Attendance Discrepancy Rectification</option>
-              <option value="DOCUMENT_REQUEST">Official Transcript / Bonafide Certificate</option>
+              <option value="DOCUMENT_REQUEST">Official Transcript / Credential Request</option>
               <option value="CERTIFICATE">Course Completion / Degree Verification</option>
-              <option value="ACADEMIC_CORRECTION">Grade Discrepancy / Re-evaluation Petition</option>
+              <option value="ACADEMIC_CORRECTION">Grade Discrepancy Rectification</option>
+              <option value="RE_EVALUATION">Formal Exam Script Re-evaluation / Scrutiny</option>
+              <option value="ELECTIVE_CHANGE">Elective Course Switch / Add-Drop Petition</option>
+              <option value="BONAFIDE">Bonafide Student Certificate</option>
+              <option value="FEE_CONCESSION">Pastoral Fee Concession / Financial Aid</option>
             </select>
           </div>
 
