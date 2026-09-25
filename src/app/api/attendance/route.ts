@@ -497,15 +497,12 @@ export async function GET(req: NextRequest) {
       targetSection = availableSections[0];
     }
 
-    // Filter roster by section if applicable
+    // Filter roster by section if applicable (strict multi-section isolation)
     let enrollmentsToUse = course.enrollments;
     if (targetSection) {
-      const sectionSpecific = course.enrollments.filter(
+      enrollmentsToUse = course.enrollments.filter(
         (e) => e.student.sectionId === targetSection.id
       );
-      if (sectionSpecific.length > 0) {
-        enrollmentsToUse = sectionSpecific;
-      }
     }
 
     // Command Center: Today's Timetable Slots & Live Detection
@@ -945,19 +942,36 @@ export async function POST(req: NextRequest) {
 
     let session = null;
     if (existingSession) {
+      // Map existing records to preserve verification flags (QR, BLE, Geofence multi-factor proofs)
+      const existingRecordsMap = new Map();
+      const currentRecords = await prisma.attendanceRecord.findMany({
+        where: { sessionId: existingSession.id },
+      });
+      for (const rec of currentRecords) {
+        existingRecordsMap.set(rec.studentId, rec);
+      }
+
       // Overwrite/update existing session records
       await prisma.attendanceRecord.deleteMany({
         where: { sessionId: existingSession.id },
       });
 
       await prisma.attendanceRecord.createMany({
-        data: allFinalRecords.map((r: { studentId: string; status: string; remarks?: string }) => ({
-          sessionId: existingSession.id,
-          studentId: r.studentId,
-          status: r.status || "PRESENT",
-          remarks: r.remarks || null,
-          markedBy: auth.payload.email,
-        })),
+        data: allFinalRecords.map((r: { studentId: string; status: string; remarks?: string }) => {
+          const prev = existingRecordsMap.get(r.studentId);
+          return {
+            sessionId: existingSession.id,
+            studentId: r.studentId,
+            status: r.status || "PRESENT",
+            remarks: r.remarks || prev?.remarks || null,
+            markedBy: prev?.markedBy || auth.payload.email,
+            verificationMethod: prev?.verificationMethod || "MANUAL",
+            qrVerified: prev?.qrVerified ?? false,
+            bluetoothVerified: prev?.bluetoothVerified ?? false,
+            geofenceVerified: prev?.geofenceVerified ?? false,
+            distanceMeters: prev?.distanceMeters ?? null,
+          };
+        }),
       });
 
       session = await prisma.attendanceSession.update({

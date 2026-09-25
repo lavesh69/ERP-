@@ -35,11 +35,14 @@ export async function POST(req: NextRequest) {
       roomId,
       serviceUuid = CLASSROOM_BLE_SERVICE_UUID,
       characteristicUuid,
-      beaconIdentifier,
+      beaconIdentifier: inputBeaconIdentifier,
+      beaconId,
       major,
       minor,
       rssiThreshold = -80,
     } = body;
+
+    const beaconIdentifier = inputBeaconIdentifier || beaconId;
 
     if (!name || !beaconIdentifier) {
       return NextResponse.json(

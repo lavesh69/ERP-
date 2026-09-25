@@ -38,6 +38,8 @@ export default function QRScannerModal({
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [scanResult, setScanResult] = useState<any | null>(null);
   const [isVerifying, setIsVerifying] = useState(false);
+  const [manualToken, setManualToken] = useState("");
+  const [showManualInput, setShowManualInput] = useState(false);
 
   // Geolocation state
   const [geoCoords, setGeoCoords] = useState<{ latitude: number; longitude: number; accuracy: number } | null>(null);
@@ -534,6 +536,44 @@ export default function QRScannerModal({
               <p className="text-xs text-slate-500 text-center mt-4">
                 Point your camera at the rotating QR code projected on the classroom screen. Attendance is recorded instantly upon verification.
               </p>
+
+              {/* Manual Passcode Fallback Toggle */}
+              <div className="w-full mt-3 flex flex-col items-center">
+                <button
+                  type="button"
+                  onClick={() => setShowManualInput(!showManualInput)}
+                  className="text-[11px] text-indigo-400 hover:text-indigo-300 underline font-medium transition-colors"
+                >
+                  {showManualInput ? "Hide manual token entry" : "Camera restricted or desktop? Enter code manually"}
+                </button>
+
+                {showManualInput && (
+                  <form
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      if (manualToken.trim()) {
+                        handleCodeScanned(manualToken.trim());
+                      }
+                    }}
+                    className="w-full mt-2.5 flex gap-2"
+                  >
+                    <input
+                      type="text"
+                      placeholder="Paste attendance token or pass-code..."
+                      value={manualToken}
+                      onChange={(e) => setManualToken(e.target.value)}
+                      className="flex-1 bg-slate-950 border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+                    />
+                    <button
+                      type="submit"
+                      disabled={!manualToken.trim() || isVerifying}
+                      className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white rounded-xl text-xs font-semibold transition-colors"
+                    >
+                      {isVerifying ? "Verifying..." : "Verify"}
+                    </button>
+                  </form>
+                )}
+              </div>
             </div>
           )}
         </div>

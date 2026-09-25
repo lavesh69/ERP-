@@ -133,12 +133,14 @@ export async function GET(req: NextRequest) {
       dayOfWeek: currentDayOfWeek,
       totalScheduled: slots.length,
       totalMissing: missingSlots.length,
+      missingCount: missingSlots.length,
       totalConducted: conductedSlots.length,
       complianceRate:
         slots.length > 0
           ? Number(((conductedSlots.length / slots.length) * 100).toFixed(1))
           : 100.0,
       missingClasses: missingSlots,
+      missingSessions: missingSlots,
       conductedClasses: conductedSlots,
     });
   } catch (error: any) {

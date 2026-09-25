@@ -4,6 +4,7 @@ import { requireAuth } from "@/lib/auth/admin-guard";
 import { verifyRotatingQrToken } from "@/lib/attendance/qr-token";
 import { verifyGeofenceProximity } from "@/lib/attendance/geofence";
 import { verifyBleChallengeProof } from "@/lib/attendance/ble";
+import { recordAttendanceException } from "@/lib/attendance/exceptions";
 import { logger } from "@/lib/logging/logger";
 
 export async function POST(req: NextRequest) {
@@ -70,6 +71,16 @@ export async function POST(req: NextRequest) {
     // Step 3: Cryptographic verification of rotating token
     const tokenVerification = verifyRotatingQrToken(token, explicitSessionId);
     if (!tokenVerification.valid) {
+      recordAttendanceException({
+        institutionId: student.user.institutionId || "inst-apex-01",
+        actor: student.user.email,
+        actorRole: "STUDENT",
+        category: "QR_FAILED",
+        severity: "P2_MEDIUM",
+        sessionId: explicitSessionId,
+        reason: tokenVerification.error || "Invalid or expired attendance QR token",
+        clientIp: req.headers.get("x-forwarded-for") || "127.0.0.1",
+      });
       return NextResponse.json(
         { error: tokenVerification.error || "Invalid attendance token" },
         { status: 400 }
@@ -95,6 +106,17 @@ export async function POST(req: NextRequest) {
     }
 
     if (session.status !== "ACTIVE") {
+      recordAttendanceException({
+        institutionId: student.user.institutionId || "inst-apex-01",
+        actor: student.user.email,
+        actorRole: "STUDENT",
+        category: "LOCKED_SESSION_TAMPER",
+        severity: "P0_CRITICAL",
+        sessionId: session.id,
+        courseCode: session.course.code,
+        reason: `Scan attempt on ${session.status.toLowerCase()} session`,
+        clientIp: req.headers.get("x-forwarded-for") || "127.0.0.1",
+      });
       return NextResponse.json(
         { error: `Session is ${session.status.toLowerCase()}. You can only scan during an active attendance window.` },
         { status: 403 }
@@ -111,6 +133,17 @@ export async function POST(req: NextRequest) {
     });
 
     if (!enrollment) {
+      recordAttendanceException({
+        institutionId: student.user.institutionId || "inst-apex-01",
+        actor: student.user.email,
+        actorRole: "STUDENT",
+        category: "UNENROLLED_SCAN",
+        severity: "P1_HIGH",
+        sessionId: session.id,
+        courseCode: session.course.code,
+        reason: `Student ${student.rollNumber} attempted check-in without course enrollment`,
+        clientIp: req.headers.get("x-forwarded-for") || "127.0.0.1",
+      });
       return NextResponse.json(
         {
           error: `You are not enrolled in ${session.course.code} (${session.course.title}). Only enrolled students may check in.`,
@@ -136,6 +169,17 @@ export async function POST(req: NextRequest) {
       geofenceVerified = geoResult.inGeofence;
 
       if (session.geofenceRequired && !geofenceVerified) {
+        recordAttendanceException({
+          institutionId: student.user.institutionId || "inst-apex-01",
+          actor: student.user.email,
+          actorRole: "STUDENT",
+          category: "OUTSIDE_GEOFENCE",
+          severity: "P1_HIGH",
+          sessionId: session.id,
+          courseCode: session.course.code,
+          reason: `Student outside geofence (${distanceMeters}m away, max allowed ${session.allowedRadiusMeters}m)`,
+          clientIp: req.headers.get("x-forwarded-for") || "127.0.0.1",
+        });
         return NextResponse.json(
           {
             error: `Geofence validation failed: You are ${distanceMeters}m away from the classroom. Maximum allowed radius is ${session.allowedRadiusMeters}m.`,
@@ -146,6 +190,17 @@ export async function POST(req: NextRequest) {
         );
       }
     } else if (session.geofenceRequired) {
+      recordAttendanceException({
+        institutionId: student.user.institutionId || "inst-apex-01",
+        actor: student.user.email,
+        actorRole: "STUDENT",
+        category: "OUTSIDE_GEOFENCE",
+        severity: "P1_HIGH",
+        sessionId: session.id,
+        courseCode: session.course.code,
+        reason: "Geolocation coordinates missing for geofenced session",
+        clientIp: req.headers.get("x-forwarded-for") || "127.0.0.1",
+      });
       return NextResponse.json(
         { error: "Geolocation coordinates are strictly required for this attendance session. Please enable GPS permissions." },
         { status: 403 }
@@ -156,6 +211,17 @@ export async function POST(req: NextRequest) {
     let bluetoothVerified = false;
     if (session.bleRequired) {
       if (!bleChallenge) {
+        recordAttendanceException({
+          institutionId: student.user.institutionId || "inst-apex-01",
+          actor: student.user.email,
+          actorRole: "STUDENT",
+          category: "BLE_MISMATCH",
+          severity: "P1_HIGH",
+          sessionId: session.id,
+          courseCode: session.course.code,
+          reason: "BLE beacon challenge missing for beacon-enforced session",
+          clientIp: req.headers.get("x-forwarded-for") || "127.0.0.1",
+        });
         return NextResponse.json(
           { error: "Classroom Bluetooth Low Energy beacon verification is required for this lecture. Enable Bluetooth and scan the classroom beacon." },
           { status: 403 }
@@ -170,6 +236,17 @@ export async function POST(req: NextRequest) {
       );
 
       if (!bleResult.valid) {
+        recordAttendanceException({
+          institutionId: student.user.institutionId || "inst-apex-01",
+          actor: student.user.email,
+          actorRole: "STUDENT",
+          category: "BLE_MISMATCH",
+          severity: "P1_HIGH",
+          sessionId: session.id,
+          courseCode: session.course.code,
+          reason: bleResult.error || "Classroom BLE beacon challenge verification failed",
+          clientIp: req.headers.get("x-forwarded-for") || "127.0.0.1",
+        });
         return NextResponse.json(
           { error: bleResult.error || "BLE Proximity verification failed" },
           { status: 403 }

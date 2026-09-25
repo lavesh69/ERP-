@@ -330,6 +330,28 @@ export default function AttendancePage() {
     fetchRoster();
   }, [selectedCourse, selectedSection, selectedDate, currentRole]);
 
+  // Auto-sync selectedCourse when filters exclude current selection
+  useEffect(() => {
+    if (!availableCourses || availableCourses.length === 0) return;
+    const filtered = availableCourses.filter((c) => {
+      if (programFilter !== "ALL" && c.program?.code !== programFilter) return false;
+      if (subjectTypeFilter !== "ALL") {
+        if (subjectTypeFilter === "ELECTIVE" && !c.subjectType?.includes("ELECTIVE") && !c.isElective) return false;
+        if (subjectTypeFilter === "LAB" && c.subjectType !== "LAB" && c.courseType !== "PRACTICAL") return false;
+        if (subjectTypeFilter === "CORE" && c.subjectType !== "CORE") return false;
+        if (subjectTypeFilter === "SEMINAR" && c.subjectType !== "SEMINAR" && c.subjectType !== "PROJECT") return false;
+      }
+      return true;
+    });
+
+    if (filtered.length > 0 && !filtered.some((c) => c.code === selectedCourse)) {
+      setSelectedCourse(filtered[0].code);
+      if (filtered[0].sections?.length > 0) {
+        setSelectedSection(filtered[0].sections[0].id);
+      }
+    }
+  }, [programFilter, subjectTypeFilter, availableCourses]);
+
   // Fetch BLE Devices when BLE modal opens
   const fetchBleDevices = async () => {
     setIsLoadingBle(true);
@@ -444,6 +466,12 @@ export default function AttendancePage() {
 
   // Quick Open Projector with Default Parameters
   const handleQuickProjector = async () => {
+    if (currentSessionId && currentSessionStatus === "ACTIVE") {
+      setActiveSessionId(currentSessionId);
+      setIsProjectorOpen(true);
+      return;
+    }
+
     setIsStartingSession(true);
     try {
       const res = await fetch("/api/attendance/sessions", {
@@ -3049,12 +3077,12 @@ export default function AttendancePage() {
         <div className="flex flex-col gap-4">
           <div className="flex items-center justify-between text-xs text-charcoal-600 dark:text-charcoal-400 pb-2 border-b border-border dark:border-charcoal-800">
             <span>Date scanned: <strong>{selectedDate}</strong></span>
-            <span>Total Missing: <strong className="text-rose-600 dark:text-rose-400">{missingData?.missingCount || 0}</strong></span>
+            <span>Total Missing: <strong className="text-rose-600 dark:text-rose-400">{missingData?.missingCount ?? missingData?.totalMissing ?? 0}</strong></span>
           </div>
 
           {isLoadingMissing ? (
             <div className="py-8 text-center text-xs text-charcoal-500">Scanning scheduled timetable slots...</div>
-          ) : missingData?.missingSessions && missingData.missingSessions.length > 0 ? (
+          ) : (missingData?.missingSessions || missingData?.missingClasses) && ((missingData?.missingSessions || missingData?.missingClasses).length > 0) ? (
             <div className="overflow-x-auto max-h-96">
               <table className="w-full text-left text-xs">
                 <thead className="bg-ivory-100 dark:bg-charcoal-900 border-b border-border dark:border-charcoal-800 text-[10px] uppercase font-bold text-charcoal-600 dark:text-charcoal-400">
@@ -3068,7 +3096,7 @@ export default function AttendancePage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border/60 dark:divide-charcoal-800">
-                  {missingData.missingSessions.map((ms: any) => (
+                  {(missingData.missingSessions || missingData.missingClasses).map((ms: any) => (
                     <tr key={ms.slotId} className="hover:bg-ivory-50/50 dark:hover:bg-charcoal-900/40">
                       <td className="p-2.5 font-bold">
                         {ms.courseCode}
@@ -3145,15 +3173,15 @@ export default function AttendancePage() {
                   {exceptionsData.map((ex: any) => (
                     <tr key={ex.id} className="hover:bg-ivory-50/50 dark:hover:bg-charcoal-900/40">
                       <td className="p-2.5 font-mono text-[10px] text-charcoal-500">{new Date(ex.timestamp).toLocaleTimeString()}</td>
-                      <td className="p-2.5 font-bold text-rose-600 dark:text-rose-400">{ex.type}</td>
-                      <td className="p-2.5 font-medium">{ex.studentName || ex.studentId || "Anonymous"}</td>
-                      <td className="p-2.5 text-[11px] text-charcoal-600 dark:text-charcoal-300">{ex.details}</td>
+                      <td className="p-2.5 font-bold text-rose-600 dark:text-rose-400">{ex.category || ex.type}</td>
+                      <td className="p-2.5 font-medium">{ex.actor || ex.studentName || ex.studentId || "Anonymous"}</td>
+                      <td className="p-2.5 text-[11px] text-charcoal-600 dark:text-charcoal-300">{ex.reason || ex.details}</td>
                       <td className="p-2.5 text-right">
                         <span
                           className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase ${
-                            ex.severity === "CRITICAL"
+                            ex.severity?.includes("CRITICAL") || ex.severity === "P0_CRITICAL"
                               ? "bg-rose-500/20 text-rose-500 border border-rose-500/30"
-                              : ex.severity === "HIGH"
+                              : ex.severity?.includes("HIGH") || ex.severity === "P1_HIGH"
                               ? "bg-orange-500/20 text-orange-500 border border-orange-500/30"
                               : "bg-amber-500/20 text-amber-500 border border-amber-500/30"
                           }`}

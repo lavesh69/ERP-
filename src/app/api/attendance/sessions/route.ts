@@ -367,8 +367,12 @@ export async function PATCH(req: NextRequest) {
         };
 
         // System Absence Engine: Enrolled students with no record are marked ABSENT
+        const enrollmentWhere: any = { courseId: session.courseId, status: "ENROLLED" };
+        if (session.sectionId) {
+          enrollmentWhere.student = { sectionId: session.sectionId };
+        }
         const enrollments = await prisma.enrollment.findMany({
-          where: { courseId: session.courseId, status: "ENROLLED" },
+          where: enrollmentWhere,
           select: { studentId: true },
         });
 

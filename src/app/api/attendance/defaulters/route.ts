@@ -3,8 +3,10 @@ import { prisma } from "@/lib/db/prisma";
 import { requireFacultyOrAdminAuth, getOptionalSession } from "@/lib/auth/admin-guard";
 
 export async function POST(req: NextRequest) {
+  const auth = await requireFacultyOrAdminAuth(req);
+  if (auth instanceof NextResponse) return auth;
+
   try {
-    const session = await getOptionalSession(req);
     const body = await req.json();
     const { courseCode, defaulters } = body;
 
