@@ -26,6 +26,7 @@ import {
   Flame,
   Building2,
   Zap,
+  Sparkles,
 } from "lucide-react";
 import Link from "next/link";
 import PasswordStrengthMeter from "@/components/auth/PasswordStrengthMeter";
@@ -36,7 +37,8 @@ export default function LoginPage() {
   const router = useRouter();
   const { showToast, setCurrentRole, setAuthSession, theme, toggleTheme } = useApp();
 
-  const [activePortalTab, setActivePortalTab] = useState<"SUPABASE" | "FIREBASE_TRIAL" | "INSTITUTIONAL">("SUPABASE");
+  const [showDevSandbox, setShowDevSandbox] = useState<boolean>(false);
+  const [sandboxTab, setSandboxTab] = useState<"TEST_OTP" | "PERSONAS">("TEST_OTP");
   const [email, setEmail] = useState("provost.evans@classroom.edu");
   const [password, setPassword] = useState("Classroom@2026");
   const [showPassword, setShowPassword] = useState(false);
@@ -464,73 +466,20 @@ export default function LoginPage() {
       </div>
 
       <div className="mt-6 sm:mt-8 sm:mx-auto sm:w-full sm:max-w-3xl">
-        {/* Auth Mode Toggle: Supabase Cloud Auth vs Firebase Trial Auth vs Institutional Demo */}
-        <div className="mb-6 flex items-center justify-center p-1.5 bg-white/70 dark:bg-charcoal-900/80 backdrop-blur-md rounded-2xl border border-border dark:border-charcoal-800 shadow-soft gap-1">
-          <button
-            type="button"
-            onClick={() => setActivePortalTab("SUPABASE")}
-            className={`flex-1 flex items-center justify-center gap-1.5 sm:gap-2 py-2.5 px-2 sm:px-3 rounded-xl text-xs font-bold transition-all min-h-[42px] ${
-              activePortalTab === "SUPABASE"
-                ? "bg-emerald-600 text-white shadow-md shadow-emerald-600/25"
-                : "text-charcoal-600 dark:text-charcoal-400 hover:text-charcoal-900 dark:hover:text-ivory-100"
-            }`}
-          >
-            <Zap className="h-4 w-4 text-emerald-300 shrink-0" />
-            <span className="hidden sm:inline">Supabase Cloud Auth</span>
-            <span className="sm:hidden">Supabase</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setActivePortalTab("FIREBASE_TRIAL")}
-            className={`flex-1 flex items-center justify-center gap-1.5 sm:gap-2 py-2.5 px-2 sm:px-3 rounded-xl text-xs font-bold transition-all min-h-[42px] ${
-              activePortalTab === "FIREBASE_TRIAL"
-                ? "bg-rose-primary text-white shadow-md shadow-rose-primary/20"
-                : "text-charcoal-600 dark:text-charcoal-400 hover:text-charcoal-900 dark:hover:text-ivory-100"
-            }`}
-          >
-            <Flame className="h-4 w-4 text-amber-300 shrink-0" />
-            <span className="hidden sm:inline">Firebase Trial (Dev)</span>
-            <span className="sm:hidden">Firebase</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setActivePortalTab("INSTITUTIONAL")}
-            className={`flex-1 flex items-center justify-center gap-1.5 sm:gap-2 py-2.5 px-2 sm:px-3 rounded-xl text-xs font-bold transition-all min-h-[42px] ${
-              activePortalTab === "INSTITUTIONAL"
-                ? "bg-white dark:bg-charcoal-800 text-charcoal-900 dark:text-ivory-100 shadow-sm"
-                : "text-charcoal-600 dark:text-charcoal-400 hover:text-charcoal-900 dark:hover:text-ivory-100"
-            }`}
-          >
-            <Building2 className="h-4 w-4 shrink-0" />
-            <span className="hidden sm:inline">Institutional (16 Roles)</span>
-            <span className="sm:hidden">16 Roles</span>
-          </button>
-        </div>
-
-        {activePortalTab === "SUPABASE" ? (
-          <SupabaseAuthCard onSuccessRedirect={fromRedirect || undefined} />
-        ) : activePortalTab === "FIREBASE_TRIAL" ? (
-          <FirebaseAuthCard onSuccessRedirect={fromRedirect || undefined} />
-        ) : (
-          <div className="bg-white dark:bg-charcoal-800 py-8 px-6 shadow-elevated rounded-3xl sm:px-10 border border-border dark:border-charcoal-700 flex flex-col gap-6">
-          {/* Master Password Callout */}
-          <div className="bg-rose-container/30 dark:bg-charcoal-900/90 p-3 rounded-2xl border border-rose-primary/20 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
-            <div className="flex items-center gap-2">
-              <KeyRound className="h-4 w-4 text-rose-primary shrink-0" />
-              <span className="text-charcoal-700 dark:text-charcoal-200">
-                Institutional Master Password: <code className="font-bold text-rose-primary font-mono bg-white dark:bg-charcoal-800 px-1.5 py-0.5 rounded border border-rose-primary/30">Classroom@2026</code>
-              </span>
-            </div>
-            <span className="text-[10px] text-charcoal-500 font-medium">Valid for all 16 accounts</span>
-          </div>
-
+        {/* Unified Primary Login Card */}
+        <div className="bg-white dark:bg-charcoal-800 py-8 px-6 shadow-elevated rounded-3xl sm:px-10 border border-border dark:border-charcoal-700 flex flex-col gap-6">
           {/* Error Alert Banner */}
           {errorMessage && (
-            <div className="p-3 rounded-xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800/50 text-red-700 dark:text-red-300 text-xs font-semibold flex items-center gap-2">
+            <div className="p-3.5 rounded-xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800/50 text-red-700 dark:text-red-300 text-xs font-semibold flex items-center gap-2">
               <AlertCircle className="h-4 w-4 shrink-0 text-red-500" />
               <span>{errorMessage}</span>
+            </div>
+          )}
+
+          {inactivityReason && (
+            <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/50 text-amber-800 dark:text-amber-200 text-xs font-medium flex items-center gap-2">
+              <AlertCircle className="h-4 w-4 shrink-0 text-amber-600" />
+              <span>Session timed out due to inactivity. Please sign in again.</span>
             </div>
           )}
 
@@ -611,73 +560,71 @@ export default function LoginPage() {
               </div>
             </div>
           ) : (
-            /* Standard Credentials Form */
+            /* Standard Unified Email + Password Form */
             <form onSubmit={handleFormSubmit} className="space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-bold text-charcoal-700 dark:text-charcoal-300">
-                    Institutional Email Address
-                  </label>
-                  <div className="mt-1 relative rounded-xl shadow-sm">
-                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-charcoal-400">
-                      <Mail className="h-4 w-4" />
-                    </div>
-                    <input
-                      type="email"
-                      value={email}
-                      onChange={(e) => {
-                        setEmail(e.target.value);
-                        if (errorMessage) setErrorMessage(null);
-                      }}
-                      className="block w-full pl-10 pr-3 py-2.5 rounded-xl border border-border dark:border-charcoal-700 bg-ivory-100 dark:bg-charcoal-900 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-rose-primary"
-                      placeholder="name@apex.edu"
-                      required
-                    />
+              <div>
+                <label className="block text-xs font-bold text-charcoal-700 dark:text-charcoal-300 mb-1">
+                  Email Address
+                </label>
+                <div className="relative rounded-xl shadow-sm">
+                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-charcoal-400">
+                    <Mail className="h-4 w-4" />
                   </div>
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => {
+                      setEmail(e.target.value);
+                      if (errorMessage) setErrorMessage(null);
+                    }}
+                    className="block w-full pl-10 pr-3 py-3 rounded-xl border border-border dark:border-charcoal-700 bg-ivory-100 dark:bg-charcoal-900 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-rose-primary"
+                    placeholder="example@gmail.com, name@college.edu"
+                    required
+                  />
                 </div>
+              </div>
 
-                <div>
-                  <div className="flex items-center justify-between">
-                    <label className="block text-xs font-bold text-charcoal-700 dark:text-charcoal-300">
-                      Secure Password
-                    </label>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setForgotEmail(email);
-                        setForgotStep(1);
-                        setForgotError(null);
-                        setForgotSuccessMsg(null);
-                        setShowForgotModal(true);
-                      }}
-                      className="text-[11px] font-semibold text-rose-primary hover:underline"
-                    >
-                      Forgot Password?
-                    </button>
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-xs font-bold text-charcoal-700 dark:text-charcoal-300">
+                    Password
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setForgotEmail(email);
+                      setForgotStep(1);
+                      setForgotError(null);
+                      setForgotSuccessMsg(null);
+                      setShowForgotModal(true);
+                    }}
+                    className="text-[11px] font-semibold text-rose-primary hover:underline"
+                  >
+                    Forgot Password?
+                  </button>
+                </div>
+                <div className="relative rounded-xl shadow-sm">
+                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-charcoal-400">
+                    <Lock className="h-4 w-4" />
                   </div>
-                  <div className="mt-1 relative rounded-xl shadow-sm">
-                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-charcoal-400">
-                      <Lock className="h-4 w-4" />
-                    </div>
-                    <input
-                      type={showPassword ? "text" : "password"}
-                      value={password}
-                      onChange={(e) => {
-                        setPassword(e.target.value);
-                        if (errorMessage) setErrorMessage(null);
-                      }}
-                      className="block w-full pl-10 pr-10 py-2.5 rounded-xl border border-border dark:border-charcoal-700 bg-ivory-100 dark:bg-charcoal-900 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-rose-primary"
-                      placeholder="Enter password"
-                      required
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute inset-y-0 right-0 pr-3 flex items-center text-charcoal-400 hover:text-charcoal-600 dark:hover:text-charcoal-200"
-                    >
-                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                    </button>
-                  </div>
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    value={password}
+                    onChange={(e) => {
+                      setPassword(e.target.value);
+                      if (errorMessage) setErrorMessage(null);
+                    }}
+                    className="block w-full pl-10 pr-10 py-3 rounded-xl border border-border dark:border-charcoal-700 bg-ivory-100 dark:bg-charcoal-900 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-rose-primary"
+                    placeholder="Enter your password"
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-charcoal-400 hover:text-charcoal-600 dark:hover:text-charcoal-200"
+                  >
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
                 </div>
               </div>
 
@@ -690,7 +637,7 @@ export default function LoginPage() {
                     onChange={(e) => setRememberMe(e.target.checked)}
                     className="rounded border-border text-rose-primary focus:ring-rose-primary h-4 w-4"
                   />
-                  <span>Remember this device for 7 days</span>
+                  <span>Remember me (7 days)</span>
                 </label>
 
                 {fromRedirect && (
@@ -703,17 +650,17 @@ export default function LoginPage() {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full flex justify-center items-center gap-2 py-3 px-4 rounded-xl shadow-sm text-xs font-bold text-white bg-rose-primary hover:bg-rose-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-rose-primary transition-all duration-150"
+                className="w-full flex justify-center items-center gap-2 py-3 px-4 rounded-xl shadow-md text-xs font-bold text-white bg-rose-primary hover:bg-rose-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-rose-primary transition-all duration-150 min-h-[44px]"
               >
-                <span>{isLoading ? "Authenticating Against SQLite Database..." : "Sign In with Credentials"}</span>
+                <span>{isLoading ? "Authenticating Session..." : "Sign In"}</span>
                 <ArrowRight className="h-4 w-4" />
               </button>
 
               {/* Enterprise SSO Options */}
-              <div className="pt-2 flex flex-col sm:flex-row gap-2">
+              <div className="pt-1 flex flex-col sm:flex-row gap-2">
                 <a
                   href="/api/auth/oauth/google"
-                  className="flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl border border-border dark:border-charcoal-700 bg-white dark:bg-charcoal-900/60 hover:bg-ivory-50 dark:hover:bg-charcoal-800 text-[11px] font-semibold text-charcoal-700 dark:text-ivory-200 transition-all shadow-xs"
+                  className="flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-xl border border-border dark:border-charcoal-700 bg-white dark:bg-charcoal-900/60 hover:bg-ivory-50 dark:hover:bg-charcoal-800 text-[11px] font-semibold text-charcoal-700 dark:text-ivory-200 transition-all shadow-xs min-h-[38px]"
                 >
                   <svg className="h-3.5 w-3.5" viewBox="0 0 24 24">
                     <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -726,7 +673,7 @@ export default function LoginPage() {
 
                 <a
                   href="/api/auth/oauth/microsoft"
-                  className="flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl border border-border dark:border-charcoal-700 bg-white dark:bg-charcoal-900/60 hover:bg-ivory-50 dark:hover:bg-charcoal-800 text-[11px] font-semibold text-charcoal-700 dark:text-ivory-200 transition-all shadow-xs"
+                  className="flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-xl border border-border dark:border-charcoal-700 bg-white dark:bg-charcoal-900/60 hover:bg-ivory-50 dark:hover:bg-charcoal-800 text-[11px] font-semibold text-charcoal-700 dark:text-ivory-200 transition-all shadow-xs min-h-[38px]"
                 >
                   <svg className="h-3.5 w-3.5" viewBox="0 0 21 21">
                     <rect x="1" y="1" width="9" height="9" fill="#F25022"/>
@@ -739,107 +686,165 @@ export default function LoginPage() {
               </div>
 
               {/* Student Self-Registration CTA */}
-              <div className="pt-2 text-center">
+              <div className="pt-2 text-center border-t border-border/60 dark:border-charcoal-700">
                 <Link
                   href="/register"
                   className="inline-flex items-center gap-1.5 text-xs font-semibold text-rose-primary dark:text-rose-accent hover:underline py-1"
                 >
-                  <span>New Student Applicant? Submit Online Registration Form</span>
+                  <span>Don&apos;t have an account? Create Account</span>
                   <ArrowRight className="h-3.5 w-3.5" />
                 </Link>
               </div>
             </form>
           )}
 
-          {/* Divider */}
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-border dark:border-charcoal-700" />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-white dark:bg-charcoal-800 px-3 text-charcoal-500 font-bold text-[10px] tracking-wider">
-                Select Institutional Account (Auto-fills Real Credentials)
-              </span>
-            </div>
-          </div>
-
-          {/* Category Filter Pills & Search */}
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-2.5">
-            <div className="flex items-center gap-1.5 overflow-x-auto w-full sm:w-auto pb-1 sm:pb-0">
-              {[
-                { id: "ALL", label: "All Roles (16)" },
-                { id: "LEADERSHIP", label: "Leadership (4)" },
-                { id: "ACADEMIC", label: "Academic (2)" },
-                { id: "LEARNERS", label: "Learners (3)" },
-                { id: "OPERATIONS", label: "Operations (7)" },
-              ].map((cat) => (
-                <button
-                  key={cat.id}
-                  type="button"
-                  onClick={() => setSelectedCategory(cat.id)}
-                  className={`px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase transition-all whitespace-nowrap ${
-                    selectedCategory === cat.id
-                      ? "bg-rose-primary text-white shadow-sm"
-                      : "bg-ivory-100 dark:bg-charcoal-700/60 text-charcoal-600 dark:text-charcoal-300 hover:bg-rose-container/50"
-                  }`}
-                >
-                  {cat.label}
-                </button>
-              ))}
-            </div>
-
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search role, name, email..."
-              className="w-full sm:w-48 px-3 py-1 text-[11px] rounded-lg border border-border dark:border-charcoal-700 bg-ivory-50 dark:bg-charcoal-900 focus:outline-none focus:ring-1 focus:ring-rose-primary"
-            />
-          </div>
-
-          {/* 16 Roles Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-[360px] overflow-y-auto pr-1">
-            {filteredPersonas.map((persona) => (
-              <button
-                key={persona.role}
-                type="button"
-                onClick={() => {
-                  setEmail(persona.email);
-                  setPassword("Classroom@2026");
-                  handleLogin(persona.email, "Classroom@2026", persona.role);
-                }}
-                disabled={isLoading}
-                className="flex items-start gap-2.5 p-2.5 rounded-2xl bg-ivory-50 dark:bg-charcoal-900/60 hover:bg-rose-container/40 dark:hover:bg-charcoal-700/60 border border-border dark:border-charcoal-700 text-left transition-all group"
-              >
-                <div className="h-7 w-7 rounded-lg bg-rose-container dark:bg-rose-primary/20 text-rose-primary flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform mt-0.5">
-                  <UserCheck className="h-3.5 w-3.5" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center justify-between gap-1">
-                    <span className="font-bold text-[11px] text-charcoal-900 dark:text-ivory-100 truncate">
-                      {persona.title}
-                    </span>
-                    <span className="text-[9px] font-semibold px-1.5 py-0.5 rounded bg-rose-primary/10 dark:bg-rose-primary/30 text-rose-primary shrink-0">
-                      {persona.badge}
-                    </span>
-                  </div>
-                  <span className="text-[10px] text-charcoal-500 block truncate font-mono">
-                    {persona.email}
-                  </span>
-                  <span className="text-[9.5px] text-charcoal-400 dark:text-charcoal-500 block truncate mt-0.5">
-                    {persona.desc}
-                  </span>
-                </div>
-              </button>
-            ))}
-          </div>
-
-          <div className="flex items-center justify-center gap-2 pt-2 border-t border-border/60 dark:border-charcoal-700 text-[11px] text-charcoal-500">
+          <div className="flex items-center justify-center gap-2 pt-1 border-t border-border/60 dark:border-charcoal-700 text-[11px] text-charcoal-500">
             <ShieldCheck className="h-4 w-4 text-academic-success" />
             <span>Encrypted HTTP-Only Token Session • Role-Based Access Control</span>
           </div>
         </div>
-        )}
+
+        {/* Developer & Sandbox Access Drawer (Preserved Test OTP & Personas) */}
+        <div className="mt-4">
+          <button
+            type="button"
+            onClick={() => setShowDevSandbox(!showDevSandbox)}
+            className="w-full flex items-center justify-between p-3 rounded-2xl bg-white/70 dark:bg-charcoal-900/70 border border-border/80 dark:border-charcoal-800 text-xs font-semibold text-charcoal-700 dark:text-charcoal-300 hover:bg-white dark:hover:bg-charcoal-800 transition-colors shadow-soft"
+          >
+            <div className="flex items-center gap-2">
+              <Sparkles className="h-4 w-4 text-rose-primary" />
+              <span>Developer &amp; Testing Sandbox (Test OTP &amp; 16 Personas)</span>
+            </div>
+            <span className="text-[11px] text-charcoal-500 font-mono">
+              {showDevSandbox ? "Hide Sandbox ▲" : "Open Sandbox ▼"}
+            </span>
+          </button>
+
+          {showDevSandbox && (
+            <div className="mt-3 p-5 rounded-3xl bg-white/90 dark:bg-charcoal-800/90 border border-border dark:border-charcoal-700 shadow-elevated space-y-4">
+              <div className="flex bg-charcoal-100/70 dark:bg-charcoal-900/60 p-1 rounded-2xl gap-1">
+                <button
+                  type="button"
+                  onClick={() => setSandboxTab("TEST_OTP")}
+                  className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all ${
+                    sandboxTab === "TEST_OTP"
+                      ? "bg-rose-primary text-white shadow-sm"
+                      : "text-charcoal-600 dark:text-charcoal-400 hover:text-charcoal-900"
+                  }`}
+                >
+                  <span className="flex items-center justify-center gap-1.5">
+                    <Flame className="h-3.5 w-3.5 text-amber-300" />
+                    <span>Preserved Test OTP System</span>
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSandboxTab("PERSONAS")}
+                  className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all ${
+                    sandboxTab === "PERSONAS"
+                      ? "bg-rose-primary text-white shadow-sm"
+                      : "text-charcoal-600 dark:text-charcoal-400 hover:text-charcoal-900"
+                  }`}
+                >
+                  <span className="flex items-center justify-center gap-1.5">
+                    <Building2 className="h-3.5 w-3.5" />
+                    <span>16 Institutional Personas</span>
+                  </span>
+                </button>
+              </div>
+
+              {sandboxTab === "TEST_OTP" ? (
+                <div className="pt-2">
+                  <FirebaseAuthCard onSuccessRedirect={fromRedirect || undefined} />
+                </div>
+              ) : (
+                <div className="space-y-3 pt-2">
+                  {/* Master Password Callout */}
+                  <div className="bg-rose-container/30 dark:bg-charcoal-900/90 p-3 rounded-2xl border border-rose-primary/20 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
+                    <div className="flex items-center gap-2">
+                      <KeyRound className="h-4 w-4 text-rose-primary shrink-0" />
+                      <span className="text-charcoal-700 dark:text-charcoal-200">
+                        Master Password: <code className="font-bold text-rose-primary font-mono bg-white dark:bg-charcoal-800 px-1.5 py-0.5 rounded border border-rose-primary/30">Classroom@2026</code>
+                      </span>
+                    </div>
+                    <span className="text-[10px] text-charcoal-500 font-medium">Valid for all 16 accounts</span>
+                  </div>
+
+                  {/* Category Filter Pills & Search */}
+                  <div className="flex flex-col sm:flex-row items-center justify-between gap-2.5">
+                    <div className="flex items-center gap-1.5 overflow-x-auto w-full sm:w-auto pb-1 sm:pb-0">
+                      {[
+                        { id: "ALL", label: "All Roles (16)" },
+                        { id: "LEADERSHIP", label: "Leadership (4)" },
+                        { id: "ACADEMIC", label: "Academic (2)" },
+                        { id: "LEARNERS", label: "Learners (3)" },
+                        { id: "OPERATIONS", label: "Operations (7)" },
+                      ].map((cat) => (
+                        <button
+                          key={cat.id}
+                          type="button"
+                          onClick={() => setSelectedCategory(cat.id)}
+                          className={`px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase transition-all whitespace-nowrap ${
+                            selectedCategory === cat.id
+                              ? "bg-rose-primary text-white shadow-sm"
+                              : "bg-ivory-100 dark:bg-charcoal-700/60 text-charcoal-600 dark:text-charcoal-300 hover:bg-rose-container/50"
+                          }`}
+                        >
+                          {cat.label}
+                        </button>
+                      ))}
+                    </div>
+
+                    <input
+                      type="text"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      placeholder="Search role, name, email..."
+                      className="w-full sm:w-48 px-3 py-1 text-[11px] rounded-lg border border-border dark:border-charcoal-700 bg-ivory-50 dark:bg-charcoal-900 focus:outline-none focus:ring-1 focus:ring-rose-primary"
+                    />
+                  </div>
+
+                  {/* 16 Roles Grid */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-[340px] overflow-y-auto pr-1">
+                    {filteredPersonas.map((persona) => (
+                      <button
+                        key={persona.role}
+                        type="button"
+                        onClick={() => {
+                          setEmail(persona.email);
+                          setPassword("Classroom@2026");
+                          handleLogin(persona.email, "Classroom@2026", persona.role);
+                        }}
+                        disabled={isLoading}
+                        className="flex items-start gap-2.5 p-2.5 rounded-2xl bg-ivory-50 dark:bg-charcoal-900/60 hover:bg-rose-container/40 dark:hover:bg-charcoal-700/60 border border-border dark:border-charcoal-700 text-left transition-all group"
+                      >
+                        <div className="h-7 w-7 rounded-lg bg-rose-container dark:bg-rose-primary/20 text-rose-primary flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform mt-0.5">
+                          <UserCheck className="h-3.5 w-3.5" />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center justify-between gap-1">
+                            <span className="font-bold text-[11px] text-charcoal-900 dark:text-ivory-100 truncate">
+                              {persona.title}
+                            </span>
+                            <span className="text-[9px] font-semibold px-1.5 py-0.5 rounded bg-rose-primary/10 dark:bg-rose-primary/30 text-rose-primary shrink-0">
+                              {persona.badge}
+                            </span>
+                          </div>
+                          <span className="text-[10px] text-charcoal-500 block truncate font-mono">
+                            {persona.email}
+                          </span>
+                          <span className="text-[9.5px] text-charcoal-400 dark:text-charcoal-500 block truncate mt-0.5">
+                            {persona.desc}
+                          </span>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Forgot Password Modal */}

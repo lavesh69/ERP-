@@ -35,10 +35,15 @@ export async function middleware(req: NextRequest) {
   // Role-Based Access Control (RBAC) Route Matrix
   const ROUTE_PERMISSIONS: Record<string, string[]> = {
     "/admin": ["SUPER_ADMIN", "INSTITUTION_ADMIN"],
-    "/institution": ["SUPER_ADMIN", "INSTITUTION_ADMIN", "PRINCIPAL", "HOD"],
+    "/institution": ["SUPER_ADMIN", "INSTITUTION_ADMIN", "PRINCIPAL", "HOD", "GUEST"],
     "/faculty": ["SUPER_ADMIN", "INSTITUTION_ADMIN", "PRINCIPAL", "HOD", "FACULTY", "HR_STAFF"],
     "/analytics": ["SUPER_ADMIN", "INSTITUTION_ADMIN", "PRINCIPAL", "HOD", "ACCOUNTANT", "PLACEMENT_OFFICER"],
     "/research": ["SUPER_ADMIN", "INSTITUTION_ADMIN", "PRINCIPAL", "HOD", "FACULTY", "RESEARCH_COORDINATOR"],
+    "/parent": ["SUPER_ADMIN", "INSTITUTION_ADMIN", "PARENT"],
+    "/examinations": ["SUPER_ADMIN", "INSTITUTION_ADMIN", "EXAMINATION_CONTROLLER", "PRINCIPAL", "HOD", "FACULTY", "STUDENT"],
+    "/finance": ["SUPER_ADMIN", "INSTITUTION_ADMIN", "ACCOUNTANT", "STUDENT", "PARENT"],
+    "/library": ["SUPER_ADMIN", "INSTITUTION_ADMIN", "LIBRARIAN", "FACULTY", "STUDENT", "GUEST"],
+    "/careers": ["SUPER_ADMIN", "INSTITUTION_ADMIN", "PLACEMENT_OFFICER", "STUDENT", "ALUMNI"],
   };
 
   // If visiting /login or /register while already authenticated, redirect to role home
@@ -57,8 +62,17 @@ export async function middleware(req: NextRequest) {
     return NextResponse.redirect(loginUrl);
   }
 
-  // Enforce role permissions if logged in
+  // Enforce account active status & role permissions if logged in
   if (userSession) {
+    // Check if account was explicitly deactivated
+    if (userSession.isActive === false) {
+      const loginUrl = new URL("/login", req.url);
+      loginUrl.searchParams.set("error", "account_deactivated");
+      const res = NextResponse.redirect(loginUrl);
+      res.cookies.set("classroom_session", "", { path: "/", maxAge: 0 });
+      return res;
+    }
+
     // Restrict /students (directory list) from students — scholars must use /students/profile
     if (pathname === "/students" || pathname === "/students/") {
       if (userSession.role === "STUDENT" || userSession.role === "PARENT") {

@@ -9,6 +9,9 @@ import { logger } from "@/lib/logging/logger";
 import { ensureDbUsers } from "@/lib/auth/ensure-db-users";
 import { is2FARequiredForUser, verify2FACode, getUserTotpSecret } from "@/lib/auth/two-factor";
 import { verifyTurnstileToken } from "@/lib/security/captcha";
+import { supabaseSignIn } from "@/lib/supabase/auth";
+import { hashPassword } from "@/lib/auth/password";
+import { UserRole } from "@/types/auth";
 
 export async function POST(req: NextRequest) {
   try {
@@ -64,91 +67,137 @@ export async function POST(req: NextRequest) {
     // 3. Ensure all 16 database accounts exist
     await ensureDbUsers();
 
-    // 4. Query real user from SQLite database
-    const dbUser = await prisma.user.findUnique({
+    // 4. Query real user from database
+    let dbUser = await prisma.user.findUnique({
       where: { email: cleanEmail },
       include: {
         institution: true,
       },
     });
 
-    if (!dbUser) {
-      logger.warn("Authentication failed: user not found in database", { email: cleanEmail, ip: clientIp });
-      return NextResponse.json(
-        { error: "Invalid institutional email address or password" },
-        { status: 401 }
-      );
-    }
+    let isPasswordValid = false;
 
-    // 5. Verify account status
-    if (!dbUser.isActive) {
-      return NextResponse.json(
-        { error: "Access Denied: Account has been deactivated or suspended by institutional administration." },
-        { status: 403 }
-      );
-    }
+    if (dbUser) {
+      // 5. Verify account status
+      if (!dbUser.isActive) {
+        return NextResponse.json(
+          { error: "Access Denied: Account has been deactivated or suspended by institutional administration." },
+          { status: 403 }
+        );
+      }
 
-    // 5a. Check Persistent Database Account Lockout
-    if (dbUser.lockedUntil && dbUser.lockedUntil > new Date()) {
-      const remainingSeconds = Math.ceil((dbUser.lockedUntil.getTime() - Date.now()) / 1000);
-      const remainingMinutes = Math.ceil(remainingSeconds / 60);
-      return NextResponse.json(
-        {
-          error: `Security Lockout: Account temporarily locked due to repeated failed attempts. Try again in ${remainingMinutes} minute(s).`,
-          lockedUntil: dbUser.lockedUntil.toISOString(),
-          remainingSeconds,
-        },
-        { status: 423 }
-      );
-    }
-
-    // 6. Real Cryptographic PBKDF2 Password Verification
-    const isPasswordValid = await verifyPassword(password, dbUser.passwordHash);
-    if (!isPasswordValid) {
-      logger.warn("Authentication failed: invalid password hash match", { email: cleanEmail, ip: clientIp });
-
-      const newFailedAttempts = (dbUser.failedLoginAttempts || 0) + 1;
-      const shouldLock = newFailedAttempts >= 5;
-      const lockExpiry = shouldLock ? new Date(Date.now() + 15 * 60 * 1000) : null;
-
-      await prisma.user.update({
-        where: { id: dbUser.id },
-        data: {
-          failedLoginAttempts: shouldLock ? 0 : newFailedAttempts,
-          lockedUntil: lockExpiry,
-        },
-      });
-
-      if (shouldLock) {
-        await prisma.auditLog.create({
-          data: {
-            institutionId: dbUser.institutionId,
-            actorUserId: dbUser.id,
-            action: "ACCOUNT_LOCKED",
-            targetEntity: "UserSecurity",
-            targetId: dbUser.id,
-            ipAddress: clientIp,
-            detailsJson: JSON.stringify({
-              email: cleanEmail,
-              reason: "EXCESSIVE_FAILED_LOGINS",
-              lockedUntil: lockExpiry?.toISOString(),
-            }),
-          },
-        });
-
+      // 5a. Check Persistent Database Account Lockout
+      if (dbUser.lockedUntil && dbUser.lockedUntil > new Date()) {
+        const remainingSeconds = Math.ceil((dbUser.lockedUntil.getTime() - Date.now()) / 1000);
+        const remainingMinutes = Math.ceil(remainingSeconds / 60);
         return NextResponse.json(
           {
-            error: "Security Alert: Account has been locked for 15 minutes due to 5 consecutive failed attempts.",
+            error: `Security Lockout: Account temporarily locked due to repeated failed attempts. Try again in ${remainingMinutes} minute(s).`,
+            lockedUntil: dbUser.lockedUntil.toISOString(),
+            remainingSeconds,
           },
           { status: 423 }
         );
       }
 
-      const attemptsRemaining = 5 - newFailedAttempts;
+      // Check local cryptographic PBKDF2 password
+      isPasswordValid = await verifyPassword(password, dbUser.passwordHash);
+
+      // If local password failed, check Supabase Auth as cloud provider
+      if (!isPasswordValid) {
+        const sbRes = await supabaseSignIn({ email: cleanEmail, password });
+        if (sbRes.data?.user) {
+          isPasswordValid = true;
+          // Sync new password hash locally
+          const newHash = await hashPassword(password);
+          await prisma.user.update({
+            where: { id: dbUser.id },
+            data: { passwordHash: newHash },
+          });
+        }
+      }
+    } else {
+      // User not in local database yet: check Supabase Cloud Auth
+      const sbRes = await supabaseSignIn({ email: cleanEmail, password });
+      if (sbRes.data?.user) {
+        // Provision user locally
+        const defaultInst = await prisma.institution.findFirst();
+        const role = (sbRes.data.user.user_metadata?.role as UserRole) || "STUDENT";
+        const fullName = sbRes.data.user.user_metadata?.full_name || "Academic User";
+        const parts = fullName.split(" ");
+        const firstName = parts[0] || "Academic";
+        const lastName = parts.slice(1).join(" ") || "User";
+        const hashedPassword = await hashPassword(password);
+
+        dbUser = await prisma.user.create({
+          data: {
+            institutionId: defaultInst?.id || "inst-default",
+            email: cleanEmail,
+            passwordHash: hashedPassword,
+            firstName,
+            lastName,
+            role,
+            isActive: true,
+          },
+          include: { institution: true },
+        });
+
+        isPasswordValid = true;
+      }
+    }
+
+    if (!dbUser || !isPasswordValid) {
+      logger.warn("Authentication failed: invalid credentials", { email: cleanEmail, ip: clientIp });
+
+      if (dbUser) {
+        const newFailedAttempts = (dbUser.failedLoginAttempts || 0) + 1;
+        const shouldLock = newFailedAttempts >= 5;
+        const lockExpiry = shouldLock ? new Date(Date.now() + 15 * 60 * 1000) : null;
+
+        await prisma.user.update({
+          where: { id: dbUser.id },
+          data: {
+            failedLoginAttempts: shouldLock ? 0 : newFailedAttempts,
+            lockedUntil: lockExpiry,
+          },
+        });
+
+        if (shouldLock) {
+          await prisma.auditLog.create({
+            data: {
+              institutionId: dbUser.institutionId,
+              actorUserId: dbUser.id,
+              action: "ACCOUNT_LOCKED",
+              targetEntity: "UserSecurity",
+              targetId: dbUser.id,
+              ipAddress: clientIp,
+              detailsJson: JSON.stringify({
+                email: cleanEmail,
+                reason: "EXCESSIVE_FAILED_LOGINS",
+                lockedUntil: lockExpiry?.toISOString(),
+              }),
+            },
+          });
+
+          return NextResponse.json(
+            {
+              error: "Security Alert: Account has been locked for 15 minutes due to 5 consecutive failed attempts.",
+            },
+            { status: 423 }
+          );
+        }
+
+        const attemptsRemaining = 5 - newFailedAttempts;
+        return NextResponse.json(
+          {
+            error: `Invalid email address or password. (${attemptsRemaining} attempt${attemptsRemaining === 1 ? "" : "s"} remaining before temporary lockout)`,
+          },
+          { status: 401 }
+        );
+      }
+
       return NextResponse.json(
-        {
-          error: `Invalid institutional email address or password. (${attemptsRemaining} attempt${attemptsRemaining === 1 ? "" : "s"} remaining before temporary lockout)`,
-        },
+        { error: "Invalid email address or password." },
         { status: 401 }
       );
     }
