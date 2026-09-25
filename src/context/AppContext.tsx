@@ -144,6 +144,38 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     return () => unsubscribe();
   }, [isAuthenticated]);
 
+  // Connect to SSE stream for live real-time notifications across all tabs
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    let eventSource: EventSource | null = null;
+    try {
+      eventSource = new EventSource("/api/realtime/events");
+      eventSource.onmessage = (event) => {
+        try {
+          const payload = JSON.parse(event.data);
+          if (payload.type === "ANNOUNCEMENT_BROADCAST") {
+            showToast(`Broadcast Notice: ${payload.title}`, "info");
+            setUnreadNotificationsCount((prev) => prev + 1);
+            setRefreshTrigger((prev) => prev + 1);
+          } else if (payload.type === "ATTENDANCE_SESSION_STARTED") {
+            showToast(`Live Class: Attendance opened for ${payload.courseCode}`, "warning");
+            setRefreshTrigger((prev) => prev + 1);
+          }
+        } catch {}
+      };
+      eventSource.onerror = () => {
+        // SSE automatically reconnects according to browser specification
+      };
+    } catch (e) {
+      console.warn("SSE connection error:", e);
+    }
+    return () => {
+      if (eventSource) {
+        eventSource.close();
+      }
+    };
+  }, []);
+
   const setCurrentRole = (role: UserRole) => {
     setCurrentRoleState(role);
     setCurrentUser(MOCK_USERS[role] || MOCK_USERS.SUPER_ADMIN);
