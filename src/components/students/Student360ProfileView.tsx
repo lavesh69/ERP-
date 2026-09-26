@@ -95,6 +95,7 @@ interface StudentProfileData {
     linkedin: string;
     certifications: string[];
     clubs: string[];
+    clubMemberships?: string[];
   };
   medical?: {
     bloodGroup: string;
@@ -1168,6 +1169,81 @@ Registrar Stamp: [APEX-ACADEMIC-SEAL]
                       </span>
                     </div>
                   ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Career, Certifications & Co-Curricular Portfolio */}
+            <div className="bg-white dark:bg-charcoal-800 p-6 rounded-2xl border border-border dark:border-charcoal-700 shadow-soft flex flex-col gap-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-sm font-display font-bold text-charcoal-900 dark:text-ivory-100 uppercase tracking-wider flex items-center gap-2">
+                    <Briefcase className="h-4 w-4 text-rose-accent" />
+                    Career, Technical Certifications & Co-Curricular Portfolio
+                  </h3>
+                  <p className="text-[11px] text-charcoal-500 mt-0.5">
+                    Verified repository of professional profiles, industry credentials, and active student societies.
+                  </p>
+                </div>
+                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-container dark:bg-rose-primary/20 text-rose-primary dark:text-rose-light">
+                  Placement Ready
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+                {/* Developer & Professional Profiles */}
+                <div className="p-4 rounded-xl border border-border dark:border-charcoal-700 bg-surface-soft/40 dark:bg-charcoal-900/40 flex flex-col gap-2.5">
+                  <span className="text-[10px] font-bold text-charcoal-500 uppercase tracking-wider">Professional Profiles</span>
+                  <div className="space-y-2">
+                    <a
+                      href={student.portfolio?.github || "https://github.com/scholar-alex"}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="flex items-center justify-between p-2 rounded-lg bg-white dark:bg-charcoal-800 border border-border dark:border-charcoal-700 text-charcoal-800 dark:text-ivory-100 hover:text-rose-primary transition-colors"
+                    >
+                      <span className="font-semibold flex items-center gap-1.5">
+                        <Laptop className="h-3.5 w-3.5 text-rose-accent" /> GitHub Developer Dossier
+                      </span>
+                      <ExternalLink className="h-3 w-3 text-charcoal-400" />
+                    </a>
+                    <a
+                      href={student.portfolio?.linkedin || "https://linkedin.com/in/scholar-alex"}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="flex items-center justify-between p-2 rounded-lg bg-white dark:bg-charcoal-800 border border-border dark:border-charcoal-700 text-charcoal-800 dark:text-ivory-100 hover:text-rose-primary transition-colors"
+                    >
+                      <span className="font-semibold flex items-center gap-1.5">
+                        <Briefcase className="h-3.5 w-3.5 text-rose-accent" /> LinkedIn Professional Network
+                      </span>
+                      <ExternalLink className="h-3 w-3 text-charcoal-400" />
+                    </a>
+                  </div>
+                </div>
+
+                {/* Industry Certifications */}
+                <div className="p-4 rounded-xl border border-border dark:border-charcoal-700 bg-surface-soft/40 dark:bg-charcoal-900/40 flex flex-col gap-2.5">
+                  <span className="text-[10px] font-bold text-charcoal-500 uppercase tracking-wider">Accredited Certifications</span>
+                  <div className="space-y-1.5">
+                    {(student.portfolio?.certifications || ["AWS Certified Cloud Practitioner", "Kaggle Bronze Achiever"]).map((cert: string, i: number) => (
+                      <div key={i} className="flex items-center gap-2 p-2 rounded-lg bg-white dark:bg-charcoal-800 border border-border dark:border-charcoal-700">
+                        <Award className="h-3.5 w-3.5 text-amber-500 shrink-0" />
+                        <span className="font-semibold text-charcoal-900 dark:text-ivory-100 text-[11px] truncate">{cert}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* University Societies & Leadership */}
+                <div className="p-4 rounded-xl border border-border dark:border-charcoal-700 bg-surface-soft/40 dark:bg-charcoal-900/40 flex flex-col gap-2.5">
+                  <span className="text-[10px] font-bold text-charcoal-500 uppercase tracking-wider">Campus Clubs & Societies</span>
+                  <div className="space-y-1.5">
+                    {(student.portfolio?.clubs || student.portfolio?.clubMemberships || ["ACM Student Chapter", "Robotics & AI Society"]).map((club: string, i: number) => (
+                      <div key={i} className="flex items-center gap-2 p-2 rounded-lg bg-white dark:bg-charcoal-800 border border-border dark:border-charcoal-700">
+                        <CheckCircle2 className="h-3.5 w-3.5 text-academic-success shrink-0" />
+                        <span className="font-semibold text-charcoal-900 dark:text-ivory-100 text-[11px] truncate">{club}</span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
