@@ -1,5 +1,264 @@
 [
   {
+    "id": "msg-1790429918529-0c144e",
+    "to": "prithvi.shaw.guardian@campus.edu",
+    "subject": "[URGENT] Academic Attendance Warning: Mandatory 75% Threshold Deficit for Prithvi Shaw (70%)",
+    "html": "\n<!DOCTYPE html>\n<html>\n<head>\n  <meta charset=\"utf-8\">\n  <style>\n    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; color: #1e293b; margin: 0; padding: 20px; background-color: #f8fafc; }\n    .container { max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 16px; overflow: hidden; border: 1px solid #e2e8f0; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05); }\n    .header { background: linear-gradient(135deg, #b45309 0%, #d97706 100%); padding: 28px; color: white; }\n    .content { padding: 28px; }\n    .badge { display: inline-block; padding: 4px 10px; background: rgba(255,255,255,0.2); border-radius: 20px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }\n    .metric-card { background-color: #fffbeb; border: 1px solid #fde68a; border-left: 5px solid #d97706; padding: 16px; border-radius: 8px; margin: 20px 0; }\n    .directive-card { background-color: #f1f5f9; padding: 18px; border-radius: 12px; margin: 20px 0; border: 1px solid #e2e8f0; }\n    .footer { padding: 20px 28px; background-color: #f8fafc; border-top: 1px solid #e2e8f0; font-size: 12px; color: #64748b; }\n  </style>\n</head>\n<body>\n  <div class=\"container\">\n    <div class=\"header\">\n      <div class=\"badge\">Pastoral Advisory Unit</div>\n      <h1 style=\"margin: 0; font-size: 22px; font-weight: 800;\">Academic Attendance Warning</h1>\n      <p style=\"margin: 6px 0 0 0; font-size: 13px; opacity: 0.9;\">Apex University of Science & Technology · Office of the Academic Dean</p>\n    </div>\n    <div class=\"content\">\n      <p style=\"font-size: 15px; margin-top: 0;\">\n        Dear Guardian of <strong>Prithvi Shaw</strong> (Roll No: <code>2024CS003</code>),\n      </p>\n      \n      <div class=\"metric-card\">\n        <p style=\"margin: 0; font-size: 14px; font-weight: 600; color: #92400e;\">\n          Course: <strong>CS-402 - Advanced Neural Networks</strong>\n        </p>\n        <p style=\"margin: 6px 0 0 0; font-size: 13px; color: #b45309;\">\n          Recorded Attendance Rate: <strong style=\"font-size: 18px; color: #dc2626;\">70%</strong>\n          <span style=\"font-size: 12px; color: #78350f;\"> (Minimum Senate Standard: <strong>75.0%</strong>)</span>\n        </p>\n        <p style=\"margin: 6px 0 0 0; font-size: 12px; color: #92400e;\">\n          Recovery Trajectory: <strong>8 consecutive attended class(es)</strong> required to restore exam eligibility.\n        </p>\n      </div>\n\n      <p style=\"font-size: 14px; color: #334155;\">\n        Immediate meeting with Course Coordinator required.\n      </p>\n\n      <div class=\"directive-card\">\n        <h4 style=\"margin: 0 0 10px 0; font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; color: #475569;\">\n          Pastoral Action Directives:\n        </h4>\n        <ol style=\"margin: 0; padding-left: 20px; font-size: 13px; color: #334155; line-height: 1.6;\">\n          <li>Review the detailed attendance ledger with your ward on the Student Portal.</li>\n          <li>Ensure mandatory attendance in all upcoming lecture and practical sessions.</li>\n          <li>Submit certified medical certificates or leave petitions within 48 hours if absence was due to illness.</li>\n          <li>For counseling or grievance redressal, schedule a consultation with the Course Faculty.</li>\n        </ol>\n      </div>\n\n      <p style=\"font-size: 12px; color: #64748b;\">\n        Notice Generated: Sep 26, 2026 | System Dispatch Ref: <code>ALERT-BATCH-MUIFQUOK-CIUW</code>\n      </p>\n    </div>\n    <div class=\"footer\">\n      This is an automated pastoral alert dispatched via CLASSROOM Academic OS. Guardians may verify this notice anytime through the Official Parent Gateway.\n    </div>\n  </div>\n</body>\n</html>\n",
+    "text": "Official pastoral notification: Your ward Prithvi Shaw (Roll: 2024CS003) currently has 70% attendance in CS-402, which is below the mandatory 75% minimum threshold for end-semester examination eligibility. Please consult the course faculty immediately.",
+    "type": "NOTIFICATION",
+    "createdAt": "2026-09-26T13:38:38.529Z"
+  },
+  {
+    "id": "msg-1790429918483-74cce5",
+    "to": "kunal.kamra.guardian@campus.edu",
+    "subject": "[URGENT] Academic Attendance Warning: Mandatory 75% Threshold Deficit for Kunal Kamra (71.5%)",
+    "html": "\n<!DOCTYPE html>\n<html>\n<head>\n  <meta charset=\"utf-8\">\n  <style>\n    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; color: #1e293b; margin: 0; padding: 20px; background-color: #f8fafc; }\n    .container { max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 16px; overflow: hidden; border: 1px solid #e2e8f0; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05); }\n    .header { background: linear-gradient(135deg, #b45309 0%, #d97706 100%); padding: 28px; color: white; }\n    .content { padding: 28px; }\n    .badge { display: inline-block; padding: 4px 10px; background: rgba(255,255,255,0.2); border-radius: 20px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }\n    .metric-card { background-color: #fffbeb; border: 1px solid #fde68a; border-left: 5px solid #d97706; padding: 16px; border-radius: 8px; margin: 20px 0; }\n    .directive-card { background-color: #f1f5f9; padding: 18px; border-radius: 12px; margin: 20px 0; border: 1px solid #e2e8f0; }\n    .footer { padding: 20px 28px; background-color: #f8fafc; border-top: 1px solid #e2e8f0; font-size: 12px; color: #64748b; }\n  </style>\n</head>\n<body>\n  <div class=\"container\">\n    <div class=\"header\">\n      <div class=\"badge\">Pastoral Advisory Unit</div>\n      <h1 style=\"margin: 0; font-size: 22px; font-weight: 800;\">Academic Attendance Warning</h1>\n      <p style=\"margin: 6px 0 0 0; font-size: 13px; opacity: 0.9;\">Apex University of Science & Technology · Office of the Academic Dean</p>\n    </div>\n    <div class=\"content\">\n      <p style=\"font-size: 15px; margin-top: 0;\">\n        Dear Guardian of <strong>Kunal Kamra</strong> (Roll No: <code>2024CS002</code>),\n      </p>\n      \n      <div class=\"metric-card\">\n        <p style=\"margin: 0; font-size: 14px; font-weight: 600; color: #92400e;\">\n          Course: <strong>CS-402 - Advanced Neural Networks</strong>\n        </p>\n        <p style=\"margin: 6px 0 0 0; font-size: 13px; color: #b45309;\">\n          Recorded Attendance Rate: <strong style=\"font-size: 18px; color: #dc2626;\">71.5%</strong>\n          <span style=\"font-size: 12px; color: #78350f;\"> (Minimum Senate Standard: <strong>75.0%</strong>)</span>\n        </p>\n        <p style=\"margin: 6px 0 0 0; font-size: 12px; color: #92400e;\">\n          Recovery Trajectory: <strong>6 consecutive attended class(es)</strong> required to restore exam eligibility.\n        </p>\n      </div>\n\n      <p style=\"font-size: 14px; color: #334155;\">\n        Immediate meeting with Course Coordinator required.\n      </p>\n\n      <div class=\"directive-card\">\n        <h4 style=\"margin: 0 0 10px 0; font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; color: #475569;\">\n          Pastoral Action Directives:\n        </h4>\n        <ol style=\"margin: 0; padding-left: 20px; font-size: 13px; color: #334155; line-height: 1.6;\">\n          <li>Review the detailed attendance ledger with your ward on the Student Portal.</li>\n          <li>Ensure mandatory attendance in all upcoming lecture and practical sessions.</li>\n          <li>Submit certified medical certificates or leave petitions within 48 hours if absence was due to illness.</li>\n          <li>For counseling or grievance redressal, schedule a consultation with the Course Faculty.</li>\n        </ol>\n      </div>\n\n      <p style=\"font-size: 12px; color: #64748b;\">\n        Notice Generated: Sep 26, 2026 | System Dispatch Ref: <code>ALERT-BATCH-MUIFQUOK-CIUW</code>\n      </p>\n    </div>\n    <div class=\"footer\">\n      This is an automated pastoral alert dispatched via CLASSROOM Academic OS. Guardians may verify this notice anytime through the Official Parent Gateway.\n    </div>\n  </div>\n</body>\n</html>\n",
+    "text": "Official pastoral notification: Your ward Kunal Kamra (Roll: 2024CS002) currently has 71.5% attendance in CS-402, which is below the mandatory 75% minimum threshold for end-semester examination eligibility. Please consult the course faculty immediately.",
+    "type": "NOTIFICATION",
+    "createdAt": "2026-09-26T13:38:38.483Z"
+  },
+  {
+    "id": "msg-1790429918432-d6e081",
+    "to": "ethan.hunt.guardian@campus.edu",
+    "subject": "[URGENT] Academic Attendance Warning: Mandatory 75% Threshold Deficit for Ethan Hunt (64.2%)",
+    "html": "\n<!DOCTYPE html>\n<html>\n<head>\n  <meta charset=\"utf-8\">\n  <style>\n    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; color: #1e293b; margin: 0; padding: 20px; background-color: #f8fafc; }\n    .container { max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 16px; overflow: hidden; border: 1px solid #e2e8f0; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05); }\n    .header { background: linear-gradient(135deg, #b45309 0%, #d97706 100%); padding: 28px; color: white; }\n    .content { padding: 28px; }\n    .badge { display: inline-block; padding: 4px 10px; background: rgba(255,255,255,0.2); border-radius: 20px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }\n    .metric-card { background-color: #fffbeb; border: 1px solid #fde68a; border-left: 5px solid #d97706; padding: 16px; border-radius: 8px; margin: 20px 0; }\n    .directive-card { background-color: #f1f5f9; padding: 18px; border-radius: 12px; margin: 20px 0; border: 1px solid #e2e8f0; }\n    .footer { padding: 20px 28px; background-color: #f8fafc; border-top: 1px solid #e2e8f0; font-size: 12px; color: #64748b; }\n  </style>\n</head>\n<body>\n  <div class=\"container\">\n    <div class=\"header\">\n      <div class=\"badge\">Pastoral Advisory Unit</div>\n      <h1 style=\"margin: 0; font-size: 22px; font-weight: 800;\">Academic Attendance Warning</h1>\n      <p style=\"margin: 6px 0 0 0; font-size: 13px; opacity: 0.9;\">Apex University of Science & Technology · Office of the Academic Dean</p>\n    </div>\n    <div class=\"content\">\n      <p style=\"font-size: 15px; margin-top: 0;\">\n        Dear Guardian of <strong>Ethan Hunt</strong> (Roll No: <code>2024CS001</code>),\n      </p>\n      \n      <div class=\"metric-card\">\n        <p style=\"margin: 0; font-size: 14px; font-weight: 600; color: #92400e;\">\n          Course: <strong>CS-402 - Advanced Neural Networks</strong>\n        </p>\n        <p style=\"margin: 6px 0 0 0; font-size: 13px; color: #b45309;\">\n          Recorded Attendance Rate: <strong style=\"font-size: 18px; color: #dc2626;\">64.2%</strong>\n          <span style=\"font-size: 12px; color: #78350f;\"> (Minimum Senate Standard: <strong>75.0%</strong>)</span>\n        </p>\n        <p style=\"margin: 6px 0 0 0; font-size: 12px; color: #92400e;\">\n          Recovery Trajectory: <strong>18 consecutive attended class(es)</strong> required to restore exam eligibility.\n        </p>\n      </div>\n\n      <p style=\"font-size: 14px; color: #334155;\">\n        Immediate meeting with Course Coordinator required.\n      </p>\n\n      <div class=\"directive-card\">\n        <h4 style=\"margin: 0 0 10px 0; font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; color: #475569;\">\n          Pastoral Action Directives:\n        </h4>\n        <ol style=\"margin: 0; padding-left: 20px; font-size: 13px; color: #334155; line-height: 1.6;\">\n          <li>Review the detailed attendance ledger with your ward on the Student Portal.</li>\n          <li>Ensure mandatory attendance in all upcoming lecture and practical sessions.</li>\n          <li>Submit certified medical certificates or leave petitions within 48 hours if absence was due to illness.</li>\n          <li>For counseling or grievance redressal, schedule a consultation with the Course Faculty.</li>\n        </ol>\n      </div>\n\n      <p style=\"font-size: 12px; color: #64748b;\">\n        Notice Generated: Sep 26, 2026 | System Dispatch Ref: <code>ALERT-BATCH-MUIFQUOK-CIUW</code>\n      </p>\n    </div>\n    <div class=\"footer\">\n      This is an automated pastoral alert dispatched via CLASSROOM Academic OS. Guardians may verify this notice anytime through the Official Parent Gateway.\n    </div>\n  </div>\n</body>\n</html>\n",
+    "text": "Official pastoral notification: Your ward Ethan Hunt (Roll: 2024CS001) currently has 64.2% attendance in CS-402, which is below the mandatory 75% minimum threshold for end-semester examination eligibility. Please consult the course faculty immediately.",
+    "type": "NOTIFICATION",
+    "createdAt": "2026-09-26T13:38:38.433Z"
+  },
+  {
+    "id": "msg-1790429917730-7ea127",
+    "to": "student.fellow@apex.edu",
+    "subject": "Institutional Account Verification",
+    "html": "<p>Your security OTP is <strong>592819</strong></p>",
+    "text": "Institutional Account Verification",
+    "type": "PASSWORD_RESET",
+    "otpCode": "592819",
+    "createdAt": "2026-09-26T13:38:37.730Z"
+  },
+  {
+    "id": "msg-1790429538138-685546",
+    "to": "prithvi.shaw.guardian@campus.edu",
+    "subject": "[URGENT] Academic Attendance Warning: Mandatory 75% Threshold Deficit for Prithvi Shaw (70%)",
+    "html": "\n<!DOCTYPE html>\n<html>\n<head>\n  <meta charset=\"utf-8\">\n  <style>\n    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; color: #1e293b; margin: 0; padding: 20px; background-color: #f8fafc; }\n    .container { max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 16px; overflow: hidden; border: 1px solid #e2e8f0; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05); }\n    .header { background: linear-gradient(135deg, #b45309 0%, #d97706 100%); padding: 28px; color: white; }\n    .content { padding: 28px; }\n    .badge { display: inline-block; padding: 4px 10px; background: rgba(255,255,255,0.2); border-radius: 20px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }\n    .metric-card { background-color: #fffbeb; border: 1px solid #fde68a; border-left: 5px solid #d97706; padding: 16px; border-radius: 8px; margin: 20px 0; }\n    .directive-card { background-color: #f1f5f9; padding: 18px; border-radius: 12px; margin: 20px 0; border: 1px solid #e2e8f0; }\n    .footer { padding: 20px 28px; background-color: #f8fafc; border-top: 1px solid #e2e8f0; font-size: 12px; color: #64748b; }\n  </style>\n</head>\n<body>\n  <div class=\"container\">\n    <div class=\"header\">\n      <div class=\"badge\">Pastoral Advisory Unit</div>\n      <h1 style=\"margin: 0; font-size: 22px; font-weight: 800;\">Academic Attendance Warning</h1>\n      <p style=\"margin: 6px 0 0 0; font-size: 13px; opacity: 0.9;\">Apex University of Science & Technology · Office of the Academic Dean</p>\n    </div>\n    <div class=\"content\">\n      <p style=\"font-size: 15px; margin-top: 0;\">\n        Dear Guardian of <strong>Prithvi Shaw</strong> (Roll No: <code>2024CS003</code>),\n      </p>\n      \n      <div class=\"metric-card\">\n        <p style=\"margin: 0; font-size: 14px; font-weight: 600; color: #92400e;\">\n          Course: <strong>CS-402 - Advanced Neural Networks</strong>\n        </p>\n        <p style=\"margin: 6px 0 0 0; font-size: 13px; color: #b45309;\">\n          Recorded Attendance Rate: <strong style=\"font-size: 18px; color: #dc2626;\">70%</strong>\n          <span style=\"font-size: 12px; color: #78350f;\"> (Minimum Senate Standard: <strong>75.0%</strong>)</span>\n        </p>\n        <p style=\"margin: 6px 0 0 0; font-size: 12px; color: #92400e;\">\n          Recovery Trajectory: <strong>8 consecutive attended class(es)</strong> required to restore exam eligibility.\n        </p>\n      </div>\n\n      <p style=\"font-size: 14px; color: #334155;\">\n        Immediate meeting with Course Coordinator required.\n      </p>\n\n      <div class=\"directive-card\">\n        <h4 style=\"margin: 0 0 10px 0; font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; color: #475569;\">\n          Pastoral Action Directives:\n        </h4>\n        <ol style=\"margin: 0; padding-left: 20px; font-size: 13px; color: #334155; line-height: 1.6;\">\n          <li>Review the detailed attendance ledger with your ward on the Student Portal.</li>\n          <li>Ensure mandatory attendance in all upcoming lecture and practical sessions.</li>\n          <li>Submit certified medical certificates or leave petitions within 48 hours if absence was due to illness.</li>\n          <li>For counseling or grievance redressal, schedule a consultation with the Course Faculty.</li>\n        </ol>\n      </div>\n\n      <p style=\"font-size: 12px; color: #64748b;\">\n        Notice Generated: Sep 26, 2026 | System Dispatch Ref: <code>ALERT-BATCH-MUIFIP6C-L8FE</code>\n      </p>\n    </div>\n    <div class=\"footer\">\n      This is an automated pastoral alert dispatched via CLASSROOM Academic OS. Guardians may verify this notice anytime through the Official Parent Gateway.\n    </div>\n  </div>\n</body>\n</html>\n",
+    "text": "Official pastoral notification: Your ward Prithvi Shaw (Roll: 2024CS003) currently has 70% attendance in CS-402, which is below the mandatory 75% minimum threshold for end-semester examination eligibility. Please consult the course faculty immediately.",
+    "type": "NOTIFICATION",
+    "createdAt": "2026-09-26T13:32:18.138Z"
+  },
+  {
+    "id": "msg-1790429538092-22485c",
+    "to": "kunal.kamra.guardian@campus.edu",
+    "subject": "[URGENT] Academic Attendance Warning: Mandatory 75% Threshold Deficit for Kunal Kamra (71.5%)",
+    "html": "\n<!DOCTYPE html>\n<html>\n<head>\n  <meta charset=\"utf-8\">\n  <style>\n    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; color: #1e293b; margin: 0; padding: 20px; background-color: #f8fafc; }\n    .container { max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 16px; overflow: hidden; border: 1px solid #e2e8f0; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05); }\n    .header { background: linear-gradient(135deg, #b45309 0%, #d97706 100%); padding: 28px; color: white; }\n    .content { padding: 28px; }\n    .badge { display: inline-block; padding: 4px 10px; background: rgba(255,255,255,0.2); border-radius: 20px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }\n    .metric-card { background-color: #fffbeb; border: 1px solid #fde68a; border-left: 5px solid #d97706; padding: 16px; border-radius: 8px; margin: 20px 0; }\n    .directive-card { background-color: #f1f5f9; padding: 18px; border-radius: 12px; margin: 20px 0; border: 1px solid #e2e8f0; }\n    .footer { padding: 20px 28px; background-color: #f8fafc; border-top: 1px solid #e2e8f0; font-size: 12px; color: #64748b; }\n  </style>\n</head>\n<body>\n  <div class=\"container\">\n    <div class=\"header\">\n      <div class=\"badge\">Pastoral Advisory Unit</div>\n      <h1 style=\"margin: 0; font-size: 22px; font-weight: 800;\">Academic Attendance Warning</h1>\n      <p style=\"margin: 6px 0 0 0; font-size: 13px; opacity: 0.9;\">Apex University of Science & Technology · Office of the Academic Dean</p>\n    </div>\n    <div class=\"content\">\n      <p style=\"font-size: 15px; margin-top: 0;\">\n        Dear Guardian of <strong>Kunal Kamra</strong> (Roll No: <code>2024CS002</code>),\n      </p>\n      \n      <div class=\"metric-card\">\n        <p style=\"margin: 0; font-size: 14px; font-weight: 600; color: #92400e;\">\n          Course: <strong>CS-402 - Advanced Neural Networks</strong>\n        </p>\n        <p style=\"margin: 6px 0 0 0; font-size: 13px; color: #b45309;\">\n          Recorded Attendance Rate: <strong style=\"font-size: 18px; color: #dc2626;\">71.5%</strong>\n          <span style=\"font-size: 12px; color: #78350f;\"> (Minimum Senate Standard: <strong>75.0%</strong>)</span>\n        </p>\n        <p style=\"margin: 6px 0 0 0; font-size: 12px; color: #92400e;\">\n          Recovery Trajectory: <strong>6 consecutive attended class(es)</strong> required to restore exam eligibility.\n        </p>\n      </div>\n\n      <p style=\"font-size: 14px; color: #334155;\">\n        Immediate meeting with Course Coordinator required.\n      </p>\n\n      <div class=\"directive-card\">\n        <h4 style=\"margin: 0 0 10px 0; font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; color: #475569;\">\n          Pastoral Action Directives:\n        </h4>\n        <ol style=\"margin: 0; padding-left: 20px; font-size: 13px; color: #334155; line-height: 1.6;\">\n          <li>Review the detailed attendance ledger with your ward on the Student Portal.</li>\n          <li>Ensure mandatory attendance in all upcoming lecture and practical sessions.</li>\n          <li>Submit certified medical certificates or leave petitions within 48 hours if absence was due to illness.</li>\n          <li>For counseling or grievance redressal, schedule a consultation with the Course Faculty.</li>\n        </ol>\n      </div>\n\n      <p style=\"font-size: 12px; color: #64748b;\">\n        Notice Generated: Sep 26, 2026 | System Dispatch Ref: <code>ALERT-BATCH-MUIFIP6C-L8FE</code>\n      </p>\n    </div>\n    <div class=\"footer\">\n      This is an automated pastoral alert dispatched via CLASSROOM Academic OS. Guardians may verify this notice anytime through the Official Parent Gateway.\n    </div>\n  </div>\n</body>\n</html>\n",
+    "text": "Official pastoral notification: Your ward Kunal Kamra (Roll: 2024CS002) currently has 71.5% attendance in CS-402, which is below the mandatory 75% minimum threshold for end-semester examination eligibility. Please consult the course faculty immediately.",
+    "type": "NOTIFICATION",
+    "createdAt": "2026-09-26T13:32:18.092Z"
+  },
+  {
+    "id": "msg-1790429538049-e4a027",
+    "to": "ethan.hunt.guardian@campus.edu",
+    "subject": "[URGENT] Academic Attendance Warning: Mandatory 75% Threshold Deficit for Ethan Hunt (64.2%)",
+    "html": "\n<!DOCTYPE html>\n<html>\n<head>\n  <meta charset=\"utf-8\">\n  <style>\n    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; color: #1e293b; margin: 0; padding: 20px; background-color: #f8fafc; }\n    .container { max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 16px; overflow: hidden; border: 1px solid #e2e8f0; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05); }\n    .header { background: linear-gradient(135deg, #b45309 0%, #d97706 100%); padding: 28px; color: white; }\n    .content { padding: 28px; }\n    .badge { display: inline-block; padding: 4px 10px; background: rgba(255,255,255,0.2); border-radius: 20px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }\n    .metric-card { background-color: #fffbeb; border: 1px solid #fde68a; border-left: 5px solid #d97706; padding: 16px; border-radius: 8px; margin: 20px 0; }\n    .directive-card { background-color: #f1f5f9; padding: 18px; border-radius: 12px; margin: 20px 0; border: 1px solid #e2e8f0; }\n    .footer { padding: 20px 28px; background-color: #f8fafc; border-top: 1px solid #e2e8f0; font-size: 12px; color: #64748b; }\n  </style>\n</head>\n<body>\n  <div class=\"container\">\n    <div class=\"header\">\n      <div class=\"badge\">Pastoral Advisory Unit</div>\n      <h1 style=\"margin: 0; font-size: 22px; font-weight: 800;\">Academic Attendance Warning</h1>\n      <p style=\"margin: 6px 0 0 0; font-size: 13px; opacity: 0.9;\">Apex University of Science & Technology · Office of the Academic Dean</p>\n    </div>\n    <div class=\"content\">\n      <p style=\"font-size: 15px; margin-top: 0;\">\n        Dear Guardian of <strong>Ethan Hunt</strong> (Roll No: <code>2024CS001</code>),\n      </p>\n      \n      <div class=\"metric-card\">\n        <p style=\"margin: 0; font-size: 14px; font-weight: 600; color: #92400e;\">\n          Course: <strong>CS-402 - Advanced Neural Networks</strong>\n        </p>\n        <p style=\"margin: 6px 0 0 0; font-size: 13px; color: #b45309;\">\n          Recorded Attendance Rate: <strong style=\"font-size: 18px; color: #dc2626;\">64.2%</strong>\n          <span style=\"font-size: 12px; color: #78350f;\"> (Minimum Senate Standard: <strong>75.0%</strong>)</span>\n        </p>\n        <p style=\"margin: 6px 0 0 0; font-size: 12px; color: #92400e;\">\n          Recovery Trajectory: <strong>18 consecutive attended class(es)</strong> required to restore exam eligibility.\n        </p>\n      </div>\n\n      <p style=\"font-size: 14px; color: #334155;\">\n        Immediate meeting with Course Coordinator required.\n      </p>\n\n      <div class=\"directive-card\">\n        <h4 style=\"margin: 0 0 10px 0; font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; color: #475569;\">\n          Pastoral Action Directives:\n        </h4>\n        <ol style=\"margin: 0; padding-left: 20px; font-size: 13px; color: #334155; line-height: 1.6;\">\n          <li>Review the detailed attendance ledger with your ward on the Student Portal.</li>\n          <li>Ensure mandatory attendance in all upcoming lecture and practical sessions.</li>\n          <li>Submit certified medical certificates or leave petitions within 48 hours if absence was due to illness.</li>\n          <li>For counseling or grievance redressal, schedule a consultation with the Course Faculty.</li>\n        </ol>\n      </div>\n\n      <p style=\"font-size: 12px; color: #64748b;\">\n        Notice Generated: Sep 26, 2026 | System Dispatch Ref: <code>ALERT-BATCH-MUIFIP6C-L8FE</code>\n      </p>\n    </div>\n    <div class=\"footer\">\n      This is an automated pastoral alert dispatched via CLASSROOM Academic OS. Guardians may verify this notice anytime through the Official Parent Gateway.\n    </div>\n  </div>\n</body>\n</html>\n",
+    "text": "Official pastoral notification: Your ward Ethan Hunt (Roll: 2024CS001) currently has 64.2% attendance in CS-402, which is below the mandatory 75% minimum threshold for end-semester examination eligibility. Please consult the course faculty immediately.",
+    "type": "NOTIFICATION",
+    "createdAt": "2026-09-26T13:32:18.050Z"
+  },
+  {
+    "id": "msg-1790429537339-283f77",
+    "to": "student.fellow@apex.edu",
+    "subject": "Institutional Account Verification",
+    "html": "<p>Your security OTP is <strong>592819</strong></p>",
+    "text": "Institutional Account Verification",
+    "type": "PASSWORD_RESET",
+    "otpCode": "592819",
+    "createdAt": "2026-09-26T13:32:17.339Z"
+  },
+  {
+    "id": "msg-1790394998527-9ec371",
+    "to": "prithvi.shaw.guardian@campus.edu",
+    "subject": "[URGENT] Academic Attendance Warning: Mandatory 75% Threshold Deficit for Prithvi Shaw (70%)",
+    "html": "\n<!DOCTYPE html>\n<html>\n<head>\n  <meta charset=\"utf-8\">\n  <style>\n    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; color: #1e293b; margin: 0; padding: 20px; background-color: #f8fafc; }\n    .container { max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 16px; overflow: hidden; border: 1px solid #e2e8f0; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05); }\n    .header { background: linear-gradient(135deg, #b45309 0%, #d97706 100%); padding: 28px; color: white; }\n    .content { padding: 28px; }\n    .badge { display: inline-block; padding: 4px 10px; background: rgba(255,255,255,0.2); border-radius: 20px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }\n    .metric-card { background-color: #fffbeb; border: 1px solid #fde68a; border-left: 5px solid #d97706; padding: 16px; border-radius: 8px; margin: 20px 0; }\n    .directive-card { background-color: #f1f5f9; padding: 18px; border-radius: 12px; margin: 20px 0; border: 1px solid #e2e8f0; }\n    .footer { padding: 20px 28px; background-color: #f8fafc; border-top: 1px solid #e2e8f0; font-size: 12px; color: #64748b; }\n  </style>\n</head>\n<body>\n  <div class=\"container\">\n    <div class=\"header\">\n      <div class=\"badge\">Pastoral Advisory Unit</div>\n      <h1 style=\"margin: 0; font-size: 22px; font-weight: 800;\">Academic Attendance Warning</h1>\n      <p style=\"margin: 6px 0 0 0; font-size: 13px; opacity: 0.9;\">Apex University of Science & Technology · Office of the Academic Dean</p>\n    </div>\n    <div class=\"content\">\n      <p style=\"font-size: 15px; margin-top: 0;\">\n        Dear Guardian of <strong>Prithvi Shaw</strong> (Roll No: <code>2024CS003</code>),\n      </p>\n      \n      <div class=\"metric-card\">\n        <p style=\"margin: 0; font-size: 14px; font-weight: 600; color: #92400e;\">\n          Course: <strong>CS-402 - Advanced Neural Networks</strong>\n        </p>\n        <p style=\"margin: 6px 0 0 0; font-size: 13px; color: #b45309;\">\n          Recorded Attendance Rate: <strong style=\"font-size: 18px; color: #dc2626;\">70%</strong>\n          <span style=\"font-size: 12px; color: #78350f;\"> (Minimum Senate Standard: <strong>75.0%</strong>)</span>\n        </p>\n        <p style=\"margin: 6px 0 0 0; font-size: 12px; color: #92400e;\">\n          Recovery Trajectory: <strong>8 consecutive attended class(es)</strong> required to restore exam eligibility.\n        </p>\n      </div>\n\n      <p style=\"font-size: 14px; color: #334155;\">\n        Immediate meeting with Course Coordinator required.\n      </p>\n\n      <div class=\"directive-card\">\n        <h4 style=\"margin: 0 0 10px 0; font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; color: #475569;\">\n          Pastoral Action Directives:\n        </h4>\n        <ol style=\"margin: 0; padding-left: 20px; font-size: 13px; color: #334155; line-height: 1.6;\">\n          <li>Review the detailed attendance ledger with your ward on the Student Portal.</li>\n          <li>Ensure mandatory attendance in all upcoming lecture and practical sessions.</li>\n          <li>Submit certified medical certificates or leave petitions within 48 hours if absence was due to illness.</li>\n          <li>For counseling or grievance redressal, schedule a consultation with the Course Faculty.</li>\n        </ol>\n      </div>\n\n      <p style=\"font-size: 12px; color: #64748b;\">\n        Notice Generated: Sep 26, 2026 | System Dispatch Ref: <code>ALERT-BATCH-MUHUYE8W-JBA2</code>\n      </p>\n    </div>\n    <div class=\"footer\">\n      This is an automated pastoral alert dispatched via CLASSROOM Academic OS. Guardians may verify this notice anytime through the Official Parent Gateway.\n    </div>\n  </div>\n</body>\n</html>\n",
+    "text": "Official pastoral notification: Your ward Prithvi Shaw (Roll: 2024CS003) currently has 70% attendance in CS-402, which is below the mandatory 75% minimum threshold for end-semester examination eligibility. Please consult the course faculty immediately.",
+    "type": "NOTIFICATION",
+    "createdAt": "2026-09-26T03:56:38.527Z"
+  },
+  {
+    "id": "msg-1790394998485-a63e3e",
+    "to": "kunal.kamra.guardian@campus.edu",
+    "subject": "[URGENT] Academic Attendance Warning: Mandatory 75% Threshold Deficit for Kunal Kamra (71.5%)",
+    "html": "\n<!DOCTYPE html>\n<html>\n<head>\n  <meta charset=\"utf-8\">\n  <style>\n    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; color: #1e293b; margin: 0; padding: 20px; background-color: #f8fafc; }\n    .container { max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 16px; overflow: hidden; border: 1px solid #e2e8f0; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05); }\n    .header { background: linear-gradient(135deg, #b45309 0%, #d97706 100%); padding: 28px; color: white; }\n    .content { padding: 28px; }\n    .badge { display: inline-block; padding: 4px 10px; background: rgba(255,255,255,0.2); border-radius: 20px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }\n    .metric-card { background-color: #fffbeb; border: 1px solid #fde68a; border-left: 5px solid #d97706; padding: 16px; border-radius: 8px; margin: 20px 0; }\n    .directive-card { background-color: #f1f5f9; padding: 18px; border-radius: 12px; margin: 20px 0; border: 1px solid #e2e8f0; }\n    .footer { padding: 20px 28px; background-color: #f8fafc; border-top: 1px solid #e2e8f0; font-size: 12px; color: #64748b; }\n  </style>\n</head>\n<body>\n  <div class=\"container\">\n    <div class=\"header\">\n      <div class=\"badge\">Pastoral Advisory Unit</div>\n      <h1 style=\"margin: 0; font-size: 22px; font-weight: 800;\">Academic Attendance Warning</h1>\n      <p style=\"margin: 6px 0 0 0; font-size: 13px; opacity: 0.9;\">Apex University of Science & Technology · Office of the Academic Dean</p>\n    </div>\n    <div class=\"content\">\n      <p style=\"font-size: 15px; margin-top: 0;\">\n        Dear Guardian of <strong>Kunal Kamra</strong> (Roll No: <code>2024CS002</code>),\n      </p>\n      \n      <div class=\"metric-card\">\n        <p style=\"margin: 0; font-size: 14px; font-weight: 600; color: #92400e;\">\n          Course: <strong>CS-402 - Advanced Neural Networks</strong>\n        </p>\n        <p style=\"margin: 6px 0 0 0; font-size: 13px; color: #b45309;\">\n          Recorded Attendance Rate: <strong style=\"font-size: 18px; color: #dc2626;\">71.5%</strong>\n          <span style=\"font-size: 12px; color: #78350f;\"> (Minimum Senate Standard: <strong>75.0%</strong>)</span>\n        </p>\n        <p style=\"margin: 6px 0 0 0; font-size: 12px; color: #92400e;\">\n          Recovery Trajectory: <strong>6 consecutive attended class(es)</strong> required to restore exam eligibility.\n        </p>\n      </div>\n\n      <p style=\"font-size: 14px; color: #334155;\">\n        Immediate meeting with Course Coordinator required.\n      </p>\n\n      <div class=\"directive-card\">\n        <h4 style=\"margin: 0 0 10px 0; font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; color: #475569;\">\n          Pastoral Action Directives:\n        </h4>\n        <ol style=\"margin: 0; padding-left: 20px; font-size: 13px; color: #334155; line-height: 1.6;\">\n          <li>Review the detailed attendance ledger with your ward on the Student Portal.</li>\n          <li>Ensure mandatory attendance in all upcoming lecture and practical sessions.</li>\n          <li>Submit certified medical certificates or leave petitions within 48 hours if absence was due to illness.</li>\n          <li>For counseling or grievance redressal, schedule a consultation with the Course Faculty.</li>\n        </ol>\n      </div>\n\n      <p style=\"font-size: 12px; color: #64748b;\">\n        Notice Generated: Sep 26, 2026 | System Dispatch Ref: <code>ALERT-BATCH-MUHUYE8W-JBA2</code>\n      </p>\n    </div>\n    <div class=\"footer\">\n      This is an automated pastoral alert dispatched via CLASSROOM Academic OS. Guardians may verify this notice anytime through the Official Parent Gateway.\n    </div>\n  </div>\n</body>\n</html>\n",
+    "text": "Official pastoral notification: Your ward Kunal Kamra (Roll: 2024CS002) currently has 71.5% attendance in CS-402, which is below the mandatory 75% minimum threshold for end-semester examination eligibility. Please consult the course faculty immediately.",
+    "type": "NOTIFICATION",
+    "createdAt": "2026-09-26T03:56:38.485Z"
+  },
+  {
+    "id": "msg-1790394998448-1604cc",
+    "to": "ethan.hunt.guardian@campus.edu",
+    "subject": "[URGENT] Academic Attendance Warning: Mandatory 75% Threshold Deficit for Ethan Hunt (64.2%)",
+    "html": "\n<!DOCTYPE html>\n<html>\n<head>\n  <meta charset=\"utf-8\">\n  <style>\n    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; color: #1e293b; margin: 0; padding: 20px; background-color: #f8fafc; }\n    .container { max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 16px; overflow: hidden; border: 1px solid #e2e8f0; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05); }\n    .header { background: linear-gradient(135deg, #b45309 0%, #d97706 100%); padding: 28px; color: white; }\n    .content { padding: 28px; }\n    .badge { display: inline-block; padding: 4px 10px; background: rgba(255,255,255,0.2); border-radius: 20px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }\n    .metric-card { background-color: #fffbeb; border: 1px solid #fde68a; border-left: 5px solid #d97706; padding: 16px; border-radius: 8px; margin: 20px 0; }\n    .directive-card { background-color: #f1f5f9; padding: 18px; border-radius: 12px; margin: 20px 0; border: 1px solid #e2e8f0; }\n    .footer { padding: 20px 28px; background-color: #f8fafc; border-top: 1px solid #e2e8f0; font-size: 12px; color: #64748b; }\n  </style>\n</head>\n<body>\n  <div class=\"container\">\n    <div class=\"header\">\n      <div class=\"badge\">Pastoral Advisory Unit</div>\n      <h1 style=\"margin: 0; font-size: 22px; font-weight: 800;\">Academic Attendance Warning</h1>\n      <p style=\"margin: 6px 0 0 0; font-size: 13px; opacity: 0.9;\">Apex University of Science & Technology · Office of the Academic Dean</p>\n    </div>\n    <div class=\"content\">\n      <p style=\"font-size: 15px; margin-top: 0;\">\n        Dear Guardian of <strong>Ethan Hunt</strong> (Roll No: <code>2024CS001</code>),\n      </p>\n      \n      <div class=\"metric-card\">\n        <p style=\"margin: 0; font-size: 14px; font-weight: 600; color: #92400e;\">\n          Course: <strong>CS-402 - Advanced Neural Networks</strong>\n        </p>\n        <p style=\"margin: 6px 0 0 0; font-size: 13px; color: #b45309;\">\n          Recorded Attendance Rate: <strong style=\"font-size: 18px; color: #dc2626;\">64.2%</strong>\n          <span style=\"font-size: 12px; color: #78350f;\"> (Minimum Senate Standard: <strong>75.0%</strong>)</span>\n        </p>\n        <p style=\"margin: 6px 0 0 0; font-size: 12px; color: #92400e;\">\n          Recovery Trajectory: <strong>18 consecutive attended class(es)</strong> required to restore exam eligibility.\n        </p>\n      </div>\n\n      <p style=\"font-size: 14px; color: #334155;\">\n        Immediate meeting with Course Coordinator required.\n      </p>\n\n      <div class=\"directive-card\">\n        <h4 style=\"margin: 0 0 10px 0; font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; color: #475569;\">\n          Pastoral Action Directives:\n        </h4>\n        <ol style=\"margin: 0; padding-left: 20px; font-size: 13px; color: #334155; line-height: 1.6;\">\n          <li>Review the detailed attendance ledger with your ward on the Student Portal.</li>\n          <li>Ensure mandatory attendance in all upcoming lecture and practical sessions.</li>\n          <li>Submit certified medical certificates or leave petitions within 48 hours if absence was due to illness.</li>\n          <li>For counseling or grievance redressal, schedule a consultation with the Course Faculty.</li>\n        </ol>\n      </div>\n\n      <p style=\"font-size: 12px; color: #64748b;\">\n        Notice Generated: Sep 26, 2026 | System Dispatch Ref: <code>ALERT-BATCH-MUHUYE8W-JBA2</code>\n      </p>\n    </div>\n    <div class=\"footer\">\n      This is an automated pastoral alert dispatched via CLASSROOM Academic OS. Guardians may verify this notice anytime through the Official Parent Gateway.\n    </div>\n  </div>\n</body>\n</html>\n",
+    "text": "Official pastoral notification: Your ward Ethan Hunt (Roll: 2024CS001) currently has 64.2% attendance in CS-402, which is below the mandatory 75% minimum threshold for end-semester examination eligibility. Please consult the course faculty immediately.",
+    "type": "NOTIFICATION",
+    "createdAt": "2026-09-26T03:56:38.448Z"
+  },
+  {
+    "id": "msg-1790394997745-ae4726",
+    "to": "student.fellow@apex.edu",
+    "subject": "Institutional Account Verification",
+    "html": "<p>Your security OTP is <strong>592819</strong></p>",
+    "text": "Institutional Account Verification",
+    "type": "PASSWORD_RESET",
+    "otpCode": "592819",
+    "createdAt": "2026-09-26T03:56:37.745Z"
+  },
+  {
+    "id": "msg-1790394936164-f773af",
+    "to": "prithvi.shaw.guardian@campus.edu",
+    "subject": "[URGENT] Academic Attendance Warning: Mandatory 75% Threshold Deficit for Prithvi Shaw (70%)",
+    "html": "\n<!DOCTYPE html>\n<html>\n<head>\n  <meta charset=\"utf-8\">\n  <style>\n    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; color: #1e293b; margin: 0; padding: 20px; background-color: #f8fafc; }\n    .container { max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 16px; overflow: hidden; border: 1px solid #e2e8f0; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05); }\n    .header { background: linear-gradient(135deg, #b45309 0%, #d97706 100%); padding: 28px; color: white; }\n    .content { padding: 28px; }\n    .badge { display: inline-block; padding: 4px 10px; background: rgba(255,255,255,0.2); border-radius: 20px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }\n    .metric-card { background-color: #fffbeb; border: 1px solid #fde68a; border-left: 5px solid #d97706; padding: 16px; border-radius: 8px; margin: 20px 0; }\n    .directive-card { background-color: #f1f5f9; padding: 18px; border-radius: 12px; margin: 20px 0; border: 1px solid #e2e8f0; }\n    .footer { padding: 20px 28px; background-color: #f8fafc; border-top: 1px solid #e2e8f0; font-size: 12px; color: #64748b; }\n  </style>\n</head>\n<body>\n  <div class=\"container\">\n    <div class=\"header\">\n      <div class=\"badge\">Pastoral Advisory Unit</div>\n      <h1 style=\"margin: 0; font-size: 22px; font-weight: 800;\">Academic Attendance Warning</h1>\n      <p style=\"margin: 6px 0 0 0; font-size: 13px; opacity: 0.9;\">Apex University of Science & Technology · Office of the Academic Dean</p>\n    </div>\n    <div class=\"content\">\n      <p style=\"font-size: 15px; margin-top: 0;\">\n        Dear Guardian of <strong>Prithvi Shaw</strong> (Roll No: <code>2024CS003</code>),\n      </p>\n      \n      <div class=\"metric-card\">\n        <p style=\"margin: 0; font-size: 14px; font-weight: 600; color: #92400e;\">\n          Course: <strong>CS-402 - Advanced Neural Networks</strong>\n        </p>\n        <p style=\"margin: 6px 0 0 0; font-size: 13px; color: #b45309;\">\n          Recorded Attendance Rate: <strong style=\"font-size: 18px; color: #dc2626;\">70%</strong>\n          <span style=\"font-size: 12px; color: #78350f;\"> (Minimum Senate Standard: <strong>75.0%</strong>)</span>\n        </p>\n        <p style=\"margin: 6px 0 0 0; font-size: 12px; color: #92400e;\">\n          Recovery Trajectory: <strong>8 consecutive attended class(es)</strong> required to restore exam eligibility.\n        </p>\n      </div>\n\n      <p style=\"font-size: 14px; color: #334155;\">\n        Immediate meeting with Course Coordinator required.\n      </p>\n\n      <div class=\"directive-card\">\n        <h4 style=\"margin: 0 0 10px 0; font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; color: #475569;\">\n          Pastoral Action Directives:\n        </h4>\n        <ol style=\"margin: 0; padding-left: 20px; font-size: 13px; color: #334155; line-height: 1.6;\">\n          <li>Review the detailed attendance ledger with your ward on the Student Portal.</li>\n          <li>Ensure mandatory attendance in all upcoming lecture and practical sessions.</li>\n          <li>Submit certified medical certificates or leave petitions within 48 hours if absence was due to illness.</li>\n          <li>For counseling or grievance redressal, schedule a consultation with the Course Faculty.</li>\n        </ol>\n      </div>\n\n      <p style=\"font-size: 12px; color: #64748b;\">\n        Notice Generated: Sep 26, 2026 | System Dispatch Ref: <code>ALERT-BATCH-MUHUX24N-KU8C</code>\n      </p>\n    </div>\n    <div class=\"footer\">\n      This is an automated pastoral alert dispatched via CLASSROOM Academic OS. Guardians may verify this notice anytime through the Official Parent Gateway.\n    </div>\n  </div>\n</body>\n</html>\n",
+    "text": "Official pastoral notification: Your ward Prithvi Shaw (Roll: 2024CS003) currently has 70% attendance in CS-402, which is below the mandatory 75% minimum threshold for end-semester examination eligibility. Please consult the course faculty immediately.",
+    "type": "NOTIFICATION",
+    "createdAt": "2026-09-26T03:55:36.164Z"
+  },
+  {
+    "id": "msg-1790394936125-7da2b8",
+    "to": "kunal.kamra.guardian@campus.edu",
+    "subject": "[URGENT] Academic Attendance Warning: Mandatory 75% Threshold Deficit for Kunal Kamra (71.5%)",
+    "html": "\n<!DOCTYPE html>\n<html>\n<head>\n  <meta charset=\"utf-8\">\n  <style>\n    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; color: #1e293b; margin: 0; padding: 20px; background-color: #f8fafc; }\n    .container { max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 16px; overflow: hidden; border: 1px solid #e2e8f0; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05); }\n    .header { background: linear-gradient(135deg, #b45309 0%, #d97706 100%); padding: 28px; color: white; }\n    .content { padding: 28px; }\n    .badge { display: inline-block; padding: 4px 10px; background: rgba(255,255,255,0.2); border-radius: 20px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }\n    .metric-card { background-color: #fffbeb; border: 1px solid #fde68a; border-left: 5px solid #d97706; padding: 16px; border-radius: 8px; margin: 20px 0; }\n    .directive-card { background-color: #f1f5f9; padding: 18px; border-radius: 12px; margin: 20px 0; border: 1px solid #e2e8f0; }\n    .footer { padding: 20px 28px; background-color: #f8fafc; border-top: 1px solid #e2e8f0; font-size: 12px; color: #64748b; }\n  </style>\n</head>\n<body>\n  <div class=\"container\">\n    <div class=\"header\">\n      <div class=\"badge\">Pastoral Advisory Unit</div>\n      <h1 style=\"margin: 0; font-size: 22px; font-weight: 800;\">Academic Attendance Warning</h1>\n      <p style=\"margin: 6px 0 0 0; font-size: 13px; opacity: 0.9;\">Apex University of Science & Technology · Office of the Academic Dean</p>\n    </div>\n    <div class=\"content\">\n      <p style=\"font-size: 15px; margin-top: 0;\">\n        Dear Guardian of <strong>Kunal Kamra</strong> (Roll No: <code>2024CS002</code>),\n      </p>\n      \n      <div class=\"metric-card\">\n        <p style=\"margin: 0; font-size: 14px; font-weight: 600; color: #92400e;\">\n          Course: <strong>CS-402 - Advanced Neural Networks</strong>\n        </p>\n        <p style=\"margin: 6px 0 0 0; font-size: 13px; color: #b45309;\">\n          Recorded Attendance Rate: <strong style=\"font-size: 18px; color: #dc2626;\">71.5%</strong>\n          <span style=\"font-size: 12px; color: #78350f;\"> (Minimum Senate Standard: <strong>75.0%</strong>)</span>\n        </p>\n        <p style=\"margin: 6px 0 0 0; font-size: 12px; color: #92400e;\">\n          Recovery Trajectory: <strong>6 consecutive attended class(es)</strong> required to restore exam eligibility.\n        </p>\n      </div>\n\n      <p style=\"font-size: 14px; color: #334155;\">\n        Immediate meeting with Course Coordinator required.\n      </p>\n\n      <div class=\"directive-card\">\n        <h4 style=\"margin: 0 0 10px 0; font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; color: #475569;\">\n          Pastoral Action Directives:\n        </h4>\n        <ol style=\"margin: 0; padding-left: 20px; font-size: 13px; color: #334155; line-height: 1.6;\">\n          <li>Review the detailed attendance ledger with your ward on the Student Portal.</li>\n          <li>Ensure mandatory attendance in all upcoming lecture and practical sessions.</li>\n          <li>Submit certified medical certificates or leave petitions within 48 hours if absence was due to illness.</li>\n          <li>For counseling or grievance redressal, schedule a consultation with the Course Faculty.</li>\n        </ol>\n      </div>\n\n      <p style=\"font-size: 12px; color: #64748b;\">\n        Notice Generated: Sep 26, 2026 | System Dispatch Ref: <code>ALERT-BATCH-MUHUX24N-KU8C</code>\n      </p>\n    </div>\n    <div class=\"footer\">\n      This is an automated pastoral alert dispatched via CLASSROOM Academic OS. Guardians may verify this notice anytime through the Official Parent Gateway.\n    </div>\n  </div>\n</body>\n</html>\n",
+    "text": "Official pastoral notification: Your ward Kunal Kamra (Roll: 2024CS002) currently has 71.5% attendance in CS-402, which is below the mandatory 75% minimum threshold for end-semester examination eligibility. Please consult the course faculty immediately.",
+    "type": "NOTIFICATION",
+    "createdAt": "2026-09-26T03:55:36.125Z"
+  },
+  {
+    "id": "msg-1790394936084-3a937d",
+    "to": "ethan.hunt.guardian@campus.edu",
+    "subject": "[URGENT] Academic Attendance Warning: Mandatory 75% Threshold Deficit for Ethan Hunt (64.2%)",
+    "html": "\n<!DOCTYPE html>\n<html>\n<head>\n  <meta charset=\"utf-8\">\n  <style>\n    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; color: #1e293b; margin: 0; padding: 20px; background-color: #f8fafc; }\n    .container { max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 16px; overflow: hidden; border: 1px solid #e2e8f0; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05); }\n    .header { background: linear-gradient(135deg, #b45309 0%, #d97706 100%); padding: 28px; color: white; }\n    .content { padding: 28px; }\n    .badge { display: inline-block; padding: 4px 10px; background: rgba(255,255,255,0.2); border-radius: 20px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }\n    .metric-card { background-color: #fffbeb; border: 1px solid #fde68a; border-left: 5px solid #d97706; padding: 16px; border-radius: 8px; margin: 20px 0; }\n    .directive-card { background-color: #f1f5f9; padding: 18px; border-radius: 12px; margin: 20px 0; border: 1px solid #e2e8f0; }\n    .footer { padding: 20px 28px; background-color: #f8fafc; border-top: 1px solid #e2e8f0; font-size: 12px; color: #64748b; }\n  </style>\n</head>\n<body>\n  <div class=\"container\">\n    <div class=\"header\">\n      <div class=\"badge\">Pastoral Advisory Unit</div>\n      <h1 style=\"margin: 0; font-size: 22px; font-weight: 800;\">Academic Attendance Warning</h1>\n      <p style=\"margin: 6px 0 0 0; font-size: 13px; opacity: 0.9;\">Apex University of Science & Technology · Office of the Academic Dean</p>\n    </div>\n    <div class=\"content\">\n      <p style=\"font-size: 15px; margin-top: 0;\">\n        Dear Guardian of <strong>Ethan Hunt</strong> (Roll No: <code>2024CS001</code>),\n      </p>\n      \n      <div class=\"metric-card\">\n        <p style=\"margin: 0; font-size: 14px; font-weight: 600; color: #92400e;\">\n          Course: <strong>CS-402 - Advanced Neural Networks</strong>\n        </p>\n        <p style=\"margin: 6px 0 0 0; font-size: 13px; color: #b45309;\">\n          Recorded Attendance Rate: <strong style=\"font-size: 18px; color: #dc2626;\">64.2%</strong>\n          <span style=\"font-size: 12px; color: #78350f;\"> (Minimum Senate Standard: <strong>75.0%</strong>)</span>\n        </p>\n        <p style=\"margin: 6px 0 0 0; font-size: 12px; color: #92400e;\">\n          Recovery Trajectory: <strong>18 consecutive attended class(es)</strong> required to restore exam eligibility.\n        </p>\n      </div>\n\n      <p style=\"font-size: 14px; color: #334155;\">\n        Immediate meeting with Course Coordinator required.\n      </p>\n\n      <div class=\"directive-card\">\n        <h4 style=\"margin: 0 0 10px 0; font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; color: #475569;\">\n          Pastoral Action Directives:\n        </h4>\n        <ol style=\"margin: 0; padding-left: 20px; font-size: 13px; color: #334155; line-height: 1.6;\">\n          <li>Review the detailed attendance ledger with your ward on the Student Portal.</li>\n          <li>Ensure mandatory attendance in all upcoming lecture and practical sessions.</li>\n          <li>Submit certified medical certificates or leave petitions within 48 hours if absence was due to illness.</li>\n          <li>For counseling or grievance redressal, schedule a consultation with the Course Faculty.</li>\n        </ol>\n      </div>\n\n      <p style=\"font-size: 12px; color: #64748b;\">\n        Notice Generated: Sep 26, 2026 | System Dispatch Ref: <code>ALERT-BATCH-MUHUX24N-KU8C</code>\n      </p>\n    </div>\n    <div class=\"footer\">\n      This is an automated pastoral alert dispatched via CLASSROOM Academic OS. Guardians may verify this notice anytime through the Official Parent Gateway.\n    </div>\n  </div>\n</body>\n</html>\n",
+    "text": "Official pastoral notification: Your ward Ethan Hunt (Roll: 2024CS001) currently has 64.2% attendance in CS-402, which is below the mandatory 75% minimum threshold for end-semester examination eligibility. Please consult the course faculty immediately.",
+    "type": "NOTIFICATION",
+    "createdAt": "2026-09-26T03:55:36.084Z"
+  },
+  {
+    "id": "msg-1790394935317-0ce01a",
+    "to": "student.fellow@apex.edu",
+    "subject": "Institutional Account Verification",
+    "html": "<p>Your security OTP is <strong>592819</strong></p>",
+    "text": "Institutional Account Verification",
+    "type": "PASSWORD_RESET",
+    "otpCode": "592819",
+    "createdAt": "2026-09-26T03:55:35.317Z"
+  },
+  {
+    "id": "msg-1790394877226-fb079a",
+    "to": "prithvi.shaw.guardian@campus.edu",
+    "subject": "[URGENT] Academic Attendance Warning: Mandatory 75% Threshold Deficit for Prithvi Shaw (70%)",
+    "html": "\n<!DOCTYPE html>\n<html>\n<head>\n  <meta charset=\"utf-8\">\n  <style>\n    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; color: #1e293b; margin: 0; padding: 20px; background-color: #f8fafc; }\n    .container { max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 16px; overflow: hidden; border: 1px solid #e2e8f0; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05); }\n    .header { background: linear-gradient(135deg, #b45309 0%, #d97706 100%); padding: 28px; color: white; }\n    .content { padding: 28px; }\n    .badge { display: inline-block; padding: 4px 10px; background: rgba(255,255,255,0.2); border-radius: 20px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }\n    .metric-card { background-color: #fffbeb; border: 1px solid #fde68a; border-left: 5px solid #d97706; padding: 16px; border-radius: 8px; margin: 20px 0; }\n    .directive-card { background-color: #f1f5f9; padding: 18px; border-radius: 12px; margin: 20px 0; border: 1px solid #e2e8f0; }\n    .footer { padding: 20px 28px; background-color: #f8fafc; border-top: 1px solid #e2e8f0; font-size: 12px; color: #64748b; }\n  </style>\n</head>\n<body>\n  <div class=\"container\">\n    <div class=\"header\">\n      <div class=\"badge\">Pastoral Advisory Unit</div>\n      <h1 style=\"margin: 0; font-size: 22px; font-weight: 800;\">Academic Attendance Warning</h1>\n      <p style=\"margin: 6px 0 0 0; font-size: 13px; opacity: 0.9;\">Apex University of Science & Technology · Office of the Academic Dean</p>\n    </div>\n    <div class=\"content\">\n      <p style=\"font-size: 15px; margin-top: 0;\">\n        Dear Guardian of <strong>Prithvi Shaw</strong> (Roll No: <code>2024CS003</code>),\n      </p>\n      \n      <div class=\"metric-card\">\n        <p style=\"margin: 0; font-size: 14px; font-weight: 600; color: #92400e;\">\n          Course: <strong>CS-402 - Advanced Neural Networks</strong>\n        </p>\n        <p style=\"margin: 6px 0 0 0; font-size: 13px; color: #b45309;\">\n          Recorded Attendance Rate: <strong style=\"font-size: 18px; color: #dc2626;\">70%</strong>\n          <span style=\"font-size: 12px; color: #78350f;\"> (Minimum Senate Standard: <strong>75.0%</strong>)</span>\n        </p>\n        <p style=\"margin: 6px 0 0 0; font-size: 12px; color: #92400e;\">\n          Recovery Trajectory: <strong>8 consecutive attended class(es)</strong> required to restore exam eligibility.\n        </p>\n      </div>\n\n      <p style=\"font-size: 14px; color: #334155;\">\n        Immediate meeting with Course Coordinator required.\n      </p>\n\n      <div class=\"directive-card\">\n        <h4 style=\"margin: 0 0 10px 0; font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; color: #475569;\">\n          Pastoral Action Directives:\n        </h4>\n        <ol style=\"margin: 0; padding-left: 20px; font-size: 13px; color: #334155; line-height: 1.6;\">\n          <li>Review the detailed attendance ledger with your ward on the Student Portal.</li>\n          <li>Ensure mandatory attendance in all upcoming lecture and practical sessions.</li>\n          <li>Submit certified medical certificates or leave petitions within 48 hours if absence was due to illness.</li>\n          <li>For counseling or grievance redressal, schedule a consultation with the Course Faculty.</li>\n        </ol>\n      </div>\n\n      <p style=\"font-size: 12px; color: #64748b;\">\n        Notice Generated: Sep 26, 2026 | System Dispatch Ref: <code>ALERT-BATCH-MUHUVSNZ-936L</code>\n      </p>\n    </div>\n    <div class=\"footer\">\n      This is an automated pastoral alert dispatched via CLASSROOM Academic OS. Guardians may verify this notice anytime through the Official Parent Gateway.\n    </div>\n  </div>\n</body>\n</html>\n",
+    "text": "Official pastoral notification: Your ward Prithvi Shaw (Roll: 2024CS003) currently has 70% attendance in CS-402, which is below the mandatory 75% minimum threshold for end-semester examination eligibility. Please consult the course faculty immediately.",
+    "type": "NOTIFICATION",
+    "createdAt": "2026-09-26T03:54:37.226Z"
+  },
+  {
+    "id": "msg-1790394877192-f6361c",
+    "to": "kunal.kamra.guardian@campus.edu",
+    "subject": "[URGENT] Academic Attendance Warning: Mandatory 75% Threshold Deficit for Kunal Kamra (71.5%)",
+    "html": "\n<!DOCTYPE html>\n<html>\n<head>\n  <meta charset=\"utf-8\">\n  <style>\n    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; color: #1e293b; margin: 0; padding: 20px; background-color: #f8fafc; }\n    .container { max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 16px; overflow: hidden; border: 1px solid #e2e8f0; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05); }\n    .header { background: linear-gradient(135deg, #b45309 0%, #d97706 100%); padding: 28px; color: white; }\n    .content { padding: 28px; }\n    .badge { display: inline-block; padding: 4px 10px; background: rgba(255,255,255,0.2); border-radius: 20px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }\n    .metric-card { background-color: #fffbeb; border: 1px solid #fde68a; border-left: 5px solid #d97706; padding: 16px; border-radius: 8px; margin: 20px 0; }\n    .directive-card { background-color: #f1f5f9; padding: 18px; border-radius: 12px; margin: 20px 0; border: 1px solid #e2e8f0; }\n    .footer { padding: 20px 28px; background-color: #f8fafc; border-top: 1px solid #e2e8f0; font-size: 12px; color: #64748b; }\n  </style>\n</head>\n<body>\n  <div class=\"container\">\n    <div class=\"header\">\n      <div class=\"badge\">Pastoral Advisory Unit</div>\n      <h1 style=\"margin: 0; font-size: 22px; font-weight: 800;\">Academic Attendance Warning</h1>\n      <p style=\"margin: 6px 0 0 0; font-size: 13px; opacity: 0.9;\">Apex University of Science & Technology · Office of the Academic Dean</p>\n    </div>\n    <div class=\"content\">\n      <p style=\"font-size: 15px; margin-top: 0;\">\n        Dear Guardian of <strong>Kunal Kamra</strong> (Roll No: <code>2024CS002</code>),\n      </p>\n      \n      <div class=\"metric-card\">\n        <p style=\"margin: 0; font-size: 14px; font-weight: 600; color: #92400e;\">\n          Course: <strong>CS-402 - Advanced Neural Networks</strong>\n        </p>\n        <p style=\"margin: 6px 0 0 0; font-size: 13px; color: #b45309;\">\n          Recorded Attendance Rate: <strong style=\"font-size: 18px; color: #dc2626;\">71.5%</strong>\n          <span style=\"font-size: 12px; color: #78350f;\"> (Minimum Senate Standard: <strong>75.0%</strong>)</span>\n        </p>\n        <p style=\"margin: 6px 0 0 0; font-size: 12px; color: #92400e;\">\n          Recovery Trajectory: <strong>6 consecutive attended class(es)</strong> required to restore exam eligibility.\n        </p>\n      </div>\n\n      <p style=\"font-size: 14px; color: #334155;\">\n        Immediate meeting with Course Coordinator required.\n      </p>\n\n      <div class=\"directive-card\">\n        <h4 style=\"margin: 0 0 10px 0; font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; color: #475569;\">\n          Pastoral Action Directives:\n        </h4>\n        <ol style=\"margin: 0; padding-left: 20px; font-size: 13px; color: #334155; line-height: 1.6;\">\n          <li>Review the detailed attendance ledger with your ward on the Student Portal.</li>\n          <li>Ensure mandatory attendance in all upcoming lecture and practical sessions.</li>\n          <li>Submit certified medical certificates or leave petitions within 48 hours if absence was due to illness.</li>\n          <li>For counseling or grievance redressal, schedule a consultation with the Course Faculty.</li>\n        </ol>\n      </div>\n\n      <p style=\"font-size: 12px; color: #64748b;\">\n        Notice Generated: Sep 26, 2026 | System Dispatch Ref: <code>ALERT-BATCH-MUHUVSNZ-936L</code>\n      </p>\n    </div>\n    <div class=\"footer\">\n      This is an automated pastoral alert dispatched via CLASSROOM Academic OS. Guardians may verify this notice anytime through the Official Parent Gateway.\n    </div>\n  </div>\n</body>\n</html>\n",
+    "text": "Official pastoral notification: Your ward Kunal Kamra (Roll: 2024CS002) currently has 71.5% attendance in CS-402, which is below the mandatory 75% minimum threshold for end-semester examination eligibility. Please consult the course faculty immediately.",
+    "type": "NOTIFICATION",
+    "createdAt": "2026-09-26T03:54:37.193Z"
+  },
+  {
+    "id": "msg-1790394877164-77feed",
+    "to": "ethan.hunt.guardian@campus.edu",
+    "subject": "[URGENT] Academic Attendance Warning: Mandatory 75% Threshold Deficit for Ethan Hunt (64.2%)",
+    "html": "\n<!DOCTYPE html>\n<html>\n<head>\n  <meta charset=\"utf-8\">\n  <style>\n    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; color: #1e293b; margin: 0; padding: 20px; background-color: #f8fafc; }\n    .container { max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 16px; overflow: hidden; border: 1px solid #e2e8f0; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05); }\n    .header { background: linear-gradient(135deg, #b45309 0%, #d97706 100%); padding: 28px; color: white; }\n    .content { padding: 28px; }\n    .badge { display: inline-block; padding: 4px 10px; background: rgba(255,255,255,0.2); border-radius: 20px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }\n    .metric-card { background-color: #fffbeb; border: 1px solid #fde68a; border-left: 5px solid #d97706; padding: 16px; border-radius: 8px; margin: 20px 0; }\n    .directive-card { background-color: #f1f5f9; padding: 18px; border-radius: 12px; margin: 20px 0; border: 1px solid #e2e8f0; }\n    .footer { padding: 20px 28px; background-color: #f8fafc; border-top: 1px solid #e2e8f0; font-size: 12px; color: #64748b; }\n  </style>\n</head>\n<body>\n  <div class=\"container\">\n    <div class=\"header\">\n      <div class=\"badge\">Pastoral Advisory Unit</div>\n      <h1 style=\"margin: 0; font-size: 22px; font-weight: 800;\">Academic Attendance Warning</h1>\n      <p style=\"margin: 6px 0 0 0; font-size: 13px; opacity: 0.9;\">Apex University of Science & Technology · Office of the Academic Dean</p>\n    </div>\n    <div class=\"content\">\n      <p style=\"font-size: 15px; margin-top: 0;\">\n        Dear Guardian of <strong>Ethan Hunt</strong> (Roll No: <code>2024CS001</code>),\n      </p>\n      \n      <div class=\"metric-card\">\n        <p style=\"margin: 0; font-size: 14px; font-weight: 600; color: #92400e;\">\n          Course: <strong>CS-402 - Advanced Neural Networks</strong>\n        </p>\n        <p style=\"margin: 6px 0 0 0; font-size: 13px; color: #b45309;\">\n          Recorded Attendance Rate: <strong style=\"font-size: 18px; color: #dc2626;\">64.2%</strong>\n          <span style=\"font-size: 12px; color: #78350f;\"> (Minimum Senate Standard: <strong>75.0%</strong>)</span>\n        </p>\n        <p style=\"margin: 6px 0 0 0; font-size: 12px; color: #92400e;\">\n          Recovery Trajectory: <strong>18 consecutive attended class(es)</strong> required to restore exam eligibility.\n        </p>\n      </div>\n\n      <p style=\"font-size: 14px; color: #334155;\">\n        Immediate meeting with Course Coordinator required.\n      </p>\n\n      <div class=\"directive-card\">\n        <h4 style=\"margin: 0 0 10px 0; font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; color: #475569;\">\n          Pastoral Action Directives:\n        </h4>\n        <ol style=\"margin: 0; padding-left: 20px; font-size: 13px; color: #334155; line-height: 1.6;\">\n          <li>Review the detailed attendance ledger with your ward on the Student Portal.</li>\n          <li>Ensure mandatory attendance in all upcoming lecture and practical sessions.</li>\n          <li>Submit certified medical certificates or leave petitions within 48 hours if absence was due to illness.</li>\n          <li>For counseling or grievance redressal, schedule a consultation with the Course Faculty.</li>\n        </ol>\n      </div>\n\n      <p style=\"font-size: 12px; color: #64748b;\">\n        Notice Generated: Sep 26, 2026 | System Dispatch Ref: <code>ALERT-BATCH-MUHUVSNZ-936L</code>\n      </p>\n    </div>\n    <div class=\"footer\">\n      This is an automated pastoral alert dispatched via CLASSROOM Academic OS. Guardians may verify this notice anytime through the Official Parent Gateway.\n    </div>\n  </div>\n</body>\n</html>\n",
+    "text": "Official pastoral notification: Your ward Ethan Hunt (Roll: 2024CS001) currently has 64.2% attendance in CS-402, which is below the mandatory 75% minimum threshold for end-semester examination eligibility. Please consult the course faculty immediately.",
+    "type": "NOTIFICATION",
+    "createdAt": "2026-09-26T03:54:37.164Z"
+  },
+  {
+    "id": "msg-1790394876483-68704f",
+    "to": "student.fellow@apex.edu",
+    "subject": "Institutional Account Verification",
+    "html": "<p>Your security OTP is <strong>592819</strong></p>",
+    "text": "Institutional Account Verification",
+    "type": "PASSWORD_RESET",
+    "otpCode": "592819",
+    "createdAt": "2026-09-26T03:54:36.483Z"
+  },
+  {
+    "id": "msg-1790394041350-6f44da",
+    "to": "prithvi.shaw.guardian@campus.edu",
+    "subject": "[URGENT] Academic Attendance Warning: Mandatory 75% Threshold Deficit for Prithvi Shaw (70%)",
+    "html": "\n<!DOCTYPE html>\n<html>\n<head>\n  <meta charset=\"utf-8\">\n  <style>\n    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; color: #1e293b; margin: 0; padding: 20px; background-color: #f8fafc; }\n    .container { max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 16px; overflow: hidden; border: 1px solid #e2e8f0; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05); }\n    .header { background: linear-gradient(135deg, #b45309 0%, #d97706 100%); padding: 28px; color: white; }\n    .content { padding: 28px; }\n    .badge { display: inline-block; padding: 4px 10px; background: rgba(255,255,255,0.2); border-radius: 20px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }\n    .metric-card { background-color: #fffbeb; border: 1px solid #fde68a; border-left: 5px solid #d97706; padding: 16px; border-radius: 8px; margin: 20px 0; }\n    .directive-card { background-color: #f1f5f9; padding: 18px; border-radius: 12px; margin: 20px 0; border: 1px solid #e2e8f0; }\n    .footer { padding: 20px 28px; background-color: #f8fafc; border-top: 1px solid #e2e8f0; font-size: 12px; color: #64748b; }\n  </style>\n</head>\n<body>\n  <div class=\"container\">\n    <div class=\"header\">\n      <div class=\"badge\">Pastoral Advisory Unit</div>\n      <h1 style=\"margin: 0; font-size: 22px; font-weight: 800;\">Academic Attendance Warning</h1>\n      <p style=\"margin: 6px 0 0 0; font-size: 13px; opacity: 0.9;\">Apex University of Science & Technology · Office of the Academic Dean</p>\n    </div>\n    <div class=\"content\">\n      <p style=\"font-size: 15px; margin-top: 0;\">\n        Dear Guardian of <strong>Prithvi Shaw</strong> (Roll No: <code>2024CS003</code>),\n      </p>\n      \n      <div class=\"metric-card\">\n        <p style=\"margin: 0; font-size: 14px; font-weight: 600; color: #92400e;\">\n          Course: <strong>CS-402 - Advanced Neural Networks</strong>\n        </p>\n        <p style=\"margin: 6px 0 0 0; font-size: 13px; color: #b45309;\">\n          Recorded Attendance Rate: <strong style=\"font-size: 18px; color: #dc2626;\">70%</strong>\n          <span style=\"font-size: 12px; color: #78350f;\"> (Minimum Senate Standard: <strong>75.0%</strong>)</span>\n        </p>\n        <p style=\"margin: 6px 0 0 0; font-size: 12px; color: #92400e;\">\n          Recovery Trajectory: <strong>8 consecutive attended class(es)</strong> required to restore exam eligibility.\n        </p>\n      </div>\n\n      <p style=\"font-size: 14px; color: #334155;\">\n        Immediate meeting with Course Coordinator required.\n      </p>\n\n      <div class=\"directive-card\">\n        <h4 style=\"margin: 0 0 10px 0; font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; color: #475569;\">\n          Pastoral Action Directives:\n        </h4>\n        <ol style=\"margin: 0; padding-left: 20px; font-size: 13px; color: #334155; line-height: 1.6;\">\n          <li>Review the detailed attendance ledger with your ward on the Student Portal.</li>\n          <li>Ensure mandatory attendance in all upcoming lecture and practical sessions.</li>\n          <li>Submit certified medical certificates or leave petitions within 48 hours if absence was due to illness.</li>\n          <li>For counseling or grievance redressal, schedule a consultation with the Course Faculty.</li>\n        </ol>\n      </div>\n\n      <p style=\"font-size: 12px; color: #64748b;\">\n        Notice Generated: Sep 26, 2026 | System Dispatch Ref: <code>ALERT-BATCH-MUHUDVP4-1UZH</code>\n      </p>\n    </div>\n    <div class=\"footer\">\n      This is an automated pastoral alert dispatched via CLASSROOM Academic OS. Guardians may verify this notice anytime through the Official Parent Gateway.\n    </div>\n  </div>\n</body>\n</html>\n",
+    "text": "Official pastoral notification: Your ward Prithvi Shaw (Roll: 2024CS003) currently has 70% attendance in CS-402, which is below the mandatory 75% minimum threshold for end-semester examination eligibility. Please consult the course faculty immediately.",
+    "type": "NOTIFICATION",
+    "createdAt": "2026-09-26T03:40:41.350Z"
+  },
+  {
+    "id": "msg-1790394041311-d4025b",
+    "to": "kunal.kamra.guardian@campus.edu",
+    "subject": "[URGENT] Academic Attendance Warning: Mandatory 75% Threshold Deficit for Kunal Kamra (71.5%)",
+    "html": "\n<!DOCTYPE html>\n<html>\n<head>\n  <meta charset=\"utf-8\">\n  <style>\n    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; color: #1e293b; margin: 0; padding: 20px; background-color: #f8fafc; }\n    .container { max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 16px; overflow: hidden; border: 1px solid #e2e8f0; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05); }\n    .header { background: linear-gradient(135deg, #b45309 0%, #d97706 100%); padding: 28px; color: white; }\n    .content { padding: 28px; }\n    .badge { display: inline-block; padding: 4px 10px; background: rgba(255,255,255,0.2); border-radius: 20px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }\n    .metric-card { background-color: #fffbeb; border: 1px solid #fde68a; border-left: 5px solid #d97706; padding: 16px; border-radius: 8px; margin: 20px 0; }\n    .directive-card { background-color: #f1f5f9; padding: 18px; border-radius: 12px; margin: 20px 0; border: 1px solid #e2e8f0; }\n    .footer { padding: 20px 28px; background-color: #f8fafc; border-top: 1px solid #e2e8f0; font-size: 12px; color: #64748b; }\n  </style>\n</head>\n<body>\n  <div class=\"container\">\n    <div class=\"header\">\n      <div class=\"badge\">Pastoral Advisory Unit</div>\n      <h1 style=\"margin: 0; font-size: 22px; font-weight: 800;\">Academic Attendance Warning</h1>\n      <p style=\"margin: 6px 0 0 0; font-size: 13px; opacity: 0.9;\">Apex University of Science & Technology · Office of the Academic Dean</p>\n    </div>\n    <div class=\"content\">\n      <p style=\"font-size: 15px; margin-top: 0;\">\n        Dear Guardian of <strong>Kunal Kamra</strong> (Roll No: <code>2024CS002</code>),\n      </p>\n      \n      <div class=\"metric-card\">\n        <p style=\"margin: 0; font-size: 14px; font-weight: 600; color: #92400e;\">\n          Course: <strong>CS-402 - Advanced Neural Networks</strong>\n        </p>\n        <p style=\"margin: 6px 0 0 0; font-size: 13px; color: #b45309;\">\n          Recorded Attendance Rate: <strong style=\"font-size: 18px; color: #dc2626;\">71.5%</strong>\n          <span style=\"font-size: 12px; color: #78350f;\"> (Minimum Senate Standard: <strong>75.0%</strong>)</span>\n        </p>\n        <p style=\"margin: 6px 0 0 0; font-size: 12px; color: #92400e;\">\n          Recovery Trajectory: <strong>6 consecutive attended class(es)</strong> required to restore exam eligibility.\n        </p>\n      </div>\n\n      <p style=\"font-size: 14px; color: #334155;\">\n        Immediate meeting with Course Coordinator required.\n      </p>\n\n      <div class=\"directive-card\">\n        <h4 style=\"margin: 0 0 10px 0; font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; color: #475569;\">\n          Pastoral Action Directives:\n        </h4>\n        <ol style=\"margin: 0; padding-left: 20px; font-size: 13px; color: #334155; line-height: 1.6;\">\n          <li>Review the detailed attendance ledger with your ward on the Student Portal.</li>\n          <li>Ensure mandatory attendance in all upcoming lecture and practical sessions.</li>\n          <li>Submit certified medical certificates or leave petitions within 48 hours if absence was due to illness.</li>\n          <li>For counseling or grievance redressal, schedule a consultation with the Course Faculty.</li>\n        </ol>\n      </div>\n\n      <p style=\"font-size: 12px; color: #64748b;\">\n        Notice Generated: Sep 26, 2026 | System Dispatch Ref: <code>ALERT-BATCH-MUHUDVP4-1UZH</code>\n      </p>\n    </div>\n    <div class=\"footer\">\n      This is an automated pastoral alert dispatched via CLASSROOM Academic OS. Guardians may verify this notice anytime through the Official Parent Gateway.\n    </div>\n  </div>\n</body>\n</html>\n",
+    "text": "Official pastoral notification: Your ward Kunal Kamra (Roll: 2024CS002) currently has 71.5% attendance in CS-402, which is below the mandatory 75% minimum threshold for end-semester examination eligibility. Please consult the course faculty immediately.",
+    "type": "NOTIFICATION",
+    "createdAt": "2026-09-26T03:40:41.311Z"
+  },
+  {
+    "id": "msg-1790394041284-dea80c",
+    "to": "ethan.hunt.guardian@campus.edu",
+    "subject": "[URGENT] Academic Attendance Warning: Mandatory 75% Threshold Deficit for Ethan Hunt (64.2%)",
+    "html": "\n<!DOCTYPE html>\n<html>\n<head>\n  <meta charset=\"utf-8\">\n  <style>\n    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; color: #1e293b; margin: 0; padding: 20px; background-color: #f8fafc; }\n    .container { max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 16px; overflow: hidden; border: 1px solid #e2e8f0; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05); }\n    .header { background: linear-gradient(135deg, #b45309 0%, #d97706 100%); padding: 28px; color: white; }\n    .content { padding: 28px; }\n    .badge { display: inline-block; padding: 4px 10px; background: rgba(255,255,255,0.2); border-radius: 20px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }\n    .metric-card { background-color: #fffbeb; border: 1px solid #fde68a; border-left: 5px solid #d97706; padding: 16px; border-radius: 8px; margin: 20px 0; }\n    .directive-card { background-color: #f1f5f9; padding: 18px; border-radius: 12px; margin: 20px 0; border: 1px solid #e2e8f0; }\n    .footer { padding: 20px 28px; background-color: #f8fafc; border-top: 1px solid #e2e8f0; font-size: 12px; color: #64748b; }\n  </style>\n</head>\n<body>\n  <div class=\"container\">\n    <div class=\"header\">\n      <div class=\"badge\">Pastoral Advisory Unit</div>\n      <h1 style=\"margin: 0; font-size: 22px; font-weight: 800;\">Academic Attendance Warning</h1>\n      <p style=\"margin: 6px 0 0 0; font-size: 13px; opacity: 0.9;\">Apex University of Science & Technology · Office of the Academic Dean</p>\n    </div>\n    <div class=\"content\">\n      <p style=\"font-size: 15px; margin-top: 0;\">\n        Dear Guardian of <strong>Ethan Hunt</strong> (Roll No: <code>2024CS001</code>),\n      </p>\n      \n      <div class=\"metric-card\">\n        <p style=\"margin: 0; font-size: 14px; font-weight: 600; color: #92400e;\">\n          Course: <strong>CS-402 - Advanced Neural Networks</strong>\n        </p>\n        <p style=\"margin: 6px 0 0 0; font-size: 13px; color: #b45309;\">\n          Recorded Attendance Rate: <strong style=\"font-size: 18px; color: #dc2626;\">64.2%</strong>\n          <span style=\"font-size: 12px; color: #78350f;\"> (Minimum Senate Standard: <strong>75.0%</strong>)</span>\n        </p>\n        <p style=\"margin: 6px 0 0 0; font-size: 12px; color: #92400e;\">\n          Recovery Trajectory: <strong>18 consecutive attended class(es)</strong> required to restore exam eligibility.\n        </p>\n      </div>\n\n      <p style=\"font-size: 14px; color: #334155;\">\n        Immediate meeting with Course Coordinator required.\n      </p>\n\n      <div class=\"directive-card\">\n        <h4 style=\"margin: 0 0 10px 0; font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; color: #475569;\">\n          Pastoral Action Directives:\n        </h4>\n        <ol style=\"margin: 0; padding-left: 20px; font-size: 13px; color: #334155; line-height: 1.6;\">\n          <li>Review the detailed attendance ledger with your ward on the Student Portal.</li>\n          <li>Ensure mandatory attendance in all upcoming lecture and practical sessions.</li>\n          <li>Submit certified medical certificates or leave petitions within 48 hours if absence was due to illness.</li>\n          <li>For counseling or grievance redressal, schedule a consultation with the Course Faculty.</li>\n        </ol>\n      </div>\n\n      <p style=\"font-size: 12px; color: #64748b;\">\n        Notice Generated: Sep 26, 2026 | System Dispatch Ref: <code>ALERT-BATCH-MUHUDVP4-1UZH</code>\n      </p>\n    </div>\n    <div class=\"footer\">\n      This is an automated pastoral alert dispatched via CLASSROOM Academic OS. Guardians may verify this notice anytime through the Official Parent Gateway.\n    </div>\n  </div>\n</body>\n</html>\n",
+    "text": "Official pastoral notification: Your ward Ethan Hunt (Roll: 2024CS001) currently has 64.2% attendance in CS-402, which is below the mandatory 75% minimum threshold for end-semester examination eligibility. Please consult the course faculty immediately.",
+    "type": "NOTIFICATION",
+    "createdAt": "2026-09-26T03:40:41.284Z"
+  },
+  {
+    "id": "msg-1790394040626-00a0da",
+    "to": "student.fellow@apex.edu",
+    "subject": "Institutional Account Verification",
+    "html": "<p>Your security OTP is <strong>592819</strong></p>",
+    "text": "Institutional Account Verification",
+    "type": "PASSWORD_RESET",
+    "otpCode": "592819",
+    "createdAt": "2026-09-26T03:40:40.627Z"
+  },
+  {
+    "id": "msg-1790343697136-8ec098",
+    "to": "prithvi.shaw.guardian@campus.edu",
+    "subject": "[URGENT] Academic Attendance Warning: Mandatory 75% Threshold Deficit for Prithvi Shaw (70%)",
+    "html": "\n<!DOCTYPE html>\n<html>\n<head>\n  <meta charset=\"utf-8\">\n  <style>\n    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; color: #1e293b; margin: 0; padding: 20px; background-color: #f8fafc; }\n    .container { max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 16px; overflow: hidden; border: 1px solid #e2e8f0; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05); }\n    .header { background: linear-gradient(135deg, #b45309 0%, #d97706 100%); padding: 28px; color: white; }\n    .content { padding: 28px; }\n    .badge { display: inline-block; padding: 4px 10px; background: rgba(255,255,255,0.2); border-radius: 20px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }\n    .metric-card { background-color: #fffbeb; border: 1px solid #fde68a; border-left: 5px solid #d97706; padding: 16px; border-radius: 8px; margin: 20px 0; }\n    .directive-card { background-color: #f1f5f9; padding: 18px; border-radius: 12px; margin: 20px 0; border: 1px solid #e2e8f0; }\n    .footer { padding: 20px 28px; background-color: #f8fafc; border-top: 1px solid #e2e8f0; font-size: 12px; color: #64748b; }\n  </style>\n</head>\n<body>\n  <div class=\"container\">\n    <div class=\"header\">\n      <div class=\"badge\">Pastoral Advisory Unit</div>\n      <h1 style=\"margin: 0; font-size: 22px; font-weight: 800;\">Academic Attendance Warning</h1>\n      <p style=\"margin: 6px 0 0 0; font-size: 13px; opacity: 0.9;\">Apex University of Science & Technology · Office of the Academic Dean</p>\n    </div>\n    <div class=\"content\">\n      <p style=\"font-size: 15px; margin-top: 0;\">\n        Dear Guardian of <strong>Prithvi Shaw</strong> (Roll No: <code>2024CS003</code>),\n      </p>\n      \n      <div class=\"metric-card\">\n        <p style=\"margin: 0; font-size: 14px; font-weight: 600; color: #92400e;\">\n          Course: <strong>CS-402 - Advanced Neural Networks</strong>\n        </p>\n        <p style=\"margin: 6px 0 0 0; font-size: 13px; color: #b45309;\">\n          Recorded Attendance Rate: <strong style=\"font-size: 18px; color: #dc2626;\">70%</strong>\n          <span style=\"font-size: 12px; color: #78350f;\"> (Minimum Senate Standard: <strong>75.0%</strong>)</span>\n        </p>\n        <p style=\"margin: 6px 0 0 0; font-size: 12px; color: #92400e;\">\n          Recovery Trajectory: <strong>8 consecutive attended class(es)</strong> required to restore exam eligibility.\n        </p>\n      </div>\n\n      <p style=\"font-size: 14px; color: #334155;\">\n        Immediate meeting with Course Coordinator required.\n      </p>\n\n      <div class=\"directive-card\">\n        <h4 style=\"margin: 0 0 10px 0; font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; color: #475569;\">\n          Pastoral Action Directives:\n        </h4>\n        <ol style=\"margin: 0; padding-left: 20px; font-size: 13px; color: #334155; line-height: 1.6;\">\n          <li>Review the detailed attendance ledger with your ward on the Student Portal.</li>\n          <li>Ensure mandatory attendance in all upcoming lecture and practical sessions.</li>\n          <li>Submit certified medical certificates or leave petitions within 48 hours if absence was due to illness.</li>\n          <li>For counseling or grievance redressal, schedule a consultation with the Course Faculty.</li>\n        </ol>\n      </div>\n\n      <p style=\"font-size: 12px; color: #64748b;\">\n        Notice Generated: Sep 25, 2026 | System Dispatch Ref: <code>ALERT-BATCH-MUH0ETUW-YNTS</code>\n      </p>\n    </div>\n    <div class=\"footer\">\n      This is an automated pastoral alert dispatched via CLASSROOM Academic OS. Guardians may verify this notice anytime through the Official Parent Gateway.\n    </div>\n  </div>\n</body>\n</html>\n",
+    "text": "Official pastoral notification: Your ward Prithvi Shaw (Roll: 2024CS003) currently has 70% attendance in CS-402, which is below the mandatory 75% minimum threshold for end-semester examination eligibility. Please consult the course faculty immediately.",
+    "type": "NOTIFICATION",
+    "createdAt": "2026-09-25T13:41:37.136Z"
+  },
+  {
+    "id": "msg-1790343697111-fa2c85",
+    "to": "kunal.kamra.guardian@campus.edu",
+    "subject": "[URGENT] Academic Attendance Warning: Mandatory 75% Threshold Deficit for Kunal Kamra (71.5%)",
+    "html": "\n<!DOCTYPE html>\n<html>\n<head>\n  <meta charset=\"utf-8\">\n  <style>\n    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; color: #1e293b; margin: 0; padding: 20px; background-color: #f8fafc; }\n    .container { max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 16px; overflow: hidden; border: 1px solid #e2e8f0; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05); }\n    .header { background: linear-gradient(135deg, #b45309 0%, #d97706 100%); padding: 28px; color: white; }\n    .content { padding: 28px; }\n    .badge { display: inline-block; padding: 4px 10px; background: rgba(255,255,255,0.2); border-radius: 20px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }\n    .metric-card { background-color: #fffbeb; border: 1px solid #fde68a; border-left: 5px solid #d97706; padding: 16px; border-radius: 8px; margin: 20px 0; }\n    .directive-card { background-color: #f1f5f9; padding: 18px; border-radius: 12px; margin: 20px 0; border: 1px solid #e2e8f0; }\n    .footer { padding: 20px 28px; background-color: #f8fafc; border-top: 1px solid #e2e8f0; font-size: 12px; color: #64748b; }\n  </style>\n</head>\n<body>\n  <div class=\"container\">\n    <div class=\"header\">\n      <div class=\"badge\">Pastoral Advisory Unit</div>\n      <h1 style=\"margin: 0; font-size: 22px; font-weight: 800;\">Academic Attendance Warning</h1>\n      <p style=\"margin: 6px 0 0 0; font-size: 13px; opacity: 0.9;\">Apex University of Science & Technology · Office of the Academic Dean</p>\n    </div>\n    <div class=\"content\">\n      <p style=\"font-size: 15px; margin-top: 0;\">\n        Dear Guardian of <strong>Kunal Kamra</strong> (Roll No: <code>2024CS002</code>),\n      </p>\n      \n      <div class=\"metric-card\">\n        <p style=\"margin: 0; font-size: 14px; font-weight: 600; color: #92400e;\">\n          Course: <strong>CS-402 - Advanced Neural Networks</strong>\n        </p>\n        <p style=\"margin: 6px 0 0 0; font-size: 13px; color: #b45309;\">\n          Recorded Attendance Rate: <strong style=\"font-size: 18px; color: #dc2626;\">71.5%</strong>\n          <span style=\"font-size: 12px; color: #78350f;\"> (Minimum Senate Standard: <strong>75.0%</strong>)</span>\n        </p>\n        <p style=\"margin: 6px 0 0 0; font-size: 12px; color: #92400e;\">\n          Recovery Trajectory: <strong>6 consecutive attended class(es)</strong> required to restore exam eligibility.\n        </p>\n      </div>\n\n      <p style=\"font-size: 14px; color: #334155;\">\n        Immediate meeting with Course Coordinator required.\n      </p>\n\n      <div class=\"directive-card\">\n        <h4 style=\"margin: 0 0 10px 0; font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; color: #475569;\">\n          Pastoral Action Directives:\n        </h4>\n        <ol style=\"margin: 0; padding-left: 20px; font-size: 13px; color: #334155; line-height: 1.6;\">\n          <li>Review the detailed attendance ledger with your ward on the Student Portal.</li>\n          <li>Ensure mandatory attendance in all upcoming lecture and practical sessions.</li>\n          <li>Submit certified medical certificates or leave petitions within 48 hours if absence was due to illness.</li>\n          <li>For counseling or grievance redressal, schedule a consultation with the Course Faculty.</li>\n        </ol>\n      </div>\n\n      <p style=\"font-size: 12px; color: #64748b;\">\n        Notice Generated: Sep 25, 2026 | System Dispatch Ref: <code>ALERT-BATCH-MUH0ETUW-YNTS</code>\n      </p>\n    </div>\n    <div class=\"footer\">\n      This is an automated pastoral alert dispatched via CLASSROOM Academic OS. Guardians may verify this notice anytime through the Official Parent Gateway.\n    </div>\n  </div>\n</body>\n</html>\n",
+    "text": "Official pastoral notification: Your ward Kunal Kamra (Roll: 2024CS002) currently has 71.5% attendance in CS-402, which is below the mandatory 75% minimum threshold for end-semester examination eligibility. Please consult the course faculty immediately.",
+    "type": "NOTIFICATION",
+    "createdAt": "2026-09-25T13:41:37.111Z"
+  },
+  {
+    "id": "msg-1790343697077-bdfe4f",
+    "to": "ethan.hunt.guardian@campus.edu",
+    "subject": "[URGENT] Academic Attendance Warning: Mandatory 75% Threshold Deficit for Ethan Hunt (64.2%)",
+    "html": "\n<!DOCTYPE html>\n<html>\n<head>\n  <meta charset=\"utf-8\">\n  <style>\n    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; color: #1e293b; margin: 0; padding: 20px; background-color: #f8fafc; }\n    .container { max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 16px; overflow: hidden; border: 1px solid #e2e8f0; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05); }\n    .header { background: linear-gradient(135deg, #b45309 0%, #d97706 100%); padding: 28px; color: white; }\n    .content { padding: 28px; }\n    .badge { display: inline-block; padding: 4px 10px; background: rgba(255,255,255,0.2); border-radius: 20px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }\n    .metric-card { background-color: #fffbeb; border: 1px solid #fde68a; border-left: 5px solid #d97706; padding: 16px; border-radius: 8px; margin: 20px 0; }\n    .directive-card { background-color: #f1f5f9; padding: 18px; border-radius: 12px; margin: 20px 0; border: 1px solid #e2e8f0; }\n    .footer { padding: 20px 28px; background-color: #f8fafc; border-top: 1px solid #e2e8f0; font-size: 12px; color: #64748b; }\n  </style>\n</head>\n<body>\n  <div class=\"container\">\n    <div class=\"header\">\n      <div class=\"badge\">Pastoral Advisory Unit</div>\n      <h1 style=\"margin: 0; font-size: 22px; font-weight: 800;\">Academic Attendance Warning</h1>\n      <p style=\"margin: 6px 0 0 0; font-size: 13px; opacity: 0.9;\">Apex University of Science & Technology · Office of the Academic Dean</p>\n    </div>\n    <div class=\"content\">\n      <p style=\"font-size: 15px; margin-top: 0;\">\n        Dear Guardian of <strong>Ethan Hunt</strong> (Roll No: <code>2024CS001</code>),\n      </p>\n      \n      <div class=\"metric-card\">\n        <p style=\"margin: 0; font-size: 14px; font-weight: 600; color: #92400e;\">\n          Course: <strong>CS-402 - Advanced Neural Networks</strong>\n        </p>\n        <p style=\"margin: 6px 0 0 0; font-size: 13px; color: #b45309;\">\n          Recorded Attendance Rate: <strong style=\"font-size: 18px; color: #dc2626;\">64.2%</strong>\n          <span style=\"font-size: 12px; color: #78350f;\"> (Minimum Senate Standard: <strong>75.0%</strong>)</span>\n        </p>\n        <p style=\"margin: 6px 0 0 0; font-size: 12px; color: #92400e;\">\n          Recovery Trajectory: <strong>18 consecutive attended class(es)</strong> required to restore exam eligibility.\n        </p>\n      </div>\n\n      <p style=\"font-size: 14px; color: #334155;\">\n        Immediate meeting with Course Coordinator required.\n      </p>\n\n      <div class=\"directive-card\">\n        <h4 style=\"margin: 0 0 10px 0; font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; color: #475569;\">\n          Pastoral Action Directives:\n        </h4>\n        <ol style=\"margin: 0; padding-left: 20px; font-size: 13px; color: #334155; line-height: 1.6;\">\n          <li>Review the detailed attendance ledger with your ward on the Student Portal.</li>\n          <li>Ensure mandatory attendance in all upcoming lecture and practical sessions.</li>\n          <li>Submit certified medical certificates or leave petitions within 48 hours if absence was due to illness.</li>\n          <li>For counseling or grievance redressal, schedule a consultation with the Course Faculty.</li>\n        </ol>\n      </div>\n\n      <p style=\"font-size: 12px; color: #64748b;\">\n        Notice Generated: Sep 25, 2026 | System Dispatch Ref: <code>ALERT-BATCH-MUH0ETUW-YNTS</code>\n      </p>\n    </div>\n    <div class=\"footer\">\n      This is an automated pastoral alert dispatched via CLASSROOM Academic OS. Guardians may verify this notice anytime through the Official Parent Gateway.\n    </div>\n  </div>\n</body>\n</html>\n",
+    "text": "Official pastoral notification: Your ward Ethan Hunt (Roll: 2024CS001) currently has 64.2% attendance in CS-402, which is below the mandatory 75% minimum threshold for end-semester examination eligibility. Please consult the course faculty immediately.",
+    "type": "NOTIFICATION",
+    "createdAt": "2026-09-25T13:41:37.077Z"
+  },
+  {
+    "id": "msg-1790343696389-b18131",
+    "to": "student.fellow@apex.edu",
+    "subject": "Institutional Account Verification",
+    "html": "<p>Your security OTP is <strong>592819</strong></p>",
+    "text": "Institutional Account Verification",
+    "type": "PASSWORD_RESET",
+    "otpCode": "592819",
+    "createdAt": "2026-09-25T13:41:36.389Z"
+  },
+  {
     "id": "msg-1790343593880-6cd2e5",
     "to": "prithvi.shaw.guardian@campus.edu",
     "subject": "[URGENT] Academic Attendance Warning: Mandatory 75% Threshold Deficit for Prithvi Shaw (70%)",
@@ -215,285 +474,5 @@
     "type": "PASSWORD_RESET",
     "otpCode": "592819",
     "createdAt": "2026-09-25T03:20:01.053Z"
-  },
-  {
-    "id": "msg-1790305657761-510f03",
-    "to": "student.fellow@apex.edu",
-    "subject": "Institutional Account Verification",
-    "html": "<p>Your security OTP is <strong>592819</strong></p>",
-    "text": "Institutional Account Verification",
-    "type": "PASSWORD_RESET",
-    "otpCode": "592819",
-    "createdAt": "2026-09-25T03:07:37.761Z"
-  },
-  {
-    "id": "msg-1790305624323-d59867",
-    "to": "student.fellow@apex.edu",
-    "subject": "Institutional Account Verification",
-    "html": "<p>Your security OTP is <strong>592819</strong></p>",
-    "text": "Institutional Account Verification",
-    "type": "PASSWORD_RESET",
-    "otpCode": "592819",
-    "createdAt": "2026-09-25T03:07:04.323Z"
-  },
-  {
-    "id": "msg-1790305605786-6ad48b",
-    "to": "student.fellow@apex.edu",
-    "subject": "Institutional Account Verification",
-    "html": "<p>Your security OTP is <strong>592819</strong></p>",
-    "text": "Institutional Account Verification",
-    "type": "PASSWORD_RESET",
-    "otpCode": "592819",
-    "createdAt": "2026-09-25T03:06:45.786Z"
-  },
-  {
-    "id": "msg-1790305584818-5e4a65",
-    "to": "student.fellow@apex.edu",
-    "subject": "Institutional Account Verification",
-    "html": "<p>Your security OTP is <strong>592819</strong></p>",
-    "text": "Institutional Account Verification",
-    "type": "PASSWORD_RESET",
-    "otpCode": "592819",
-    "createdAt": "2026-09-25T03:06:24.818Z"
-  },
-  {
-    "id": "msg-1790305552241-481e4b",
-    "to": "student.fellow@apex.edu",
-    "subject": "Institutional Account Verification",
-    "html": "<p>Your security OTP is <strong>592819</strong></p>",
-    "text": "Institutional Account Verification",
-    "type": "PASSWORD_RESET",
-    "otpCode": "592819",
-    "createdAt": "2026-09-25T03:05:52.241Z"
-  },
-  {
-    "id": "msg-1790305521723-47c301",
-    "to": "student.fellow@apex.edu",
-    "subject": "Institutional Account Verification",
-    "html": "<p>Your security OTP is <strong>592819</strong></p>",
-    "text": "Institutional Account Verification",
-    "type": "PASSWORD_RESET",
-    "otpCode": "592819",
-    "createdAt": "2026-09-25T03:05:21.723Z"
-  },
-  {
-    "id": "msg-1790302204398-93afad",
-    "to": "student.fellow@apex.edu",
-    "subject": "Institutional Account Verification",
-    "html": "<p>Your security OTP is <strong>592819</strong></p>",
-    "text": "Institutional Account Verification",
-    "type": "PASSWORD_RESET",
-    "otpCode": "592819",
-    "createdAt": "2026-09-25T02:10:04.398Z"
-  },
-  {
-    "id": "msg-1790302069037-f385f2",
-    "to": "student.fellow@apex.edu",
-    "subject": "Institutional Account Verification",
-    "html": "<p>Your security OTP is <strong>592819</strong></p>",
-    "text": "Institutional Account Verification",
-    "type": "PASSWORD_RESET",
-    "otpCode": "592819",
-    "createdAt": "2026-09-25T02:07:49.037Z"
-  },
-  {
-    "id": "msg-1790300988571-50cc3d",
-    "to": "student.fellow@apex.edu",
-    "subject": "Institutional Account Verification",
-    "html": "<p>Your security OTP is <strong>592819</strong></p>",
-    "text": "Institutional Account Verification",
-    "type": "PASSWORD_RESET",
-    "otpCode": "592819",
-    "createdAt": "2026-09-25T01:49:48.571Z"
-  },
-  {
-    "id": "msg-1790298779883-d58356",
-    "to": "student.fellow@apex.edu",
-    "subject": "Institutional Account Verification",
-    "html": "<p>Your security OTP is <strong>592819</strong></p>",
-    "text": "Institutional Account Verification",
-    "type": "PASSWORD_RESET",
-    "otpCode": "592819",
-    "createdAt": "2026-09-25T01:12:59.883Z"
-  },
-  {
-    "id": "msg-1790298757950-826644",
-    "to": "student.fellow@apex.edu",
-    "subject": "Institutional Account Verification",
-    "html": "<p>Your security OTP is <strong>592819</strong></p>",
-    "text": "Institutional Account Verification",
-    "type": "PASSWORD_RESET",
-    "otpCode": "592819",
-    "createdAt": "2026-09-25T01:12:37.950Z"
-  },
-  {
-    "id": "msg-1790298726400-824250",
-    "to": "student.fellow@apex.edu",
-    "subject": "Institutional Account Verification",
-    "html": "<p>Your security OTP is <strong>592819</strong></p>",
-    "text": "Institutional Account Verification",
-    "type": "PASSWORD_RESET",
-    "otpCode": "592819",
-    "createdAt": "2026-09-25T01:12:06.400Z"
-  },
-  {
-    "id": "msg-1790298688147-d88e4b",
-    "to": "student.fellow@apex.edu",
-    "subject": "Institutional Account Verification",
-    "html": "<p>Your security OTP is <strong>592819</strong></p>",
-    "text": "Institutional Account Verification",
-    "type": "PASSWORD_RESET",
-    "otpCode": "592819",
-    "createdAt": "2026-09-25T01:11:28.147Z"
-  },
-  {
-    "id": "msg-1790216507673-51801f",
-    "to": "student.fellow@apex.edu",
-    "subject": "Institutional Account Verification",
-    "html": "<p>Your security OTP is <strong>592819</strong></p>",
-    "text": "Institutional Account Verification",
-    "type": "PASSWORD_RESET",
-    "otpCode": "592819",
-    "createdAt": "2026-09-24T02:21:47.673Z"
-  },
-  {
-    "id": "msg-1790216427242-e10380",
-    "to": "student.fellow@apex.edu",
-    "subject": "Institutional Account Verification",
-    "html": "<p>Your security OTP is <strong>592819</strong></p>",
-    "text": "Institutional Account Verification",
-    "type": "PASSWORD_RESET",
-    "otpCode": "592819",
-    "createdAt": "2026-09-24T02:20:27.242Z"
-  },
-  {
-    "id": "msg-1790215711214-053e18",
-    "to": "student.fellow@apex.edu",
-    "subject": "Institutional Account Verification",
-    "html": "<p>Your security OTP is <strong>592819</strong></p>",
-    "text": "Institutional Account Verification",
-    "type": "PASSWORD_RESET",
-    "otpCode": "592819",
-    "createdAt": "2026-09-24T02:08:31.214Z"
-  },
-  {
-    "id": "msg-1790215500130-5d3035",
-    "to": "student.fellow@apex.edu",
-    "subject": "Institutional Account Verification",
-    "html": "<p>Your security OTP is <strong>592819</strong></p>",
-    "text": "Institutional Account Verification",
-    "type": "PASSWORD_RESET",
-    "otpCode": "592819",
-    "createdAt": "2026-09-24T02:05:00.130Z"
-  },
-  {
-    "id": "msg-1790215226427-37011d",
-    "to": "student.fellow@apex.edu",
-    "subject": "Institutional Account Verification",
-    "html": "<p>Your security OTP is <strong>592819</strong></p>",
-    "text": "Institutional Account Verification",
-    "type": "PASSWORD_RESET",
-    "otpCode": "592819",
-    "createdAt": "2026-09-24T02:00:26.427Z"
-  },
-  {
-    "id": "msg-1790214781101-de33c5",
-    "to": "student.fellow@apex.edu",
-    "subject": "Institutional Account Verification",
-    "html": "<p>Your security OTP is <strong>592819</strong></p>",
-    "text": "Institutional Account Verification",
-    "type": "PASSWORD_RESET",
-    "otpCode": "592819",
-    "createdAt": "2026-09-24T01:53:01.101Z"
-  },
-  {
-    "id": "msg-1790214584077-2ea562",
-    "to": "student.fellow@apex.edu",
-    "subject": "Institutional Account Verification",
-    "html": "<p>Your security OTP is <strong>592819</strong></p>",
-    "text": "Institutional Account Verification",
-    "type": "PASSWORD_RESET",
-    "otpCode": "592819",
-    "createdAt": "2026-09-24T01:49:44.077Z"
-  },
-  {
-    "id": "msg-1790214280456-3f27e7",
-    "to": "student.fellow@apex.edu",
-    "subject": "Institutional Account Verification",
-    "html": "<p>Your security OTP is <strong>592819</strong></p>",
-    "text": "Institutional Account Verification",
-    "type": "PASSWORD_RESET",
-    "otpCode": "592819",
-    "createdAt": "2026-09-24T01:44:40.456Z"
-  },
-  {
-    "id": "msg-1790213904607-41c881",
-    "to": "student.fellow@apex.edu",
-    "subject": "Institutional Account Verification",
-    "html": "<p>Your security OTP is <strong>592819</strong></p>",
-    "text": "Institutional Account Verification",
-    "type": "PASSWORD_RESET",
-    "otpCode": "592819",
-    "createdAt": "2026-09-24T01:38:24.607Z"
-  },
-  {
-    "id": "msg-1790140671449-81da2f",
-    "to": "student.fellow@apex.edu",
-    "subject": "Institutional Account Verification",
-    "html": "<p>Your security OTP is <strong>592819</strong></p>",
-    "text": "Institutional Account Verification",
-    "type": "PASSWORD_RESET",
-    "otpCode": "592819",
-    "createdAt": "2026-09-23T05:17:51.449Z"
-  },
-  {
-    "id": "msg-1790140614509-7940f1",
-    "to": "student.fellow@apex.edu",
-    "subject": "Institutional Account Verification",
-    "html": "<p>Your security OTP is <strong>592819</strong></p>",
-    "text": "Institutional Account Verification",
-    "type": "PASSWORD_RESET",
-    "otpCode": "592819",
-    "createdAt": "2026-09-23T05:16:54.509Z"
-  },
-  {
-    "id": "msg-1790139944090-60a589",
-    "to": "student.fellow@apex.edu",
-    "subject": "Institutional Account Verification",
-    "html": "<p>Your security OTP is <strong>592819</strong></p>",
-    "text": "Institutional Account Verification",
-    "type": "PASSWORD_RESET",
-    "otpCode": "592819",
-    "createdAt": "2026-09-23T05:05:44.090Z"
-  },
-  {
-    "id": "msg-1790102936393-da3413",
-    "to": "student.fellow@apex.edu",
-    "subject": "Institutional Account Verification",
-    "html": "<p>Your security OTP is <strong>592819</strong></p>",
-    "text": "Institutional Account Verification",
-    "type": "PASSWORD_RESET",
-    "otpCode": "592819",
-    "createdAt": "2026-09-22T18:48:56.393Z"
-  },
-  {
-    "id": "msg-1790102248650-754a98",
-    "to": "student.fellow@apex.edu",
-    "subject": "Institutional Account Verification",
-    "html": "<p>Your security OTP is <strong>592819</strong></p>",
-    "text": "Institutional Account Verification",
-    "type": "PASSWORD_RESET",
-    "otpCode": "592819",
-    "createdAt": "2026-09-22T18:37:28.650Z"
-  },
-  {
-    "id": "msg-1790097468789-7d057d",
-    "to": "student.fellow@apex.edu",
-    "subject": "Institutional Account Verification",
-    "html": "<p>Your security OTP is <strong>592819</strong></p>",
-    "text": "Institutional Account Verification",
-    "type": "PASSWORD_RESET",
-    "otpCode": "592819",
-    "createdAt": "2026-09-22T17:17:48.789Z"
   }
 ]

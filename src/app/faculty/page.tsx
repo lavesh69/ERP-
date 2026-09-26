@@ -35,6 +35,7 @@ interface FacultyItem {
   departmentName: string;
   designation: string;
   specialization: string;
+  qualification?: string;
   officeRoom: string;
   weeklyHours: number;
   coursesCount: number;
@@ -42,7 +43,7 @@ interface FacultyItem {
 }
 
 export default function FacultyPage() {
-  const { showToast, refreshTrigger, triggerRefresh } = useApp();
+  const { showToast, refreshTrigger, triggerRefresh, currentRole, currentUser } = useApp();
 
   const [loading, setLoading] = useState(true);
   const [facultyList, setFacultyList] = useState<FacultyItem[]>([]);
@@ -242,6 +243,32 @@ export default function FacultyPage() {
           </div>
         )}
 
+        {/* Faculty Self Profile Quick Access Banner */}
+        {currentRole === "FACULTY" && (
+          <div className="bg-gradient-to-r from-rose-500/10 via-rose-500/5 to-transparent border border-rose-200 dark:border-rose-900/40 p-4 rounded-2xl flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-xl bg-rose-primary text-white flex items-center justify-center font-bold">
+                <Users className="h-5 w-5" />
+              </div>
+              <div>
+                <h4 className="text-xs font-bold text-charcoal-900 dark:text-ivory-100">
+                  Welcome, Professor {currentUser?.name || "Faculty Member"}
+                </h4>
+                <p className="text-[11px] text-charcoal-600 dark:text-charcoal-400">
+                  Manage your personal teaching matrix, research papers, office advising hours, and contact channels.
+                </p>
+              </div>
+            </div>
+            <Link
+              href={`/faculty/${currentUser?.id || "me"}`}
+              className="px-4 py-2 rounded-xl text-xs font-bold bg-rose-primary text-white hover:bg-rose-deep shadow-sm flex items-center gap-1.5 shrink-0"
+            >
+              <span>My Faculty 360° Profile</span>
+              <ArrowUpRight className="h-3.5 w-3.5" />
+            </Link>
+          </div>
+        )}
+
         {/* Filter and Search Bar */}
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white dark:bg-charcoal-800 p-4 rounded-2xl border border-border dark:border-charcoal-700 shadow-soft">
           <div className="flex items-center gap-2 overflow-x-auto w-full sm:w-auto">
@@ -306,10 +333,18 @@ export default function FacultyPage() {
                       <h3 className="text-base font-display font-bold text-charcoal-900 dark:text-ivory-100">
                         {f.name}
                       </h3>
-                      <div className="flex items-center gap-2 mt-0.5">
+                      <div className="flex flex-wrap items-center gap-2 mt-0.5">
                         <span className="text-xs font-semibold text-charcoal-600 dark:text-charcoal-400">
                           {f.designation}
                         </span>
+                        {f.qualification && (
+                          <>
+                            <span>•</span>
+                            <span className="text-[10px] font-bold text-emerald-700 dark:text-emerald-400">
+                              {f.qualification}
+                            </span>
+                          </>
+                        )}
                         <span>•</span>
                         <span className="text-[11px] font-mono text-charcoal-500">
                           {f.employeeCode}

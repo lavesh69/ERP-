@@ -33,6 +33,7 @@ import {
   Filter,
   Edit2,
 } from "lucide-react";
+import PasswordStrengthMeter from "@/components/auth/PasswordStrengthMeter";
 
 export default function SuperAdminPage() {
   const { showToast, refreshTrigger, triggerRefresh } = useApp();
@@ -1323,6 +1324,9 @@ export default function SuperAdminPage() {
                   className="w-full bg-ivory-100 dark:bg-charcoal-900 border border-border dark:border-charcoal-700 rounded-xl p-2.5 font-medium text-charcoal-900 dark:text-ivory-100 font-mono"
                   required
                 />
+                {createUserForm.password && (
+                  <PasswordStrengthMeter password={createUserForm.password} showCriteria={true} className="mt-2" />
+                )}
               </div>
             </div>
 
@@ -1408,6 +1412,9 @@ export default function SuperAdminPage() {
                 className="w-full bg-ivory-100 dark:bg-charcoal-900 border border-border dark:border-charcoal-700 rounded-xl p-2.5 font-mono text-charcoal-900 dark:text-ivory-100"
                 required
               />
+              {resetPasswordModal.newPassword && (
+                <PasswordStrengthMeter password={resetPasswordModal.newPassword} showCriteria={true} className="mt-2" />
+              )}
             </div>
 
             <div className="flex items-center justify-end gap-2 pt-3 border-t border-border dark:border-charcoal-700">

@@ -368,6 +368,15 @@ async function main() {
     },
   });
 
+  // Second ward to demonstrate multi-ward perspective switcher in Parent Portal
+  await prisma.studentParentRelation.create({
+    data: {
+      studentId: "stu-hunt-02",
+      parentId: parent.id,
+      isPrimary: false,
+    },
+  });
+
   // 9. Courses
   const courseCS402 = await prisma.course.create({
     data: {

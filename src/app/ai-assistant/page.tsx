@@ -77,16 +77,14 @@ export default function AIAssistantStudioPage() {
     setIsLoading(true);
 
     try {
-      const res = await fetch("/api/ai/query", {
+      const res = await fetch("/api/ai/agent", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          query,
           agentId: selectedAgent,
-          context: {
-            role: currentRole,
-            userEmail: currentUser.email,
-          },
+          prompt: query,
+          userId: currentUser?.id || "usr-anon-01",
+          userRole: currentRole || "STUDENT",
         }),
       });
 
@@ -96,8 +94,8 @@ export default function AIAssistantStudioPage() {
         const assistantMsg: StudioMessage = {
           id: (Date.now() + 1).toString(),
           role: "assistant",
-          content: data.answer,
-          citations: data.citations,
+          content: data.content || data.answer || "Autonomous response formulation completed.",
+          citations: data.citations || [],
         };
         setConversation((prev) => [...prev, assistantMsg]);
       } else {

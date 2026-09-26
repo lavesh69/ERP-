@@ -158,31 +158,95 @@ export default function FinancePage() {
   };
 
   const handleDownloadReceipt = (studentName: string, ref: string, amount: number, feeTitle: string) => {
-    const receiptContent = `=====================================================
-            APEX UNIVERSITY BURSAR OFFICE
-             OFFICIAL FEE PAYMENT RECEIPT
-=====================================================
-Receipt Reference: ${ref}
-Date of Transaction: ${new Date().toLocaleDateString("en-US", { dateStyle: "full" })}
-Student Name: ${studentName}
-Fee Category: ${feeTitle}
-Amount Paid: $${amount.toLocaleString()} USD
-Payment Channel: TLS-256 PCI-DSS Tokenized Gateway
-Status: VERIFIED & CLEARED
+    const receiptHtml = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Official Receipt - ${ref}</title>
+  <style>
+    @media print {
+      body { margin: 0; padding: 20px; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+      .no-print { display: none; }
+    }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #fdfbf7; color: #1e1b18; padding: 40px; display: flex; justify-content: center; }
+    .receipt-card { background: #fff; width: 100%; max-width: 650px; border-radius: 16px; border: 1px solid #e5e0d8; box-shadow: 0 10px 30px rgba(0,0,0,0.05); padding: 40px; position: relative; }
+    .header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #881337; padding-bottom: 20px; }
+    .logo-title { font-size: 22px; font-weight: 800; color: #881337; letter-spacing: -0.5px; }
+    .subtitle { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #78716c; margin-top: 4px; }
+    .status-badge { background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; font-size: 11px; font-weight: 700; padding: 4px 12px; border-radius: 20px; text-transform: uppercase; }
+    .details-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 30px 0; }
+    .detail-item { font-size: 13px; }
+    .detail-label { font-size: 10px; font-weight: 700; text-transform: uppercase; color: #a8a29e; letter-spacing: 0.5px; }
+    .detail-value { font-weight: 600; color: #1c1917; margin-top: 4px; }
+    .amount-box { background: #fdf2f4; border: 1px solid #fecdd3; border-radius: 12px; padding: 20px; display: flex; justify-content: space-between; align-items: center; margin: 24px 0; }
+    .amount-label { font-size: 13px; font-weight: 700; color: #881337; }
+    .amount-value { font-size: 28px; font-weight: 900; color: #881337; }
+    .footer { border-top: 1px dashed #d6d3d1; padding-top: 20px; display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: #78716c; }
+    .security-hash { font-family: monospace; font-size: 10px; color: #a8a29e; }
+    .btn-print { background: #881337; color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; margin-bottom: 20px; }
+  </style>
+</head>
+<body>
+  <div style="display: flex; flex-direction: column; align-items: center; width: 100%;">
+    <button class="btn-print no-print" onclick="window.print()">Print / Save as PDF</button>
+    <div class="receipt-card">
+      <div class="header">
+        <div>
+          <div class="logo-title">APEX UNIVERSITY</div>
+          <div class="subtitle">Bursar & Treasury Office - Official Receipt</div>
+        </div>
+        <div class="status-badge">Payment Verified</div>
+      </div>
+      <div class="details-grid">
+        <div class="detail-item">
+          <div class="detail-label">Receipt Reference</div>
+          <div class="detail-value" style="font-family: monospace;">${ref}</div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-label">Issue Date</div>
+          <div class="detail-value">${new Date().toLocaleDateString("en-US", { dateStyle: "full" })}</div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-label">Student Name</div>
+          <div class="detail-value">${studentName}</div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-label">Fee Classification</div>
+          <div class="detail-value">${feeTitle}</div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-label">Settlement Channel</div>
+          <div class="detail-value">TLS-256 PCI Tokenized Gateway</div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-label">Fiscal Verification</div>
+          <div class="detail-value">CLEARED & RECONCILED</div>
+        </div>
+      </div>
+      <div class="amount-box">
+        <div class="amount-label">TOTAL AMOUNT PAID</div>
+        <div class="amount-value">$${amount.toLocaleString()}.00</div>
+      </div>
+      <div class="footer">
+        <div>
+          <div style="font-weight: 700;">Auditor Verification: Autonomous Finance Controller</div>
+          <div>This electronically stamped receipt is authoritative under Senate Bylaws.</div>
+        </div>
+        <div class="security-hash">SHA256-TOKEN: ${ref.slice(0, 16)}</div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>`;
 
-Bursar Seal: [APEX-VERIFIED-SEAL]
-Auditor Signature: Autonomous Finance Controller
-=====================================================
-This is an electronically generated official university receipt.`;
-
-    const blob = new Blob([receiptContent], { type: "text/plain" });
+    const blob = new Blob([receiptHtml], { type: "text/html" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `Receipt-${ref}.txt`;
+    a.download = `Receipt-${ref}.html`;
     a.click();
     URL.revokeObjectURL(url);
-    showToast(`Official Receipt for ${studentName} downloaded!`, "success");
+    showToast(`Printable Official Receipt for ${studentName} generated!`, "success");
   };
 
   const filteredFees = studentFees;

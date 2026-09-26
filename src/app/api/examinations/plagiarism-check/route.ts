@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
         submissionsToCompare = dbAssignment.submissions.map((s) => ({
           id: s.id,
           studentName: `${s.student.user.firstName} ${s.student.user.lastName}`,
-          content: s.feedback || s.fileUrl || "Submitted academic response text",
+          content: s.content || s.feedback || s.fileUrl || "Submitted academic response text",
         }));
       }
     } else if (Array.isArray(sampleSubmissions) && sampleSubmissions.length > 0) {

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { use } from "react";
-import Student360ProfilePage from "../profile/page";
+import Student360ProfileView from "@/components/students/Student360ProfileView";
 
 export default function StudentDynamicDossierPage({
   params,
@@ -9,5 +9,5 @@ export default function StudentDynamicDossierPage({
   params: Promise<{ id: string }>;
 }) {
   const resolvedParams = use(params);
-  return <Student360ProfilePage />;
+  return <Student360ProfileView initialStudentId={resolvedParams.id} />;
 }

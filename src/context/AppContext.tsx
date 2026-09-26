@@ -180,6 +180,15 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setCurrentRoleState(role);
     setCurrentUser(MOCK_USERS[role] || MOCK_USERS.SUPER_ADMIN);
     showToast(`Perspective switched: ${ROLE_CONFIGS[role]?.displayName || role}`, "info");
+    
+    // Sync session cookie with server in the background for consistent RBAC & API authorization
+    fetch("/api/auth/switch-role", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ role }),
+    }).catch(() => {
+      // Non-blocking in offline/local mock mode
+    });
   };
 
   const triggerRefresh = () => {

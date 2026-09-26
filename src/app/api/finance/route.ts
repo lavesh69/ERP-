@@ -49,15 +49,37 @@ export async function GET(req: NextRequest) {
         }
       : {};
 
-    const [feeStructures, studentFees, transactions] = await Promise.all([
+    const whereClause: any = { ...studentFeeWhere };
+    if (search && search.trim()) {
+      const q = search.trim();
+      whereClause.OR = [
+        { student: { user: { firstName: { contains: q } } } },
+        { student: { user: { lastName: { contains: q } } } },
+        { student: { rollNumber: { contains: q } } },
+        { feeStructure: { title: { contains: q } } },
+      ];
+    }
+
+    const [feeStructures, aggregates, totalCount, pagedStudentFees, transactions] = await Promise.all([
       prisma.feeStructure.findMany(),
-      prisma.studentFee.findMany({
+      prisma.studentFee.aggregate({
         where: studentFeeWhere,
+        _sum: {
+          totalAmount: true,
+          paidAmount: true,
+        },
+      }),
+      prisma.studentFee.count({ where: whereClause }),
+      prisma.studentFee.findMany({
+        where: whereClause,
         include: {
           student: { include: { user: true } },
           feeStructure: true,
           transactions: true,
         },
+        skip: (page - 1) * limit,
+        take: limit,
+        orderBy: { dueDate: "asc" },
       }),
       prisma.paymentTransaction.findMany({
         where: transactionWhere,
@@ -74,37 +96,25 @@ export async function GET(req: NextRequest) {
       }),
     ]);
 
+    const totalBilled = aggregates._sum.totalAmount || 0;
+    const totalCollected = aggregates._sum.paidAmount || 0;
 
-    const totalBilled = studentFees.reduce((acc, f) => acc + f.totalAmount, 0);
-    const totalCollected = studentFees.reduce((acc, f) => acc + f.paidAmount, 0);
+    const formattedFees = pagedStudentFees.map((f) => ({
+      id: f.id,
+      studentId: f.student.id,
+      studentName: `${f.student.user.firstName} ${f.student.user.lastName}`,
+      rollNo: f.student.rollNumber,
+      title: f.feeStructure.title,
+      totalAmount: f.totalAmount,
+      paidAmount: f.paidAmount,
+      pendingAmount: f.totalAmount - f.paidAmount,
+      status: f.status,
+      dueDate: f.dueDate.toISOString().split("T")[0],
+    }));
 
-    const formattedFees = studentFees
-      .map((f) => ({
-        id: f.id,
-        studentId: f.student.id,
-        studentName: `${f.student.user.firstName} ${f.student.user.lastName}`,
-        rollNo: f.student.rollNumber,
-        title: f.feeStructure.title,
-        totalAmount: f.totalAmount,
-        paidAmount: f.paidAmount,
-        pendingAmount: f.totalAmount - f.paidAmount,
-        status: f.status,
-        dueDate: f.dueDate.toISOString().split("T")[0],
-      }))
-      .filter((f) => {
-        if (!search) return true;
-        const q = search.toLowerCase();
-        return (
-          f.studentName.toLowerCase().includes(q) ||
-          f.rollNo.toLowerCase().includes(q) ||
-          f.title.toLowerCase().includes(q)
-        );
-      });
-
-    const total = formattedFees.length;
+    const total = totalCount;
     const totalPages = Math.ceil(total / limit) || 1;
-    const startIndex = (page - 1) * limit;
-    const paginatedFees = formattedFees.slice(startIndex, startIndex + limit);
+    const paginatedFees = formattedFees;
 
     return NextResponse.json({
       summary: {

@@ -65,6 +65,11 @@ import { ensureAcademicMasterData } from "@/lib/academic/master-data";
 import { getAttendancePolicy, saveAttendancePolicy, AttendancePolicy } from "@/lib/attendance/policy";
 import { NextRequest } from "next/server";
 import { POST as handleDispatchDefaulters, GET as handleGetDefaulterAlerts } from "@/app/api/attendance/defaulters/route";
+import { POST as handleSwitchRole } from "@/app/api/auth/switch-role/route";
+import { POST as handleAiQuery } from "@/app/api/ai/query/route";
+import { GET as handleFinance } from "@/app/api/finance/route";
+import { GET as handleParentGet, POST as handleParentPost } from "@/app/api/parent/route";
+import { GET as handleFacultyGet, PATCH as handleFacultyPatch } from "@/app/api/faculty/route";
 import { recordAttendanceException, getAttendanceExceptions, clearAttendanceExceptions } from "@/lib/attendance/exceptions";
 
 async function runTestSuite() {
@@ -2677,6 +2682,463 @@ BIO-599,Synthetic Biology Principles,Syn Bio,3,BIO,BSC-BIO,CORE,THEORY,3`;
         id: { in: ["test-sess-sec-a", "test-sess-sec-b"] },
       },
     });
+
+    // ==========================================
+    // GROUP 40: WHOLE-APP INTEGRITY, PERFORMANCE INDEXING & RESILIENCE
+    // ==========================================
+    console.log("\n📦 Running Group 40: Whole-App Performance Indexing, Dynamic Routing & Role Switching");
+
+    // 40.1 Database Indices Verification in SQLite
+    const attendanceRecordIndices: any[] = await prisma.$queryRawUnsafe("PRAGMA index_list('AttendanceRecord')");
+    assert(attendanceRecordIndices.length >= 2, "AttendanceRecord has generated lookup and compound indices");
+
+    const attendanceSessionIndices: any[] = await prisma.$queryRawUnsafe("PRAGMA index_list('AttendanceSession')");
+    assert(attendanceSessionIndices.length >= 2, "AttendanceSession has course, faculty, and section indices");
+
+    const studentFeeIndices: any[] = await prisma.$queryRawUnsafe("PRAGMA index_list('StudentFee')");
+    assert(studentFeeIndices.length >= 1, "StudentFee table has performance index on scholar status and due dates");
+
+    // 40.2 Finance Database-Level Pagination & Aggregations
+    const adminToken = await signJwt({
+      userId: "test-admin-id",
+      email: "admin@apex.edu",
+      role: "SUPER_ADMIN",
+      institutionId: "inst-apex-01",
+    });
+
+    const financeReq = new NextRequest("http://localhost:3000/api/finance?page=1&limit=5", {
+      method: "GET",
+      headers: {
+        Cookie: `classroom_session=${adminToken}`,
+      },
+    });
+    const financeRes = await handleFinance(financeReq);
+    const financeData = await financeRes.json();
+    assert(financeRes.status === 200, "GET /api/finance returns 200 OK with database pagination");
+    assert(typeof financeData.summary.totalBilled === "number", "Finance summary computes aggregated totalBilled");
+    assert(typeof financeData.summary.totalCollected === "number", "Finance summary computes aggregated totalCollected");
+    assert(Array.isArray(financeData.studentFees), "Finance returns paginated studentFees array");
+    assert(financeData.pagination.page === 1, "Finance pagination accurately preserves page 1");
+    assert(financeData.pagination.limit === 5, "Finance pagination limits records per page");
+
+    // 40.3 Perspective Switcher API & JWT Session Synchronization
+    const switchReq = new NextRequest("http://localhost:3000/api/auth/switch-role", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: `classroom_session=${adminToken}`,
+      },
+      body: JSON.stringify({ role: "FACULTY" }),
+    });
+    const switchRes = await handleSwitchRole(switchReq);
+    const switchData = await switchRes.json();
+    assert(switchRes.status === 200, "POST /api/auth/switch-role succeeds with 200 OK");
+    assert(switchData.role === "FACULTY", "Perspective correctly switched to FACULTY");
+    assert(switchRes.headers.get("set-cookie") !== null, "Switch role issues updated JWT session cookie");
+
+    // Invalid role rejected
+    const invalidSwitchReq = new NextRequest("http://localhost:3000/api/auth/switch-role", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: `classroom_session=${adminToken}`,
+      },
+      body: JSON.stringify({ role: "NON_EXISTENT_ROLE" }),
+    });
+    const invalidSwitchRes = await handleSwitchRole(invalidSwitchReq);
+    assert(invalidSwitchRes.status === 400, "Invalid role correctly rejected by switch-role endpoint");
+
+    // Unauthenticated switch rejected
+    const unauthSwitchReq = new NextRequest("http://localhost:3000/api/auth/switch-role", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ role: "STUDENT" }),
+    });
+    const unauthSwitchRes = await handleSwitchRole(unauthSwitchReq);
+    assert(unauthSwitchRes.status === 401, "Unauthenticated switch perspective correctly blocked with 401");
+
+    // 40.4 AI Assistant Studio Backwards Compatibility & Autonomous Execution
+    const aiReq = new NextRequest("http://localhost:3000/api/ai/query", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ query: "Explain quantum mechanics core principles", agentId: "academic" }),
+    });
+    const aiRes = await handleAiQuery(aiReq);
+    const aiData = await aiRes.json();
+    assert(aiRes.status === 200, "POST /api/ai/query returns 200 OK");
+    assert(typeof aiData.answer === "string" && aiData.answer.length > 0, "AI query returns non-empty formulated answer");
+    assert(aiData.agentId === "academic", "AI query identifies executing agent");
+
+    // Empty AI prompt rejected
+    const emptyAiReq = new NextRequest("http://localhost:3000/api/ai/query", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ query: "  " }),
+    });
+    const emptyAiRes = await handleAiQuery(emptyAiReq);
+    assert(emptyAiRes.status === 400, "Empty prompt to /api/ai/query returns 400 Bad Request");
+
+    // 40.5 Plagiarism Checker with Text Content Detection
+    const sampleSubmissions = [
+      { id: "sub-1", studentName: "Alice Walker", content: "Artificial intelligence in modern educational operating systems requires robust telemetry and database indexing." },
+      { id: "sub-2", studentName: "Bob Martinez", content: "Artificial intelligence in modern educational operating systems requires robust telemetry and database indexing." },
+    ];
+    const flagged = scanSubmissionsForPlagiarism(sampleSubmissions, 0.5);
+    assert(flagged.length === 1, "Plagiarism detection identifies matching submission content");
+    assert(flagged[0].similarityScore > 0.8, "Plagiarism similarity exceeds 80% on identical content");
+  }
+
+  // ==========================================
+  // GROUP 41: PARENT PORTAL FERPA ISOLATION, GUARDIAN TELEMETRY & ONLINE BURSAR SETTLEMENT
+  // ==========================================
+  {
+    console.log("\n📦 Running Group 41: Parent Portal FERPA Isolation, Guardian Telemetry & Online Bursar Settlement");
+
+    // 41.1 Setup Parent & Student Multi-Ward Context
+    const parentUser = await prisma.user.findFirst({
+      where: { role: "PARENT" },
+      include: { parentProfile: { include: { students: true } } },
+    });
+    assert(!!parentUser, "Parent user account located in system directory");
+
+    const parentToken = await signJwt({
+      userId: parentUser!.id,
+      email: parentUser!.email,
+      role: "PARENT",
+      institutionId: parentUser!.institutionId || "inst-apex-01",
+    });
+
+    // Ensure parent has their primary ward linked
+    const student1 = await prisma.student.findFirst({
+      where: { rollNumber: "2024-CSE-042" },
+      include: { user: true },
+    });
+    assert(!!student1, "Primary scholar 2024-CSE-042 located");
+
+    let parentRecord = await prisma.parent.findFirst({
+      where: { userId: parentUser!.id },
+    });
+    if (!parentRecord) {
+      parentRecord = await prisma.parent.create({
+        data: {
+          userId: parentUser!.id,
+          relation: "MOTHER",
+          occupation: "Senior Systems Engineer",
+        },
+      });
+    }
+    assert(!!parentRecord, "Parent profile entity confirmed");
+
+    // Ensure relation exists in test DB
+    const existingRel1 = await prisma.studentParentRelation.findFirst({
+      where: { studentId: student1!.id, parentId: parentRecord!.id },
+    });
+    if (!existingRel1) {
+      await prisma.studentParentRelation.create({
+        data: {
+          studentId: student1!.id,
+          parentId: parentRecord!.id,
+          isPrimary: true,
+        },
+      });
+    }
+
+    // 41.2 GET /api/parent - Authorized Ward Retrieval & Dynamic Guardian Telemetry
+    const reqAuthWard = new NextRequest(`http://localhost:3000/api/parent?studentId=${student1!.id}`, {
+      method: "GET",
+      headers: {
+        Cookie: `classroom_session=${parentToken}`,
+      },
+    });
+    const resAuthWard = await handleParentGet(reqAuthWard);
+    const dataAuthWard = await resAuthWard.json();
+
+    assert(resAuthWard.status === 200, "Parent successfully retrieves authorized ward dossier with 200 OK");
+    assert(dataAuthWard.child.id === student1!.id, "Dossier matches authorized student ID");
+    assert(typeof dataAuthWard.child.guardianName === "string" && dataAuthWard.child.guardianName.includes("Katherine"), "Dynamic guardian name populated from database relation");
+    assert(dataAuthWard.child.guardianEmail === parentUser!.email, "Guardian email correctly matches parent profile");
+    assert(typeof dataAuthWard.child.attendanceRate === "number", "Computed biometric attendance rate returned");
+    assert(Array.isArray(dataAuthWard.todayClasses), "Today's timetable schedule returned for scholar section");
+    assert(Array.isArray(dataAuthWard.finances.breakdown), "Tuition and fee breakdown returned");
+    assert(dataAuthWard.availableChildren.length >= 1, "Available wards list populated for parent switcher");
+
+    // 41.3 FERPA Isolation & IDOR Protection - Rejecting Unauthorized Ward
+    const foreignStudent = await prisma.student.findFirst({
+      where: {
+        parents: { none: { parentId: parentRecord!.id } },
+      },
+    });
+
+    if (foreignStudent) {
+      const reqUnauthWard = new NextRequest(`http://localhost:3000/api/parent?studentId=${foreignStudent.id}`, {
+        method: "GET",
+        headers: {
+          Cookie: `classroom_session=${parentToken}`,
+        },
+      });
+      const resUnauthWard = await handleParentGet(reqUnauthWard);
+      const dataUnauthWard = await resUnauthWard.json();
+
+      assert(resUnauthWard.status === 403, "FERPA violation strictly blocked with 403 Forbidden");
+      assert(dataUnauthWard.error.includes("FERPA Isolation Enforced"), "Error message explicitly details FERPA isolation enforcement");
+    }
+
+    // 41.4 Online Fee Settlement (PAY_FEE)
+    let targetFee = await prisma.studentFee.findFirst({
+      where: { studentId: student1!.id },
+    });
+
+    if (!targetFee) {
+      let feeStruct = await prisma.feeStructure.findFirst();
+      if (!feeStruct) {
+        feeStruct = await prisma.feeStructure.create({
+          data: {
+            code: "FEE-FALL-2026-TEST",
+            title: "Tuition and Computing Fee",
+            totalAmount: 3800,
+            currency: "USD",
+            dueDate: new Date("2026-11-15"),
+            breakdownJson: JSON.stringify({ tuition: 3000, lab: 800 }),
+          },
+        });
+      }
+      targetFee = await prisma.studentFee.create({
+        data: {
+          studentId: student1!.id,
+          feeStructureId: feeStruct.id,
+          totalAmount: 3800,
+          paidAmount: 2000,
+          status: "PARTIAL",
+          dueDate: new Date("2026-11-15"),
+        },
+      });
+    }
+
+    const previousPaidAmount = targetFee.paidAmount;
+    const paymentAmount = 500;
+
+    const payFeeReq = new NextRequest("http://localhost:3000/api/parent", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: `classroom_session=${parentToken}`,
+      },
+      body: JSON.stringify({
+        action: "PAY_FEE",
+        studentFeeId: targetFee.id,
+        amount: paymentAmount,
+        paymentMethod: "CREDIT_CARD",
+      }),
+    });
+
+    const payFeeRes = await handleParentPost(payFeeReq);
+    const payFeeData = await payFeeRes.json();
+
+    assert(payFeeRes.status === 200, "Online fee payment transaction completes with 200 OK");
+    assert(payFeeData.success === true, "Fee settlement reports success flag");
+    assert(payFeeData.transaction.referenceNumber.startsWith("PAR-PAY-"), "Payment transaction reference generated with PAR-PAY- prefix");
+    assert(payFeeData.transaction.amount === paymentAmount, "Transaction records exact paid amount");
+
+    // Verify DB update
+    const updatedFeeInDb = await prisma.studentFee.findUnique({
+      where: { id: targetFee.id },
+      include: { transactions: true },
+    });
+    assert(updatedFeeInDb!.paidAmount === previousPaidAmount + paymentAmount, "Student fee paidAmount updated in database");
+    assert(updatedFeeInDb!.transactions.some((t) => t.referenceNumber === payFeeData.transaction.referenceNumber), "PaymentTransaction logged to database ledger");
+
+    // 41.5 Invalid Fee Payment Rejected
+    const invalidPayReq = new NextRequest("http://localhost:3000/api/parent", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: `classroom_session=${parentToken}`,
+      },
+      body: JSON.stringify({
+        action: "PAY_FEE",
+        studentFeeId: targetFee.id,
+        amount: -100,
+      }),
+    });
+    const invalidPayRes = await handleParentPost(invalidPayReq);
+    assert(invalidPayRes.status === 400, "Negative or zero payment amount rejected with 400 Bad Request");
+
+    // 41.6 Pastoral Advisory Inquiry (SEND_INQUIRY)
+    const inquiryReq = new NextRequest("http://localhost:3000/api/parent", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: `classroom_session=${parentToken}`,
+      },
+      body: JSON.stringify({
+        action: "SEND_INQUIRY",
+        studentId: student1!.id,
+        subject: "Midterm Progress Review Request",
+        message: "Requesting a meeting regarding mid-semester capstone milestones and attendance.",
+        advisorEmail: "sarah.chen@apex.edu",
+      }),
+    });
+
+    const inquiryRes = await handleParentPost(inquiryReq);
+    const inquiryData = await inquiryRes.json();
+
+    assert(inquiryRes.status === 200, "Pastoral advisory inquiry posted with 200 OK");
+    assert(inquiryData.success === true, "Inquiry submission flags success");
+
+    // Verify Notification and StudentRequest in database
+    const createdNotification = await prisma.notification.findFirst({
+      where: { title: "Midterm Progress Review Request" },
+      orderBy: { createdAt: "desc" },
+    });
+    assert(!!createdNotification, "Pastoral advisory notification dispatched to advisor inbox in database");
+
+    const createdPetition = await prisma.studentRequest.findFirst({
+      where: { studentId: student1!.id, title: "Midterm Progress Review Request" },
+      orderBy: { createdAt: "desc" },
+    });
+    assert(!!createdPetition, "Pastoral inquiry tracked in StudentRequest ledger");
+
+    // 41.7 Empty Inquiry Message Rejected
+    const emptyInquiryReq = new NextRequest("http://localhost:3000/api/parent", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: `classroom_session=${parentToken}`,
+      },
+      body: JSON.stringify({
+        action: "SEND_INQUIRY",
+        studentId: student1!.id,
+        message: "   ",
+      }),
+    });
+    const emptyInquiryRes = await handleParentPost(emptyInquiryReq);
+    assert(emptyInquiryRes.status === 400, "Empty advisory inquiry message rejected with 400 Bad Request");
+  }
+
+  // ==========================================
+  // GROUP 42: FACULTY 360° PROFILE, TEACHING MATRIX, RESEARCH TELEMETRY & SELF-SERVICE EDITING
+  // ==========================================
+  {
+    console.log("\n📦 Running Group 42: Faculty 360° Profile, Teaching Matrix, Research Telemetry & Self-Service Editing");
+
+    // 42.1 Targeted Faculty Profile Lookup by ID
+    const facultyMember = await prisma.faculty.findFirst({
+      where: { employeeCode: "FAC-CS-108" },
+      include: { user: true },
+    });
+    assert(!!facultyMember, "Lead faculty member (FAC-CS-108) located in database");
+
+    const facultyToken = await signJwt({
+      userId: facultyMember!.userId,
+      email: facultyMember!.user.email,
+      role: "FACULTY",
+      institutionId: facultyMember!.user.institutionId || "inst-apex-01",
+    });
+
+    const reqFacById = new NextRequest(`http://localhost:3000/api/faculty?id=${facultyMember!.id}`, {
+      method: "GET",
+    });
+    const resFacById = await handleFacultyGet(reqFacById);
+    const dataFacById = await resFacById.json();
+
+    assert(resFacById.status === 200, "GET /api/faculty?id=... returns 200 OK with targeted profile");
+    assert(dataFacById.faculty.id === facultyMember!.id, "Returned profile matches requested faculty ID");
+    assert(dataFacById.faculty.qualification.includes("Stanford"), "Academic qualification and Alma Mater populated");
+    assert(typeof dataFacById.faculty.phone === "string" && dataFacById.faculty.phone.length > 0, "Contact phone populated in faculty profile");
+    assert(Array.isArray(dataFacById.faculty.timetables), "Weekly teaching schedule matrix returned");
+    assert(Array.isArray(dataFacById.faculty.publications), "Peer-reviewed publications returned for faculty");
+    assert(Array.isArray(dataFacById.faculty.researchProjects), "Sponsored research grants returned for faculty");
+    assert(typeof dataFacById.faculty.stats.totalSessionsConducted === "number", "Conducted attendance lectures counted in stats");
+    assert(typeof dataFacById.faculty.stats.totalCitations === "number", "Research citation impact aggregated in stats");
+
+    // 42.2 Faculty Self-Profile Resolution via Session (?me=true)
+    const reqFacMe = new NextRequest("http://localhost:3000/api/faculty?me=true", {
+      method: "GET",
+      headers: {
+        Cookie: `classroom_session=${facultyToken}`,
+      },
+    });
+    const resFacMe = await handleFacultyGet(reqFacMe);
+    const dataFacMe = await resFacMe.json();
+
+    assert(resFacMe.status === 200, "GET /api/faculty?me=true resolves authenticated session with 200 OK");
+    assert(dataFacMe.faculty.userId === facultyMember!.userId, "Self-service query returns caller's own faculty profile");
+
+    // 42.3 Directory Listing Mode with Enriched Academic Pedigree
+    const reqFacList = new NextRequest("http://localhost:3000/api/faculty", {
+      method: "GET",
+    });
+    const resFacList = await handleFacultyGet(reqFacList);
+    const dataFacList = await resFacList.json();
+
+    assert(resFacList.status === 200, "Faculty directory listing returns 200 OK");
+    assert(Array.isArray(dataFacList.faculty) && dataFacList.faculty.length > 0, "Directory returns non-empty faculty array");
+    const foundChen = dataFacList.faculty.find((f: any) => f.employeeCode === "FAC-CS-108");
+    assert(!!foundChen, "FAC-CS-108 found in directory");
+    assert(typeof foundChen.qualification === "string", "Directory items include academic qualification");
+    assert(typeof foundChen.joiningDate === "string", "Directory items include tenure joining date");
+
+    // 42.4 Self-Service Profile Update via PATCH /api/faculty
+    const originalRoom = facultyMember!.officeRoom || "Room 304, CSE Block";
+    const updatedRoom = "Alan Turing Hall, Suite 402-B";
+    const updatedPhone = "+1 (555) 902-1823";
+
+    const patchReq = new NextRequest("http://localhost:3000/api/faculty", {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: `classroom_session=${facultyToken}`,
+      },
+      body: JSON.stringify({
+        facultyId: facultyMember!.id,
+        officeRoom: updatedRoom,
+        phone: updatedPhone,
+        specialization: "Quantum Computing & Large Transformer Systems",
+      }),
+    });
+
+    const patchRes = await handleFacultyPatch(patchReq);
+    const patchData = await patchRes.json();
+
+    assert(patchRes.status === 200, "PATCH /api/faculty successfully updates faculty profile with 200 OK");
+    assert(patchData.success === true, "Profile update reports success");
+    assert(patchData.faculty.officeRoom === updatedRoom, "Updated cabin location reflected in response");
+
+    // Verify DB persistence
+    const verifiedDbFac = await prisma.faculty.findUnique({
+      where: { id: facultyMember!.id },
+      include: { user: true },
+    });
+    assert(verifiedDbFac!.officeRoom === updatedRoom, "New office room persisted in SQLite database");
+    assert(verifiedDbFac!.user.phone === updatedPhone, "New phone number persisted in User record");
+
+    // Restore original office room for clean test state
+    await prisma.faculty.update({
+      where: { id: facultyMember!.id },
+      data: { officeRoom: originalRoom },
+    });
+
+    // 42.5 Unauthorized Update Rejected with 403 Forbidden
+    const otherFaculty = await prisma.faculty.findFirst({
+      where: { id: { not: facultyMember!.id } },
+    });
+
+    if (otherFaculty) {
+      const unauthorizedPatchReq = new NextRequest("http://localhost:3000/api/faculty", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Cookie: `classroom_session=${facultyToken}`,
+        },
+        body: JSON.stringify({
+          facultyId: otherFaculty.id,
+          officeRoom: "Unauthorized Room Hack",
+        }),
+      });
+
+      const unauthRes = await handleFacultyPatch(unauthorizedPatchReq);
+      assert(unauthRes.status === 403, "Cross-faculty profile tampering strictly blocked with 403 Forbidden");
+    }
   }
 
   console.log("\n=================================================");

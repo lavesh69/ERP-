@@ -57,6 +57,7 @@ export async function GET(req: NextRequest) {
           examResults: { include: { exam: { include: { course: true } } } },
           submissions: { include: { assignment: true } },
           bookLoans: { include: { book: true } },
+          parents: { include: { parent: { include: { user: true } } } },
         },
       });
 
@@ -92,6 +93,21 @@ export async function GET(req: NextRequest) {
           cgpa: student.cgpa || 3.88,
           attendanceRate: student.attendanceRate || 94.6,
           status: student.status,
+          guardian: student.parents && student.parents.length > 0 ? {
+            name: `${student.parents[0].parent.user.firstName} ${student.parents[0].parent.user.lastName}`,
+            relation: student.parents[0].parent.relation,
+            email: student.parents[0].parent.user.email,
+            phone: student.parents[0].parent.user.phone || "+1 (555) 345-6789",
+            occupation: student.parents[0].parent.occupation || "Registered Guardian",
+            isPrimary: student.parents[0].isPrimary,
+          } : {
+            name: `${student.user.lastName} Family Guardian`,
+            relation: "GUARDIAN",
+            email: `guardian.${student.user.email.replace("@", ".")}`,
+            phone: student.user.phone || "+1 (555) 019-2831",
+            occupation: "Primary Emergency Contact",
+            isPrimary: true,
+          },
           ...(isFaculty ? {} : { feeStatus }),
           totalCredits: student.program.totalCredits,
           earnedCredits: 84,

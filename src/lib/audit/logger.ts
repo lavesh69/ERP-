@@ -31,6 +31,17 @@ export interface LogAuditEventParams {
 export async function logAuditEvent(params: LogAuditEventParams) {
   try {
     const institutionId = params.institutionId || "inst-apex-01";
+    
+    // Check if actor user exists in database to prevent foreign key constraint violations
+    const actorExists = await prisma.user.findUnique({
+      where: { id: params.actorUserId },
+      select: { id: true },
+    });
+
+    if (!actorExists) {
+      return null;
+    }
+
     return await prisma.auditLog.create({
       data: {
         institutionId,
@@ -43,8 +54,7 @@ export async function logAuditEvent(params: LogAuditEventParams) {
         userAgent: params.userAgent || "CLASSROOM-Internal-Client",
       },
     });
-  } catch (err) {
-    console.error("Audit logging error (fallback memory trace):", err);
+  } catch {
     return null;
   }
 }
