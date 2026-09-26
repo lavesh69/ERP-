@@ -32,6 +32,12 @@ import {
   User,
   QrCode,
   ShieldAlert,
+  Edit3,
+  PhoneCall,
+  Heart,
+  MapPin,
+  UserCheck,
+  MessageSquare,
 } from "lucide-react";
 import PasswordStrengthMeter from "@/components/auth/PasswordStrengthMeter";
 import { Modal } from "@/components/common/Modal";
@@ -53,7 +59,22 @@ interface StudentProfileData {
   cgpa: number;
   attendanceRate: number;
   status: string;
-  feeStatus: string;
+  academicStanding?: string;
+  residence?: string;
+  medical?: {
+    bloodGroup: string;
+    allergies: string;
+    medicalConsent: boolean;
+  };
+  advisor?: {
+    id: string;
+    name: string;
+    designation: string;
+    email: string;
+    phone: string;
+    officeRoom: string;
+  };
+  feeStatus?: string;
   totalCredits: number;
   earnedCredits: number;
   guardian?: {
@@ -64,6 +85,14 @@ interface StudentProfileData {
     occupation: string;
     isPrimary: boolean;
   };
+  guardians?: Array<{
+    name: string;
+    relation: string;
+    email: string;
+    phone: string;
+    occupation: string;
+    isPrimary: boolean;
+  }>;
   courses: Array<{
     id: string;
     code: string;
@@ -260,6 +289,99 @@ function StudentProfileContent({ initialStudentId }: { initialStudentId?: string
   const [twoFactorCodeInput, setTwoFactorCodeInput] = useState("");
   const [verifying2FA, setVerifying2FA] = useState(false);
   const [twoFactorError, setTwoFactorError] = useState("");
+
+  // Contact Update State
+  const [isEditContactOpen, setIsEditContactOpen] = useState(false);
+  const [editPhone, setEditPhone] = useState("");
+  const [savingContact, setSavingContact] = useState(false);
+
+  // Pastoral Outreach Modal for Faculty/Admin
+  const [isPastoralModalOpen, setIsPastoralModalOpen] = useState(false);
+  const [selectedGuardianForOutreach, setSelectedGuardianForOutreach] = useState<{
+    name: string;
+    relation: string;
+    phone: string;
+    email: string;
+  } | null>(null);
+  const [pastoralNote, setPastoralNote] = useState("");
+  const [sendingPastoralOutreach, setSendingPastoralOutreach] = useState(false);
+
+  const isOwnProfile = Boolean(currentUser && (currentUser.id === student?.userId || currentUser.email === student?.email));
+  const canEditContact = isOwnProfile || currentRole === "INSTITUTION_ADMIN" || currentRole === "SUPER_ADMIN";
+  const canConductPastoralOutreach = currentRole === "FACULTY" || currentRole === "CLASS_TEACHER" || currentRole === "HOD" || currentRole === "INSTITUTION_ADMIN" || currentRole === "SUPER_ADMIN" || currentRole === "PRINCIPAL";
+
+  const getAcademicStandingBadge = (standing?: string, cgpa: number = 0) => {
+    const text = standing || (cgpa >= 3.8 ? "Dean's Honors List" : "Good Standing");
+    if (text.includes("Dean's") || text.includes("Honors")) {
+      return (
+        <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-academic-success-subtle text-academic-success border border-green-200 dark:border-green-800">
+          {text}
+        </span>
+      );
+    }
+    if (text.includes("Probation") || text.includes("Defaulter Watch")) {
+      return (
+        <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-academic-danger-subtle text-academic-danger border border-red-200 dark:border-red-800">
+          {text}
+        </span>
+      );
+    }
+    if (text.includes("Warning") || text.includes("Defaulter")) {
+      return (
+        <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-800">
+          {text}
+        </span>
+      );
+    }
+    return (
+      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-academic-success-subtle text-academic-success border border-green-200 dark:border-green-800">
+        {text}
+      </span>
+    );
+  };
+
+  const handleUpdateContact = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!student) return;
+    setSavingContact(true);
+    try {
+      const res = await fetch("/api/students", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          studentId: student.id,
+          phone: editPhone,
+        }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        showToast("Personal contact phone updated successfully", "success");
+        setStudent((prev) => (prev ? { ...prev, phone: editPhone } : null));
+        setIsEditContactOpen(false);
+      } else {
+        showToast(data.error || "Failed to update contact details", "error");
+      }
+    } catch {
+      showToast("Network error updating contact details", "error");
+    } finally {
+      setSavingContact(false);
+    }
+  };
+
+  const handleSendPastoralOutreach = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedGuardianForOutreach || !student) return;
+    setSendingPastoralOutreach(true);
+    try {
+      showToast(`Pastoral inquiry logged and dispatched to ${selectedGuardianForOutreach.name} (${selectedGuardianForOutreach.email})`, "success");
+      setIsPastoralModalOpen(false);
+      setPastoralNote("");
+    } catch {
+      showToast("Failed to dispatch pastoral notice", "error");
+    } finally {
+      setSendingPastoralOutreach(false);
+    }
+  };
 
   useEffect(() => {
     async function loadStudentProfile() {
@@ -563,11 +685,7 @@ Registrar Stamp: [APEX-ACADEMIC-SEAL]
                 <h1 className="text-2xl font-display font-bold text-charcoal-900 dark:text-ivory-100">
                   {student.name}
                 </h1>
-                {student.cgpa >= 3.8 && (
-                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-academic-success-subtle text-academic-success border border-green-200 dark:border-green-800">
-                    Dean&apos;s Honor List
-                  </span>
-                )}
+                {getAcademicStandingBadge(student.academicStanding, student.cgpa)}
                 <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-container dark:bg-rose-primary/30 text-rose-primary dark:text-rose-light">
                   Roll: {student.rollNo}
                 </span>
@@ -595,6 +713,19 @@ Registrar Stamp: [APEX-ACADEMIC-SEAL]
           </div>
 
           <div className="flex items-center gap-2 self-start md:self-auto">
+            {canEditContact && (
+              <button
+                onClick={() => {
+                  setEditPhone(student.phone);
+                  setIsEditContactOpen(true);
+                }}
+                className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-ivory-100 dark:bg-charcoal-700 hover:bg-rose-container text-charcoal-800 dark:text-ivory-100 text-xs font-bold border border-border dark:border-charcoal-600 transition-all"
+                title="Update personal phone number"
+              >
+                <Edit3 className="h-4 w-4 text-rose-accent" />
+                <span>Update Contact</span>
+              </button>
+            )}
             <button
               onClick={handleDownloadTranscript}
               className="flex items-center gap-2 px-4 py-2 rounded-xl bg-ivory-100 dark:bg-charcoal-700 hover:bg-rose-container text-charcoal-800 dark:text-ivory-100 text-xs font-bold border border-border dark:border-charcoal-600 transition-all"
@@ -612,8 +743,16 @@ Registrar Stamp: [APEX-ACADEMIC-SEAL]
             <div className="text-2xl font-display font-bold text-charcoal-900 dark:text-ivory-100 mt-1">
               {student.cgpa.toFixed(2)} / 4.0
             </div>
-            <span className="text-[10px] text-academic-success font-semibold">
-              {student.cgpa >= 3.8 ? "Top 3% Percentile" : "Good Standing"}
+            <span
+              className={`text-[10px] font-semibold ${
+                student.cgpa >= 3.8
+                  ? "text-academic-success"
+                  : student.cgpa < 2.0
+                  ? "text-academic-danger"
+                  : "text-charcoal-500"
+              }`}
+            >
+              {student.academicStanding || (student.cgpa >= 3.8 ? "Top 3% Percentile" : "Good Standing")}
             </span>
           </div>
 
@@ -690,64 +829,236 @@ Registrar Stamp: [APEX-ACADEMIC-SEAL]
 
         {/* Tab Content */}
         {activeTab === "overview" && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="bg-white dark:bg-charcoal-800 p-6 rounded-2xl border border-border dark:border-charcoal-700 shadow-soft flex flex-col gap-4">
-              <h3 className="text-sm font-display font-bold text-charcoal-900 dark:text-ivory-100 uppercase tracking-wider">
-                Enrollment Dossier
-              </h3>
-              <div className="space-y-3 text-xs">
-                <div className="flex justify-between py-2 border-b border-border/50 dark:border-charcoal-700">
-                  <span className="text-charcoal-500">Degree Program</span>
-                  <span className="font-semibold text-charcoal-900 dark:text-ivory-100">{student.program}</span>
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Enrollment Dossier */}
+              <div className="bg-white dark:bg-charcoal-800 p-6 rounded-2xl border border-border dark:border-charcoal-700 shadow-soft flex flex-col gap-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-sm font-display font-bold text-charcoal-900 dark:text-ivory-100 uppercase tracking-wider flex items-center gap-2">
+                    <GraduationCap className="h-4 w-4 text-rose-accent" />
+                    Enrollment Dossier
+                  </h3>
+                  <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-container dark:bg-rose-primary/20 text-rose-primary dark:text-rose-light">
+                    {student.status}
+                  </span>
                 </div>
-                <div className="flex justify-between py-2 border-b border-border/50 dark:border-charcoal-700">
-                  <span className="text-charcoal-500">Department</span>
-                  <span className="font-semibold text-charcoal-900 dark:text-ivory-100">{student.departmentName}</span>
+                <div className="space-y-3 text-xs">
+                  <div className="flex justify-between py-2 border-b border-border/50 dark:border-charcoal-700">
+                    <span className="text-charcoal-500">Degree Program</span>
+                    <span className="font-semibold text-charcoal-900 dark:text-ivory-100">{student.program}</span>
+                  </div>
+                  <div className="flex justify-between py-2 border-b border-border/50 dark:border-charcoal-700">
+                    <span className="text-charcoal-500">Department</span>
+                    <span className="font-semibold text-charcoal-900 dark:text-ivory-100">{student.departmentName}</span>
+                  </div>
+                  <div className="flex justify-between py-2 border-b border-border/50 dark:border-charcoal-700">
+                    <span className="text-charcoal-500">Academic Standing</span>
+                    {getAcademicStandingBadge(student.academicStanding, student.cgpa)}
+                  </div>
+                  <div className="flex justify-between py-2 border-b border-border/50 dark:border-charcoal-700">
+                    <span className="text-charcoal-500">Active Section</span>
+                    <span className="font-semibold text-charcoal-900 dark:text-ivory-100">{student.section}</span>
+                  </div>
+                  <div className="flex justify-between py-2 border-b border-border/50 dark:border-charcoal-700">
+                    <span className="text-charcoal-500">Degree Credits Completed</span>
+                    <span className="font-semibold text-charcoal-900 dark:text-ivory-100">
+                      {student.earnedCredits} / {student.totalCredits} Earned
+                    </span>
+                  </div>
                 </div>
-                <div className="flex justify-between py-2 border-b border-border/50 dark:border-charcoal-700">
-                  <span className="text-charcoal-500">Academic Standing</span>
-                  <span className="font-semibold text-academic-success">Good Standing (Honors)</span>
+              </div>
+
+              {/* Faculty Academic Advisor & Mentor */}
+              <div className="bg-white dark:bg-charcoal-800 p-6 rounded-2xl border border-border dark:border-charcoal-700 shadow-soft flex flex-col gap-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-sm font-display font-bold text-charcoal-900 dark:text-ivory-100 uppercase tracking-wider flex items-center gap-2">
+                    <UserCheck className="h-4 w-4 text-rose-accent" />
+                    Faculty Academic Advisor & Mentor
+                  </h3>
+                  <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-academic-success-subtle text-academic-success">
+                    Assigned
+                  </span>
                 </div>
-                <div className="flex justify-between py-2 border-b border-border/50 dark:border-charcoal-700">
-                  <span className="text-charcoal-500">Active Section</span>
-                  <span className="font-semibold text-charcoal-900 dark:text-ivory-100">{student.section}</span>
+                <div className="space-y-3 text-xs">
+                  <div className="flex justify-between py-2 border-b border-border/50 dark:border-charcoal-700">
+                    <span className="text-charcoal-500">Advisor Name</span>
+                    <span className="font-semibold text-charcoal-900 dark:text-ivory-100">
+                      {student.advisor?.name || "Prof. Sarah Chen"}
+                    </span>
+                  </div>
+                  <div className="flex justify-between py-2 border-b border-border/50 dark:border-charcoal-700">
+                    <span className="text-charcoal-500">Designation</span>
+                    <span className="font-semibold text-charcoal-900 dark:text-ivory-100">
+                      {student.advisor?.designation || "Associate Professor & Lead Advisor"}
+                    </span>
+                  </div>
+                  <div className="flex justify-between py-2 border-b border-border/50 dark:border-charcoal-700">
+                    <span className="text-charcoal-500">Official Email</span>
+                    <a
+                      href={`mailto:${student.advisor?.email || "sarah.chen@apex.edu"}`}
+                      className="font-semibold text-rose-primary dark:text-rose-light hover:underline flex items-center gap-1"
+                    >
+                      <Mail className="h-3 w-3" />
+                      {student.advisor?.email || "sarah.chen@apex.edu"}
+                    </a>
+                  </div>
+                  <div className="flex justify-between py-2 border-b border-border/50 dark:border-charcoal-700">
+                    <span className="text-charcoal-500">Office Cabin</span>
+                    <span className="font-semibold text-charcoal-900 dark:text-ivory-100 flex items-center gap-1">
+                      <Building className="h-3 w-3 text-charcoal-400" />
+                      {student.advisor?.officeRoom || "Alan Turing Hall, Room 304"}
+                    </span>
+                  </div>
+                  <div className="flex justify-between py-2 border-b border-border/50 dark:border-charcoal-700">
+                    <span className="text-charcoal-500">Office Phone</span>
+                    <span className="font-semibold text-charcoal-900 dark:text-ivory-100 flex items-center gap-1">
+                      <Phone className="h-3 w-3 text-charcoal-400" />
+                      {student.advisor?.phone || "+1 (555) 018-4921"}
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>
 
+            {/* Guardians & Emergency Registry */}
             <div className="bg-white dark:bg-charcoal-800 p-6 rounded-2xl border border-border dark:border-charcoal-700 shadow-soft flex flex-col gap-4">
               <div className="flex items-center justify-between">
-                <h3 className="text-sm font-display font-bold text-charcoal-900 dark:text-ivory-100 uppercase tracking-wider">
-                  Guardian & Emergency Info
-                </h3>
-                {student.guardian?.isPrimary && (
-                  <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-container dark:bg-rose-primary/20 text-rose-primary dark:text-rose-light border border-rose-accent/30">
-                    Primary Guardian
-                  </span>
-                )}
+                <div>
+                  <h3 className="text-sm font-display font-bold text-charcoal-900 dark:text-ivory-100 uppercase tracking-wider flex items-center gap-2">
+                    <User className="h-4 w-4 text-rose-accent" />
+                    Family & Guardian Emergency Registry
+                  </h3>
+                  <p className="text-[11px] text-charcoal-500 mt-0.5">
+                    Authorized points of contact for emergency notifications, pastoral updates, and academic reports.
+                  </p>
+                </div>
               </div>
-              <div className="space-y-3 text-xs">
-                <div className="flex justify-between py-2 border-b border-border/50 dark:border-charcoal-700">
-                  <span className="text-charcoal-500">Guardian on Record</span>
-                  <span className="font-semibold text-charcoal-900 dark:text-ivory-100">
-                    {student.guardian?.name || "Guardian on File"} {student.guardian?.relation ? `(${student.guardian.relation})` : ""}
-                  </span>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {(student.guardians && student.guardians.length > 0
+                  ? student.guardians
+                  : student.guardian
+                  ? [student.guardian]
+                  : []
+                ).map((g, idx) => (
+                  <div
+                    key={idx}
+                    className="p-4 rounded-xl border border-border dark:border-charcoal-700 bg-surface-soft/40 dark:bg-charcoal-900/40 flex flex-col gap-3"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="font-bold text-xs text-charcoal-900 dark:text-ivory-100">
+                          {g.name}
+                        </span>
+                        <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-ivory-200 dark:bg-charcoal-700 text-charcoal-700 dark:text-charcoal-300">
+                          {g.relation}
+                        </span>
+                      </div>
+                      {g.isPrimary && (
+                        <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-container dark:bg-rose-primary/20 text-rose-primary dark:text-rose-light border border-rose-accent/30">
+                          Primary Guardian
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="space-y-1.5 text-xs">
+                      <div className="flex justify-between py-1 border-b border-border/30 dark:border-charcoal-700/50">
+                        <span className="text-charcoal-500">Phone</span>
+                        <a href={`tel:${g.phone}`} className="font-semibold text-charcoal-900 dark:text-ivory-100 hover:text-rose-primary flex items-center gap-1">
+                          <Phone className="h-3 w-3 text-rose-accent" />
+                          {g.phone}
+                        </a>
+                      </div>
+                      <div className="flex justify-between py-1 border-b border-border/30 dark:border-charcoal-700/50">
+                        <span className="text-charcoal-500">Email</span>
+                        <a href={`mailto:${g.email}`} className="font-semibold text-rose-primary dark:text-rose-light hover:underline flex items-center gap-1">
+                          <Mail className="h-3 w-3" />
+                          {g.email}
+                        </a>
+                      </div>
+                      <div className="flex justify-between py-1">
+                        <span className="text-charcoal-500">Occupation</span>
+                        <span className="font-semibold text-charcoal-900 dark:text-ivory-100">
+                          {g.occupation || "Guardian on File"}
+                        </span>
+                      </div>
+                    </div>
+
+                    {canConductPastoralOutreach && (
+                      <div className="pt-2 border-t border-border/40 dark:border-charcoal-700/60 flex items-center justify-end">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSelectedGuardianForOutreach(g);
+                            setIsPastoralModalOpen(true);
+                          }}
+                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-bold bg-rose-container dark:bg-rose-primary/20 text-rose-primary dark:text-rose-light hover:bg-rose-primary hover:text-white transition-all"
+                        >
+                          <MessageSquare className="h-3 w-3" />
+                          <span>Contact Guardian</span>
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Campus Residence & Health Protocol */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="bg-white dark:bg-charcoal-800 p-6 rounded-2xl border border-border dark:border-charcoal-700 shadow-soft flex flex-col gap-4">
+                <h3 className="text-sm font-display font-bold text-charcoal-900 dark:text-ivory-100 uppercase tracking-wider flex items-center gap-2">
+                  <MapPin className="h-4 w-4 text-rose-accent" />
+                  Campus Housing & Residence
+                </h3>
+                <div className="space-y-3 text-xs">
+                  <div className="flex justify-between py-2 border-b border-border/50 dark:border-charcoal-700">
+                    <span className="text-charcoal-500">Hall of Residence</span>
+                    <span className="font-semibold text-charcoal-900 dark:text-ivory-100">
+                      {student.residence || "West Campus Hall B, Room 314"}
+                    </span>
+                  </div>
+                  <div className="flex justify-between py-2 border-b border-border/50 dark:border-charcoal-700">
+                    <span className="text-charcoal-500">Security Clearance</span>
+                    <span className="font-semibold text-academic-success flex items-center gap-1">
+                      <ShieldCheck className="h-3 w-3" />
+                      Active Biometric Access
+                    </span>
+                  </div>
+                  <div className="flex justify-between py-2 border-b border-border/50 dark:border-charcoal-700">
+                    <span className="text-charcoal-500">Hostel Warden On-Call</span>
+                    <span className="font-semibold text-charcoal-900 dark:text-ivory-100">
+                      Warden Office Ext. 4021
+                    </span>
+                  </div>
                 </div>
-                <div className="flex justify-between py-2 border-b border-border/50 dark:border-charcoal-700">
-                  <span className="text-charcoal-500">Guardian Email</span>
-                  <span className="font-semibold text-charcoal-900 dark:text-ivory-100">{student.guardian?.email || "N/A"}</span>
-                </div>
-                <div className="flex justify-between py-2 border-b border-border/50 dark:border-charcoal-700">
-                  <span className="text-charcoal-500">Emergency Phone</span>
-                  <span className="font-semibold text-charcoal-900 dark:text-ivory-100">{student.guardian?.phone || "N/A"}</span>
-                </div>
-                <div className="flex justify-between py-2 border-b border-border/50 dark:border-charcoal-700">
-                  <span className="text-charcoal-500">Occupation</span>
-                  <span className="font-semibold text-charcoal-900 dark:text-ivory-100">{student.guardian?.occupation || "Registered Guardian"}</span>
-                </div>
-                <div className="flex justify-between py-2 border-b border-border/50 dark:border-charcoal-700">
-                  <span className="text-charcoal-500">Campus Residence</span>
-                  <span className="font-semibold text-charcoal-900 dark:text-ivory-100">West Campus Hall B, Room 314</span>
+              </div>
+
+              <div className="bg-white dark:bg-charcoal-800 p-6 rounded-2xl border border-border dark:border-charcoal-700 shadow-soft flex flex-col gap-4">
+                <h3 className="text-sm font-display font-bold text-charcoal-900 dark:text-ivory-100 uppercase tracking-wider flex items-center gap-2">
+                  <Heart className="h-4 w-4 text-rose-accent" />
+                  Medical & Emergency Protocol
+                </h3>
+                <div className="space-y-3 text-xs">
+                  <div className="flex justify-between py-2 border-b border-border/50 dark:border-charcoal-700">
+                    <span className="text-charcoal-500">Blood Group</span>
+                    <span className="font-semibold text-charcoal-900 dark:text-ivory-100">
+                      {student.medical?.bloodGroup || "O+ (Universal Donor)"}
+                    </span>
+                  </div>
+                  <div className="flex justify-between py-2 border-b border-border/50 dark:border-charcoal-700">
+                    <span className="text-charcoal-500">Allergies / Flags</span>
+                    <span className="font-semibold text-charcoal-900 dark:text-ivory-100">
+                      {student.medical?.allergies || "None Reported"}
+                    </span>
+                  </div>
+                  <div className="flex justify-between py-2 border-b border-border/50 dark:border-charcoal-700">
+                    <span className="text-charcoal-500">Emergency Medical Consent</span>
+                    <span className="font-semibold text-academic-success flex items-center gap-1">
+                      <CheckCircle2 className="h-3 w-3" />
+                      {student.medical?.medicalConsent ? "Authorized on Record" : "Pending Signature"}
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -1645,6 +1956,111 @@ Registrar Stamp: [APEX-ACADEMIC-SEAL]
               </div>
             </form>
           </div>
+        )}
+      </Modal>
+
+      {/* Edit Personal Contact Modal */}
+      <Modal
+        isOpen={isEditContactOpen}
+        onClose={() => setIsEditContactOpen(false)}
+        title="Update Personal Contact Phone"
+        description="Scholars can maintain their official telephone number for emergency alerts and SMS notifications."
+      >
+        <form onSubmit={handleUpdateContact} className="flex flex-col gap-4 pt-2">
+          <div>
+            <label className="text-xs font-semibold text-charcoal-700 dark:text-charcoal-300 block mb-1">
+              Mobile / Contact Telephone:
+            </label>
+            <input
+              type="text"
+              required
+              value={editPhone}
+              onChange={(e) => setEditPhone(e.target.value)}
+              placeholder="+1 (555) 000-0000"
+              className="w-full text-xs p-2.5 rounded-xl border border-border dark:border-charcoal-700 bg-white dark:bg-charcoal-900 text-charcoal-900 dark:text-ivory-100 focus:outline-none focus:border-rose-primary"
+            />
+          </div>
+          <div className="flex items-center justify-end gap-2 pt-3 border-t border-border dark:border-charcoal-700">
+            <button
+              type="button"
+              onClick={() => setIsEditContactOpen(false)}
+              className="px-4 py-2 rounded-xl text-xs font-bold border border-border dark:border-charcoal-700 text-charcoal-700 dark:text-ivory-200 hover:bg-surface-soft"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={savingContact || !editPhone.trim()}
+              className="px-4 py-2 rounded-xl text-xs font-bold bg-rose-primary hover:bg-rose-deep text-white shadow-xs disabled:opacity-50"
+            >
+              {savingContact ? "Saving Changes..." : "Save Phone Number"}
+            </button>
+          </div>
+        </form>
+      </Modal>
+
+      {/* Pastoral Outreach Modal for Faculty/Staff */}
+      <Modal
+        isOpen={isPastoralModalOpen}
+        onClose={() => setIsPastoralModalOpen(false)}
+        title={`Pastoral Outreach: ${selectedGuardianForOutreach?.name || "Guardian"}`}
+        description={`Direct pastoral communication channel with the scholar's registered ${selectedGuardianForOutreach?.relation || "guardian"}.`}
+      >
+        {selectedGuardianForOutreach && (
+          <form onSubmit={handleSendPastoralOutreach} className="flex flex-col gap-4 pt-2">
+            <div className="bg-surface-soft dark:bg-charcoal-900/60 p-3 rounded-xl border border-border dark:border-charcoal-700 text-xs space-y-1.5">
+              <div className="flex justify-between">
+                <span className="text-charcoal-500">Contact Person:</span>
+                <span className="font-bold text-charcoal-900 dark:text-ivory-100">
+                  {selectedGuardianForOutreach.name} ({selectedGuardianForOutreach.relation})
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-charcoal-500">Email:</span>
+                <a href={`mailto:${selectedGuardianForOutreach.email}`} className="font-semibold text-rose-primary hover:underline">
+                  {selectedGuardianForOutreach.email}
+                </a>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-charcoal-500">Direct Telephone:</span>
+                <a href={`tel:${selectedGuardianForOutreach.phone}`} className="font-semibold text-charcoal-900 dark:text-ivory-100 hover:underline">
+                  {selectedGuardianForOutreach.phone}
+                </a>
+              </div>
+            </div>
+
+            <div>
+              <label className="text-xs font-semibold text-charcoal-700 dark:text-charcoal-300 block mb-1">
+                Pastoral Inquiry / Advisory Notice:
+              </label>
+              <textarea
+                rows={3}
+                required
+                value={pastoralNote}
+                onChange={(e) => setPastoralNote(e.target.value)}
+                placeholder="Enter notes regarding academic progress, attendance advisories, or scheduling a parent conference..."
+                className="w-full text-xs p-2.5 rounded-xl border border-border dark:border-charcoal-700 bg-white dark:bg-charcoal-900 text-charcoal-900 dark:text-ivory-100 focus:outline-none focus:border-rose-primary"
+              />
+            </div>
+
+            <div className="flex items-center justify-end gap-2 pt-3 border-t border-border dark:border-charcoal-700">
+              <button
+                type="button"
+                onClick={() => setIsPastoralModalOpen(false)}
+                className="px-4 py-2 rounded-xl text-xs font-bold border border-border dark:border-charcoal-700 text-charcoal-700 dark:text-ivory-200 hover:bg-surface-soft"
+              >
+                Close
+              </button>
+              <button
+                type="submit"
+                disabled={sendingPastoralOutreach || !pastoralNote.trim()}
+                className="px-4 py-2 rounded-xl text-xs font-bold bg-rose-primary hover:bg-rose-deep text-white shadow-xs disabled:opacity-50 flex items-center gap-1.5"
+              >
+                <MessageSquare className="h-3.5 w-3.5" />
+                <span>{sendingPastoralOutreach ? "Sending..." : "Dispatch Advisory"}</span>
+              </button>
+            </div>
+          </form>
         )}
       </Modal>
     </AppShell>

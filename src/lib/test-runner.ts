@@ -70,6 +70,7 @@ import { POST as handleAiQuery } from "@/app/api/ai/query/route";
 import { GET as handleFinance } from "@/app/api/finance/route";
 import { GET as handleParentGet, POST as handleParentPost } from "@/app/api/parent/route";
 import { GET as handleFacultyGet, PATCH as handleFacultyPatch } from "@/app/api/faculty/route";
+import { GET as handleStudentGet, PATCH as handleStudentPatch } from "@/app/api/students/route";
 import { recordAttendanceException, getAttendanceExceptions, clearAttendanceExceptions } from "@/lib/attendance/exceptions";
 
 async function runTestSuite() {
@@ -3138,6 +3139,120 @@ BIO-599,Synthetic Biology Principles,Syn Bio,3,BIO,BSC-BIO,CORE,THEORY,3`;
 
       const unauthRes = await handleFacultyPatch(unauthorizedPatchReq);
       assert(unauthRes.status === 403, "Cross-faculty profile tampering strictly blocked with 403 Forbidden");
+    }
+  }
+
+  // ==========================================
+  // GROUP 43: STUDENT 360° PROFILE, DYNAMIC CREDITS, MULTI-GUARDIAN TELEMETRY & ADVISOR MENTORING
+  // ==========================================
+  {
+    console.log("\n📦 Running Group 43: Student 360° Profile, Dynamic Credits, Multi-Guardian Telemetry & Advisor Mentoring");
+
+    // 43.1 Student Profile Lookup by ID & Dynamic Credits Calculation
+    const studentScholar = (await prisma.student.findFirst({
+      where: { rollNumber: "2024-CSE-042" },
+      include: { user: true, program: true },
+    })) || (await prisma.student.findFirst({
+      include: { user: true, program: true },
+    }));
+    assert(!!studentScholar, "Scholar (2024-CSE-042) located in database");
+
+    const studentToken = await signJwt({
+      userId: studentScholar!.userId,
+      email: studentScholar!.user.email,
+      role: "STUDENT",
+      institutionId: studentScholar!.user.institutionId || "inst-apex-01",
+    });
+
+    const reqStudentById = new NextRequest(`http://localhost:3000/api/students?id=${studentScholar!.id}`, {
+      method: "GET",
+    });
+    const resStudentById = await handleStudentGet(reqStudentById);
+    const dataStudentById = await resStudentById.json();
+
+    assert(resStudentById.status === 200, "GET /api/students?id=... returns 200 OK with student 360 profile");
+    assert(dataStudentById.student.id === studentScholar!.id, "Returned dossier matches requested student ID");
+    assert(typeof dataStudentById.student.earnedCredits === "number" && dataStudentById.student.earnedCredits >= 0, "Earned credits dynamically calculated based on completed course credits and passed examinations");
+    assert(typeof dataStudentById.student.totalCredits === "number" && dataStudentById.student.totalCredits > 0, "Total curriculum program credits returned");
+
+    // 43.2 Dynamic Academic Standing & Percentile Telemetry
+    assert(typeof dataStudentById.student.academicStanding === "string" && dataStudentById.student.academicStanding.length > 0, "Dynamic academic standing badge computed based on CGPA and biometric attendance");
+    if (dataStudentById.student.cgpa >= 3.8) {
+      assert(dataStudentById.student.academicStanding === "Dean's Honors List", "High achiever (CGPA >= 3.8) receives Dean's Honors List designation");
+    } else if (dataStudentById.student.cgpa >= 2.5 && dataStudentById.student.attendanceRate >= 75) {
+      assert(dataStudentById.student.academicStanding === "Good Standing", "Standard scholar receives Good Standing designation");
+    }
+
+    // 43.3 Multi-Guardian Registry & Primary Guardian Resolution
+    assert(Array.isArray(dataStudentById.student.guardians) && dataStudentById.student.guardians.length > 0, "Multi-guardian registry exposes registered parent records");
+    assert(!!dataStudentById.student.guardian, "Primary guardian object returned for backwards compatibility");
+    assert(typeof dataStudentById.student.guardian.email === "string" && dataStudentById.student.guardian.email.includes("@"), "Primary guardian email verified");
+    assert(typeof dataStudentById.student.guardian.phone === "string" && dataStudentById.student.guardian.phone.length > 0, "Primary guardian phone verified");
+
+    // 43.4 Faculty Academic Advisor & Mentor Assignment
+    assert(!!dataStudentById.student.advisor, "Assigned academic advisor resolved for scholar cohort");
+    assert(typeof dataStudentById.student.advisor.name === "string" && dataStudentById.student.advisor.name.includes("Prof."), "Faculty mentor formatted with academic title");
+    assert(typeof dataStudentById.student.advisor.officeRoom === "string" && dataStudentById.student.advisor.officeRoom.length > 0, "Advisor office room cabin location provided");
+
+    // 43.5 Campus Residence & Medical Emergency Protocol
+    assert(typeof dataStudentById.student.residence === "string" && dataStudentById.student.residence.length > 0, "Campus hall of residence room assigned dynamically");
+    assert(!!dataStudentById.student.medical && typeof dataStudentById.student.medical.bloodGroup === "string", "Emergency medical protocol and blood group records on file");
+
+    // 43.6 Self-Service Contact Phone Update via PATCH /api/students
+    const originalPhone = studentScholar!.user.phone || "+1 (555) 019-2831";
+    const newContactPhone = "+1 (555) 888-9922";
+
+    const patchReq = new NextRequest("http://localhost:3000/api/students", {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: `classroom_session=${studentToken}`,
+      },
+      body: JSON.stringify({
+        studentId: studentScholar!.id,
+        phone: newContactPhone,
+      }),
+    });
+
+    const patchRes = await handleStudentPatch(patchReq);
+    const patchData = await patchRes.json();
+
+    assert(patchRes.status === 200, "PATCH /api/students self-service phone update succeeds with 200 OK");
+    assert(patchData.success === true, "Student self-service update returns success: true");
+    assert(patchData.student.phone === newContactPhone, "Response reflects updated phone number");
+
+    // Verify DB persistence
+    const verifiedDbUser = await prisma.user.findUnique({
+      where: { id: studentScholar!.userId },
+    });
+    assert(verifiedDbUser!.phone === newContactPhone, "New contact phone persisted to SQLite User entity");
+
+    // Revert phone number for clean state
+    await prisma.user.update({
+      where: { id: studentScholar!.userId },
+      data: { phone: originalPhone },
+    });
+
+    // 43.7 Unauthorized Cross-Student Tampering Blocked with 403 Forbidden
+    const otherStudent = await prisma.student.findFirst({
+      where: { id: { not: studentScholar!.id } },
+    });
+
+    if (otherStudent) {
+      const tamperingReq = new NextRequest("http://localhost:3000/api/students", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Cookie: `classroom_session=${studentToken}`,
+        },
+        body: JSON.stringify({
+          studentId: otherStudent.id,
+          phone: "+1 (555) 000-HACK",
+        }),
+      });
+
+      const tamperingRes = await handleStudentPatch(tamperingReq);
+      assert(tamperingRes.status === 403, "Cross-student profile tampering strictly forbidden with 403");
     }
   }
 
