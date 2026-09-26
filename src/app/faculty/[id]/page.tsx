@@ -357,7 +357,7 @@ export default function FacultyDetailPage({
         </div>
 
         {/* Header Hero Banner */}
-        <div className="bg-white dark:bg-charcoal-800 rounded-3xl p-6 border border-border dark:border-charcoal-700 shadow-soft flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+        <div className="bg-white dark:bg-charcoal-800 bg-gradient-to-br from-white via-surface-ground to-rose-container/15 dark:from-charcoal-800 dark:via-charcoal-800 dark:to-charcoal-900/40 rounded-3xl p-6 border border-border dark:border-charcoal-700 shadow-soft glass-card-hover flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
           <div className="flex items-start md:items-center gap-5">
             <div className="h-20 w-20 rounded-2xl bg-rose-container dark:bg-rose-primary/20 text-rose-primary dark:text-rose-light flex items-center justify-center font-display font-bold text-2xl shadow-sm border border-rose-accent/30 shrink-0">
               {initials}
@@ -414,7 +414,7 @@ export default function FacultyDetailPage({
             )}
             <a
               href={`mailto:${faculty.email}`}
-              className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-rose-primary text-white hover:bg-rose-deep shadow-sm transition-all"
+              className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-rose-primary text-white hover:bg-rose-deep shadow-sm transition-all btn-primary-glow"
             >
               <Mail className="h-3.5 w-3.5" />
               <span>Contact Faculty</span>
@@ -424,7 +424,7 @@ export default function FacultyDetailPage({
 
         {/* 4 Performance & Workload KPI Cards */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="bg-white dark:bg-charcoal-800 p-4 rounded-xl border border-border dark:border-charcoal-700 shadow-soft">
+          <div className="bg-white dark:bg-charcoal-800 p-4 rounded-xl border border-border dark:border-charcoal-700 shadow-soft glass-card-hover">
             <span className="text-[10px] font-bold text-charcoal-500 uppercase block">Weekly Teaching Load</span>
             <div className="text-2xl font-display font-bold text-charcoal-900 dark:text-ivory-100 mt-1 flex items-center gap-1.5">
               <Clock className="h-4 w-4 text-rose-primary" />
@@ -435,7 +435,7 @@ export default function FacultyDetailPage({
             </span>
           </div>
 
-          <div className="bg-white dark:bg-charcoal-800 p-4 rounded-xl border border-border dark:border-charcoal-700 shadow-soft">
+          <div className="bg-white dark:bg-charcoal-800 p-4 rounded-xl border border-border dark:border-charcoal-700 shadow-soft glass-card-hover">
             <span className="text-[10px] font-bold text-charcoal-500 uppercase block">Active Course Load</span>
             <div className="text-2xl font-display font-bold text-charcoal-900 dark:text-ivory-100 mt-1 flex items-center gap-1.5">
               <BookOpen className="h-4 w-4 text-academic-info" />
@@ -446,7 +446,7 @@ export default function FacultyDetailPage({
             </span>
           </div>
 
-          <div className="bg-white dark:bg-charcoal-800 p-4 rounded-xl border border-border dark:border-charcoal-700 shadow-soft">
+          <div className="bg-white dark:bg-charcoal-800 p-4 rounded-xl border border-border dark:border-charcoal-700 shadow-soft glass-card-hover">
             <span className="text-[10px] font-bold text-charcoal-500 uppercase block">Lectures Delivered</span>
             <div className="text-2xl font-display font-bold text-rose-primary dark:text-rose-light mt-1 flex items-center gap-1.5">
               <CheckCircle2 className="h-4 w-4" />
@@ -457,7 +457,7 @@ export default function FacultyDetailPage({
             </span>
           </div>
 
-          <div className="bg-white dark:bg-charcoal-800 p-4 rounded-xl border border-border dark:border-charcoal-700 shadow-soft">
+          <div className="bg-white dark:bg-charcoal-800 p-4 rounded-xl border border-border dark:border-charcoal-700 shadow-soft glass-card-hover">
             <span className="text-[10px] font-bold text-charcoal-500 uppercase block">Research Citations</span>
             <div className="text-2xl font-display font-bold text-charcoal-900 dark:text-ivory-100 mt-1 flex items-center gap-1.5">
               <Sparkles className="h-4 w-4 text-amber-500" />
@@ -781,28 +781,28 @@ export default function FacultyDetailPage({
           <div className="flex flex-col gap-6">
             {/* L-T-P Workload Breakdown */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <div className="bg-white dark:bg-charcoal-800 p-5 rounded-2xl border border-border dark:border-charcoal-700 shadow-soft">
+              <div className="bg-white dark:bg-charcoal-800 p-5 rounded-2xl border border-border dark:border-charcoal-700 shadow-soft glass-card-hover">
                 <span className="text-[10px] font-bold text-charcoal-500 uppercase block">Lecture Hours (L)</span>
                 <div className="text-2xl font-bold font-display text-rose-primary mt-1">
                   {faculty.workloadBreakdown?.lectureHours || 10} hrs/wk
                 </div>
                 <span className="text-[11px] text-charcoal-500 mt-1 block">Theory & Core Delivery</span>
               </div>
-              <div className="bg-white dark:bg-charcoal-800 p-5 rounded-2xl border border-border dark:border-charcoal-700 shadow-soft">
+              <div className="bg-white dark:bg-charcoal-800 p-5 rounded-2xl border border-border dark:border-charcoal-700 shadow-soft glass-card-hover">
                 <span className="text-[10px] font-bold text-charcoal-500 uppercase block">Tutorial Hours (T)</span>
                 <div className="text-2xl font-bold font-display text-academic-info mt-1">
                   {faculty.workloadBreakdown?.tutorialHours || 4} hrs/wk
                 </div>
                 <span className="text-[11px] text-charcoal-500 mt-1 block">Problem Solving & Mentoring</span>
               </div>
-              <div className="bg-white dark:bg-charcoal-800 p-5 rounded-2xl border border-border dark:border-charcoal-700 shadow-soft">
+              <div className="bg-white dark:bg-charcoal-800 p-5 rounded-2xl border border-border dark:border-charcoal-700 shadow-soft glass-card-hover">
                 <span className="text-[10px] font-bold text-charcoal-500 uppercase block">Practical / Lab (P)</span>
                 <div className="text-2xl font-bold font-display text-academic-success mt-1">
                   {faculty.workloadBreakdown?.labHours || 4} hrs/wk
                 </div>
                 <span className="text-[11px] text-charcoal-500 mt-1 block">Hands-on Laboratory Sessions</span>
               </div>
-              <div className="bg-white dark:bg-charcoal-800 p-5 rounded-2xl border border-border dark:border-charcoal-700 shadow-soft">
+              <div className="bg-white dark:bg-charcoal-800 p-5 rounded-2xl border border-border dark:border-charcoal-700 shadow-soft glass-card-hover">
                 <span className="text-[10px] font-bold text-charcoal-500 uppercase block">Admin & Research Load</span>
                 <div className="text-2xl font-bold font-display text-amber-500 mt-1">
                   {faculty.workloadBreakdown?.adminAndResearchHours || 4} hrs/wk

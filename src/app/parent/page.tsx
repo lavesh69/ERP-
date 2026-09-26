@@ -482,9 +482,9 @@ export default function ParentPortalPage() {
         {isLoading ? (
           <SkeletonCard />
         ) : (
-          <div className="bg-white dark:bg-[#1E191C] p-6 rounded-2xl border border-border dark:border-charcoal-800 shadow-soft flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="bg-white dark:bg-charcoal-800 bg-gradient-to-br from-white via-surface-ground to-rose-container/15 dark:from-charcoal-800 dark:via-charcoal-800 dark:to-charcoal-900/40 p-6 rounded-2xl border border-border dark:border-charcoal-700 shadow-soft glass-card-hover flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="flex items-center gap-4">
-              <div className="h-16 w-16 rounded-2xl bg-rose-container dark:bg-rose-dark/30 text-rose-primary dark:text-rose-accent font-bold text-xl flex items-center justify-center shrink-0">
+              <div className="h-16 w-16 rounded-2xl bg-rose-container dark:bg-rose-dark/30 text-rose-primary dark:text-rose-accent font-bold text-xl flex items-center justify-center shrink-0 shadow-sm border border-rose-accent/20">
                 {data?.child?.name
                   ?.split(" ")
                   .map((n: string) => n[0])
@@ -497,9 +497,9 @@ export default function ParentPortalPage() {
                   </h2>
                   <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
                     data?.child?.academicStanding === "Dean's Honors List"
-                      ? "bg-academic-success-subtle text-academic-success border border-green-200"
+                      ? "bg-academic-success-subtle text-academic-success border border-green-200 dark:border-green-800"
                       : data?.child?.academicStanding === "Academic Probation"
-                      ? "bg-academic-danger-subtle text-academic-danger border border-red-200"
+                      ? "bg-academic-danger-subtle text-academic-danger border border-red-200 dark:border-red-800"
                       : "bg-academic-success-subtle text-academic-success"
                   }`}>
                     {data?.child?.academicStanding || "Active Scholar"}
@@ -553,8 +553,8 @@ export default function ParentPortalPage() {
 
         {/* Multi-Guardian Roster Panel */}
         {data?.child?.guardians && data.child.guardians.length > 0 && (
-          <div className="bg-white dark:bg-[#1E191C] rounded-2xl border border-border dark:border-charcoal-800 shadow-soft p-5 flex flex-col gap-3">
-            <div className="flex items-center justify-between pb-2 border-b border-border dark:border-charcoal-800">
+          <div className="bg-white dark:bg-charcoal-800 rounded-2xl border border-border dark:border-charcoal-700 shadow-soft p-5 flex flex-col gap-3">
+            <div className="flex items-center justify-between pb-2 border-b border-border dark:border-charcoal-700">
               <div className="flex items-center gap-2">
                 <ShieldCheck className="h-4 w-4 text-rose-primary" />
                 <span className="text-xs font-bold text-charcoal-900 dark:text-ivory-100 uppercase tracking-wider">
@@ -569,7 +569,7 @@ export default function ParentPortalPage() {
               {data.child.guardians.map((g: any, idx: number) => (
                 <div
                   key={idx}
-                  className="p-3.5 rounded-xl border border-border dark:border-charcoal-800 bg-surface-soft dark:bg-charcoal-900/30 flex flex-col gap-2 text-xs"
+                  className="p-3.5 rounded-xl border border-border dark:border-charcoal-700 bg-surface-soft dark:bg-charcoal-900/30 flex flex-col gap-2 text-xs"
                 >
                   <div className="flex items-center justify-between">
                     <span className="font-bold text-charcoal-900 dark:text-ivory-100 flex items-center gap-1.5">
@@ -611,8 +611,8 @@ export default function ParentPortalPage() {
         {/* 3 Telemetry Summary Panels */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Today's Classes & Live Attendance */}
-          <div className="bg-white dark:bg-[#1E191C] rounded-2xl border border-border dark:border-charcoal-800 shadow-soft p-5 flex flex-col gap-3">
-            <div className="flex items-center justify-between pb-2 border-b border-border dark:border-charcoal-800">
+          <div className="bg-white dark:bg-charcoal-800 rounded-2xl border border-border dark:border-charcoal-700 shadow-soft p-5 flex flex-col gap-3 glass-card-hover">
+            <div className="flex items-center justify-between pb-2 border-b border-border dark:border-charcoal-700">
               <span className="text-xs font-bold text-charcoal-900 dark:text-ivory-100 uppercase tracking-wider">
                 Today&apos;s Class Attendance
               </span>
@@ -632,7 +632,7 @@ export default function ParentPortalPage() {
                   return (
                     <div
                       key={i}
-                      className="p-2.5 rounded-xl bg-surface-soft dark:bg-charcoal-900/40 border border-border dark:border-charcoal-800 flex justify-between items-center"
+                      className="p-2.5 rounded-xl bg-surface-soft dark:bg-charcoal-900/40 border border-border dark:border-charcoal-700 flex justify-between items-center"
                     >
                       <div>
                         <span className="font-bold text-charcoal-900 dark:text-ivory-100 block">
@@ -661,8 +661,8 @@ export default function ParentPortalPage() {
           </div>
 
           {/* Academic Assessment & Grades */}
-          <div className="bg-white dark:bg-[#1E191C] rounded-2xl border border-border dark:border-charcoal-800 shadow-soft p-5 flex flex-col gap-3">
-            <div className="flex items-center justify-between pb-2 border-b border-border dark:border-charcoal-800">
+          <div className="bg-white dark:bg-charcoal-800 rounded-2xl border border-border dark:border-charcoal-700 shadow-soft p-5 flex flex-col gap-3 glass-card-hover">
+            <div className="flex items-center justify-between pb-2 border-b border-border dark:border-charcoal-700">
               <span className="text-xs font-bold text-charcoal-900 dark:text-ivory-100 uppercase tracking-wider">
                 Recent Exam Scores
               </span>
@@ -679,7 +679,7 @@ export default function ParentPortalPage() {
                 data.recentScores.map((score: any) => (
                   <div
                     key={score.id}
-                    className="p-2.5 rounded-xl bg-surface-soft dark:bg-charcoal-900/40 border border-border dark:border-charcoal-800 flex justify-between items-center"
+                    className="p-2.5 rounded-xl bg-surface-soft dark:bg-charcoal-900/40 border border-border dark:border-charcoal-700 flex justify-between items-center"
                   >
                     <div>
                       <span className="font-bold text-charcoal-900 dark:text-ivory-100 block">
@@ -697,9 +697,9 @@ export default function ParentPortalPage() {
           </div>
 
           {/* Fee Clearance */}
-          <div className="bg-white dark:bg-[#1E191C] rounded-2xl border border-border dark:border-charcoal-800 shadow-soft p-5 flex flex-col justify-between gap-3">
+          <div className="bg-white dark:bg-charcoal-800 rounded-2xl border border-border dark:border-charcoal-700 shadow-soft p-5 flex flex-col justify-between gap-3 glass-card-hover">
             <div>
-              <div className="flex items-center justify-between pb-2 border-b border-border dark:border-charcoal-800">
+              <div className="flex items-center justify-between pb-2 border-b border-border dark:border-charcoal-700">
                 <span className="text-xs font-bold text-charcoal-900 dark:text-ivory-100 uppercase tracking-wider">
                   Tuition Ledger Status
                 </span>
@@ -739,7 +739,7 @@ export default function ParentPortalPage() {
               {data?.finances?.outstandingBalance > 0 && (
                 <button
                   onClick={() => handleOpenPayModal()}
-                  className="w-full py-2 rounded-xl bg-rose-primary hover:bg-rose-dark text-white text-xs font-bold shadow-sm flex items-center justify-center gap-1.5 transition-all"
+                  className="w-full py-2 rounded-xl bg-rose-primary hover:bg-rose-dark text-white text-xs font-bold shadow-sm flex items-center justify-center gap-1.5 transition-all btn-primary-glow"
                 >
                   <CreditCard className="h-3.5 w-3.5" />
                   <span>Settle Balance (${data.finances.outstandingBalance.toLocaleString()})</span>
@@ -757,8 +757,8 @@ export default function ParentPortalPage() {
         </div>
 
         {/* Pastoral Inquiries & Advisor Communications History */}
-        <div className="bg-white dark:bg-[#1E191C] rounded-2xl border border-border dark:border-charcoal-800 shadow-soft p-5 flex flex-col gap-3">
-          <div className="flex items-center justify-between pb-2 border-b border-border dark:border-charcoal-800">
+        <div className="bg-white dark:bg-charcoal-800 rounded-2xl border border-border dark:border-charcoal-700 shadow-soft p-5 flex flex-col gap-3">
+          <div className="flex items-center justify-between pb-2 border-b border-border dark:border-charcoal-700">
             <div className="flex items-center gap-2">
               <History className="h-4 w-4 text-rose-primary" />
               <span className="text-xs font-bold text-charcoal-900 dark:text-ivory-100 uppercase tracking-wider">
@@ -779,7 +779,7 @@ export default function ParentPortalPage() {
               {data.recentInquiries.map((iq: any) => (
                 <div
                   key={iq.id}
-                  className="p-3 rounded-xl bg-surface-soft dark:bg-charcoal-900/40 border border-border dark:border-charcoal-800 flex flex-col sm:flex-row sm:items-center justify-between gap-2"
+                  className="p-3 rounded-xl bg-surface-soft dark:bg-charcoal-900/40 border border-border dark:border-charcoal-700 flex flex-col sm:flex-row sm:items-center justify-between gap-2"
                 >
                   <div className="flex flex-col gap-0.5">
                     <div className="flex items-center gap-2">
@@ -804,8 +804,8 @@ export default function ParentPortalPage() {
         </div>
 
         {/* Hostel Night-Out & Outing Authorizations */}
-        <div className="bg-white dark:bg-[#1E191C] rounded-2xl border border-border dark:border-charcoal-800 shadow-soft p-5 flex flex-col gap-3">
-          <div className="flex items-center justify-between pb-2 border-b border-border dark:border-charcoal-800">
+        <div className="bg-white dark:bg-charcoal-800 rounded-2xl border border-border dark:border-charcoal-700 shadow-soft p-5 flex flex-col gap-3">
+          <div className="flex items-center justify-between pb-2 border-b border-border dark:border-charcoal-700">
             <div className="flex items-center gap-2">
               <ShieldCheck className="h-4 w-4 text-rose-primary" />
               <span className="text-xs font-bold text-charcoal-900 dark:text-ivory-100 uppercase tracking-wider">
@@ -826,7 +826,7 @@ export default function ParentPortalPage() {
               {data.pendingGatepasses.map((gp: any) => (
                 <div
                   key={gp.id}
-                  className="p-3.5 rounded-xl bg-surface-soft dark:bg-charcoal-900/40 border border-border dark:border-charcoal-800 flex flex-col md:flex-row md:items-center justify-between gap-3"
+                  className="p-3.5 rounded-xl bg-surface-soft dark:bg-charcoal-900/40 border border-border dark:border-charcoal-700 flex flex-col md:flex-row md:items-center justify-between gap-3"
                 >
                   <div className="flex flex-col gap-1">
                     <div className="flex items-center gap-2">

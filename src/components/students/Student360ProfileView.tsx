@@ -711,7 +711,7 @@ Registrar Stamp: [APEX-ACADEMIC-SEAL]
           ]}
         />
         {/* Student 360 Header Profile Card */}
-        <div className="bg-white dark:bg-charcoal-800 p-6 rounded-2xl border border-border dark:border-charcoal-700 shadow-soft flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div className="bg-white dark:bg-charcoal-800 bg-gradient-to-br from-white via-surface-ground to-rose-container/15 dark:from-charcoal-800 dark:via-charcoal-800 dark:to-charcoal-900/40 p-6 rounded-2xl border border-border dark:border-charcoal-700 shadow-soft glass-card-hover flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="flex items-start md:items-center gap-4">
             <div className="h-20 w-20 rounded-2xl bg-rose-container dark:bg-rose-primary/20 border-2 border-rose-accent text-rose-primary dark:text-rose-light font-bold text-2xl flex items-center justify-center shadow-md shadow-rose-primary/10 shrink-0">
               {initials}
@@ -774,7 +774,7 @@ Registrar Stamp: [APEX-ACADEMIC-SEAL]
 
         {/* 4 Stat Highlights */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="bg-white dark:bg-charcoal-800 p-4 rounded-xl border border-border dark:border-charcoal-700 shadow-soft">
+          <div className="bg-white dark:bg-charcoal-800 p-4 rounded-xl border border-border dark:border-charcoal-700 shadow-soft glass-card-hover">
             <span className="text-[10px] font-bold text-charcoal-500 uppercase">Cumulative CGPA</span>
             <div className="text-2xl font-display font-bold text-charcoal-900 dark:text-ivory-100 mt-1">
               {student.cgpa.toFixed(2)} / 4.0
@@ -792,7 +792,7 @@ Registrar Stamp: [APEX-ACADEMIC-SEAL]
             </span>
           </div>
 
-          <div className="bg-white dark:bg-charcoal-800 p-4 rounded-xl border border-border dark:border-charcoal-700 shadow-soft">
+          <div className="bg-white dark:bg-charcoal-800 p-4 rounded-xl border border-border dark:border-charcoal-700 shadow-soft glass-card-hover">
             <span className="text-[10px] font-bold text-charcoal-500 uppercase">Biometric Attendance</span>
             <div
               className={`text-2xl font-display font-bold mt-1 ${
@@ -808,7 +808,7 @@ Registrar Stamp: [APEX-ACADEMIC-SEAL]
             </span>
           </div>
 
-          <div className="bg-white dark:bg-charcoal-800 p-4 rounded-xl border border-border dark:border-charcoal-700 shadow-soft">
+          <div className="bg-white dark:bg-charcoal-800 p-4 rounded-xl border border-border dark:border-charcoal-700 shadow-soft glass-card-hover">
             <span className="text-[10px] font-bold text-charcoal-500 uppercase">Credits Completed</span>
             <div className="text-2xl font-display font-bold text-charcoal-900 dark:text-ivory-100 mt-1">
               {student.earnedCredits} / {student.totalCredits}
@@ -818,7 +818,7 @@ Registrar Stamp: [APEX-ACADEMIC-SEAL]
             </span>
           </div>
 
-          <div className="bg-white dark:bg-charcoal-800 p-4 rounded-xl border border-border dark:border-charcoal-700 shadow-soft">
+          <div className="bg-white dark:bg-charcoal-800 p-4 rounded-xl border border-border dark:border-charcoal-700 shadow-soft glass-card-hover">
             <span className="text-[10px] font-bold text-charcoal-500 uppercase">Financial Clearance</span>
             <div
               className={`text-2xl font-display font-bold mt-1 ${
@@ -868,7 +868,7 @@ Registrar Stamp: [APEX-ACADEMIC-SEAL]
           <div className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Enrollment Dossier */}
-              <div className="bg-white dark:bg-charcoal-800 p-6 rounded-2xl border border-border dark:border-charcoal-700 shadow-soft flex flex-col gap-4">
+              <div className="bg-white dark:bg-charcoal-800 p-6 rounded-2xl border border-border dark:border-charcoal-700 shadow-soft glass-card-hover flex flex-col gap-4">
                 <div className="flex items-center justify-between">
                   <h3 className="text-sm font-display font-bold text-charcoal-900 dark:text-ivory-100 uppercase tracking-wider flex items-center gap-2">
                     <GraduationCap className="h-4 w-4 text-rose-accent" />
@@ -905,7 +905,7 @@ Registrar Stamp: [APEX-ACADEMIC-SEAL]
               </div>
 
               {/* Faculty Academic Advisor & Mentor */}
-              <div className="bg-white dark:bg-charcoal-800 p-6 rounded-2xl border border-border dark:border-charcoal-700 shadow-soft flex flex-col gap-4">
+              <div className="bg-white dark:bg-charcoal-800 p-6 rounded-2xl border border-border dark:border-charcoal-700 shadow-soft glass-card-hover flex flex-col gap-4">
                 <div className="flex items-center justify-between">
                   <h3 className="text-sm font-display font-bold text-charcoal-900 dark:text-ivory-100 uppercase tracking-wider flex items-center gap-2">
                     <UserCheck className="h-4 w-4 text-rose-accent" />
@@ -957,7 +957,7 @@ Registrar Stamp: [APEX-ACADEMIC-SEAL]
             </div>
 
             {/* Guardians & Emergency Registry */}
-            <div className="bg-white dark:bg-charcoal-800 p-6 rounded-2xl border border-border dark:border-charcoal-700 shadow-soft flex flex-col gap-4">
+            <div className="bg-white dark:bg-charcoal-800 p-6 rounded-2xl border border-border dark:border-charcoal-700 shadow-soft glass-card-hover flex flex-col gap-4">
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="text-sm font-display font-bold text-charcoal-900 dark:text-ivory-100 uppercase tracking-wider flex items-center gap-2">
@@ -1042,7 +1042,7 @@ Registrar Stamp: [APEX-ACADEMIC-SEAL]
 
             {/* Campus Residence & Health Protocol */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="bg-white dark:bg-charcoal-800 p-6 rounded-2xl border border-border dark:border-charcoal-700 shadow-soft flex flex-col gap-4">
+              <div className="bg-white dark:bg-charcoal-800 p-6 rounded-2xl border border-border dark:border-charcoal-700 shadow-soft glass-card-hover flex flex-col gap-4">
                 <h3 className="text-sm font-display font-bold text-charcoal-900 dark:text-ivory-100 uppercase tracking-wider flex items-center gap-2">
                   <MapPin className="h-4 w-4 text-rose-accent" />
                   Campus Housing & Residence
@@ -1070,7 +1070,7 @@ Registrar Stamp: [APEX-ACADEMIC-SEAL]
                 </div>
               </div>
 
-              <div className="bg-white dark:bg-charcoal-800 p-6 rounded-2xl border border-border dark:border-charcoal-700 shadow-soft flex flex-col gap-4">
+              <div className="bg-white dark:bg-charcoal-800 p-6 rounded-2xl border border-border dark:border-charcoal-700 shadow-soft glass-card-hover flex flex-col gap-4">
                 <h3 className="text-sm font-display font-bold text-charcoal-900 dark:text-ivory-100 uppercase tracking-wider flex items-center gap-2">
                   <Heart className="h-4 w-4 text-rose-accent" />
                   Medical & Emergency Protocol
@@ -1101,7 +1101,7 @@ Registrar Stamp: [APEX-ACADEMIC-SEAL]
 
             {/* Demographics, Address KYC & Document Vault */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="bg-white dark:bg-charcoal-800 p-6 rounded-2xl border border-border dark:border-charcoal-700 shadow-soft flex flex-col gap-4">
+              <div className="bg-white dark:bg-charcoal-800 p-6 rounded-2xl border border-border dark:border-charcoal-700 shadow-soft glass-card-hover flex flex-col gap-4">
                 <div className="flex items-center justify-between">
                   <h3 className="text-sm font-display font-bold text-charcoal-900 dark:text-ivory-100 uppercase tracking-wider flex items-center gap-2">
                     <ShieldCheck className="h-4 w-4 text-rose-accent" />
@@ -1141,7 +1141,7 @@ Registrar Stamp: [APEX-ACADEMIC-SEAL]
               </div>
 
               {/* Digital Certificate Locker / Document Vault */}
-              <div className="bg-white dark:bg-charcoal-800 p-6 rounded-2xl border border-border dark:border-charcoal-700 shadow-soft flex flex-col gap-4">
+              <div className="bg-white dark:bg-charcoal-800 p-6 rounded-2xl border border-border dark:border-charcoal-700 shadow-soft glass-card-hover flex flex-col gap-4">
                 <div className="flex items-center justify-between">
                   <h3 className="text-sm font-display font-bold text-charcoal-900 dark:text-ivory-100 uppercase tracking-wider flex items-center gap-2">
                     <FileText className="h-4 w-4 text-rose-accent" />
@@ -1174,7 +1174,7 @@ Registrar Stamp: [APEX-ACADEMIC-SEAL]
             </div>
 
             {/* Career, Certifications & Co-Curricular Portfolio */}
-            <div className="bg-white dark:bg-charcoal-800 p-6 rounded-2xl border border-border dark:border-charcoal-700 shadow-soft flex flex-col gap-4">
+            <div className="bg-white dark:bg-charcoal-800 p-6 rounded-2xl border border-border dark:border-charcoal-700 shadow-soft glass-card-hover flex flex-col gap-4">
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="text-sm font-display font-bold text-charcoal-900 dark:text-ivory-100 uppercase tracking-wider flex items-center gap-2">
