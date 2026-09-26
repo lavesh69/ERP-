@@ -48,6 +48,39 @@ export default function ParentPortalPage() {
   const [payMethod, setPayMethod] = useState<string>("CREDIT_CARD");
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
 
+  // Parent Self-Service Profile Update Modal
+  const [isEditParentModalOpen, setIsEditParentModalOpen] = useState(false);
+  const [parentPhoneInput, setParentPhoneInput] = useState("");
+  const [parentOccupationInput, setParentOccupationInput] = useState("");
+  const [isSavingParentProfile, setIsSavingParentProfile] = useState(false);
+
+  const handleUpdateParentProfile = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSavingParentProfile(true);
+    try {
+      const res = await fetch("/api/parent", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          phone: parentPhoneInput,
+          occupation: parentOccupationInput,
+        }),
+      });
+      const resData = await res.json();
+      if (res.ok) {
+        showToast("Guardian contact details updated successfully", "success");
+        setIsEditParentModalOpen(false);
+        loadParentData(selectedChildId || undefined);
+      } else {
+        showToast(resData.error || "Failed to update profile", "error");
+      }
+    } catch {
+      showToast("Network error updating guardian profile", "error");
+    } finally {
+      setIsSavingParentProfile(false);
+    }
+  };
+
   async function loadParentData(childId?: string) {
     try {
       setIsLoading(true);
@@ -221,15 +254,15 @@ export default function ParentPortalPage() {
       <div class="meta-grid">
         <div class="meta-item">
           <div class="meta-label">Scholar Name</div>
-          <div class="meta-value">${child?.name || "Alex Mercer"} (${child?.rollNo || "2024-CSE-042"})</div>
+          <div class="meta-value">${child?.name || "Enrolled Scholar"} (${child?.rollNo || "N/A"})</div>
         </div>
         <div class="meta-item">
           <div class="meta-label">Degree Program</div>
-          <div class="meta-value">${child?.program || "B.Tech Computer Science"}</div>
+          <div class="meta-value">${child?.program || "Undergraduate Curriculum"}</div>
         </div>
         <div class="meta-item">
           <div class="meta-label">Registered Guardian</div>
-          <div class="meta-value">${child?.guardianName || "Katherine Mercer (Mother)"}</div>
+          <div class="meta-value">${child?.guardianName || "Registered Guardian"}</div>
         </div>
         <div class="meta-item">
           <div class="meta-label">Date Generated</div>
@@ -313,6 +346,18 @@ export default function ParentPortalPage() {
 
           <div className="flex items-center gap-2">
             <button
+              onClick={() => {
+                setParentPhoneInput(data?.child?.guardianPhone || "");
+                setParentOccupationInput(data?.child?.guardianOccupation || "");
+                setIsEditParentModalOpen(true);
+              }}
+              className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-ivory-100 dark:bg-charcoal-800 hover:bg-rose-container text-charcoal-800 dark:text-ivory-100 text-xs font-bold border border-border dark:border-charcoal-700 transition-all"
+              title="Update parent contact details"
+            >
+              <UserCheck className="h-4 w-4 text-rose-primary" />
+              <span>Update Contact</span>
+            </button>
+            <button
               onClick={() => setIsMessageModalOpen(true)}
               className="flex items-center gap-2 px-4 py-2 rounded-xl bg-rose-primary hover:bg-rose-dark text-white text-xs font-bold shadow-sm transition-all"
             >
@@ -348,8 +393,14 @@ export default function ParentPortalPage() {
                   <h2 className="text-lg font-display font-bold text-charcoal-900 dark:text-ivory-100">
                     {data?.child?.name || "Alex Mercer"}
                   </h2>
-                  <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-academic-success-subtle text-academic-success">
-                    Active Scholar
+                  <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                    data?.child?.academicStanding === "Dean's Honors List"
+                      ? "bg-academic-success-subtle text-academic-success border border-green-200"
+                      : data?.child?.academicStanding === "Academic Probation"
+                      ? "bg-academic-danger-subtle text-academic-danger border border-red-200"
+                      : "bg-academic-success-subtle text-academic-success"
+                  }`}>
+                    {data?.child?.academicStanding || "Active Scholar"}
                   </span>
                   {data?.availableChildren && data.availableChildren.length > 1 && (
                     <select
@@ -394,6 +445,63 @@ export default function ParentPortalPage() {
                   {data?.child?.attendanceRate}%
                 </span>
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* Multi-Guardian Roster Panel */}
+        {data?.child?.guardians && data.child.guardians.length > 0 && (
+          <div className="bg-white dark:bg-[#1E191C] rounded-2xl border border-border dark:border-charcoal-800 shadow-soft p-5 flex flex-col gap-3">
+            <div className="flex items-center justify-between pb-2 border-b border-border dark:border-charcoal-800">
+              <div className="flex items-center gap-2">
+                <ShieldCheck className="h-4 w-4 text-rose-primary" />
+                <span className="text-xs font-bold text-charcoal-900 dark:text-ivory-100 uppercase tracking-wider">
+                  Registered Family & Guardian Roster ({data.child.guardians.length})
+                </span>
+              </div>
+              <span className="text-[11px] text-charcoal-400">
+                Official contacts verified on file with the Registrar
+              </span>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {data.child.guardians.map((g: any, idx: number) => (
+                <div
+                  key={idx}
+                  className="p-3.5 rounded-xl border border-border dark:border-charcoal-800 bg-surface-soft dark:bg-charcoal-900/30 flex flex-col gap-2 text-xs"
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="font-bold text-charcoal-900 dark:text-ivory-100 flex items-center gap-1.5">
+                      <UserCheck className="h-3.5 w-3.5 text-rose-primary" />
+                      {g.name} ({g.relation})
+                    </span>
+                    {g.isPrimary && (
+                      <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-container dark:bg-rose-dark/30 text-rose-primary dark:text-rose-accent">
+                        Primary Point of Contact
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex flex-col gap-1 text-[11px] text-charcoal-600 dark:text-charcoal-400">
+                    <div className="flex justify-between">
+                      <span>Direct Phone:</span>
+                      <a href={`tel:${g.phone}`} className="font-semibold text-charcoal-900 dark:text-ivory-100 hover:text-rose-primary">
+                        {g.phone}
+                      </a>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Official Email:</span>
+                      <a href={`mailto:${g.email}`} className="font-semibold text-rose-primary dark:text-rose-accent hover:underline">
+                        {g.email}
+                      </a>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Occupation / Title:</span>
+                      <span className="font-semibold text-charcoal-800 dark:text-ivory-200">
+                        {g.occupation || "Registered Guardian"}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         )}
@@ -507,13 +615,13 @@ export default function ParentPortalPage() {
                 <div className="flex justify-between">
                   <span className="text-charcoal-500 dark:text-charcoal-400">Total Billed:</span>
                   <span className="font-bold text-charcoal-900 dark:text-ivory-100">
-                    ${data?.finances?.totalAmount?.toLocaleString() || "4,850.00"}
+                    ${data?.finances?.totalAmount !== undefined ? data.finances.totalAmount.toLocaleString() : "0.00"}
                   </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-charcoal-500 dark:text-charcoal-400">Amount Cleared:</span>
                   <span className="font-bold text-academic-success">
-                    ${data?.finances?.paidAmount?.toLocaleString() || "4,850.00"}
+                    ${data?.finances?.paidAmount !== undefined ? data.finances.paidAmount.toLocaleString() : "0.00"}
                   </span>
                 </div>
                 <div className="flex justify-between">
@@ -743,6 +851,58 @@ export default function ParentPortalPage() {
               >
                 <CreditCard className="h-3.5 w-3.5" />
                 <span>{isProcessingPayment ? "Authorizing..." : `Authorize $${payAmount.toLocaleString()}`}</span>
+              </button>
+            </div>
+          </form>
+        </Modal>
+
+        {/* Modal: Update Parent Details */}
+        <Modal
+          isOpen={isEditParentModalOpen}
+          onClose={() => setIsEditParentModalOpen(false)}
+          title="Update Guardian Profile & Contact"
+          description="Maintain current telephone and professional details for institutional alerts and pastoral outreach."
+        >
+          <form onSubmit={handleUpdateParentProfile} className="flex flex-col gap-4 text-xs">
+            <div>
+              <label className="font-bold text-charcoal-700 dark:text-charcoal-300 block mb-1">
+                Contact Telephone / Mobile *
+              </label>
+              <input
+                type="text"
+                required
+                value={parentPhoneInput}
+                onChange={(e) => setParentPhoneInput(e.target.value)}
+                placeholder="+1 (555) 000-0000"
+                className="w-full bg-ivory-100 dark:bg-charcoal-900 border border-border dark:border-charcoal-700 rounded-xl p-2.5 font-medium text-charcoal-900 dark:text-ivory-100"
+              />
+            </div>
+            <div>
+              <label className="font-bold text-charcoal-700 dark:text-charcoal-300 block mb-1">
+                Occupation / Professional Title
+              </label>
+              <input
+                type="text"
+                value={parentOccupationInput}
+                onChange={(e) => setParentOccupationInput(e.target.value)}
+                placeholder="e.g. Systems Engineer, Attorney, Business Executive"
+                className="w-full bg-ivory-100 dark:bg-charcoal-900 border border-border dark:border-charcoal-700 rounded-xl p-2.5 font-medium text-charcoal-900 dark:text-ivory-100"
+              />
+            </div>
+            <div className="flex items-center justify-end gap-2 pt-3 border-t border-border dark:border-charcoal-700">
+              <button
+                type="button"
+                onClick={() => setIsEditParentModalOpen(false)}
+                className="px-4 py-2 rounded-xl bg-ivory-100 dark:bg-charcoal-700 text-charcoal-700 dark:text-charcoal-300 text-xs font-bold"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={isSavingParentProfile || !parentPhoneInput.trim()}
+                className="px-4 py-2 rounded-xl bg-rose-primary hover:bg-rose-dark text-white text-xs font-bold shadow-sm disabled:opacity-50"
+              >
+                {isSavingParentProfile ? "Saving..." : "Save Details"}
               </button>
             </div>
           </form>

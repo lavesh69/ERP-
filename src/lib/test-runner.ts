@@ -3014,6 +3014,37 @@ BIO-599,Synthetic Biology Principles,Syn Bio,3,BIO,BSC-BIO,CORE,THEORY,3`;
     });
     const emptyInquiryRes = await handleParentPost(emptyInquiryReq);
     assert(emptyInquiryRes.status === 400, "Empty advisory inquiry message rejected with 400 Bad Request");
+
+    // 41.8 Parent Self-Service Profile & Phone Update (UPDATE_PROFILE)
+    const originalParentPhone = parentUser!.phone || "+1 (555) 234-5678";
+    const updatedParentPhone = "+1 (555) 999-7711";
+    const updateParentReq = new NextRequest("http://localhost:3000/api/parent", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: `classroom_session=${parentToken}`,
+      },
+      body: JSON.stringify({
+        action: "UPDATE_PROFILE",
+        phone: updatedParentPhone,
+        occupation: "Lead Cloud Infrastructure Architect",
+      }),
+    });
+    const updateParentRes = await handleParentPost(updateParentReq);
+    const updateParentData = await updateParentRes.json();
+    assert(updateParentRes.status === 200, "Parent profile update returns 200 OK");
+    assert(updateParentData.success === true, "Parent update flags success");
+    assert(updateParentData.parent.phone === updatedParentPhone, "Updated parent phone returned in response");
+
+    // Verify DB persistence
+    const verifiedParentUser = await prisma.user.findUnique({ where: { id: parentUser!.id } });
+    assert(verifiedParentUser!.phone === updatedParentPhone, "Updated parent phone persisted in User entity");
+
+    // Revert for clean test state
+    await prisma.user.update({
+      where: { id: parentUser!.id },
+      data: { phone: originalParentPhone },
+    });
   }
 
   // ==========================================

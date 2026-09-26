@@ -186,13 +186,33 @@ export async function GET(req: NextRequest) {
     const pendingFees = Math.max(0, totalFees - paidFees);
 
     // 5. Dynamic Guardian Details from Database Relations
+    const allGuardians = (student.parents && student.parents.length > 0)
+      ? student.parents.map((rel: any) => ({
+          name: `${rel.parent.user.firstName} ${rel.parent.user.lastName}`,
+          relation: rel.parent.relation || "GUARDIAN",
+          email: rel.parent.user.email,
+          phone: rel.parent.user.phone || "+1 (555) 019-2831",
+          occupation: rel.parent.occupation || "Registered Guardian",
+          isPrimary: rel.isPrimary,
+        }))
+      : [
+          {
+            name: `${student.user.lastName} Family Emergency Contact`,
+            relation: "GUARDIAN",
+            email: `guardian.${student.user.email.replace("@", ".")}`,
+            phone: student.user.phone || "+1 (555) 019-2831",
+            occupation: "Primary Emergency Contact",
+            isPrimary: true,
+          },
+        ];
+
     const primaryRel = student.parents?.find((p: any) => p.isPrimary) || student.parents?.[0];
     const guardianName = primaryRel
       ? `${primaryRel.parent.user.firstName} ${primaryRel.parent.user.lastName} (${primaryRel.parent.relation || "Guardian"})`
-      : "Katherine Mercer (Mother)";
-    const guardianEmail = primaryRel?.parent?.user?.email || "katherine.mercer@gmail.com";
-    const guardianPhone = primaryRel?.parent?.user?.phone || "+1 (555) 234-5678";
-    const guardianOccupation = primaryRel?.parent?.occupation || "Senior Systems Engineer";
+      : allGuardians[0].name;
+    const guardianEmail = primaryRel?.parent?.user?.email || allGuardians[0].email;
+    const guardianPhone = primaryRel?.parent?.user?.phone || allGuardians[0].phone;
+    const guardianOccupation = primaryRel?.parent?.occupation || allGuardians[0].occupation;
 
     // 6. Lead Academic / Course Advisor Resolution
     const advisor = await prisma.faculty.findFirst({
@@ -270,12 +290,18 @@ export async function GET(req: NextRequest) {
         program: student.program?.name || "B.Tech Computer Science",
         department: student.program?.department?.name || "Computer Science & Engineering",
         semester: `Semester ${student.currentSemester} (${student.section?.name || "Section 5-A"})`,
-        cgpa: student.cgpa || 3.88,
+        cgpa: student.cgpa ?? 0.0,
         attendanceRate: attendancePercentage,
+        academicStanding: (student.cgpa ?? 0.0) >= 3.8
+          ? "Dean's Honors List"
+          : (student.cgpa ?? 0.0) < 2.0
+          ? "Academic Probation"
+          : "Good Standing",
         guardianName,
         guardianEmail,
         guardianPhone,
         guardianOccupation,
+        guardians: allGuardians,
         advisor: advisor ? {
           name: `Prof. ${advisor.user.firstName} ${advisor.user.lastName}`,
           email: advisor.user.email,
@@ -403,7 +429,61 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // B. Pastoral Advisory Inquiry by Parent
+    // B. Self-Service Profile & Phone Update by Parent
+    if (action === "UPDATE_PROFILE") {
+      const { phone, occupation } = body;
+      if (!session?.userId) {
+        return NextResponse.json({ error: "Authentication required to update profile." }, { status: 401 });
+      }
+
+      const parentRecord = await prisma.parent.findFirst({
+        where: {
+          OR: [
+            { userId: session.userId },
+            { user: { email: session.email } },
+          ],
+        },
+        include: { user: true },
+      });
+
+      if (!parentRecord) {
+        return NextResponse.json({ error: "Parent profile not found." }, { status: 404 });
+      }
+
+      if (phone) {
+        await prisma.user.update({
+          where: { id: parentRecord.userId },
+          data: { phone },
+        });
+      }
+
+      if (occupation) {
+        await prisma.parent.update({
+          where: { id: parentRecord.id },
+          data: { occupation },
+        });
+      }
+
+      await logAuditEvent({
+        institutionId: parentRecord.user.institutionId || "inst-apex-01",
+        actorUserId: parentRecord.userId,
+        action: "PARENT_PROFILE_UPDATED",
+        targetEntity: "Parent",
+        targetId: parentRecord.id,
+        details: { phone, occupation },
+      });
+
+      return NextResponse.json({
+        success: true,
+        message: "Parent contact details updated successfully.",
+        parent: {
+          phone: phone || parentRecord.user.phone,
+          occupation: occupation || parentRecord.occupation,
+        },
+      });
+    }
+
+    // C. Pastoral Advisory Inquiry by Parent
     if (!message || !message.trim()) {
       return NextResponse.json({ error: "Message content is required" }, { status: 400 });
     }
@@ -465,6 +545,22 @@ export async function POST(req: NextRequest) {
     console.error("Parent POST error:", error);
     return NextResponse.json(
       { error: "Failed to process parent portal action", details: error.message },
+      { status: 500 }
+    );
+  }
+}
+
+export async function PATCH(req: NextRequest) {
+  try {
+    const body = await req.json();
+    return POST(new NextRequest(req.url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...Object.fromEntries(req.headers) },
+      body: JSON.stringify({ ...body, action: "UPDATE_PROFILE" }),
+    }));
+  } catch (error: any) {
+    return NextResponse.json(
+      { error: "Failed to update parent details", details: error.message },
       { status: 500 }
     );
   }
