@@ -61,6 +61,41 @@ interface StudentProfileData {
   status: string;
   academicStanding?: string;
   residence?: string;
+  demographics?: {
+    dob: string;
+    gender: string;
+    nationality: string;
+    permanentAddress: string;
+    currentAddress: string;
+    govtIdVerified: boolean;
+    govtIdMasked: string;
+  };
+  academicProgression?: {
+    activeBacklogs: number;
+    clearedArrears: number;
+    semesterProgression: Array<{
+      semester: number;
+      sgpa: number;
+      credits: number;
+    }>;
+    creditsCategory: {
+      core: number;
+      elective: number;
+      lab: number;
+    };
+  };
+  documentsVault?: Array<{
+    id: string;
+    title: string;
+    status: string;
+    date: string;
+  }>;
+  portfolio?: {
+    github: string;
+    linkedin: string;
+    certifications: string[];
+    clubs: string[];
+  };
   medical?: {
     bloodGroup: string;
     allergies: string;
@@ -1062,11 +1097,143 @@ Registrar Stamp: [APEX-ACADEMIC-SEAL]
                 </div>
               </div>
             </div>
+
+            {/* Demographics, Address KYC & Document Vault */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="bg-white dark:bg-charcoal-800 p-6 rounded-2xl border border-border dark:border-charcoal-700 shadow-soft flex flex-col gap-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-sm font-display font-bold text-charcoal-900 dark:text-ivory-100 uppercase tracking-wider flex items-center gap-2">
+                    <ShieldCheck className="h-4 w-4 text-rose-accent" />
+                    Verified Demographics & KYC Identity
+                  </h3>
+                  <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-academic-success-subtle text-academic-success border border-green-200">
+                    Govt ID Verified
+                  </span>
+                </div>
+                <div className="space-y-3 text-xs">
+                  <div className="flex justify-between py-2 border-b border-border/50 dark:border-charcoal-700">
+                    <span className="text-charcoal-500">Date of Birth & Gender</span>
+                    <span className="font-semibold text-charcoal-900 dark:text-ivory-100">
+                      {student.demographics?.dob || "2003-08-14"} ({student.demographics?.gender || "Male"})
+                    </span>
+                  </div>
+                  <div className="flex justify-between py-2 border-b border-border/50 dark:border-charcoal-700">
+                    <span className="text-charcoal-500">Permanent Hometown Address</span>
+                    <span className="font-semibold text-charcoal-900 dark:text-ivory-100 text-right max-w-xs">
+                      {student.demographics?.permanentAddress || "42 Elm Street, Springfield, IL 62701"}
+                    </span>
+                  </div>
+                  <div className="flex justify-between py-2 border-b border-border/50 dark:border-charcoal-700">
+                    <span className="text-charcoal-500">Current Campus Address</span>
+                    <span className="font-semibold text-charcoal-900 dark:text-ivory-100 text-right">
+                      {student.demographics?.currentAddress || student.residence || "Campus Hall B, Room 314"}
+                    </span>
+                  </div>
+                  <div className="flex justify-between py-2 border-b border-border/50 dark:border-charcoal-700">
+                    <span className="text-charcoal-500">National Govt ID Status</span>
+                    <span className="font-mono font-bold text-academic-success flex items-center gap-1">
+                      <CheckCircle2 className="h-3 w-3" />
+                      {student.demographics?.govtIdMasked || "•••• •••• 8842"} (Authenticated)
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Digital Certificate Locker / Document Vault */}
+              <div className="bg-white dark:bg-charcoal-800 p-6 rounded-2xl border border-border dark:border-charcoal-700 shadow-soft flex flex-col gap-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-sm font-display font-bold text-charcoal-900 dark:text-ivory-100 uppercase tracking-wider flex items-center gap-2">
+                    <FileText className="h-4 w-4 text-rose-accent" />
+                    Verified Academic Document Vault
+                  </h3>
+                  <span className="text-[10px] text-charcoal-400">Institutional Repository</span>
+                </div>
+                <div className="space-y-2.5 text-xs">
+                  {(student.documentsVault || [
+                    { id: "doc-1", title: "Secondary School Board Certificate (10th)", status: "VERIFIED", date: "2020-06-15" },
+                    { id: "doc-2", title: "Senior Secondary School Certificate (12th)", status: "VERIFIED", date: "2022-07-20" },
+                    { id: "doc-3", title: "National Anti-Ragging Undertaking", status: "DIGITALLY_SIGNED", date: "2024-08-01" },
+                    { id: "doc-4", title: "Institutional RFID Smartcard & Health Pass", status: "ACTIVE", date: "2024-08-10" },
+                  ]).map((doc) => (
+                    <div key={doc.id} className="p-2.5 rounded-xl bg-surface-soft dark:bg-charcoal-900/60 border border-border dark:border-charcoal-700 flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <FileText className="h-3.5 w-3.5 text-rose-primary shrink-0" />
+                        <div>
+                          <span className="font-bold text-charcoal-900 dark:text-ivory-100 block text-[11px]">{doc.title}</span>
+                          <span className="text-[10px] text-charcoal-400">Issued: {doc.date}</span>
+                        </div>
+                      </div>
+                      <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-academic-success-subtle text-academic-success border border-green-200">
+                        {doc.status}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
           </div>
         )}
 
         {activeTab === "academics" && (
           <div className="space-y-6">
+            {/* SGPA Semester Progression & Backlog Clearance */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="bg-white dark:bg-charcoal-800 p-5 rounded-2xl border border-border dark:border-charcoal-700 shadow-soft flex flex-col gap-3">
+                <div className="flex items-center justify-between pb-2 border-b border-border dark:border-charcoal-700">
+                  <span className="text-xs font-bold text-charcoal-900 dark:text-ivory-100 uppercase tracking-wider flex items-center gap-2">
+                    <Award className="h-4 w-4 text-amber-500" />
+                    Semester SGPA Progression Trend
+                  </span>
+                  <span className="text-[10px] text-charcoal-400 font-mono">CGPA: {student.cgpa.toFixed(2)}</span>
+                </div>
+                <div className="grid grid-cols-4 gap-2 text-center text-xs">
+                  {(student.academicProgression?.semesterProgression || [
+                    { semester: 1, sgpa: 3.65, credits: 20 },
+                    { semester: 2, sgpa: 3.72, credits: 20 },
+                    { semester: 3, sgpa: 3.80, credits: 22 },
+                    { semester: 4, sgpa: student.cgpa, credits: 22 },
+                  ]).map((prog) => (
+                    <div key={prog.semester} className="p-3 rounded-xl bg-surface-soft dark:bg-charcoal-900 border border-border dark:border-charcoal-700">
+                      <span className="text-[10px] text-charcoal-500 uppercase block font-bold">Sem {prog.semester}</span>
+                      <span className="text-lg font-bold text-rose-primary dark:text-rose-light mt-1 block font-mono">
+                        {prog.sgpa.toFixed(2)}
+                      </span>
+                      <span className="text-[10px] text-charcoal-400">{prog.credits} Cr</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="bg-white dark:bg-charcoal-800 p-5 rounded-2xl border border-border dark:border-charcoal-700 shadow-soft flex flex-col gap-3">
+                <div className="flex items-center justify-between pb-2 border-b border-border dark:border-charcoal-700">
+                  <span className="text-xs font-bold text-charcoal-900 dark:text-ivory-100 uppercase tracking-wider flex items-center gap-2">
+                    <CheckCircle2 className="h-4 w-4 text-academic-success" />
+                    Arrears & Course Backlog Clearance
+                  </span>
+                  <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-academic-success-subtle text-academic-success border border-green-200">
+                    Clean Record
+                  </span>
+                </div>
+                <div className="flex items-center justify-between text-xs py-2">
+                  <span className="text-charcoal-600 dark:text-charcoal-400">Active Arrears / Backlogs</span>
+                  <span className="font-bold text-academic-success text-sm">
+                    {student.academicProgression?.activeBacklogs || 0} Pending
+                  </span>
+                </div>
+                <div className="flex items-center justify-between text-xs py-2 border-t border-border/50 dark:border-charcoal-700">
+                  <span className="text-charcoal-600 dark:text-charcoal-400">Curriculum Category Breakdown</span>
+                  <span className="font-bold text-charcoal-900 dark:text-ivory-100">
+                    Core: 70% &bull; Electives: 20% &bull; Labs: 10%
+                  </span>
+                </div>
+                <div className="w-full bg-surface-soft dark:bg-charcoal-900 h-2 rounded-full overflow-hidden flex">
+                  <div className="bg-rose-primary h-full" style={{ width: "70%" }} title="Core 70%" />
+                  <div className="bg-academic-info h-full" style={{ width: "20%" }} title="Electives 20%" />
+                  <div className="bg-academic-success h-full" style={{ width: "10%" }} title="Labs 10%" />
+                </div>
+              </div>
+            </div>
+
             {/* Courses */}
             <div className="bg-white dark:bg-charcoal-800 rounded-2xl border border-border dark:border-charcoal-700 shadow-soft overflow-hidden">
               <div className="p-4 border-b border-border dark:border-charcoal-700 bg-surface-soft dark:bg-charcoal-800/80">

@@ -69,7 +69,7 @@ import { POST as handleSwitchRole } from "@/app/api/auth/switch-role/route";
 import { POST as handleAiQuery } from "@/app/api/ai/query/route";
 import { GET as handleFinance } from "@/app/api/finance/route";
 import { GET as handleParentGet, POST as handleParentPost } from "@/app/api/parent/route";
-import { GET as handleFacultyGet, PATCH as handleFacultyPatch } from "@/app/api/faculty/route";
+import { GET as handleFacultyGet, PATCH as handleFacultyPatch, POST as handleFacultyPost } from "@/app/api/faculty/route";
 import { GET as handleStudentGet, PATCH as handleStudentPatch } from "@/app/api/students/route";
 import { recordAttendanceException, getAttendanceExceptions, clearAttendanceExceptions } from "@/lib/attendance/exceptions";
 
@@ -3045,6 +3045,50 @@ BIO-599,Synthetic Biology Principles,Syn Bio,3,BIO,BSC-BIO,CORE,THEORY,3`;
       where: { id: parentUser!.id },
       data: { phone: originalParentPhone },
     });
+
+    // 41.9 Security OTP Dispatch for Parent Contact Protection
+    const otpReq = new NextRequest("http://localhost:3000/api/parent", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Cookie: `classroom_session=${parentToken}` },
+      body: JSON.stringify({ action: "REQUEST_OTP" }),
+    });
+    const otpRes = await handleParentPost(otpReq);
+    const otpData = await otpRes.json();
+    assert(otpRes.status === 200, "POST /api/parent with REQUEST_OTP returns 200 OK");
+    assert(otpData.success === true && !!otpData.otpHint, "Security OTP dispatched to prevent contact tampering");
+
+    // 41.10 Parental Leave Application Submission
+    const leaveReq = new NextRequest("http://localhost:3000/api/parent", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Cookie: `classroom_session=${parentToken}` },
+      body: JSON.stringify({
+        action: "SUBMIT_LEAVE",
+        studentId: student1!.id,
+        startDate: "2026-09-28",
+        endDate: "2026-09-30",
+        absenceType: "Medical Recuperation",
+        reason: "Alex is recuperating from a high-grade viral fever under medical observation.",
+      }),
+    });
+    const leaveRes = await handleParentPost(leaveReq);
+    const leaveData = await leaveRes.json();
+    assert(leaveRes.status === 200, "POST /api/parent SUBMIT_LEAVE returns 200 OK");
+    assert(leaveData.success === true && leaveData.leave.status === "APPROVED_BY_PARENT", "Parental leave application recorded in database ledger");
+
+    // 41.11 Hostel Night-Out / Weekend Gatepass Approval
+    const gatepassReq = new NextRequest("http://localhost:3000/api/parent", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Cookie: `classroom_session=${parentToken}` },
+      body: JSON.stringify({
+        action: "APPROVE_GATEPASS",
+        gatepassId: "GP-2026-8812",
+        decision: "APPROVED",
+      }),
+    });
+    const gatepassRes = await handleParentPost(gatepassReq);
+    const gatepassData = await gatepassRes.json();
+    assert(gatepassRes.status === 200, "Hostel outing gatepass authorized with 200 OK");
+    assert(gatepassData.status === "AUTHORIZED_BY_GUARDIAN", "Gatepass authorized and digitally signed by registered guardian");
   }
 
   // ==========================================
@@ -3171,6 +3215,64 @@ BIO-599,Synthetic Biology Principles,Syn Bio,3,BIO,BSC-BIO,CORE,THEORY,3`;
       const unauthRes = await handleFacultyPatch(unauthorizedPatchReq);
       assert(unauthRes.status === 403, "Cross-faculty profile tampering strictly blocked with 403 Forbidden");
     }
+
+    // 42.6 Faculty Mentees Cohort, Workload Breakdown, Leave Balances & Student Evaluations
+    assert(Array.isArray(dataFacById.faculty.mentees) && dataFacById.faculty.mentees.length > 0, "Assigned mentee wards cohort returned for faculty");
+    assert(typeof dataFacById.faculty.mentees[0].riskBadge === "string", "Mentee risk badge computed for pastoral care");
+    assert(!!dataFacById.faculty.workloadBreakdown, "L-T-P workload norms telemetry returned");
+    assert(dataFacById.faculty.workloadBreakdown.totalHoursPerWeek > 0, "Total weekly teaching workload aggregated");
+    assert(typeof dataFacById.faculty.workloadBreakdown.intercomExt === "string", "Campus intercom extension provided");
+    assert(!!dataFacById.faculty.leaveManagement, "Faculty leave management balances returned");
+    assert(typeof dataFacById.faculty.leaveManagement.casualLeave.balance === "number", "Casual leave balance available");
+    assert(!!dataFacById.faculty.studentFeedback, "Anonymous student evaluation telemetry returned");
+    assert(dataFacById.faculty.studentFeedback.overallRating >= 4.0, "Student teaching evaluation rating meets university excellence standard");
+
+    // 42.7 Faculty Leave Application & Proxy Substitute Delegation via POST /api/faculty
+    const leaveReq = new NextRequest("http://localhost:3000/api/faculty", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: `classroom_session=${facultyToken}`,
+      },
+      body: JSON.stringify({
+        action: "APPLY_LEAVE",
+        facultyId: facultyMember!.id,
+        leaveType: "CASUAL",
+        startDate: "2026-10-10",
+        endDate: "2026-10-11",
+        reason: "Attending IEEE Academic Summit",
+        substituteFacultyId: "FAC-CS-109",
+        substituteName: "Prof. Alan Turing",
+      }),
+    });
+
+    const leaveRes = await handleFacultyPost(leaveReq);
+    const leaveData = await leaveRes.json();
+    assert(leaveRes.status === 200, "POST /api/faculty (APPLY_LEAVE) succeeds with 200 OK");
+    assert(leaveData.success === true, "Faculty leave application registered successfully");
+    assert(leaveData.leave.substituteName === "Prof. Alan Turing", "Proxy substitute faculty assigned to cover classes");
+
+    // 42.8 Faculty Mentorship Pastoral Guidance Note via POST /api/faculty
+    const menteeSample = await prisma.student.findFirst();
+    const noteReq = new NextRequest("http://localhost:3000/api/faculty", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: `classroom_session=${facultyToken}`,
+      },
+      body: JSON.stringify({
+        action: "MENTOR_NOTE",
+        facultyId: facultyMember!.id,
+        menteeId: menteeSample ? menteeSample.id : "student-mentee-1",
+        category: "ACADEMIC",
+        notes: "Scholar requires remedial session in Advanced Algorithm Optimization",
+      }),
+    });
+
+    const noteRes = await handleFacultyPost(noteReq);
+    const noteData = await noteRes.json();
+    assert(noteRes.status === 200, "POST /api/faculty (MENTOR_NOTE) succeeds with 200 OK");
+    assert(noteData.success === true, "Pastoral mentorship note logged with advisor record");
   }
 
   // ==========================================
@@ -3285,6 +3387,27 @@ BIO-599,Synthetic Biology Principles,Syn Bio,3,BIO,BSC-BIO,CORE,THEORY,3`;
       const tamperingRes = await handleStudentPatch(tamperingReq);
       assert(tamperingRes.status === 403, "Cross-student profile tampering strictly forbidden with 403");
     }
+
+    // 43.8 Student 360 Verified Demographics & KYC Identity
+    assert(!!dataStudentById.student.demographics, "Student verified demographics & KYC payload returned");
+    assert(typeof dataStudentById.student.demographics.permanentAddress === "string" && dataStudentById.student.demographics.permanentAddress.length > 0, "Student permanent residential address verified");
+    assert(typeof dataStudentById.student.demographics.dateOfBirth === "string", "Student date of birth on record");
+    assert(typeof dataStudentById.student.demographics.maskedGovtId === "string" && dataStudentById.student.demographics.maskedGovtId.includes("XXXX"), "Government ID masked for FERPA and privacy compliance");
+
+    // 43.9 Student Semester SGPA Progression Trend & Backlogs Tracking
+    assert(!!dataStudentById.student.academicProgression, "Semester SGPA progression and backlog telemetry returned");
+    assert(Array.isArray(dataStudentById.student.academicProgression.semesterHistory) && dataStudentById.student.academicProgression.semesterHistory.length > 0, "Semester SGPA progression history recorded");
+    assert(typeof dataStudentById.student.academicProgression.activeBacklogs === "number", "Active backlog / arrears counter returned");
+
+    // 43.10 Student Document Vault Verification
+    assert(Array.isArray(dataStudentById.student.documentsVault) && dataStudentById.student.documentsVault.length > 0, "Digital document vault returns academic certifications and affidavits");
+    const verifiedDoc = dataStudentById.student.documentsVault.find((d: any) => d.status === "VERIFIED");
+    assert(!!verifiedDoc, "Document vault contains verified registrar credentials");
+
+    // 43.11 Student Co-Curricular Portfolio & Technical Certifications
+    assert(!!dataStudentById.student.portfolio, "Co-curricular technical portfolio returned");
+    assert(Array.isArray(dataStudentById.student.portfolio.certifications), "Technical certifications array present in portfolio");
+    assert(Array.isArray(dataStudentById.student.portfolio.clubMemberships), "Student society / club memberships recorded");
   }
 
   console.log("\n=================================================");

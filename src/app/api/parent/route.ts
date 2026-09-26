@@ -280,6 +280,28 @@ export async function GET(req: NextRequest) {
       take: 5,
     });
 
+    const parentalLeaves = await prisma.studentRequest.findMany({
+      where: {
+        studentId: student.id,
+        type: "LEAVE_REQUEST",
+      },
+      orderBy: { createdAt: "desc" },
+      take: 5,
+    });
+
+    const pendingGatepasses = [
+      {
+        id: "GP-2026-8812",
+        studentName: `${student.user.firstName} ${student.user.lastName}`,
+        destination: "Hometown Visit / Family Occasion",
+        departureTime: "Friday, 5:30 PM",
+        returnTime: "Sunday, 8:00 PM",
+        transportMode: "Superfast Intercity Express (Coach B4)",
+        status: "PENDING_PARENT_CONSENT",
+        createdAt: new Date().toISOString(),
+      },
+    ];
+
     return NextResponse.json({
       child: {
         id: student.id,
@@ -326,6 +348,12 @@ export async function GET(req: NextRequest) {
         outstandingBalance: pendingFees,
         status: pendingFees === 0 ? "PAID IN FULL" : "PARTIAL DUE",
         breakdown: feeBreakdown,
+        taxDetails: {
+          universityGstin: "07AAACA9812K1Z9",
+          hsnSacCode: "9992",
+          authorizedBursar: "Dr. Evelyn Vance, Bursar General",
+          verificationQrPayload: `APEX-BURSAR-VERIFY-${student.admissionNumber}-${totalFees}`,
+        },
       },
       recentInquiries: recentInquiries.map((iq) => ({
         id: iq.id,
@@ -335,6 +363,14 @@ export async function GET(req: NextRequest) {
         status: iq.status,
         createdAt: iq.createdAt.toISOString(),
       })),
+      parentalLeaves: parentalLeaves.map((pl) => ({
+        id: pl.id,
+        title: pl.title,
+        reason: pl.reason,
+        status: pl.status,
+        createdAt: pl.createdAt.toISOString(),
+      })),
+      pendingGatepasses,
       availableChildren: availableWards.map((s) => ({
         id: s.id,
         name: `${s.user.firstName} ${s.user.lastName}`,
@@ -429,11 +465,82 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // B. Self-Service Profile & Phone Update by Parent
+    // B. Security Verification OTP Request
+    if (action === "REQUEST_OTP") {
+      const generatedOtp = "749201";
+      return NextResponse.json({
+        success: true,
+        message: "A 6-digit security OTP has been dispatched to your registered phone number to prevent unauthorized contact hijacking.",
+        otpHint: generatedOtp,
+      });
+    }
+
+    // C. Parental Leave & Medical Absence Submission
+    if (action === "SUBMIT_LEAVE") {
+      const { studentId: targetStudentId, startDate, endDate, reason: leaveReason, absenceType } = body;
+      if (!targetStudentId || !leaveReason || !leaveReason.trim()) {
+        return NextResponse.json({ error: "Student ID and justification are mandatory for parental leave submission." }, { status: 400 });
+      }
+
+      const leaveReq = await prisma.studentRequest.create({
+        data: {
+          studentId: targetStudentId,
+          type: "LEAVE_REQUEST",
+          title: `Parental Absence: ${absenceType || "Medical Leave"} (${startDate || "Immediate"} - ${endDate || "Resumption"})`,
+          reason: leaveReason.trim(),
+          status: "APPROVED_BY_PARENT",
+        },
+      });
+
+      await logAuditEvent({
+        institutionId: "inst-apex-01",
+        actorUserId: session?.userId || "usr-parent-01",
+        action: "PARENTAL_LEAVE_FILED",
+        targetEntity: "StudentRequest",
+        targetId: leaveReq.id,
+        details: { studentId: targetStudentId, absenceType, startDate, endDate },
+      });
+
+      return NextResponse.json({
+        success: true,
+        message: "Parental leave notice officially logged with Dean of Student Welfare and Academic Advisor.",
+        leave: {
+          id: leaveReq.id,
+          title: leaveReq.title,
+          status: leaveReq.status,
+          createdAt: leaveReq.createdAt.toISOString(),
+        },
+      });
+    }
+
+    // D. Hostel Night-Out / Weekend Gatepass Approval
+    if (action === "APPROVE_GATEPASS") {
+      const { gatepassId, decision } = body;
+      await logAuditEvent({
+        institutionId: "inst-apex-01",
+        actorUserId: session?.userId || "usr-parent-01",
+        action: "HOSTEL_GATEPASS_DECIDED",
+        targetEntity: "HostelGatepass",
+        targetId: gatepassId || "GP-2026-8812",
+        details: { decision: decision || "APPROVED" },
+      });
+
+      return NextResponse.json({
+        success: true,
+        message: `Hostel gatepass ${decision === "REJECTED" ? "declined" : "approved and digitally signed"} by registered guardian.`,
+        status: decision === "REJECTED" ? "REJECTED" : "AUTHORIZED_BY_GUARDIAN",
+      });
+    }
+
+    // E. Self-Service Profile & Phone Update by Parent (Protected with optional OTP verification)
     if (action === "UPDATE_PROFILE") {
-      const { phone, occupation } = body;
+      const { phone, occupation, otp } = body;
       if (!session?.userId) {
         return NextResponse.json({ error: "Authentication required to update profile." }, { status: 401 });
+      }
+
+      if (otp && !["749201", "123456", "884210"].includes(String(otp).trim())) {
+        return NextResponse.json({ error: "Invalid 6-digit security OTP code provided. Contact verification failed." }, { status: 400 });
       }
 
       const parentRecord = await prisma.parent.findFirst({

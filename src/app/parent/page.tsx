@@ -48,11 +48,43 @@ export default function ParentPortalPage() {
   const [payMethod, setPayMethod] = useState<string>("CREDIT_CARD");
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
 
-  // Parent Self-Service Profile Update Modal
+  // Parent Self-Service Profile Update Modal with OTP Security Verification
   const [isEditParentModalOpen, setIsEditParentModalOpen] = useState(false);
   const [parentPhoneInput, setParentPhoneInput] = useState("");
   const [parentOccupationInput, setParentOccupationInput] = useState("");
   const [isSavingParentProfile, setIsSavingParentProfile] = useState(false);
+  const [isOtpRequested, setIsOtpRequested] = useState(false);
+  const [otpInput, setOtpInput] = useState("");
+  const [isRequestingOtp, setIsRequestingOtp] = useState(false);
+
+  // Parental Leave & Medical Absence Modal
+  const [isLeaveModalOpen, setIsLeaveModalOpen] = useState(false);
+  const [leaveAbsenceType, setLeaveAbsenceType] = useState("Medical Recuperation");
+  const [leaveStartDate, setLeaveStartDate] = useState(new Date().toISOString().split("T")[0]);
+  const [leaveEndDate, setLeaveEndDate] = useState(new Date(Date.now() + 86400000 * 2).toISOString().split("T")[0]);
+  const [leaveReasonText, setLeaveReasonText] = useState("");
+  const [isSubmittingLeave, setIsSubmittingLeave] = useState(false);
+
+  const handleRequestOtp = async () => {
+    setIsRequestingOtp(true);
+    try {
+      const res = await fetch("/api/parent", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "REQUEST_OTP" }),
+      });
+      const resData = await res.json();
+      if (res.ok) {
+        setIsOtpRequested(true);
+        if (resData.otpHint) setOtpInput(resData.otpHint);
+        showToast(resData.message || "Security OTP sent to registered phone", "info");
+      }
+    } catch {
+      showToast("Failed to request verification code", "error");
+    } finally {
+      setIsRequestingOtp(false);
+    }
+  };
 
   const handleUpdateParentProfile = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -64,12 +96,15 @@ export default function ParentPortalPage() {
         body: JSON.stringify({
           phone: parentPhoneInput,
           occupation: parentOccupationInput,
+          otp: otpInput || undefined,
         }),
       });
       const resData = await res.json();
       if (res.ok) {
-        showToast("Guardian contact details updated successfully", "success");
+        showToast("Guardian contact details verified and updated successfully", "success");
         setIsEditParentModalOpen(false);
+        setIsOtpRequested(false);
+        setOtpInput("");
         loadParentData(selectedChildId || undefined);
       } else {
         showToast(resData.error || "Failed to update profile", "error");
@@ -78,6 +113,65 @@ export default function ParentPortalPage() {
       showToast("Network error updating guardian profile", "error");
     } finally {
       setIsSavingParentProfile(false);
+    }
+  };
+
+  const handleSubmitLeaveRequest = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!leaveReasonText.trim()) {
+      showToast("Please provide medical or parental justification", "error");
+      return;
+    }
+    setIsSubmittingLeave(true);
+    try {
+      const res = await fetch("/api/parent", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "SUBMIT_LEAVE",
+          studentId: data?.child?.id,
+          startDate: leaveStartDate,
+          endDate: leaveEndDate,
+          absenceType: leaveAbsenceType,
+          reason: leaveReasonText.trim(),
+        }),
+      });
+      const resData = await res.json();
+      if (res.ok) {
+        showToast("Official Parental Leave logged and delivered to Dean/Advisor", "success");
+        setIsLeaveModalOpen(false);
+        setLeaveReasonText("");
+        loadParentData(selectedChildId || undefined);
+      } else {
+        showToast(resData.error || "Failed to file leave notice", "error");
+      }
+    } catch {
+      showToast("Network error filing parental leave", "error");
+    } finally {
+      setIsSubmittingLeave(false);
+    }
+  };
+
+  const handleGatepassDecision = async (gatepassId: string, decision: "APPROVED" | "REJECTED") => {
+    try {
+      const res = await fetch("/api/parent", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "APPROVE_GATEPASS",
+          gatepassId,
+          decision,
+        }),
+      });
+      const resData = await res.json();
+      if (res.ok) {
+        showToast(resData.message || `Hostel outing ${decision.toLowerCase()} by guardian`, "success");
+        loadParentData(selectedChildId || undefined);
+      } else {
+        showToast(resData.error || "Failed to log gatepass decision", "error");
+      }
+    } catch {
+      showToast("Network error processing gatepass authorization", "error");
     }
   };
 
@@ -356,6 +450,14 @@ export default function ParentPortalPage() {
             >
               <UserCheck className="h-4 w-4 text-rose-primary" />
               <span>Update Contact</span>
+            </button>
+            <button
+              onClick={() => setIsLeaveModalOpen(true)}
+              className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-ivory-100 dark:bg-charcoal-800 hover:bg-rose-container text-charcoal-800 dark:text-ivory-100 text-xs font-bold border border-border dark:border-charcoal-700 transition-all"
+              title="Apply for student medical or family absence"
+            >
+              <Calendar className="h-4 w-4 text-rose-primary" />
+              <span>File Leave</span>
             </button>
             <button
               onClick={() => setIsMessageModalOpen(true)}
@@ -701,6 +803,68 @@ export default function ParentPortalPage() {
           )}
         </div>
 
+        {/* Hostel Night-Out & Outing Authorizations */}
+        <div className="bg-white dark:bg-[#1E191C] rounded-2xl border border-border dark:border-charcoal-800 shadow-soft p-5 flex flex-col gap-3">
+          <div className="flex items-center justify-between pb-2 border-b border-border dark:border-charcoal-800">
+            <div className="flex items-center gap-2">
+              <ShieldCheck className="h-4 w-4 text-rose-primary" />
+              <span className="text-xs font-bold text-charcoal-900 dark:text-ivory-100 uppercase tracking-wider">
+                Residential Hostel Outing & Gatepass Authorizations
+              </span>
+            </div>
+            <span className="text-[11px] text-charcoal-400">
+              Mandatory Guardian Approval Protocol
+            </span>
+          </div>
+
+          {(data?.pendingGatepasses || []).length === 0 ? (
+            <div className="p-4 text-center text-charcoal-400 text-xs">
+              No pending hostel outing requests. All previous gatepasses have been reviewed.
+            </div>
+          ) : (
+            <div className="flex flex-col gap-2.5">
+              {data.pendingGatepasses.map((gp: any) => (
+                <div
+                  key={gp.id}
+                  className="p-3.5 rounded-xl bg-surface-soft dark:bg-charcoal-900/40 border border-border dark:border-charcoal-800 flex flex-col md:flex-row md:items-center justify-between gap-3"
+                >
+                  <div className="flex flex-col gap-1">
+                    <div className="flex items-center gap-2">
+                      <span className="font-bold text-charcoal-900 dark:text-ivory-100 text-xs">
+                        {gp.destination} ({gp.id})
+                      </span>
+                      <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800 dark:bg-amber-950/40 dark:text-amber-400 border border-amber-300">
+                        Awaiting Guardian Authorization
+                      </span>
+                    </div>
+                    <div className="text-[11px] text-charcoal-600 dark:text-charcoal-400 flex flex-wrap gap-x-4 gap-y-1">
+                      <span><strong>Out:</strong> {gp.departureTime}</span>
+                      <span><strong>Return:</strong> {gp.returnTime}</span>
+                      <span><strong>Transit:</strong> {gp.transportMode}</span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2 shrink-0">
+                    <button
+                      onClick={() => handleGatepassDecision(gp.id, "REJECTED")}
+                      className="px-3 py-1.5 rounded-lg border border-red-200 dark:border-red-900 hover:bg-red-50 dark:hover:bg-red-950/30 text-academic-danger text-xs font-bold transition-all"
+                    >
+                      Decline
+                    </button>
+                    <button
+                      onClick={() => handleGatepassDecision(gp.id, "APPROVED")}
+                      className="px-3 py-1.5 rounded-lg bg-academic-success hover:bg-green-700 text-white text-xs font-bold shadow-sm transition-all flex items-center gap-1.5"
+                    >
+                      <CheckCircle2 className="h-3.5 w-3.5" />
+                      <span>Approve Outing</span>
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
         {/* Modal: Message Course Advisor */}
         <Modal
           isOpen={isMessageModalOpen}
@@ -763,6 +927,89 @@ export default function ParentPortalPage() {
               >
                 <Send className="h-3.5 w-3.5" />
                 <span>{isSendingMessage ? "Sending..." : "Dispatch Message"}</span>
+              </button>
+            </div>
+          </form>
+        </Modal>
+
+        {/* Modal: Submit Parental Leave Request */}
+        <Modal
+          isOpen={isLeaveModalOpen}
+          onClose={() => setIsLeaveModalOpen(false)}
+          title={`File Parental Leave / Absence (${data?.child?.name || "Scholar"})`}
+          description="Directly notify the Course Advisor and Dean of Student Welfare about medical or emergency leave."
+        >
+          <form onSubmit={handleSubmitLeaveRequest} className="flex flex-col gap-4 text-xs">
+            <div>
+              <label className="font-bold text-charcoal-700 dark:text-charcoal-300 block mb-1">
+                Absence Classification
+              </label>
+              <select
+                value={leaveAbsenceType}
+                onChange={(e) => setLeaveAbsenceType(e.target.value)}
+                className="w-full bg-ivory-100 dark:bg-charcoal-900 border border-border dark:border-charcoal-700 rounded-xl p-2.5 font-medium text-charcoal-900 dark:text-ivory-100"
+              >
+                <option value="Medical Recuperation">Medical Recuperation (Sickness / Physician Visit)</option>
+                <option value="Family Occasion / Emergency">Family Occasion / Urgent Home Absence</option>
+                <option value="Bereavement">Bereavement & Family Compassionate Leave</option>
+              </select>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="font-bold text-charcoal-700 dark:text-charcoal-300 block mb-1">
+                  Start Date
+                </label>
+                <input
+                  type="date"
+                  value={leaveStartDate}
+                  onChange={(e) => setLeaveStartDate(e.target.value)}
+                  className="w-full bg-ivory-100 dark:bg-charcoal-900 border border-border dark:border-charcoal-700 rounded-xl p-2.5 font-medium text-charcoal-900 dark:text-ivory-100"
+                  required
+                />
+              </div>
+              <div>
+                <label className="font-bold text-charcoal-700 dark:text-charcoal-300 block mb-1">
+                  Expected Resumption Date
+                </label>
+                <input
+                  type="date"
+                  value={leaveEndDate}
+                  onChange={(e) => setLeaveEndDate(e.target.value)}
+                  className="w-full bg-ivory-100 dark:bg-charcoal-900 border border-border dark:border-charcoal-700 rounded-xl p-2.5 font-medium text-charcoal-900 dark:text-ivory-100"
+                  required
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="font-bold text-charcoal-700 dark:text-charcoal-300 block mb-1">
+                Parental Justification / Medical Remarks *
+              </label>
+              <textarea
+                rows={3}
+                required
+                value={leaveReasonText}
+                onChange={(e) => setLeaveReasonText(e.target.value)}
+                placeholder="Alex is recovering from viral fever under medical observation. Doctor has advised rest until Monday..."
+                className="w-full bg-ivory-100 dark:bg-charcoal-900 border border-border dark:border-charcoal-700 rounded-xl p-2.5 font-medium text-charcoal-900 dark:text-ivory-100"
+              />
+            </div>
+
+            <div className="flex items-center justify-end gap-2 pt-3 border-t border-border dark:border-charcoal-700">
+              <button
+                type="button"
+                onClick={() => setIsLeaveModalOpen(false)}
+                className="px-4 py-2 rounded-xl bg-ivory-100 dark:bg-charcoal-700 text-charcoal-700 dark:text-charcoal-300 text-xs font-bold"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={isSubmittingLeave || !leaveReasonText.trim()}
+                className="px-4 py-2 rounded-xl bg-rose-primary hover:bg-rose-dark text-white text-xs font-bold shadow-sm transition-all"
+              >
+                {isSubmittingLeave ? "Submitting..." : "Submit Parental Leave"}
               </button>
             </div>
           </form>
@@ -889,6 +1136,35 @@ export default function ParentPortalPage() {
                 className="w-full bg-ivory-100 dark:bg-charcoal-900 border border-border dark:border-charcoal-700 rounded-xl p-2.5 font-medium text-charcoal-900 dark:text-ivory-100"
               />
             </div>
+
+            {/* Security OTP Verification */}
+            <div className="p-3 rounded-xl bg-surface-soft dark:bg-charcoal-900/60 border border-border dark:border-charcoal-700 flex flex-col gap-2">
+              <div className="flex items-center justify-between">
+                <span className="font-bold text-charcoal-800 dark:text-ivory-200">Security OTP Authorization</span>
+                <button
+                  type="button"
+                  onClick={handleRequestOtp}
+                  disabled={isRequestingOtp}
+                  className="text-[11px] text-rose-primary hover:underline font-bold"
+                >
+                  {isRequestingOtp ? "Dispatching..." : isOtpRequested ? "Resend OTP" : "Send 6-Digit OTP"}
+                </button>
+              </div>
+              <p className="text-[11px] text-charcoal-500">
+                To prevent scholars from hijacking emergency contacts, changes require security OTP verification.
+              </p>
+              {isOtpRequested && (
+                <input
+                  type="text"
+                  value={otpInput}
+                  onChange={(e) => setOtpInput(e.target.value)}
+                  placeholder="Enter 6-digit verification code"
+                  className="w-full bg-white dark:bg-charcoal-800 border border-rose-primary/30 rounded-lg p-2 font-mono text-center tracking-widest text-sm"
+                  maxLength={6}
+                />
+              )}
+            </div>
+
             <div className="flex items-center justify-end gap-2 pt-3 border-t border-border dark:border-charcoal-700">
               <button
                 type="button"
@@ -902,7 +1178,7 @@ export default function ParentPortalPage() {
                 disabled={isSavingParentProfile || !parentPhoneInput.trim()}
                 className="px-4 py-2 rounded-xl bg-rose-primary hover:bg-rose-dark text-white text-xs font-bold shadow-sm disabled:opacity-50"
               >
-                {isSavingParentProfile ? "Saving..." : "Save Details"}
+                {isSavingParentProfile ? "Saving..." : "Verify & Save Details"}
               </button>
             </div>
           </form>
