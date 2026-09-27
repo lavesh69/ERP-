@@ -1,6 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db/prisma";
-import { calculateLetterAndGradePoints, calculateCumulativeCGPA } from "@/lib/grading/gpa-engine";
+import {
+  calculateUgcLetterGrade,
+  calculateLetterAndGradePoints,
+  calculateRelativeGrades,
+  applyGraceMarks,
+} from "@/lib/grading/gpa-engine";
 import { getOptionalSession, requireRoleAuth } from "@/lib/auth/admin-guard";
 import { logger } from "@/lib/logging/logger";
 
@@ -201,6 +206,108 @@ export async function POST(req: NextRequest) {
     const auth = await requireRoleAuth(req, [...EXAM_EDIT_ROLES]);
     if (auth instanceof NextResponse) return auth;
 
+    // CoE Actions: APPLY_GRACE_MARKS
+    if (action === "APPLY_GRACE_MARKS") {
+      const { examId, maxGraceAllowed } = body;
+      if (!examId) return NextResponse.json({ error: "examId is required" }, { status: 400 });
+
+      const exam = await prisma.exam.findUnique({
+        where: { id: examId },
+        include: { results: true },
+      });
+      if (!exam) return NextResponse.json({ error: "Exam not found" }, { status: 404 });
+
+      let graceBeneficiaries = 0;
+      const graceLimit = Number(maxGraceAllowed) || 3;
+
+      for (const res of exam.results) {
+        const graceEval = applyGraceMarks(res.marksObtained, exam.totalMarks, graceLimit);
+        if (graceEval.passedWithGrace) {
+          const newPercentage = (graceEval.finalMarks / exam.totalMarks) * 100;
+          const ugcGrade = calculateUgcLetterGrade(newPercentage);
+
+          await prisma.examResult.update({
+            where: { id: res.id },
+            data: {
+              marksObtained: graceEval.finalMarks,
+              gradeLetter: ugcGrade.letter,
+              remarks: `Passed with University Senate Condonation Grace Marks (+${graceEval.graceApplied.toFixed(1)} awarded)`,
+            },
+          });
+          graceBeneficiaries++;
+        }
+      }
+
+      return NextResponse.json({
+        success: true,
+        message: `University Senate Grace Marks applied. ${graceBeneficiaries} candidate(s) cleared the examination cutoff.`,
+        graceBeneficiaries,
+      });
+    }
+
+    // CoE Actions: APPLY_RELATIVE_GRADING
+    if (action === "APPLY_RELATIVE_GRADING") {
+      const { examId } = body;
+      if (!examId) return NextResponse.json({ error: "examId is required" }, { status: 400 });
+
+      const exam = await prisma.exam.findUnique({
+        where: { id: examId },
+        include: { results: true },
+      });
+      if (!exam) return NextResponse.json({ error: "Exam not found" }, { status: 404 });
+
+      const scoreList = exam.results.map((r) => ({
+        studentId: r.studentId,
+        marksObtained: r.marksObtained,
+        totalMarks: exam.totalMarks,
+      }));
+
+      const relativeResult = calculateRelativeGrades(scoreList);
+
+      for (const item of relativeResult.grades) {
+        await prisma.examResult.updateMany({
+          where: { examId, studentId: item.studentId },
+          data: {
+            gradeLetter: item.letter,
+            remarks: `Relative Bell-Curve Grade (Z-Score: ${item.zScore})`,
+          },
+        });
+      }
+
+      return NextResponse.json({
+        success: true,
+        message: `Relative grading calculated: Class Mean=${relativeResult.mean}%, StdDev=${relativeResult.standardDeviation}, Pass Rate=${relativeResult.passPercentage}%`,
+        metrics: relativeResult,
+      });
+    }
+
+    // CoE Actions: CERTIFY_COE_RESULTS
+    if (action === "CERTIFY_COE_RESULTS") {
+      const { examId } = body;
+      if (!examId) return NextResponse.json({ error: "examId is required" }, { status: 400 });
+
+      await prisma.exam.update({
+        where: { id: examId },
+        data: { status: "PUBLISHED" },
+      });
+
+      const updated = await prisma.examResult.updateMany({
+        where: { examId },
+        data: {
+          isVerified: true,
+          publishedAt: new Date(),
+          verifiedById: auth.payload.userId || auth.payload.sub,
+        },
+      });
+
+      return NextResponse.json({
+        success: true,
+        message: `CoE officially certified and locked examination results. Published ${updated.count} candidate grade records to student portals.`,
+        certifiedCount: updated.count,
+      });
+    }
+
+    // Standard Schedule Exam action
     const { title, courseCode, type, totalMarks, weightage, examDate, durationMins, questions } = body;
 
     if (!title || !courseCode) {
@@ -285,7 +392,7 @@ export async function PUT(req: NextRequest) {
         if (!entry.studentId || entry.marksObtained === undefined || entry.marksObtained === "") continue;
 
         const percentage = (Number(entry.marksObtained) / exam.totalMarks) * 100;
-        const { letter } = calculateLetterAndGradePoints(percentage);
+        const ugcGrade = calculateUgcLetterGrade(percentage);
 
         const res = await prisma.examResult.upsert({
           where: {
@@ -296,7 +403,7 @@ export async function PUT(req: NextRequest) {
           },
           update: {
             marksObtained: Number(entry.marksObtained),
-            gradeLetter: letter,
+            gradeLetter: ugcGrade.letter,
             remarks: entry.remarks || "Evaluated by course faculty",
             isVerified: publish === true,
             publishedAt: publish === true ? new Date() : null,
@@ -306,7 +413,7 @@ export async function PUT(req: NextRequest) {
             examId,
             studentId: entry.studentId,
             marksObtained: Number(entry.marksObtained),
-            gradeLetter: letter,
+            gradeLetter: ugcGrade.letter,
             remarks: entry.remarks || "Evaluated by course faculty",
             isVerified: publish === true,
             publishedAt: publish === true ? new Date() : null,
@@ -326,8 +433,8 @@ export async function PUT(req: NextRequest) {
       return NextResponse.json({
         success: true,
         message: publish
-          ? `Evaluated & officially published marks for ${updatedResults.length} students.`
-          : `Draft evaluation saved for ${updatedResults.length} students.`,
+          ? `Evaluated & officially certified UGC marks for ${updatedResults.length} students.`
+          : `Draft UGC evaluation saved for ${updatedResults.length} students.`,
         updatedCount: updatedResults.length,
       });
     }
@@ -341,7 +448,7 @@ export async function PUT(req: NextRequest) {
     }
 
     const percentage = (Number(marksObtained) / exam.totalMarks) * 100;
-    const { letter } = calculateLetterAndGradePoints(percentage);
+    const ugcGrade = calculateUgcLetterGrade(percentage);
 
     const result = await prisma.examResult.upsert({
       where: {
@@ -352,7 +459,7 @@ export async function PUT(req: NextRequest) {
       },
       update: {
         marksObtained: Number(marksObtained),
-        gradeLetter: letter,
+        gradeLetter: ugcGrade.letter,
         isVerified: publish === true,
         publishedAt: publish === true ? new Date() : null,
       },
@@ -360,7 +467,7 @@ export async function PUT(req: NextRequest) {
         examId,
         studentId,
         marksObtained: Number(marksObtained),
-        gradeLetter: letter,
+        gradeLetter: ugcGrade.letter,
         isVerified: publish === true,
         publishedAt: publish === true ? new Date() : null,
       },

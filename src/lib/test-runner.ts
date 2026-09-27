@@ -2,7 +2,16 @@ import crypto from "crypto";
 import { prisma } from "@/lib/db/prisma";
 import { ROLE_CONFIGS, MOCK_USERS } from "@/lib/auth/roles";
 import { detectTimetableConflict, TimetableSlotItem } from "@/lib/timetable/conflict-detector";
-import { calculateLetterGrade, calculateSemesterGPA, calculateCumulativeCGPA } from "@/lib/grading/gpa-engine";
+import {
+  calculateLetterGrade,
+  calculateSemesterGPA,
+  calculateCumulativeCGPA,
+  calculateUgcLetterGrade,
+  calculateRelativeGrades,
+  applyGraceMarks,
+  classifyAcademicStanding,
+} from "@/lib/grading/gpa-engine";
+import { generateAntiCheatingSeatingPlan } from "@/lib/examinations/seating-engine";
 import { retrieveRelevantKnowledge } from "@/lib/rag/engine";
 import { executeAutonomousAgent } from "@/lib/ai/agents";
 import { signJwt, verifyJwt } from "@/lib/auth/jwt";
@@ -72,6 +81,10 @@ import { GET as handleParentGet, POST as handleParentPost } from "@/app/api/pare
 import { GET as handleFacultyGet, PATCH as handleFacultyPatch, POST as handleFacultyPost } from "@/app/api/faculty/route";
 import { GET as handleStudentGet, PATCH as handleStudentPatch } from "@/app/api/students/route";
 import { GET as handleTimetableGet, PATCH as handleTimetablePatch } from "@/app/api/timetable/route";
+import { GET as handleExaminationsGet, POST as handleExaminationsPost, PUT as handleExaminationsPut } from "@/app/api/examinations/route";
+import { GET as handleHallTicketGet, POST as handleHallTicketPost } from "@/app/api/examinations/hall-ticket/route";
+import { GET as handleSeatingGet, POST as handleSeatingPost } from "@/app/api/examinations/seating/route";
+import { GET as handleTranscriptsGet } from "@/app/api/examinations/transcripts/route";
 import { recordAttendanceException, getAttendanceExceptions, clearAttendanceExceptions } from "@/lib/attendance/exceptions";
 
 async function runTestSuite() {
@@ -3540,6 +3553,115 @@ BIO-599,Synthetic Biology Principles,Syn Bio,3,BIO,BSC-BIO,CORE,THEORY,3`;
         assert(subData.success === true, "Substitute teacher assignment confirmed");
         assert(subData.slot.facultyId === freeFaculty.id, "Slot facultyId updated to substitute instructor");
       }
+    }
+
+    // ==========================================
+    // GROUP 45: EXAMINATION GOVERNANCE, ANTI-CHEATING SEATING & UGC 10-POINT GRADING SUITE
+    // ==========================================
+    console.log("\n--- GROUP 45: EXAMINATION GOVERNANCE, ANTI-CHEATING SEATING & UGC 10-POINT GRADING SUITE ---");
+
+    // 45.1 UGC 10-Point Choice Based Credit System (CBCS) Letter Calculation
+    const oGrade = calculateUgcLetterGrade(94.5);
+    assert(oGrade.letter === "O" && oGrade.points === 10.0 && oGrade.isPassed === true, "UGC 10-Pt: 94.5% yields O (10.0 Points - Outstanding)");
+
+    const aPlusGrade = calculateUgcLetterGrade(84.0);
+    assert(aPlusGrade.letter === "A+" && aPlusGrade.points === 9.0 && aPlusGrade.isPassed === true, "UGC 10-Pt: 84.0% yields A+ (9.0 Points - Excellent)");
+
+    const pGrade = calculateUgcLetterGrade(42.5);
+    assert(pGrade.letter === "P" && pGrade.points === 4.0 && pGrade.isPassed === true, "UGC 10-Pt: 42.5% yields P (4.0 Points - Pass)");
+
+    const fGrade = calculateUgcLetterGrade(34.0);
+    assert(fGrade.letter === "F" && fGrade.points === 0.0 && fGrade.isPassed === false, "UGC 10-Pt: 34.0% yields F (0.0 Points - Fail/Arrear)");
+
+    const abGrade = calculateUgcLetterGrade(0, true);
+    assert(abGrade.letter === "AB" && abGrade.points === 0.0 && abGrade.isPassed === false, "UGC 10-Pt: Absent candidate yields AB (0.0 Points)");
+
+    // 45.2 University Senate Grace Marks & Condonation
+    const graceEligible = applyGraceMarks(38, 100, 3);
+    assert(graceEligible.passedWithGrace === true && graceEligible.finalMarks === 40 && graceEligible.graceApplied === 2, "Senate Grace Marks (+2) elevates borderline candidate (38/100) to clear 40% cutoff");
+
+    const graceIneligible = applyGraceMarks(32, 100, 3);
+    assert(graceIneligible.passedWithGrace === false && graceIneligible.finalMarks === 32, "Shortfall (8 marks) exceeding limit (3) rejected without grace");
+
+    // 45.3 Statistical Relative Grading (Bell Curve & Z-Score Distribution)
+    const mockCohortScores = [
+      { studentId: "st-1", marksObtained: 95, totalMarks: 100 },
+      { studentId: "st-2", marksObtained: 85, totalMarks: 100 },
+      { studentId: "st-3", marksObtained: 75, totalMarks: 100 },
+      { studentId: "st-4", marksObtained: 65, totalMarks: 100 },
+      { studentId: "st-5", marksObtained: 55, totalMarks: 100 },
+    ];
+    const relGrading = calculateRelativeGrades(mockCohortScores);
+    assert(relGrading.mean === 75 && relGrading.passPercentage === 100, "Relative grading accurately calculates cohort mean and normal distribution");
+    assert(relGrading.grades[0].letter === "O" && relGrading.grades[0].zScore > 0, "Top performer assigned relative O grade based on positive Z-score");
+
+    // 45.4 Degree Honors & Academic Standing Classification
+    const honorsDistinction = classifyAcademicStanding(9.2, 0);
+    assert(honorsDistinction.classification === "FIRST_CLASS_DISTINCTION", "CGPA 9.2 with zero backlogs earns First Class with Distinction");
+
+    const honorsArrear = classifyAcademicStanding(8.5, 2);
+    assert(honorsArrear.classification === "PASS_CLASS", "Arrears / backlogs demote candidate to Pass Class pending clearance");
+
+    // 45.5 Anti-Cheating Seating Allocation Engine (Multi-Course Interleaving)
+    const testCandidates = {
+      "CS-402": Array.from({ length: 12 }, (_, i) => ({
+        studentId: `cs-st-${i + 1}`,
+        studentName: `CS Student ${i + 1}`,
+        rollNumber: `APX2026-CS-${String(i + 1).padStart(3, "0")}`,
+        courseCode: "CS-402",
+        courseTitle: "Neural Networks",
+        department: "Computer Science",
+      })),
+      "EC-301": Array.from({ length: 12 }, (_, i) => ({
+        studentId: `ec-st-${i + 1}`,
+        studentName: `EC Student ${i + 1}`,
+        rollNumber: `APX2026-EC-${String(i + 1).padStart(3, "0")}`,
+        courseCode: "EC-301",
+        courseTitle: "Digital Signal Processing",
+        department: "Electrical Engineering",
+      })),
+    };
+    const testHalls = [
+      {
+        hallId: "hall-turing-1",
+        hallName: "Turing Hall",
+        building: "Block A",
+        rows: 4,
+        cols: 6,
+        capacity: 24,
+      },
+    ];
+    const seatingResult = generateAntiCheatingSeatingPlan(testCandidates, testHalls);
+    assert(seatingResult.success === true, "Seating allocation completes with 100% placement");
+    assert(seatingResult.antiCheatingMetrics.horizontalClashes === 0, "Zero horizontal clashes: adjacent desks strictly alternate between CS-402 and EC-301");
+    assert(seatingResult.plans[0].doorNotice.length === 2, "Door notices generated for each interleaved course");
+
+    // 45.6 Seating API GET Endpoint
+    const seatingReq = new NextRequest("http://localhost:3000/api/examinations/seating");
+    const seatingRes = await handleSeatingGet(seatingReq);
+    assert(seatingRes.status === 200, "GET /api/examinations/seating returns 200 OK");
+    const seatingData = await seatingRes.json();
+    assert(seatingData.success === true && seatingData.allocation.plans.length > 0, "Seating API returns verified allocation matrices");
+
+    // 45.7 Transcripts & Grade Card API GET Endpoint
+    const transcriptReq = new NextRequest("http://localhost:3000/api/examinations/transcripts");
+    const transcriptRes = await handleTranscriptsGet(transcriptReq);
+    assert(transcriptRes.status === 200, "GET /api/examinations/transcripts returns 200 OK");
+    const transcriptData = await transcriptRes.json();
+    assert(transcriptData.success === true && transcriptData.transcript.performance.cumulativeCGPA > 0, "Official academic transcript generated with CGPA and UGC marks breakdown");
+
+    // 45.8 Gate Security & Admit Card QR Verification POST Endpoint
+    const sampleStudent = await prisma.student.findFirst();
+    if (sampleStudent) {
+      const gateReq = new NextRequest("http://localhost:3000/api/examinations/hall-ticket", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ rollNumber: sampleStudent.rollNumber }),
+      });
+      const gateRes = await handleHallTicketPost(gateReq);
+      assert(gateRes.status === 200, "POST /api/examinations/hall-ticket gate scanner returns 200 OK");
+      const gateData = await gateRes.json();
+      assert(gateData.success === true && gateData.candidate.rollNumber === sampleStudent.rollNumber, "Gate verification scanner validates candidate roll and admittance status");
     }
   }
 
