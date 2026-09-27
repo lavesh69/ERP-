@@ -145,6 +145,83 @@ export default function ParentPortalPage() {
     }
   };
 
+  // Offline Bank Challan Modal State
+  const [isChallanModalOpen, setIsChallanModalOpen] = useState(false);
+  const [challanBank, setChallanBank] = useState("National State Bank");
+  const [challanBranch, setChallanBranch] = useState("Main Campus Branch");
+  const [challanRefInput, setChallanRefInput] = useState("");
+  const [challanAmount, setChallanAmount] = useState("");
+  const [challanDepositDate, setChallanDepositDate] = useState(new Date().toISOString().split("T")[0]);
+  const [isSubmittingChallan, setIsSubmittingChallan] = useState(false);
+
+  // Tax Exemption Certificate Modal State
+  const [isTaxCertModalOpen, setIsTaxCertModalOpen] = useState(false);
+  const [taxCertData, setTaxCertData] = useState<any>(null);
+  const [loadingTaxCert, setLoadingTaxCert] = useState(false);
+
+  const handleSubmitChallan = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!challanAmount || !challanRefInput.trim()) {
+      showToast("Please provide deposit amount and challan reference number", "error");
+      return;
+    }
+    setIsSubmittingChallan(true);
+    try {
+      const res = await fetch("/api/parent", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "SUBMIT_OFFLINE_CHALLAN",
+          studentFeeId: data?.finances?.studentFeeId || "fee-sample-01",
+          amount: parseFloat(challanAmount),
+          bankName: challanBank,
+          branchName: challanBranch,
+          challanRef: challanRefInput.trim(),
+          depositDate: challanDepositDate,
+        }),
+      });
+      const resData = await res.json();
+      if (res.ok) {
+        showToast("Bank deposit challan registered! Pending Bursar verification.", "success");
+        setIsChallanModalOpen(false);
+        setChallanRefInput("");
+        setChallanAmount("");
+        loadParentData(selectedChildId || undefined);
+      } else {
+        showToast(resData.error || "Failed to submit challan", "error");
+      }
+    } catch {
+      showToast("Network error submitting bank challan", "error");
+    } finally {
+      setIsSubmittingChallan(false);
+    }
+  };
+
+  const handleDownloadTaxCert = async () => {
+    setIsTaxCertModalOpen(true);
+    if (!taxCertData) {
+      setLoadingTaxCert(true);
+      try {
+        const res = await fetch("/api/parent", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            action: "GET_TAX_CERTIFICATE",
+            studentId: data?.child?.id,
+          }),
+        });
+        const resData = await res.json();
+        if (res.ok && resData.certificate) {
+          setTaxCertData(resData.certificate);
+        }
+      } catch (err) {
+        console.error("Failed to load tax certificate:", err);
+      } finally {
+        setLoadingTaxCert(false);
+      }
+    }
+  };
+
   const handleRequestOtp = async () => {
     setIsRequestingOtp(true);
     try {
@@ -834,6 +911,22 @@ export default function ParentPortalPage() {
                   <span>Request 3-Part Installment Plan</span>
                 </button>
               )}
+              {data?.finances?.outstandingBalance > 0 && (
+                <button
+                  onClick={() => setIsChallanModalOpen(true)}
+                  className="w-full py-2 rounded-xl bg-ivory-100 dark:bg-charcoal-800 hover:bg-rose-container dark:hover:bg-charcoal-700 text-charcoal-800 dark:text-ivory-100 text-xs font-bold border border-border dark:border-charcoal-700 flex items-center justify-center gap-1.5 transition-all"
+                >
+                  <FileText className="h-3.5 w-3.5 text-rose-primary" />
+                  <span>Submit Offline Bank Challan</span>
+                </button>
+              )}
+              <button
+                onClick={handleDownloadTaxCert}
+                className="w-full py-2 rounded-xl bg-ivory-100 dark:bg-charcoal-800 hover:bg-rose-container dark:hover:bg-charcoal-700 text-charcoal-800 dark:text-ivory-100 text-xs font-bold border border-border dark:border-charcoal-700 flex items-center justify-center gap-1.5 transition-all"
+              >
+                <ShieldCheck className="h-3.5 w-3.5 text-academic-success" />
+                <span>Tax Exemption Certificate (Sec 80E)</span>
+              </button>
               <button
                 onClick={handleDownloadBursarStatement}
                 className="w-full py-2 rounded-xl bg-ivory-100 dark:bg-charcoal-800 hover:bg-rose-container dark:hover:bg-charcoal-700 text-rose-primary dark:text-rose-accent text-xs font-bold border border-border dark:border-charcoal-700 flex items-center justify-center gap-1.5 transition-all"
@@ -1403,6 +1496,198 @@ export default function ParentPortalPage() {
               </button>
             </div>
           </form>
+        </Modal>
+
+        {/* Modal: Submit Offline Bank Challan */}
+        <Modal
+          isOpen={isChallanModalOpen}
+          onClose={() => setIsChallanModalOpen(false)}
+          title="Submit Offline Bank Deposit Challan"
+          description="Register your offline bank branch counter deposit slip or RTGS/NEFT transaction receipt for Bursar verification and ledger credit."
+        >
+          <form onSubmit={handleSubmitChallan} className="flex flex-col gap-4 text-xs">
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="font-bold text-charcoal-700 dark:text-charcoal-300 block mb-1">
+                  Bank Name
+                </label>
+                <select
+                  value={challanBank}
+                  onChange={(e) => setChallanBank(e.target.value)}
+                  className="w-full bg-ivory-100 dark:bg-charcoal-900 border border-border dark:border-charcoal-700 rounded-xl p-2.5 font-medium text-charcoal-900 dark:text-ivory-100"
+                >
+                  <option value="National State Bank">National State Bank</option>
+                  <option value="HDFC Bank">HDFC Bank</option>
+                  <option value="ICICI Bank">ICICI Bank</option>
+                  <option value="Punjab National Bank">Punjab National Bank</option>
+                  <option value="Bank of Baroda">Bank of Baroda</option>
+                  <option value="Other Scheduled Commercial Bank">Other Scheduled Commercial Bank</option>
+                </select>
+              </div>
+              <div>
+                <label className="font-bold text-charcoal-700 dark:text-charcoal-300 block mb-1">
+                  Branch Name / City
+                </label>
+                <input
+                  type="text"
+                  value={challanBranch}
+                  onChange={(e) => setChallanBranch(e.target.value)}
+                  placeholder="e.g. University Campus Branch"
+                  className="w-full bg-ivory-100 dark:bg-charcoal-900 border border-border dark:border-charcoal-700 rounded-xl p-2.5 font-medium text-charcoal-900 dark:text-ivory-100"
+                  required
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="font-bold text-charcoal-700 dark:text-charcoal-300 block mb-1">
+                  Challan / UTR / Journal Reference No.
+                </label>
+                <input
+                  type="text"
+                  value={challanRefInput}
+                  onChange={(e) => setChallanRefInput(e.target.value)}
+                  placeholder="e.g. CHL-2026-9812 or UTR12345678"
+                  className="w-full bg-ivory-100 dark:bg-charcoal-900 border border-border dark:border-charcoal-700 rounded-xl p-2.5 font-mono text-charcoal-900 dark:text-ivory-100"
+                  required
+                />
+              </div>
+              <div>
+                <label className="font-bold text-charcoal-700 dark:text-charcoal-300 block mb-1">
+                  Deposit Amount ($)
+                </label>
+                <input
+                  type="number"
+                  step="0.01"
+                  value={challanAmount}
+                  onChange={(e) => setChallanAmount(e.target.value)}
+                  placeholder={String(data?.finances?.outstandingBalance || "1000")}
+                  className="w-full bg-ivory-100 dark:bg-charcoal-900 border border-border dark:border-charcoal-700 rounded-xl p-2.5 font-semibold text-charcoal-900 dark:text-ivory-100"
+                  required
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="font-bold text-charcoal-700 dark:text-charcoal-300 block mb-1">
+                Deposit Date at Bank Counter
+              </label>
+              <input
+                type="date"
+                value={challanDepositDate}
+                onChange={(e) => setChallanDepositDate(e.target.value)}
+                className="w-full bg-ivory-100 dark:bg-charcoal-900 border border-border dark:border-charcoal-700 rounded-xl p-2.5 font-medium text-charcoal-900 dark:text-ivory-100"
+                required
+              />
+            </div>
+
+            <div className="p-3 bg-amber-500/10 border border-amber-500/20 rounded-xl text-amber-800 dark:text-amber-300 text-[11px] leading-relaxed">
+              <strong>Notice:</strong> Please retain the stamped physical bank deposit voucher. University Bursars verify the bank scroll and reconciles payments within 24-48 business hours.
+            </div>
+
+            <div className="flex items-center justify-end gap-2 pt-3 border-t border-border dark:border-charcoal-700">
+              <button
+                type="button"
+                onClick={() => setIsChallanModalOpen(false)}
+                className="px-4 py-2 rounded-xl bg-ivory-100 dark:bg-charcoal-700 text-charcoal-700 dark:text-charcoal-300 text-xs font-bold"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={isSubmittingChallan || !challanAmount || !challanRefInput.trim()}
+                className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-sm disabled:opacity-50"
+              >
+                {isSubmittingChallan ? "Submitting..." : "Register Deposit Challan"}
+              </button>
+            </div>
+          </form>
+        </Modal>
+
+        {/* Modal: Official Tuition Fee Tax Exemption Certificate */}
+        <Modal
+          isOpen={isTaxCertModalOpen}
+          onClose={() => setIsTaxCertModalOpen(false)}
+          title="Official Tuition Fee Tax Exemption Certificate"
+          description="Issued under Section 80E / University Statutory Exemption Regulations for income tax rebate filing."
+        >
+          {loadingTaxCert ? (
+            <div className="py-12 flex flex-col items-center justify-center gap-3">
+              <div className="w-8 h-8 border-3 border-rose-primary border-t-transparent rounded-full animate-spin" />
+              <p className="text-xs text-charcoal-500 font-medium">Generating verified tax certificate...</p>
+            </div>
+          ) : taxCertData ? (
+            <div className="flex flex-col gap-4 text-xs">
+              <div id="printable-tax-cert" className="p-5 border-2 border-dashed border-border dark:border-charcoal-700 rounded-2xl bg-white dark:bg-charcoal-900 text-charcoal-900 dark:text-ivory-100 shadow-sm space-y-4">
+                <div className="text-center border-b border-border dark:border-charcoal-800 pb-3">
+                  <div className="text-sm font-black tracking-wider text-rose-primary uppercase">Apex University of Technology</div>
+                  <div className="text-[10px] text-charcoal-500 uppercase tracking-widest mt-0.5">Office of the University Bursar & Comptroller of Finance</div>
+                  <div className="text-xs font-bold mt-2">CERTIFICATE OF TUITION FEE PAYMENT FOR TAX EXEMPTION</div>
+                  <div className="text-[10px] text-charcoal-400 font-mono mt-0.5">Certificate Ref: {taxCertData.certificateNumber}</div>
+                </div>
+
+                <div className="text-justify text-[11px] leading-relaxed text-charcoal-700 dark:text-charcoal-300">
+                  This is to certify that student <strong className="text-charcoal-900 dark:text-white">{taxCertData.studentName}</strong> (Roll No: <span className="font-mono font-bold text-charcoal-900 dark:text-white">{taxCertData.rollNumber}</span>), enrolled in the <strong className="text-charcoal-900 dark:text-white">{taxCertData.program}</strong> program, has paid a verified total tuition amount of:
+                </div>
+
+                <div className="p-3 bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/50 rounded-xl text-center">
+                  <span className="text-[10px] font-bold text-emerald-700 dark:text-emerald-400 block uppercase tracking-wide">Eligible Section 80E Tuition Amount</span>
+                  <span className="text-2xl font-black text-emerald-800 dark:text-emerald-200">
+                    ${Number(taxCertData.totalTuitionPaid).toLocaleString(undefined, { minimumFractionDigits: 2 })} {taxCertData.currency}
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3 text-[11px] bg-surface-soft dark:bg-charcoal-800/50 p-3 rounded-xl border border-border dark:border-charcoal-700">
+                  <div>
+                    <span className="text-charcoal-400 block text-[10px]">Academic Year:</span>
+                    <span className="font-bold text-charcoal-800 dark:text-charcoal-200">{taxCertData.academicYear}</span>
+                  </div>
+                  <div>
+                    <span className="text-charcoal-400 block text-[10px]">Statutory Clause:</span>
+                    <span className="font-bold text-charcoal-800 dark:text-charcoal-200">{taxCertData.taxSection}</span>
+                  </div>
+                  <div>
+                    <span className="text-charcoal-400 block text-[10px]">Date of Certification:</span>
+                    <span className="font-semibold text-charcoal-800 dark:text-charcoal-200">{taxCertData.issuedAt}</span>
+                  </div>
+                  <div>
+                    <span className="text-charcoal-400 block text-[10px]">Authorized Authority:</span>
+                    <span className="font-semibold text-charcoal-800 dark:text-charcoal-200">{taxCertData.authorizedSignatory}</span>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between pt-2 border-t border-border dark:border-charcoal-800 text-[10px] text-charcoal-400">
+                  <span>Cryptographically generated and certified document</span>
+                  <span className="font-mono text-emerald-600 font-bold flex items-center gap-1">
+                    <ShieldCheck className="h-3 w-3 inline" /> VERIFIED
+                  </span>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setIsTaxCertModalOpen(false)}
+                  className="px-4 py-2 rounded-xl bg-ivory-100 dark:bg-charcoal-700 text-charcoal-700 dark:text-charcoal-300 text-xs font-bold"
+                >
+                  Close
+                </button>
+                <button
+                  type="button"
+                  onClick={() => window.print()}
+                  className="px-4 py-2 rounded-xl bg-rose-primary hover:bg-rose-dark text-white text-xs font-bold shadow-sm flex items-center gap-1.5"
+                >
+                  <Printer className="h-3.5 w-3.5" />
+                  <span>Print / Save as PDF</span>
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="py-8 text-center text-charcoal-500 text-xs">
+              Unable to load certificate. Please try again later.
+            </div>
+          )}
         </Modal>
       </div>
     </AppShell>

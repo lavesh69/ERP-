@@ -165,6 +165,96 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Offline Bank Challan Submission Workflow
+    if (body.action === "SUBMIT_OFFLINE_CHALLAN") {
+      const { studentFeeId, amount, bankName, branchName, challanRef, depositDate } = body;
+      if (!studentFeeId || !amount) {
+        return NextResponse.json({ error: "studentFeeId and amount are required" }, { status: 400 });
+      }
+
+      const fee = await prisma.studentFee.findUnique({
+        where: { id: studentFeeId },
+        include: { student: { include: { user: true } } },
+      });
+
+      if (!fee) {
+        return NextResponse.json({ error: "Student fee record not found" }, { status: 404 });
+      }
+
+      const refNo = challanRef || `CHL-${Date.now()}`;
+      const transaction = await prisma.paymentTransaction.create({
+        data: {
+          studentFeeId,
+          amount: Number(amount),
+          paymentMethod: "BANK_CHALLAN",
+          referenceNumber: refNo,
+          status: "PENDING",
+          gatewayResponse: `Offline branch bank challan submitted. Bank: ${bankName || "National Bank"}, Branch: ${branchName || "Main Campus"}, Date: ${depositDate || new Date().toISOString().split("T")[0]}`,
+        },
+      });
+
+      await prisma.studentRequest.create({
+        data: {
+          studentId: fee.studentId,
+          type: "FEE_CHALLAN_VERIFICATION",
+          title: `Bank Challan Deposit Verification: $${amount}`,
+          reason: `Bank: ${bankName || "National Bank"}, Branch: ${branchName || "Main"}, Ref: ${refNo}, Amount: $${amount}`,
+          status: "UNDER_REVIEW",
+        },
+      }).catch(() => null);
+
+      return NextResponse.json({
+        success: true,
+        message: "Bank deposit challan registered successfully. Pending Bursar verification.",
+        transaction,
+        referenceNumber: refNo,
+      });
+    }
+
+    // Bursar Offline Challan Approval & Settlement
+    if (body.action === "APPROVE_CHALLAN") {
+      const { transactionId, referenceNumber } = body;
+      if (!transactionId && !referenceNumber) {
+        return NextResponse.json({ error: "transactionId or referenceNumber is required" }, { status: 400 });
+      }
+
+      const txn = transactionId
+        ? await prisma.paymentTransaction.findUnique({
+            where: { id: transactionId },
+            include: { studentFee: true },
+          })
+        : await prisma.paymentTransaction.findFirst({
+            where: { referenceNumber },
+            include: { studentFee: true },
+          });
+
+      if (!txn) {
+        return NextResponse.json({ error: "Transaction record not found" }, { status: 404 });
+      }
+
+      const fee = txn.studentFee;
+      const newPaidAmount = fee.paidAmount + txn.amount;
+      const newStatus = newPaidAmount >= fee.totalAmount ? "PAID" : "PARTIAL";
+
+      await prisma.$transaction([
+        prisma.paymentTransaction.update({
+          where: { id: txn.id },
+          data: { status: "SUCCESS", gatewayResponse: "VERIFIED_AND_RECONCILED_BY_BURSAR" },
+        }),
+        prisma.studentFee.update({
+          where: { id: fee.id },
+          data: { paidAmount: newPaidAmount, status: newStatus },
+        }),
+      ]);
+
+      return NextResponse.json({
+        success: true,
+        message: "Bank challan deposit reconciled and fee credit applied.",
+        newPaidAmount,
+        newStatus,
+      });
+    }
+
     // C2: Zod validation
     const parsed = processPaymentSchema.safeParse(body);
     if (!parsed.success) {

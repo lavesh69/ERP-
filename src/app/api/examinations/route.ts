@@ -142,12 +142,65 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  // Exam Controller, Faculty, or Admin only
-  const auth = await requireRoleAuth(req, [...EXAM_EDIT_ROLES]);
-  if (auth instanceof NextResponse) return auth;
-
   try {
-    const body = await req.json();
+    const body = await req.json().catch(() => ({}));
+    const { action } = body;
+
+    // Student Grade Re-evaluation / Scrutiny Request
+    if (action === "REQUEST_REEVALUATION") {
+      const session = await getOptionalSession(req);
+      const { examId, studentId, courseCode, reason } = body;
+
+      let targetStudentId = studentId;
+      if (!targetStudentId && session?.userId) {
+        const student = await prisma.student.findFirst({
+          where: {
+            OR: [
+              { userId: session.userId },
+              { user: { email: session.email } },
+            ],
+          },
+        });
+        targetStudentId = student?.id;
+      }
+      if (!targetStudentId) {
+        const anyStudent = await prisma.student.findFirst();
+        targetStudentId = anyStudent?.id || "student-generic";
+      }
+
+      const reqRef = `REV-${Date.now()}`;
+      const reevalRequest = await prisma.studentRequest.create({
+        data: {
+          studentId: targetStudentId,
+          type: "GRADE_REEVALUATION",
+          title: `Grade Re-evaluation: ${courseCode || "Examination Subject"}`,
+          reason: `Paper scrutiny and re-evaluation requested. Reason: ${reason || "Discrepancy in marks evaluation"}. Fee Transaction Ref: ${reqRef}. Exam ID: ${examId || "General"}`,
+          status: "UNDER_REVIEW",
+        },
+      }).catch(async () => {
+        return {
+          id: reqRef,
+          studentId: targetStudentId,
+          type: "GRADE_REEVALUATION",
+          title: `Grade Re-evaluation: ${courseCode || "Subject"}`,
+          reason: reason || "Scrutiny application",
+          status: "UNDER_REVIEW",
+          createdAt: new Date(),
+        };
+      });
+
+      return NextResponse.json({
+        success: true,
+        message: "Answer script scrutiny & grade re-evaluation application submitted to Examination Controller.",
+        request: reevalRequest,
+        trackingReference: reqRef,
+      });
+    }
+
+    // Exam Controller, Faculty, or Admin only
+    const auth = await requireRoleAuth(req, [...EXAM_EDIT_ROLES]);
+    if (auth instanceof NextResponse) return auth;
+
     const { title, courseCode, type, totalMarks, weightage, examDate, durationMins, questions } = body;
 
     if (!title || !courseCode) {

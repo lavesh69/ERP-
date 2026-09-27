@@ -82,6 +82,34 @@ export default function FinancePage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedReceipt, setSelectedReceipt] = useState<PaymentTxn | null>(null);
   const [isReceiptModalOpen, setIsReceiptModalOpen] = useState(false);
+  const [reconcilingId, setReconcilingId] = useState<string | null>(null);
+
+  const handleApproveChallan = async (transactionId: string, referenceNumber: string) => {
+    setReconcilingId(transactionId);
+    try {
+      const res = await fetch("/api/finance", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "APPROVE_CHALLAN",
+          transactionId,
+          referenceNumber,
+        }),
+      });
+
+      const resData = await res.json();
+      if (res.ok) {
+        showToast(`Offline Bank Challan ${referenceNumber} verified & fee balance credited!`, "success");
+        triggerRefresh();
+      } else {
+        showToast(resData.error || "Failed to reconcile challan", "error");
+      }
+    } catch {
+      showToast("Network error reconciling bank challan", "error");
+    } finally {
+      setReconcilingId(null);
+    }
+  };
 
   useEffect(() => {
     setPage(1);
@@ -579,21 +607,42 @@ export default function FinancePage() {
                         {t.paymentMethod}
                       </td>
                       <td className="p-3.5 text-center">
-                        <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-academic-success-subtle text-academic-success">
+                        <span
+                          className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                            t.status === "SUCCESS"
+                              ? "bg-academic-success-subtle text-academic-success"
+                              : t.status === "PENDING"
+                              ? "bg-amber-100 text-amber-800 dark:bg-amber-950/40 dark:text-amber-300"
+                              : "bg-charcoal-100 text-charcoal-700 dark:bg-charcoal-700 dark:text-charcoal-300"
+                          }`}
+                        >
                           {t.status}
                         </span>
                       </td>
                       <td className="p-3.5 text-right">
-                        <button
-                          onClick={() => {
-                            setSelectedReceipt(t);
-                            setIsReceiptModalOpen(true);
-                          }}
-                          className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-rose-subtle hover:bg-rose-primary hover:text-white text-rose-primary text-[11px] font-bold transition-all"
-                        >
-                          <Receipt className="h-3 w-3" />
-                          <span>Receipt</span>
-                        </button>
+                        <div className="flex items-center justify-end gap-1.5">
+                          {t.status === "PENDING" && (
+                            <button
+                              onClick={() => handleApproveChallan(t.id, t.referenceNumber)}
+                              disabled={reconcilingId === t.id}
+                              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold shadow-sm transition-all disabled:opacity-50"
+                              title="Verify Bank Deposit Slip & Settle into Ledger"
+                            >
+                              <CheckCircle2 className="h-3 w-3" />
+                              <span>{reconcilingId === t.id ? "Reconciling..." : "Verify & Settle"}</span>
+                            </button>
+                          )}
+                          <button
+                            onClick={() => {
+                              setSelectedReceipt(t);
+                              setIsReceiptModalOpen(true);
+                            }}
+                            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-rose-subtle hover:bg-rose-primary hover:text-white text-rose-primary text-[11px] font-bold transition-all"
+                          >
+                            <Receipt className="h-3 w-3" />
+                            <span>Receipt</span>
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))

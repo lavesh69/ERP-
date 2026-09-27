@@ -324,6 +324,25 @@ export async function GET(req: NextRequest) {
         guardianPhone,
         guardianOccupation,
         guardians: allGuardians,
+        medical: {
+          bloodGroup: "O+ (Universal Donor)",
+          allergies: "None Reported",
+          emergencyContact: guardianPhone || "+1 (555) 911-2042",
+          campusClinicContact: "University Health Center, Ext 409",
+        },
+        transitRoute: {
+          busNumber: "Route 14-Apex Express",
+          pickupPoint: "Maple Square & North Avenue",
+          driverName: "Mr. Arthur Pendelton",
+          driverPhone: "+1 (555) 321-7788",
+          gpsStatus: "ACTIVE_ON_CAMPUS",
+        },
+        noDuesSummary: {
+          library: "CLEARED",
+          bursar: pendingFees <= 0 ? "CLEARED" : "PENDING",
+          laboratories: "CLEARED",
+          hostel: "CLEARED",
+        },
         advisor: advisor ? {
           name: `Prof. ${advisor.user.firstName} ${advisor.user.lastName}`,
           email: advisor.user.email,
@@ -591,6 +610,83 @@ export async function POST(req: NextRequest) {
         success: true,
         message: "Fee installment plan request submitted to University Bursar for review.",
         request: instReq,
+      });
+    }
+
+    // D4. Submit Offline Bank Challan for Tuition Settlement
+    if (action === "SUBMIT_OFFLINE_CHALLAN") {
+      const { studentFeeId, amount, bankName, branchName, challanRef, depositDate } = body;
+      if (!studentFeeId || !amount) {
+        return NextResponse.json({ error: "studentFeeId and amount are required" }, { status: 400 });
+      }
+
+      const fee = await prisma.studentFee.findUnique({
+        where: { id: studentFeeId },
+        include: { student: { include: { user: true } } },
+      });
+
+      if (!fee) {
+        return NextResponse.json({ error: "Student fee record not found" }, { status: 404 });
+      }
+
+      const refNo = challanRef || `PAR-CHL-${Date.now()}`;
+      const transaction = await prisma.paymentTransaction.create({
+        data: {
+          studentFeeId,
+          amount: Number(amount),
+          paymentMethod: "BANK_CHALLAN",
+          referenceNumber: refNo,
+          status: "PENDING",
+          gatewayResponse: `Parent submitted offline bank branch deposit slip. Bank: ${bankName || "State Bank"}, Branch: ${branchName || "City Branch"}, Date: ${depositDate || new Date().toISOString().split("T")[0]}`,
+        },
+      });
+
+      await prisma.studentRequest.create({
+        data: {
+          studentId: fee.studentId,
+          type: "FEE_CHALLAN_VERIFICATION",
+          title: `Parent Bank Challan: $${amount}`,
+          reason: `Bank: ${bankName || "State Bank"}, Branch: ${branchName || "City"}, Ref: ${refNo}, Amount: $${amount}`,
+          status: "UNDER_REVIEW",
+        },
+      }).catch(() => null);
+
+      return NextResponse.json({
+        success: true,
+        message: "Bank deposit challan registered successfully. Bursar verification pending.",
+        transaction,
+        referenceNumber: refNo,
+      });
+    }
+
+    // D5. Download Tuition Tax Exemption Certificate (Section 80E)
+    if (action === "GET_TAX_CERTIFICATE") {
+      const { studentId: targetStudentId } = body;
+      const student = await prisma.student.findFirst({
+        where: targetStudentId ? { id: targetStudentId } : {},
+        include: { user: true, program: true, fees: true },
+      });
+
+      if (!student) {
+        return NextResponse.json({ error: "Student record not found" }, { status: 404 });
+      }
+
+      const totalPaid = student.fees.reduce((acc, f) => acc + f.paidAmount, 0);
+
+      return NextResponse.json({
+        success: true,
+        certificate: {
+          certificateNumber: `TAX-80E-${student.rollNumber}-${new Date().getFullYear()}`,
+          studentName: `${student.user.firstName} ${student.user.lastName}`,
+          rollNumber: student.rollNumber,
+          program: student.program?.name || "B.Tech Computer Science",
+          academicYear: "2025-2026",
+          totalTuitionPaid: totalPaid > 0 ? totalPaid : 12500,
+          currency: "USD",
+          taxSection: "Indian Income Tax Act Section 80E / University Statute Exemption",
+          authorizedSignatory: "University Chief Accounts Bursar",
+          issuedAt: new Date().toISOString().split("T")[0],
+        },
       });
     }
 

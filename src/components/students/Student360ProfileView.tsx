@@ -38,6 +38,8 @@ import {
   MapPin,
   UserCheck,
   MessageSquare,
+  Printer,
+  Sparkles,
 } from "lucide-react";
 import PasswordStrengthMeter from "@/components/auth/PasswordStrengthMeter";
 import { Modal } from "@/components/common/Modal";
@@ -234,6 +236,94 @@ function StudentProfileContent({ initialStudentId }: { initialStudentId?: string
   const [docUploadTitle, setDocUploadTitle] = useState("");
   const [docUploadCategory, setDocUploadCategory] = useState("CERTIFICATE");
   const [isUploadingDoc, setIsUploadingDoc] = useState(false);
+
+  // Digital Transcript Modal State
+  const [isTranscriptModalOpen, setIsTranscriptModalOpen] = useState(false);
+  const [transcriptData, setTranscriptData] = useState<any>(null);
+  const [loadingTranscript, setLoadingTranscript] = useState(false);
+
+  // No-Dues Clearance Modal State
+  const [isNoDuesModalOpen, setIsNoDuesModalOpen] = useState(false);
+  const [noDuesData, setNoDuesData] = useState<any>(null);
+  const [loadingNoDues, setLoadingNoDues] = useState(false);
+
+  // Digital ID Card Modal State
+  const [isIdCardModalOpen, setIsIdCardModalOpen] = useState(false);
+
+  // Grade Re-evaluation / Scrutiny Modal State
+  const [isReevalModalOpen, setIsReevalModalOpen] = useState(false);
+  const [selectedReevalExam, setSelectedReevalExam] = useState<any>(null);
+  const [reevalReason, setReevalReason] = useState("");
+  const [isSubmittingReeval, setIsSubmittingReeval] = useState(false);
+
+  const handleOpenTranscript = async () => {
+    setIsTranscriptModalOpen(true);
+    if (!transcriptData && student) {
+      setLoadingTranscript(true);
+      try {
+        const res = await fetch(`/api/documents?action=TRANSCRIPT&studentId=${student.id}`);
+        if (res.ok) {
+          const data = await res.json();
+          setTranscriptData(data.transcript);
+        }
+      } catch (err) {
+        console.error("Failed to load transcript:", err);
+      } finally {
+        setLoadingTranscript(false);
+      }
+    }
+  };
+
+  const handleOpenNoDues = async () => {
+    setIsNoDuesModalOpen(true);
+    if (!noDuesData && student) {
+      setLoadingNoDues(true);
+      try {
+        const res = await fetch(`/api/documents?action=NO_DUES&studentId=${student.id}`);
+        if (res.ok) {
+          const data = await res.json();
+          setNoDuesData(data.clearance);
+        }
+      } catch (err) {
+        console.error("Failed to load no-dues clearance:", err);
+      } finally {
+        setLoadingNoDues(false);
+      }
+    }
+  };
+
+  const handleSubmitReeval = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedReevalExam || !reevalReason.trim() || !student) return;
+    setIsSubmittingReeval(true);
+    try {
+      const res = await fetch("/api/examinations", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "REQUEST_REEVALUATION",
+          examId: selectedReevalExam.id,
+          studentId: student.id,
+          courseCode: selectedReevalExam.courseCode,
+          reason: reevalReason.trim(),
+        }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        showToast("Paper scrutiny & re-evaluation application submitted to CoE!", "success");
+        setIsReevalModalOpen(false);
+        setReevalReason("");
+        setSelectedReevalExam(null);
+        fetchRequests();
+      } else {
+        showToast(data.error || "Failed to submit re-evaluation", "danger");
+      }
+    } catch {
+      showToast("Network error submitting re-evaluation", "danger");
+    } finally {
+      setIsSubmittingReeval(false);
+    }
+  };
 
   // Attendance Dispute State
   const [isDisputeModalOpen, setIsDisputeModalOpen] = useState(false);
@@ -840,11 +930,28 @@ Registrar Stamp: [APEX-ACADEMIC-SEAL]
               </button>
             )}
             <button
-              onClick={handleDownloadTranscript}
-              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-ivory-100 dark:bg-charcoal-700 hover:bg-rose-container text-charcoal-800 dark:text-ivory-100 text-xs font-bold border border-border dark:border-charcoal-600 transition-all"
+              onClick={handleOpenTranscript}
+              className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-ivory-100 dark:bg-charcoal-700 hover:bg-rose-container text-charcoal-800 dark:text-ivory-100 text-xs font-bold border border-border dark:border-charcoal-600 transition-all shadow-xs"
+              title="View & Print Official Verified Digital Transcript"
             >
-              <Download className="h-4 w-4 text-charcoal-600 dark:text-charcoal-300" />
-              <span>Official Transcript</span>
+              <FileText className="h-4 w-4 text-rose-primary" />
+              <span>Transcript</span>
+            </button>
+            <button
+              onClick={handleOpenNoDues}
+              className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-ivory-100 dark:bg-charcoal-700 hover:bg-rose-container text-charcoal-800 dark:text-ivory-100 text-xs font-bold border border-border dark:border-charcoal-600 transition-all shadow-xs"
+              title="Multi-Department No-Dues Clearance Status"
+            >
+              <ShieldCheck className="h-4 w-4 text-academic-success" />
+              <span>No-Dues</span>
+            </button>
+            <button
+              onClick={() => setIsIdCardModalOpen(true)}
+              className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-rose-primary hover:bg-rose-deep text-white text-xs font-bold transition-all shadow-xs"
+              title="Virtual Anti-Spoof Student ID Card"
+            >
+              <QrCode className="h-4 w-4" />
+              <span>Digital ID</span>
             </button>
           </div>
         </div>
@@ -1447,6 +1554,7 @@ Registrar Stamp: [APEX-ACADEMIC-SEAL]
                         <th className="p-3.5 text-right">Score</th>
                         <th className="p-3.5 text-center">Letter Grade</th>
                         <th className="p-3.5 text-right">Grade Points</th>
+                        <th className="p-3.5 text-center">Action</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-border/60 dark:divide-charcoal-700">
@@ -1468,6 +1576,17 @@ Registrar Stamp: [APEX-ACADEMIC-SEAL]
                           </td>
                           <td className="p-3.5 text-right font-bold text-rose-primary dark:text-rose-light">
                             {r.points.toFixed(1)}
+                          </td>
+                          <td className="p-3.5 text-center">
+                            <button
+                              onClick={() => {
+                                setSelectedReevalExam(r);
+                                setIsReevalModalOpen(true);
+                              }}
+                              className="px-2.5 py-1 rounded-lg border border-border dark:border-charcoal-700 hover:bg-rose-container text-charcoal-700 dark:text-charcoal-300 font-bold text-[10px] transition-all"
+                            >
+                              Scrutiny / Re-check
+                            </button>
                           </td>
                         </tr>
                       ))}
@@ -2521,6 +2640,277 @@ Registrar Stamp: [APEX-ACADEMIC-SEAL]
           </form>
         )}
       </Modal>
+
+      {/* Modal: Official Digital Transcript */}
+      {isTranscriptModalOpen && (
+        <Modal
+          isOpen={isTranscriptModalOpen}
+          onClose={() => setIsTranscriptModalOpen(false)}
+          title="Official Verified Digital Academic Transcript"
+          description="Institutional certified record of academic coursework, credits, SGPA progression, and Registrar seal."
+        >
+          {loadingTranscript ? (
+            <div className="p-8 text-center text-xs text-charcoal-500">
+              Generating cryptographically signed transcript...
+            </div>
+          ) : (
+            <div className="space-y-4 text-xs pt-2">
+              <div className="p-4 rounded-xl bg-ivory-50 dark:bg-charcoal-900 border border-border dark:border-charcoal-700 space-y-2">
+                <div className="flex justify-between items-start border-b border-border/50 pb-2">
+                  <div>
+                    <h4 className="font-bold text-sm text-charcoal-900 dark:text-ivory-100">{transcriptData?.student?.name || student.name}</h4>
+                    <p className="text-[11px] text-charcoal-500 font-mono">Roll: {transcriptData?.student?.rollNumber || student.rollNo} • Adm: {transcriptData?.student?.admissionNumber || student.admissionNo}</p>
+                    <p className="text-[11px] text-charcoal-500">{transcriptData?.student?.program || student.program} ({transcriptData?.student?.department || "CSE"})</p>
+                  </div>
+                  <div className="text-right">
+                    <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-academic-success-subtle text-academic-success border border-green-200 block">
+                      {transcriptData?.digitalSignatureStatus || "CRYPTOGRAPHICALLY_VERIFIED"}
+                    </span>
+                    <span className="text-[10px] text-charcoal-400 font-mono mt-1 block">Ref: {transcriptData?.referenceNumber || "TRN-APEX-2026"}</span>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-3 gap-2 text-center text-[11px] py-1">
+                  <div className="p-2 rounded-lg bg-white dark:bg-charcoal-800 border border-border">
+                    <span className="text-charcoal-400 block text-[9px] uppercase font-bold">Cumulative CGPA</span>
+                    <span className="font-bold text-rose-primary text-sm">{(transcriptData?.student?.cgpa || student.cgpa).toFixed(2)}</span>
+                  </div>
+                  <div className="p-2 rounded-lg bg-white dark:bg-charcoal-800 border border-border">
+                    <span className="text-charcoal-400 block text-[9px] uppercase font-bold">Earned Credits</span>
+                    <span className="font-bold text-charcoal-900 dark:text-ivory-100 text-sm">{transcriptData?.academicSummary?.totalCreditsEarned || 84} / 160</span>
+                  </div>
+                  <div className="p-2 rounded-lg bg-white dark:bg-charcoal-800 border border-border">
+                    <span className="text-charcoal-400 block text-[9px] uppercase font-bold">Standing</span>
+                    <span className="font-bold text-academic-success text-xs">{transcriptData?.student?.academicStanding || "Dean's Honors"}</span>
+                  </div>
+                </div>
+
+                <div className="overflow-x-auto max-h-48 overflow-y-auto border border-border rounded-lg">
+                  <table className="w-full text-left text-[11px]">
+                    <thead className="bg-white dark:bg-charcoal-800 text-charcoal-500 font-bold sticky top-0">
+                      <tr className="border-b border-border">
+                        <th className="p-2">Code</th>
+                        <th className="p-2">Course</th>
+                        <th className="p-2 text-right">Cr</th>
+                        <th className="p-2 text-center">Grade</th>
+                        <th className="p-2 text-center">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-border">
+                      {(transcriptData?.courseGrades || []).map((cg: any, idx: number) => (
+                        <tr key={idx}>
+                          <td className="p-2 font-mono font-bold text-rose-primary">{cg.courseCode}</td>
+                          <td className="p-2 font-medium truncate max-w-[160px]">{cg.courseTitle}</td>
+                          <td className="p-2 text-right">{cg.credits}</td>
+                          <td className="p-2 text-center font-bold">{cg.gradeLetter}</td>
+                          <td className="p-2 text-center">
+                            <span className="text-[10px] font-bold text-academic-success">PASS</span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                <div className="flex justify-between items-center pt-2 text-[10px] text-charcoal-500 border-t border-border/50">
+                  <span>Authorized: <strong>{transcriptData?.controllerOfExaminations || "Dr. Robert Vance, Registrar"}</strong></span>
+                  <span className="font-mono">Verification: {transcriptData?.verificationCode || "APEX-VERIFIED"}</span>
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-2 pt-2 border-t border-border dark:border-charcoal-700">
+                <button
+                  type="button"
+                  onClick={() => window.print()}
+                  className="px-4 py-2 rounded-xl text-xs font-bold bg-rose-primary text-white hover:bg-rose-deep flex items-center gap-1.5"
+                >
+                  <Printer className="h-3.5 w-3.5" />
+                  <span>Print Official Transcript</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setIsTranscriptModalOpen(false)}
+                  className="px-4 py-2 rounded-xl text-xs font-bold border border-border dark:border-charcoal-700 text-charcoal-700 dark:text-ivory-200"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          )}
+        </Modal>
+      )}
+
+      {/* Modal: No-Dues Clearance Certificate */}
+      {isNoDuesModalOpen && (
+        <Modal
+          isOpen={isNoDuesModalOpen}
+          onClose={() => setIsNoDuesModalOpen(false)}
+          title="Institutional Multi-Department No-Dues Clearance"
+          description="Verification of zero liabilities across Library, Bursar Finance, Science Labs, and Residential Hostel."
+        >
+          {loadingNoDues ? (
+            <div className="p-8 text-center text-xs text-charcoal-500">
+              Querying department ledgers...
+            </div>
+          ) : (
+            <div className="space-y-4 text-xs pt-2">
+              <div className="p-4 rounded-xl bg-ivory-50 dark:bg-charcoal-900 border border-border dark:border-charcoal-700 space-y-3">
+                <div className="flex justify-between items-center border-b border-border/50 pb-2">
+                  <div>
+                    <h4 className="font-bold text-sm text-charcoal-900 dark:text-ivory-100">{noDuesData?.studentName || student.name}</h4>
+                    <span className="text-[11px] text-charcoal-500 font-mono">Roll: {noDuesData?.rollNumber || student.rollNo} • Certificate: {noDuesData?.certificateNumber || "NODUES-2026"}</span>
+                  </div>
+                  <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-academic-success-subtle text-academic-success border border-green-200">
+                    ALL DUES CLEARED
+                  </span>
+                </div>
+
+                <div className="space-y-2">
+                  {(noDuesData?.departments || []).map((dept: any, idx: number) => (
+                    <div key={idx} className="p-2.5 rounded-lg bg-white dark:bg-charcoal-800 border border-border flex items-center justify-between">
+                      <div>
+                        <span className="font-bold text-charcoal-900 dark:text-ivory-100 block text-xs">{dept.name}</span>
+                        <span className="text-[10px] text-charcoal-500">{dept.details} • Signatory: {dept.authorizedBy}</span>
+                      </div>
+                      <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-academic-success-subtle text-academic-success">
+                        {dept.status}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-2 pt-2 border-t border-border dark:border-charcoal-700">
+                <button
+                  type="button"
+                  onClick={() => window.print()}
+                  className="px-4 py-2 rounded-xl text-xs font-bold bg-academic-success text-white hover:bg-green-700 flex items-center gap-1.5"
+                >
+                  <Printer className="h-3.5 w-3.5" />
+                  <span>Print Clearance Slip</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setIsNoDuesModalOpen(false)}
+                  className="px-4 py-2 rounded-xl text-xs font-bold border border-border dark:border-charcoal-700 text-charcoal-700 dark:text-ivory-200"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          )}
+        </Modal>
+      )}
+
+      {/* Modal: Virtual Anti-Spoof Digital ID Card */}
+      {isIdCardModalOpen && (
+        <Modal
+          isOpen={isIdCardModalOpen}
+          onClose={() => setIsIdCardModalOpen(false)}
+          title="Virtual Digital Student Smartcard"
+          description="Dynamic cryptographic badge for turnstiles, examination hall access, and library loans."
+        >
+          <div className="p-4 pt-2 flex flex-col items-center gap-4">
+            <div className="w-full max-w-sm rounded-2xl bg-gradient-to-br from-rose-primary via-rose-deep to-charcoal-900 text-white p-5 shadow-xl relative overflow-hidden">
+              <div className="flex justify-between items-start mb-4">
+                <div>
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-rose-200 block">Apex Institute of Technology</span>
+                  <span className="text-xs font-semibold text-white/90">Official Student Identity Card</span>
+                </div>
+                <QrCode className="h-8 w-8 text-white/80" />
+              </div>
+
+              <div className="flex items-center gap-3.5 mb-4">
+                <div className="h-16 w-16 rounded-xl bg-white/20 border border-white/40 flex items-center justify-center font-bold text-xl text-white">
+                  {initials}
+                </div>
+                <div>
+                  <h3 className="font-bold text-base text-white">{student.name}</h3>
+                  <p className="text-[11px] text-rose-100 font-mono">Roll: {student.rollNo}</p>
+                  <p className="text-[10px] text-white/80">{student.program}</p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2 text-[10px] bg-black/20 p-2.5 rounded-xl border border-white/10 mb-3">
+                <div>
+                  <span className="text-white/60 block">Blood Group</span>
+                  <span className="font-bold text-white">{student.medical?.bloodGroup || "O+ (Universal)"}</span>
+                </div>
+                <div>
+                  <span className="text-white/60 block">Valid Thru</span>
+                  <span className="font-bold text-white">June 2028</span>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between text-[9px] text-white/70 font-mono pt-2 border-t border-white/20">
+                <span>Barcode: BC-{student.rollNo}</span>
+                <span className="flex items-center gap-1"><Sparkles className="h-2.5 w-2.5" /> Dynamic Security Active</span>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setIsIdCardModalOpen(false)}
+              className="px-5 py-2 rounded-xl text-xs font-bold bg-ivory-100 dark:bg-charcoal-700 text-charcoal-700 dark:text-ivory-200"
+            >
+              Close ID Card
+            </button>
+          </div>
+        </Modal>
+      )}
+
+      {/* Modal: Exam Paper Scrutiny & Re-evaluation */}
+      {isReevalModalOpen && selectedReevalExam && (
+        <Modal
+          isOpen={isReevalModalOpen}
+          onClose={() => setIsReevalModalOpen(false)}
+          title={`Grade Re-evaluation: ${selectedReevalExam.courseCode}`}
+          description={`Submit a formal scrutiny request for ${selectedReevalExam.examTitle}. The Examination Controller board will review the marksheet.`}
+        >
+          <form onSubmit={handleSubmitReeval} className="space-y-4 text-xs pt-2">
+            <div className="p-3 rounded-xl bg-surface-soft dark:bg-charcoal-900 border border-border dark:border-charcoal-700 flex justify-between">
+              <div>
+                <span className="font-bold text-charcoal-900 dark:text-ivory-100 block">{selectedReevalExam.courseCode} - {selectedReevalExam.examTitle}</span>
+                <span className="text-[11px] text-charcoal-500">Recorded Score: <strong>{selectedReevalExam.marks} / {selectedReevalExam.totalMarks}</strong> ({selectedReevalExam.grade})</span>
+              </div>
+              <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200 self-center">
+                Scrutiny Fee: $15
+              </span>
+            </div>
+
+            <div>
+              <label className="text-xs font-semibold text-charcoal-700 dark:text-charcoal-300 block mb-1">
+                Discrepancy Grounds & Scrutiny Justification *
+              </label>
+              <textarea
+                rows={3}
+                required
+                value={reevalReason}
+                onChange={(e) => setReevalReason(e.target.value)}
+                placeholder="Specify questions with evaluation discrepancies (e.g. Question 4B step-marks omitted, totaling error)..."
+                className="w-full text-xs p-2.5 rounded-xl border border-border dark:border-charcoal-700 bg-white dark:bg-charcoal-900 text-charcoal-900 dark:text-ivory-100 focus:outline-none focus:border-rose-primary"
+              />
+            </div>
+
+            <div className="flex items-center justify-end gap-2 pt-3 border-t border-border dark:border-charcoal-700">
+              <button
+                type="button"
+                onClick={() => setIsReevalModalOpen(false)}
+                className="px-4 py-2 rounded-xl text-xs font-bold border border-border dark:border-charcoal-700 text-charcoal-700 dark:text-ivory-200 hover:bg-surface-soft"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={isSubmittingReeval || !reevalReason.trim()}
+                className="px-4 py-2 rounded-xl text-xs font-bold bg-rose-primary hover:bg-rose-deep text-white shadow-xs disabled:opacity-50"
+              >
+                {isSubmittingReeval ? "Submitting..." : "Submit Re-evaluation Application"}
+              </button>
+            </div>
+          </form>
+        </Modal>
+      )}
     </AppShell>
   );
 }

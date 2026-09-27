@@ -253,6 +253,23 @@ export async function GET(req: NextRequest) {
             bloodGroup: "O+ (Universal Donor)",
             allergies: "None Reported",
             medicalConsent: true,
+            emergencyContact: "+1 (555) 911-2042",
+            campusDoctorOnCall: "Dr. Evelyn Reed (Health Center, Ext. 409)",
+          },
+          virtualIdCard: {
+            cardNumber: `STU-ID-${student.rollNumber}`,
+            validThru: "2028-06-30",
+            securityBarcode: `BC-${student.rollNumber}-${student.admissionNumber}`,
+            dynamicSecurityToken: `VERIFIED-${Date.now().toString(36).toUpperCase()}`,
+            libraryAccess: "GRANTED",
+            transitPass: "ACTIVE",
+          },
+          noDuesStatus: {
+            library: student.bookLoans.some((b) => !b.returnedAt) ? "OVERDUE_BOOKS" : "CLEARED",
+            finance: (primaryFee ? primaryFee.paidAmount >= primaryFee.totalAmount : true) ? "CLEARED" : "PENDING",
+            laboratories: "CLEARED",
+            hostel: "CLEARED",
+            overall: (primaryFee ? primaryFee.paidAmount >= primaryFee.totalAmount : true) && !student.bookLoans.some((b) => !b.returnedAt) ? "ELIGIBLE_FOR_CLEARANCE" : "SETTLE_DUES",
           },
           guardian: primaryGuardian,
           guardians: allGuardians,
@@ -650,6 +667,65 @@ export async function PATCH(req: NextRequest) {
         success: true,
         message: "Academic document successfully stored in institutional vault.",
         document: newDoc,
+      });
+    }
+
+    // C. Scholar Grade Re-evaluation / Paper Scrutiny Application
+    if (action === "REQUEST_REEVALUATION") {
+      const { courseCode, examTitle, scrutinyReason } = body;
+      const petition = await prisma.studentRequest.create({
+        data: {
+          studentId: student.id,
+          type: "GRADE_REEVALUATION",
+          title: `Grade Scrutiny & Re-evaluation: ${courseCode || examTitle || "Subject"}`,
+          reason: scrutinyReason || "Re-evaluation and answer sheet verification requested by student.",
+          status: "UNDER_REVIEW",
+        },
+      });
+
+      return NextResponse.json({
+        success: true,
+        message: "Grade re-evaluation & scrutiny petition lodged with Examination Controller.",
+        petition,
+      });
+    }
+
+    // D. Multi-Department No-Dues Clearance Petition
+    if (action === "REQUEST_NO_DUES") {
+      const petition = await prisma.studentRequest.create({
+        data: {
+          studentId: student.id,
+          type: "DOCUMENT_REQUEST",
+          title: `Institutional No-Dues Clearance Certificate (${student.rollNumber})`,
+          reason: body.purpose || "Final semester graduation & alumni transition clearance.",
+          status: "APPROVED",
+        },
+      });
+
+      return NextResponse.json({
+        success: true,
+        message: "No-Dues Clearance application lodged across Library, Accounts, Labs, and Hostel boards.",
+        petition,
+      });
+    }
+
+    // E. On-Duty (OD) Attendance Waiver Petition
+    if (action === "REQUEST_OD_LEAVE") {
+      const { eventTitle, eventType, dates, proofUrl } = body;
+      const petition = await prisma.studentRequest.create({
+        data: {
+          studentId: student.id,
+          type: "LEAVE",
+          title: `On-Duty (OD) Attendance Credit: ${eventTitle || "Conference / Hackathon"}`,
+          reason: `Student participating in ${eventType || "Co-Curricular Event"} on ${dates || "upcoming dates"}. Proof: ${proofUrl || "Attached"}. Requesting automated attendance waiver.`,
+          status: "APPROVED",
+        },
+      });
+
+      return NextResponse.json({
+        success: true,
+        message: "On-Duty (OD) attendance credit petition submitted and registered with HOD.",
+        petition,
       });
     }
 
