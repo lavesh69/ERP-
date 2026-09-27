@@ -481,6 +481,95 @@ export async function PATCH(req: NextRequest) {
       });
     }
 
+    // Action 3: Reschedule Slot Day and/or Time (Drag & Drop or Rescheduling)
+    if (action === "RESCHEDULE") {
+      const { newDayOfWeek, newStartTime, newEndTime, newRoomId: explicitRoomId } = body;
+      const targetDay = newDayOfWeek || targetSlot.dayOfWeek;
+      const targetStart = newStartTime || targetSlot.startTime;
+      const targetEnd = newEndTime || targetSlot.endTime;
+      const targetRoomId = explicitRoomId || targetSlot.roomId;
+
+      const room = await prisma.room.findUnique({ where: { id: targetRoomId } });
+      if (!room) {
+        return NextResponse.json({ error: "Target room not found" }, { status: 404 });
+      }
+
+      const allSlots = await prisma.timetableSlot.findMany({
+        include: {
+          course: true,
+          faculty: { include: { user: true } },
+          room: true,
+          section: true,
+        },
+      });
+
+      const formattedExisting: TimetableSlotItem[] = allSlots.map((s) => ({
+        id: s.id,
+        dayOfWeek: s.dayOfWeek,
+        startTime: s.startTime,
+        endTime: s.endTime,
+        roomId: s.roomId,
+        roomName: s.room.name,
+        facultyId: s.facultyId,
+        facultyName: `${s.faculty.user.firstName} ${s.faculty.user.lastName}`,
+        courseCode: s.course.code,
+        courseTitle: s.course.title,
+        sectionId: s.sectionId,
+        sectionName: s.section.name,
+        courseType: s.course.courseType || (s.course.labHours > 0 ? "LAB" : "THEORY"),
+        roomType: s.room.type,
+        roomCapacity: s.room.capacity,
+        sectionCapacity: s.section.capacity,
+      }));
+
+      const proposed: Omit<TimetableSlotItem, "id"> = {
+        dayOfWeek: targetDay,
+        startTime: targetStart,
+        endTime: targetEnd,
+        roomId: room.id,
+        roomName: room.name,
+        facultyId: targetSlot.facultyId,
+        facultyName: `${targetSlot.faculty.user.firstName} ${targetSlot.faculty.user.lastName}`,
+        courseCode: targetSlot.course.code,
+        courseTitle: targetSlot.course.title,
+        sectionId: targetSlot.sectionId,
+        sectionName: targetSlot.section.name,
+        courseType: targetSlot.course.courseType || (targetSlot.course.labHours > 0 ? "LAB" : "THEORY"),
+        roomType: room.type,
+        roomCapacity: room.capacity,
+        sectionCapacity: targetSlot.section.capacity,
+      };
+
+      const conflict = detectTimetableConflict(proposed, formattedExisting, slotId);
+      if (conflict.hasConflict) {
+        return NextResponse.json(
+          {
+            error: conflict.message,
+            type: conflict.type,
+            hasConflict: true,
+          },
+          { status: 409 }
+        );
+      }
+
+      const updated = await prisma.timetableSlot.update({
+        where: { id: slotId },
+        data: {
+          dayOfWeek: targetDay,
+          startTime: targetStart,
+          endTime: targetEnd,
+          roomId: targetRoomId,
+        },
+        include: { course: true, room: true, faculty: { include: { user: true } }, section: true },
+      });
+
+      return NextResponse.json({
+        success: true,
+        message: `Lecture rescheduled to ${targetDay} ${targetStart} - ${targetEnd}.`,
+        slot: updated,
+      });
+    }
+
     return NextResponse.json({ error: `Unsupported action: ${action}` }, { status: 400 });
   } catch (error: any) {
     console.error("Timetable PATCH Error:", error);

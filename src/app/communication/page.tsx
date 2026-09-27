@@ -30,6 +30,10 @@ import {
   CheckCircle,
   FileText,
   AlertCircle,
+  Inbox,
+  RefreshCw,
+  KeyRound,
+  Sparkles,
 } from "lucide-react";
 
 interface AnnouncementItem {
@@ -60,7 +64,7 @@ interface StudentInquiry {
 export default function CommunicationPage() {
   const { showToast, refreshTrigger, triggerRefresh } = useApp();
 
-  const [activeTab, setActiveTab] = useState<"CIRCULARS" | "EMERGENCY" | "INQUIRIES">("CIRCULARS");
+  const [activeTab, setActiveTab] = useState<"CIRCULARS" | "EMERGENCY" | "INQUIRIES" | "OUTBOX">("CIRCULARS");
   const [loading, setLoading] = useState(true);
   const [announcements, setAnnouncements] = useState<AnnouncementItem[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
@@ -74,6 +78,18 @@ export default function CommunicationPage() {
   const [inquiryRemarks, setInquiryRemarks] = useState("");
   const [inquiryNewStatus, setInquiryNewStatus] = useState<"UNDER_REVIEW" | "APPROVED" | "REJECTED">("APPROVED");
   const [isUpdatingInquiry, setIsUpdatingInquiry] = useState(false);
+
+  // Outbox & Telemetry State
+  const [outboxMessages, setOutboxMessages] = useState<any[]>([]);
+  const [outboxStats, setOutboxStats] = useState<any>({
+    totalMessages: 0,
+    typesCount: {},
+    lastDispatchedAt: null,
+    relayStatus: "OFFLINE_OUTBOX",
+  });
+  const [loadingOutbox, setLoadingOutbox] = useState(false);
+  const [retryingMessageId, setRetryingMessageId] = useState<string | null>(null);
+  const [selectedOutboxEmail, setSelectedOutboxEmail] = useState<any | null>(null);
 
   // Broadcast Modal state
   const [isBroadcastModalOpen, setIsBroadcastModalOpen] = useState(false);
@@ -141,6 +157,8 @@ export default function CommunicationPage() {
   useEffect(() => {
     if (activeTab === "INQUIRIES") {
       loadInquiries();
+    } else if (activeTab === "OUTBOX") {
+      loadOutbox();
     }
   }, [activeTab, refreshTrigger]);
 
@@ -157,6 +175,86 @@ export default function CommunicationPage() {
       showToast("Error fetching student/parent inquiries", "error");
     } finally {
       setLoadingInquiries(false);
+    }
+  };
+
+  const loadOutbox = async () => {
+    try {
+      setLoadingOutbox(true);
+      const res = await fetch("/api/communication/outbox");
+      if (res.ok) {
+        const data = await res.json();
+        setOutboxMessages(data.outbox || []);
+        if (data.stats) setOutboxStats(data.stats);
+      }
+    } catch (err) {
+      console.error("Failed to load outbox:", err);
+      showToast("Error loading outbox telemetry", "error");
+    } finally {
+      setLoadingOutbox(false);
+    }
+  };
+
+  const handleRetryMessage = async (msgId: string) => {
+    setRetryingMessageId(msgId);
+    try {
+      const res = await fetch("/api/communication/outbox", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "RETRY", messageId: msgId }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        showToast(data.message || "Message re-dispatched successfully", "success");
+        loadOutbox();
+      } else {
+        showToast(data.error || "Failed to re-dispatch message", "error");
+      }
+    } catch {
+      showToast("Network error re-dispatching message", "error");
+    } finally {
+      setRetryingMessageId(null);
+    }
+  };
+
+  const handleClearOutbox = async () => {
+    if (!confirm("Are you sure you want to clear the outbox queue?")) return;
+    try {
+      const res = await fetch("/api/communication/outbox", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "CLEAR" }),
+      });
+      if (res.ok) {
+        showToast("Outbox queue cleared", "success");
+        loadOutbox();
+      }
+    } catch {
+      showToast("Failed to clear outbox", "error");
+    }
+  };
+
+  const handleSendTestNotification = async () => {
+    try {
+      const res = await fetch("/api/communication/outbox", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "TEST_DISPATCH",
+          subject: "Campus Notification Engine Telemetry Verification",
+          html: "<p>Automated test dispatch: verified secure transport across outbox telemetry pipeline.</p>",
+          type: "NOTIFICATION",
+        }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        showToast(data.message || "Test dispatch recorded in outbox", "success");
+        loadOutbox();
+      } else {
+        showToast(data.error || "Failed to dispatch test notification", "error");
+      }
+    } catch {
+      showToast("Network error sending test notification", "error");
     }
   };
 
@@ -505,6 +603,21 @@ export default function CommunicationPage() {
             <span>Pastoral & Scholar Advisory Helpdesk</span>
             <span className="ml-1 px-1.5 py-0.5 rounded-full text-[10px] bg-white/20 dark:bg-charcoal-700 text-current">
               {inquiries.length}
+            </span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab("OUTBOX")}
+            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${
+              activeTab === "OUTBOX"
+                ? "bg-rose-primary text-white shadow-sm"
+                : "text-charcoal-600 dark:text-charcoal-400 hover:text-charcoal-900 dark:hover:text-ivory-100 hover:bg-surface-soft dark:hover:bg-charcoal-800"
+            }`}
+          >
+            <Inbox className="h-4 w-4" />
+            <span>Outbox &amp; Delivery Telemetry</span>
+            <span className="ml-1 px-1.5 py-0.5 rounded-full text-[10px] bg-white/20 dark:bg-charcoal-700 text-current">
+              {outboxMessages.length || outboxStats.totalMessages || 0}
             </span>
           </button>
         </div>
@@ -899,6 +1012,132 @@ export default function CommunicationPage() {
           </div>
         )}
 
+        {/* TAB 4: OUTBOX & DELIVERY TELEMETRY */}
+        {activeTab === "OUTBOX" && (
+          <div className="flex flex-col gap-4">
+            {/* Control Bar & Driver Status */}
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 glass-panel p-4 rounded-2xl shadow-soft">
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 rounded-xl bg-rose-primary/10 text-rose-primary flex items-center justify-center font-bold">
+                  <Mail className="h-5 w-5" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-display font-bold text-charcoal-900 dark:text-ivory-100">
+                      Message Outbox Queue &amp; Dispatch Pipeline
+                    </span>
+                    <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-academic-success-subtle text-academic-success border border-green-200 dark:border-green-800">
+                      Active Driver: {outboxStats.relayStatus || "OFFLINE_OUTBOX"}
+                    </span>
+                  </div>
+                  <p className="text-xs text-charcoal-500 dark:text-charcoal-400">
+                    Inspecting all automated outbound emails, OTP security tokens, billing invoices, and notices.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 shrink-0">
+                <button
+                  onClick={handleSendTestNotification}
+                  className="px-3 py-1.5 rounded-xl border border-border dark:border-charcoal-700 bg-surface-soft dark:bg-charcoal-800 text-charcoal-700 dark:text-charcoal-300 text-xs font-bold hover:bg-rose-primary hover:text-white transition-all flex items-center gap-1.5"
+                >
+                  <Sparkles className="h-3.5 w-3.5 text-rose-primary" />
+                  <span>Send Test Ping</span>
+                </button>
+                <button
+                  onClick={loadOutbox}
+                  disabled={loadingOutbox}
+                  className="p-2 rounded-xl border border-border dark:border-charcoal-700 bg-surface-soft dark:bg-charcoal-800 text-charcoal-700 dark:text-charcoal-300 hover:bg-surface-elevated transition-all"
+                  title="Refresh Queue"
+                >
+                  <RefreshCw className={`h-4 w-4 ${loadingOutbox ? "animate-spin" : ""}`} />
+                </button>
+                {outboxMessages.length > 0 && (
+                  <button
+                    onClick={handleClearOutbox}
+                    className="p-2 rounded-xl border border-red-200 dark:border-red-900/40 bg-red-50 dark:bg-red-950/20 text-red-600 hover:bg-red-100 dark:hover:bg-red-900/40 transition-all"
+                    title="Clear Outbox History"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Outbox Content List */}
+            {loadingOutbox ? (
+              <div className="space-y-4">
+                <SkeletonCard />
+                <SkeletonCard />
+              </div>
+            ) : outboxMessages.length === 0 ? (
+              <EmptyState
+                icon={Inbox}
+                title="Outbox Queue Empty"
+                description="No outbound emails or notifications have been dispatched yet in this environment."
+                actionLabel="Dispatch Test Notification"
+                onAction={handleSendTestNotification}
+              />
+            ) : (
+              <div className="grid grid-cols-1 gap-3">
+                {outboxMessages.map((msg) => (
+                  <div
+                    key={msg.id}
+                    className="glass-panel p-4 rounded-2xl shadow-soft flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border border-border/80 dark:border-charcoal-700 hover:border-rose-primary/40 transition-all"
+                  >
+                    <div className="flex items-start gap-3">
+                      <div className="h-9 w-9 rounded-xl bg-ivory-200 dark:bg-charcoal-800 text-charcoal-700 dark:text-charcoal-300 flex items-center justify-center shrink-0 mt-0.5">
+                        <Mail className="h-4 w-4 text-rose-primary" />
+                      </div>
+                      <div>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider bg-rose-container dark:bg-rose-dark/30 text-rose-primary dark:text-rose-accent">
+                            {msg.type}
+                          </span>
+                          {msg.otpCode && (
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 flex items-center gap-1">
+                              <KeyRound className="h-3 w-3" />
+                              OTP: {msg.otpCode}
+                            </span>
+                          )}
+                          <span className="text-[10px] text-charcoal-400 flex items-center gap-1">
+                            <Clock className="h-3 w-3" />
+                            {new Date(msg.createdAt).toLocaleString()}
+                          </span>
+                        </div>
+                        <h4 className="text-xs font-bold text-charcoal-900 dark:text-ivory-100 mt-1">
+                          {msg.subject}
+                        </h4>
+                        <p className="text-[11px] text-charcoal-500 dark:text-charcoal-400 mt-0.5">
+                          Recipient: <span className="font-semibold text-charcoal-700 dark:text-charcoal-300">{msg.to}</span>
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 self-end md:self-center shrink-0">
+                      <button
+                        onClick={() => setSelectedOutboxEmail(msg)}
+                        className="px-3 py-1.5 rounded-xl border border-border dark:border-charcoal-700 bg-surface-soft dark:bg-charcoal-800 text-charcoal-700 dark:text-charcoal-300 text-xs font-bold hover:bg-surface-elevated transition-all flex items-center gap-1"
+                      >
+                        <FileText className="h-3.5 w-3.5" />
+                        <span>Inspect HTML</span>
+                      </button>
+                      <button
+                        onClick={() => handleRetryMessage(msg.id)}
+                        disabled={retryingMessageId === msg.id}
+                        className="px-3 py-1.5 rounded-xl bg-rose-primary hover:bg-rose-dark text-white text-xs font-bold shadow-sm transition-all flex items-center gap-1"
+                      >
+                        <RefreshCw className={`h-3.5 w-3.5 ${retryingMessageId === msg.id ? "animate-spin" : ""}`} />
+                        <span>Re-dispatch</span>
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
         {/* MODAL: BROADCAST CIRCULAR */}
         <Modal
           isOpen={isBroadcastModalOpen}
@@ -1147,6 +1386,70 @@ export default function CommunicationPage() {
                 >
                   <Printer className="h-3.5 w-3.5" />
                   <span>Print Document</span>
+                </button>
+              </div>
+            </div>
+          )}
+        </Modal>
+
+        {/* MODAL: OUTBOX EMAIL PREVIEW */}
+        <Modal
+          isOpen={!!selectedOutboxEmail}
+          onClose={() => setSelectedOutboxEmail(null)}
+          title={`Outbox Message: ${selectedOutboxEmail?.subject || "Preview"}`}
+        >
+          {selectedOutboxEmail && (
+            <div className="flex flex-col gap-4 text-xs">
+              <div className="p-3 rounded-xl bg-surface-soft dark:bg-charcoal-800 border border-border dark:border-charcoal-700 flex flex-col gap-1">
+                <div>
+                  <span className="font-bold text-charcoal-700 dark:text-charcoal-300">Recipient:</span>{" "}
+                  <span className="text-charcoal-900 dark:text-ivory-100 font-semibold">{selectedOutboxEmail.to}</span>
+                </div>
+                <div>
+                  <span className="font-bold text-charcoal-700 dark:text-charcoal-300">Subject:</span>{" "}
+                  <span className="text-charcoal-900 dark:text-ivory-100">{selectedOutboxEmail.subject}</span>
+                </div>
+                <div>
+                  <span className="font-bold text-charcoal-700 dark:text-charcoal-300">Timestamp:</span>{" "}
+                  <span className="text-charcoal-500">{new Date(selectedOutboxEmail.createdAt).toLocaleString()}</span>
+                </div>
+                {selectedOutboxEmail.otpCode && (
+                  <div>
+                    <span className="font-bold text-amber-600 dark:text-amber-400">Security Token / OTP:</span>{" "}
+                    <code className="px-2 py-0.5 rounded bg-amber-500/10 text-amber-700 dark:text-amber-300 font-mono font-bold">
+                      {selectedOutboxEmail.otpCode}
+                    </code>
+                  </div>
+                )}
+              </div>
+
+              <div>
+                <span className="font-bold text-charcoal-700 dark:text-charcoal-300 block mb-1">
+                  Rendered Email HTML Body
+                </span>
+                <div
+                  className="p-4 rounded-xl border border-border dark:border-charcoal-700 bg-white dark:bg-charcoal-900 text-charcoal-900 dark:text-ivory-100 overflow-auto max-h-[300px]"
+                  dangerouslySetInnerHTML={{ __html: selectedOutboxEmail.html }}
+                />
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-3 border-t border-border dark:border-charcoal-700">
+                <button
+                  type="button"
+                  onClick={() => setSelectedOutboxEmail(null)}
+                  className="px-4 py-2 rounded-xl bg-ivory-100 dark:bg-charcoal-800 text-charcoal-700 dark:text-charcoal-300 text-xs font-bold"
+                >
+                  Close
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    handleRetryMessage(selectedOutboxEmail.id);
+                    setSelectedOutboxEmail(null);
+                  }}
+                  className="px-4 py-2 rounded-xl bg-rose-primary hover:bg-rose-dark text-white text-xs font-bold"
+                >
+                  Re-dispatch Now
                 </button>
               </div>
             </div>

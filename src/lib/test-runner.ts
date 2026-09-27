@@ -47,7 +47,13 @@ import "@/lib/queue/workers";
 import { loginSchema, enrollStudentSchema } from "@/lib/validation/schemas";
 import { createDatabaseBackup, verifyBackupIntegrity } from "@/lib/db/backup";
 import { createPaymentOrder, verifyPaymentSignature } from "@/lib/payments/payment-service";
-import { calculateJaccardSimilarity, scanSubmissionsForPlagiarism } from "@/lib/examination/plagiarism";
+import {
+  calculateJaccardSimilarity,
+  scanSubmissionsForPlagiarism,
+  scanAcademicCorpusSimilarity,
+  estimateAiGenerationLikelihood,
+  DEFAULT_ACADEMIC_CORPUS,
+} from "@/lib/examination/plagiarism";
 import { eventBus } from "@/lib/realtime/event-bus";
 import { cache } from "@/lib/cache";
 import { verifyTurnstileToken } from "@/lib/security/captcha";
@@ -89,6 +95,8 @@ import { POST as handleCreatePaymentOrder } from "@/app/api/payments/create-orde
 import { POST as handleVerifyPayment } from "@/app/api/payments/verify/route";
 import { GET as handleAnnouncementsGet, POST as handleAnnouncementsPost } from "@/app/api/announcements/route";
 import { GET as handleStudentRequestsGet, POST as handleStudentRequestsPost, PATCH as handleStudentRequestsPatch } from "@/app/api/students/requests/route";
+import { POST as handleBiometricPush } from "@/app/api/attendance/biometric-push/route";
+import { GET as handleOutboxGet, POST as handleOutboxPost } from "@/app/api/communication/outbox/route";
 import { recordAttendanceException, getAttendanceExceptions, clearAttendanceExceptions } from "@/lib/attendance/exceptions";
 
 async function runTestSuite() {
@@ -3815,6 +3823,184 @@ BIO-599,Synthetic Biology Principles,Syn Bio,3,BIO,BSC-BIO,CORE,THEORY,3`;
       const inqPatchData = await inqPatchRes.json();
       assert(inqPatchData.request.status === "APPROVED", "Inquiry status updated to APPROVED with recorded dean remarks");
     }
+  }
+
+  // ==========================================
+  // GROUP 47: Autonomous Rescheduling, Global Academic Plagiarism & Edge Hardware Ingestion
+  // ==========================================
+  {
+    console.log("\n📦 Running Group 47: Autonomous Rescheduling, Global Academic Plagiarism & Edge Hardware Ingestion");
+
+    // 47.1 Timetable Drag-and-Drop Slot Rescheduling via PATCH /api/timetable
+    const adminUser = (await prisma.user.findFirst({ where: { role: "ADMIN" } })) || (await prisma.user.findFirst());
+    const adminToken = await signJwt({
+      userId: adminUser?.id || "usr-admin-01",
+      email: adminUser?.email || "admin@apex.edu",
+      role: "INSTITUTION_ADMIN",
+    });
+
+    const testSlot = await prisma.timetableSlot.findFirst({
+      include: { course: true, room: true, faculty: { include: { user: true } }, section: true },
+    });
+    assert(!!testSlot, "Active timetable slot located for drag-and-drop reschedule verification");
+
+    const originalDay = testSlot!.dayOfWeek;
+    const targetDay = "SATURDAY";
+
+    const rescheduleReq = new NextRequest("http://localhost:3000/api/timetable", {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: `classroom_session=${adminToken}`,
+      },
+      body: JSON.stringify({
+        action: "RESCHEDULE",
+        slotId: testSlot!.id,
+        newDayOfWeek: targetDay,
+        newStartTime: testSlot!.startTime,
+        newEndTime: testSlot!.endTime,
+      }),
+    });
+
+    const rescheduleRes = await handleTimetablePatch(rescheduleReq);
+    assert(rescheduleRes.status === 200, "PATCH /api/timetable (action: RESCHEDULE) succeeds with 200 OK");
+    const rescheduleData = await rescheduleRes.json();
+    assert(rescheduleData.success === true && rescheduleData.slot.dayOfWeek === targetDay, `Slot rescheduled from ${originalDay} to ${targetDay} with updated database state`);
+
+    // Revert slot back to original day
+    const revertReq = new NextRequest("http://localhost:3000/api/timetable", {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: `classroom_session=${adminToken}`,
+      },
+      body: JSON.stringify({
+        action: "RESCHEDULE",
+        slotId: testSlot!.id,
+        newDayOfWeek: originalDay,
+        newStartTime: testSlot!.startTime,
+        newEndTime: testSlot!.endTime,
+      }),
+    });
+    const revertRes = await handleTimetablePatch(revertReq);
+    assert(revertRes.status === 200, "Timetable slot successfully restored to original schedule window");
+
+    // 47.2 Timetable Collision Prevention during Reschedule
+    const allSlots = await prisma.timetableSlot.findMany({ take: 2 });
+    if (allSlots.length >= 2) {
+      const slotA = allSlots[0];
+      const slotB = allSlots[1];
+
+      // Attempt to force slot A directly into slot B's room, day, and time
+      const conflictReq = new NextRequest("http://localhost:3000/api/timetable", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Cookie: `classroom_session=${adminToken}`,
+        },
+        body: JSON.stringify({
+          action: "RESCHEDULE",
+          slotId: slotA.id,
+          newDayOfWeek: slotB.dayOfWeek,
+          newStartTime: slotB.startTime,
+          newEndTime: slotB.endTime,
+          newRoomId: slotB.roomId,
+        }),
+      });
+      const conflictRes = await handleTimetablePatch(conflictReq);
+      assert(conflictRes.status === 409, "Rescheduling with room/time collision correctly rejected with 409 Conflict");
+      const conflictData = await conflictRes.json();
+      assert(conflictData.hasConflict === true && conflictData.error.toLowerCase().includes("conflict"), "Collision response contains descriptive diagnostic conflict explanation");
+    }
+
+    // 47.3 Global Academic Literature & Web Corpus Similarity Engine
+    const transformerExcerpt = `
+      We propose a new simple network architecture, the Transformer, based solely on attention mechanisms,
+      dispensing with recurrence and convolutions entirely. Multi-head self-attention allows the model to jointly
+      attend to information from different representation subspaces at different positions.
+    `;
+    const corpusScanResult = scanAcademicCorpusSimilarity(transformerExcerpt, DEFAULT_ACADEMIC_CORPUS, 0.25);
+    assert(corpusScanResult.overallAcademicSimilarity >= 0.5, "Corpus scanner detects seminal Vaswani et al. Transformer literature match with high similarity");
+    assert(corpusScanResult.highestMatchSource === "Attention Is All You Need: The Transformer Architecture", "Source correctly attributed to Attention Is All You Need");
+    assert(corpusScanResult.matches[0].citationRecommended.includes("Vaswani"), "Recommended citation includes authors, title, and archival publication");
+    assert(corpusScanResult.flaggedCount >= 1, "Academic similarity flags threshold breach for uncredited direct excerpts");
+
+    // 47.4 AI Synthetic Generation Likelihood Detection
+    const syntheticLlmText = `
+      Furthermore, it is crucial to delve into the holistic tapestry of digital education. Moreover, in conclusion,
+      the system plays a pivotal role in ensuring that every scholar has seamless access to modern academic resources.
+      It is worth noting that this architecture serves as a testament to the future of higher learning.
+    `;
+    const aiLikelihood = estimateAiGenerationLikelihood(syntheticLlmText);
+    assert(aiLikelihood >= 0.65, `Synthetic text detection identifies LLM hallmark transition markers and uniform variance (score: ${aiLikelihood})`);
+
+    const organicHumanText = `
+      I ran the tests. Two broke in the auth module, so I patched the JWT expiration check.
+      Now it passes. Let's deploy to staging and check the DB metrics.
+    `;
+    const humanLikelihood = estimateAiGenerationLikelihood(organicHumanText);
+    assert(humanLikelihood <= 0.35, `Organic natural text receives low synthetic probability score (score: ${humanLikelihood})`);
+
+    // 47.5 Edge Hardware Biometric Turnstile Push Ingestion via POST /api/attendance/biometric-push
+    const biometricStudent = await prisma.student.findFirst();
+    const biometricPushReq = new NextRequest("http://localhost:3000/api/attendance/biometric-push", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-device-key": "apex-biometric-secret-2026",
+      },
+      body: JSON.stringify({
+        deviceSerialNumber: "ZKTECO-TURNSTILE-GATE-NORTH-01",
+        courseCode: "CS-402",
+        punches: [
+          { studentId: biometricStudent?.id || "std-test-01", status: "PRESENT" },
+        ],
+      }),
+    });
+    const biometricPushRes = await handleBiometricPush(biometricPushReq);
+    assert(biometricPushRes.status === 200, "POST /api/attendance/biometric-push ingests turnstile hardware punch batch with 200 OK");
+    const biometricData = await biometricPushRes.json();
+    assert(biometricData.success === true && biometricData.punchedCount === 1, "Biometric attendance session created with recorded punches");
+
+    // Test rejection of unauthorized hardware key
+    const unauthorizedPushReq = new NextRequest("http://localhost:3000/api/attendance/biometric-push", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-device-key": "invalid-rogue-device-key",
+      },
+      body: JSON.stringify({
+        deviceSerialNumber: "ROGUE-DEVICE-01",
+        punches: [{ studentId: "std-test-01", status: "PRESENT" }],
+      }),
+    });
+    const unauthorizedRes = await handleBiometricPush(unauthorizedPushReq);
+    assert(unauthorizedRes.status === 401, "Hardware push with invalid device key strictly rejected with 401 Unauthorized");
+
+    // 47.6 Outbox & Delivery Telemetry Pipeline via /api/communication/outbox
+    const outboxGetReq = new NextRequest("http://localhost:3000/api/communication/outbox");
+    const outboxGetRes = await handleOutboxGet(outboxGetReq);
+    assert(outboxGetRes.status === 200, "GET /api/communication/outbox retrieves outbox queue and delivery telemetry");
+    const outboxGetData = await outboxGetRes.json();
+    assert(outboxGetData.success === true && outboxGetData.stats.relayStatus !== undefined, "Outbox stats accurately report active relay driver and message volume");
+
+    const outboxPostReq = new NextRequest("http://localhost:3000/api/communication/outbox", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: `classroom_session=${adminToken}`,
+      },
+      body: JSON.stringify({
+        action: "TEST_DISPATCH",
+        to: "provost@apex.edu",
+        subject: "Automated Suite Outbox Dispatch Verification",
+        type: "NOTIFICATION",
+      }),
+    });
+    const outboxPostRes = await handleOutboxPost(outboxPostReq);
+    assert(outboxPostRes.status === 200, "POST /api/communication/outbox (action: TEST_DISPATCH) queues message with 200 OK");
+    const outboxPostData = await outboxPostRes.json();
+    assert(outboxPostData.success === true && outboxPostData.result.messageId !== undefined, "Test message logged to outbox with unique tracking ID");
   }
 
   console.log("\n=================================================");

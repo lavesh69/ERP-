@@ -33,6 +33,7 @@ import {
   ShieldCheck,
   Layers,
   FlaskConical,
+  GripVertical,
 } from "lucide-react";
 
 export default function TimetablePage() {
@@ -80,6 +81,9 @@ export default function TimetablePage() {
   const [substituteRemarks, setSubstituteRemarks] = useState("");
   const [isSubmittingSubstitute, setIsSubmittingSubstitute] = useState(false);
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
+  const [draggingSlotId, setDraggingSlotId] = useState<string | null>(null);
+  const [dragOverDay, setDragOverDay] = useState<string | null>(null);
+  const [isRescheduling, setIsRescheduling] = useState(false);
 
   // Form State for Adding New Slot
   const [formData, setFormData] = useState({
@@ -301,6 +305,49 @@ export default function TimetablePage() {
       showToast("Network error deleting slot", "error");
     } finally {
       setIsDeleting(null);
+    }
+  };
+
+  const handleDropOnDay = async (targetDay: string, e: React.DragEvent) => {
+    e.preventDefault();
+    setDragOverDay(null);
+    const slotId = e.dataTransfer.getData("text/plain") || draggingSlotId;
+    if (!slotId) return;
+
+    const slot = slots.find((s) => s.id === slotId);
+    if (!slot) return;
+    if (slot.dayOfWeek === targetDay) return;
+
+    setIsRescheduling(true);
+    try {
+      const res = await fetch("/api/timetable", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "RESCHEDULE",
+          slotId: slot.id,
+          newDayOfWeek: targetDay,
+          newStartTime: slot.startTime,
+          newEndTime: slot.endTime,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        showToast(data.error || "Conflict detected while moving slot", "error");
+      } else {
+        showToast(`Moved ${slot.courseCode} lecture to ${targetDay} (${slot.startTime} - ${slot.endTime})`, "success");
+        setSlots((prev) =>
+          prev.map((s) => (s.id === slot.id ? { ...s, dayOfWeek: targetDay } : s))
+        );
+        triggerRefresh();
+        fetchTimetable();
+      }
+    } catch (err: any) {
+      showToast(err.message || "Failed to reschedule lecture", "error");
+    } finally {
+      setIsRescheduling(false);
+      setDraggingSlotId(null);
     }
   };
 
@@ -603,15 +650,48 @@ export default function TimetablePage() {
               <button
                 key={day}
                 onClick={() => setSelectedDay(day)}
+                onDragOver={(e) => {
+                  if (!isStudent && scheduleMode === "CLASS") {
+                    e.preventDefault();
+                    e.dataTransfer.dropEffect = "move";
+                  }
+                }}
+                onDragEnter={() => {
+                  if (!isStudent && scheduleMode === "CLASS") setDragOverDay(day);
+                }}
+                onDragLeave={() => {
+                  if (dragOverDay === day) setDragOverDay(null);
+                }}
+                onDrop={(e) => {
+                  if (!isStudent && scheduleMode === "CLASS") handleDropOnDay(day, e);
+                }}
                 className={`px-4 py-2 rounded-xl text-xs font-bold transition-all shrink-0 ${
-                  selectedDay === day
+                  dragOverDay === day
+                    ? "ring-2 ring-rose-primary bg-rose-500/20 text-rose-primary scale-105"
+                    : selectedDay === day
                     ? "bg-rose-primary text-white shadow-sm shadow-rose-primary/20"
                     : "bg-white dark:bg-charcoal-800 text-charcoal-700 dark:text-charcoal-300 border border-border dark:border-charcoal-700 hover:bg-ivory-100 dark:hover:bg-charcoal-700"
                 }`}
               >
                 {day}
+                {dragOverDay === day && " 🎯"}
               </button>
             ))}
+          </div>
+        )}
+
+        {/* Drag & Drop Quick Notice for Admins/Faculty */}
+        {!isStudent && scheduleMode === "CLASS" && (
+          <div className="flex items-center justify-between text-xs text-charcoal-500 dark:text-charcoal-400 bg-ivory-100/60 dark:bg-charcoal-800/60 px-3.5 py-1.5 rounded-xl border border-border/60 dark:border-charcoal-700/60 print:hidden">
+            <span className="flex items-center gap-1.5 font-medium">
+              <Sparkles className="h-3.5 w-3.5 text-rose-primary" />
+              Interactive Drag &amp; Drop Grid: Drag any lecture card onto another day or weekly column to reschedule with automatic conflict checking.
+            </span>
+            {isRescheduling && (
+              <span className="flex items-center gap-1 text-rose-primary font-bold animate-pulse">
+                Rescheduling slot...
+              </span>
+            )}
           </div>
         )}
 
@@ -625,17 +705,43 @@ export default function TimetablePage() {
               const daySlotsList = filteredSlots
                 .filter((s) => s.dayOfWeek === day)
                 .sort((a, b) => a.startTime.localeCompare(b.startTime));
+              const isDropTarget = dragOverDay === day;
               return (
                 <div
                   key={day}
-                  className="glass-panel rounded-2xl p-3.5 flex flex-col gap-2.5 shadow-soft"
+                  onDragOver={(e) => {
+                    if (!isStudent && scheduleMode === "CLASS") {
+                      e.preventDefault();
+                      e.dataTransfer.dropEffect = "move";
+                    }
+                  }}
+                  onDragEnter={() => {
+                    if (!isStudent && scheduleMode === "CLASS") setDragOverDay(day);
+                  }}
+                  onDragLeave={(e) => {
+                    if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+                      setDragOverDay(null);
+                    }
+                  }}
+                  onDrop={(e) => {
+                    if (!isStudent && scheduleMode === "CLASS") handleDropOnDay(day, e);
+                  }}
+                  className={`glass-panel rounded-2xl p-3.5 flex flex-col gap-2.5 shadow-soft transition-all ${
+                    isDropTarget
+                      ? "ring-2 ring-rose-primary bg-rose-50/40 dark:bg-rose-950/30 scale-[1.01]"
+                      : ""
+                  }`}
                 >
                   <div className="flex items-center justify-between pb-2 border-b border-border dark:border-charcoal-800">
                     <span className="text-xs font-display font-bold text-charcoal-900 dark:text-ivory-100">
                       {day}
                     </span>
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-ivory-200 dark:bg-charcoal-800 text-charcoal-700 dark:text-charcoal-300">
-                      {daySlotsList.length}
+                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full transition-colors ${
+                      isDropTarget
+                        ? "bg-rose-primary text-white"
+                        : "bg-ivory-200 dark:bg-charcoal-800 text-charcoal-700 dark:text-charcoal-300"
+                    }`}>
+                      {isDropTarget ? "Drop Here" : daySlotsList.length}
                     </span>
                   </div>
 
@@ -652,7 +758,21 @@ export default function TimetablePage() {
                         return (
                           <div
                             key={slot.id}
+                            draggable={!isStudent && scheduleMode === "CLASS"}
+                            onDragStart={(e) => {
+                              e.dataTransfer.setData("text/plain", slot.id);
+                              e.dataTransfer.effectAllowed = "move";
+                              setDraggingSlotId(slot.id);
+                            }}
+                            onDragEnd={() => {
+                              setDraggingSlotId(null);
+                              setDragOverDay(null);
+                            }}
                             className={`p-3 rounded-xl bg-ivory-50 dark:bg-[#252024] border flex flex-col gap-1.5 relative group transition-all ${
+                              !isStudent && scheduleMode === "CLASS" ? "cursor-grab active:cursor-grabbing" : ""
+                            } ${
+                              draggingSlotId === slot.id ? "opacity-40 scale-95 border-dashed border-rose-primary" : ""
+                            } ${
                               live
                                 ? "border-red-400 dark:border-red-700 ring-2 ring-red-500/20 shadow-sm"
                                 : isExam
@@ -664,6 +784,9 @@ export default function TimetablePage() {
                           >
                             <div className="flex items-center justify-between">
                               <div className="flex items-center gap-1.5">
+                                {!isStudent && scheduleMode === "CLASS" && (
+                                  <GripVertical className="h-3 w-3 text-charcoal-400 hover:text-charcoal-700 dark:hover:text-ivory-200 cursor-grab shrink-0" />
+                                )}
                                 <span
                                   className={`text-[9px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wider ${
                                     isExam
@@ -747,7 +870,21 @@ export default function TimetablePage() {
               return (
                 <div
                   key={slot.id}
-                  className={`glass-panel glass-card-hover p-5 rounded-2xl shadow-soft flex flex-col justify-between relative group ${
+                  draggable={!isStudent && scheduleMode === "CLASS"}
+                  onDragStart={(e) => {
+                    e.dataTransfer.setData("text/plain", slot.id);
+                    e.dataTransfer.effectAllowed = "move";
+                    setDraggingSlotId(slot.id);
+                  }}
+                  onDragEnd={() => {
+                    setDraggingSlotId(null);
+                    setDragOverDay(null);
+                  }}
+                  className={`glass-panel glass-card-hover p-5 rounded-2xl shadow-soft flex flex-col justify-between relative group transition-all ${
+                    !isStudent && scheduleMode === "CLASS" ? "cursor-grab active:cursor-grabbing" : ""
+                  } ${
+                    draggingSlotId === slot.id ? "opacity-40 scale-95 border-dashed border-rose-primary" : ""
+                  } ${
                     live
                       ? "border-red-400 dark:border-red-700 ring-2 ring-red-500/20 shadow-md"
                       : isExam
@@ -760,6 +897,9 @@ export default function TimetablePage() {
                   <div>
                     <div className="flex items-center justify-between pb-3 border-b border-border dark:border-charcoal-800 mb-3">
                       <div className="flex items-center gap-2">
+                        {!isStudent && scheduleMode === "CLASS" && (
+                          <GripVertical className="h-4 w-4 text-charcoal-400 hover:text-charcoal-700 dark:hover:text-ivory-200 cursor-grab shrink-0" />
+                        )}
                         <span
                           className={`text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider ${
                             isExam
