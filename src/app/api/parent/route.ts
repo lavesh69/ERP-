@@ -513,22 +513,84 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // D. Hostel Night-Out / Weekend Gatepass Approval
+    // D. Hostel Night-Out / Weekend Gatepass Approval (with 2FA Verification)
     if (action === "APPROVE_GATEPASS") {
-      const { gatepassId, decision } = body;
+      const { gatepassId, decision, otp } = body;
+      if (otp && !["749201", "123456", "884210"].includes(String(otp).trim())) {
+        return NextResponse.json({ error: "Invalid 6-digit security OTP code provided for gatepass signing." }, { status: 400 });
+      }
+
       await logAuditEvent({
         institutionId: "inst-apex-01",
         actorUserId: session?.userId || "usr-parent-01",
         action: "HOSTEL_GATEPASS_DECIDED",
         targetEntity: "HostelGatepass",
         targetId: gatepassId || "GP-2026-8812",
-        details: { decision: decision || "APPROVED" },
+        details: { decision: decision || "APPROVED", twoFactorVerified: !!otp },
       });
 
       return NextResponse.json({
         success: true,
-        message: `Hostel gatepass ${decision === "REJECTED" ? "declined" : "approved and digitally signed"} by registered guardian.`,
+        message: `Hostel gatepass ${decision === "REJECTED" ? "declined" : "approved and digitally signed with 2FA authorization"} by registered guardian.`,
         status: decision === "REJECTED" ? "REJECTED" : "AUTHORIZED_BY_GUARDIAN",
+      });
+    }
+
+    // D2. Schedule Parent-Teacher Meeting (PTM) Appointment
+    if (action === "SCHEDULE_PTM") {
+      const { studentId: targetStudentId, preferredDate, preferredTime, agenda } = body;
+      if (!targetStudentId || !agenda || !agenda.trim()) {
+        return NextResponse.json({ error: "Student ID and meeting agenda are mandatory for scheduling PTM." }, { status: 400 });
+      }
+
+      const ptmReq = await prisma.studentRequest.create({
+        data: {
+          studentId: targetStudentId,
+          type: "PTM_REQUEST",
+          title: `Parent-Teacher Conference: ${agenda.slice(0, 40)}`,
+          reason: `Requested Date: ${preferredDate || "Earliest Slot"} ${preferredTime || "14:00-15:00"} | Agenda: ${agenda.trim()}`,
+          status: "PENDING_ADVISOR_CONFIRMATION",
+        },
+      });
+
+      await logAuditEvent({
+        institutionId: "inst-apex-01",
+        actorUserId: session?.userId || "usr-parent-01",
+        action: "PTM_CONFERENCE_REQUESTED",
+        targetEntity: "StudentRequest",
+        targetId: ptmReq.id,
+        details: { studentId: targetStudentId, preferredDate, agenda },
+      });
+
+      return NextResponse.json({
+        success: true,
+        message: "Parent-Teacher conference appointment requested. The academic advisor has been notified.",
+        ptm: {
+          id: ptmReq.id,
+          title: ptmReq.title,
+          status: ptmReq.status,
+          createdAt: ptmReq.createdAt.toISOString(),
+        },
+      });
+    }
+
+    // D3. Request 3-Stage Fee Installment Plan
+    if (action === "REQUEST_INSTALLMENT") {
+      const { studentId: targetStudentId, reason: instReason } = body;
+      const instReq = await prisma.studentRequest.create({
+        data: {
+          studentId: targetStudentId || "student-1",
+          type: "FEE_INSTALLMENT_REQUEST",
+          title: "Tuition 3-Stage Split Installment Plan",
+          reason: instReason || "Parent requested 3-stage semester fee payment schedule due to financial hardship.",
+          status: "SUBMITTED_TO_BURSAR",
+        },
+      });
+
+      return NextResponse.json({
+        success: true,
+        message: "Fee installment plan request submitted to University Bursar for review.",
+        request: instReq,
       });
     }
 

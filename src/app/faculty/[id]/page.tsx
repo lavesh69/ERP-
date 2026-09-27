@@ -237,6 +237,42 @@ export default function FacultyDetailPage({
     }
   };
 
+  // Advising Booking Modal State
+  const [isAdvisingModalOpen, setIsAdvisingModalOpen] = useState(false);
+  const [selectedSlotTime, setSelectedSlotTime] = useState("");
+  const [advisingPurpose, setAdvisingPurpose] = useState("Academic & Research Mentorship");
+  const [isSubmittingAdvising, setIsSubmittingAdvising] = useState(false);
+
+  const handleBookAdvisingSlot = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!faculty || !selectedSlotTime) return;
+    setIsSubmittingAdvising(true);
+    try {
+      const res = await fetch("/api/faculty", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "BOOK_ADVISING_SLOT",
+          facultyId: faculty.id,
+          slotTime: selectedSlotTime,
+          purpose: advisingPurpose,
+          studentName: currentUser?.name || "Current Scholar",
+        }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        showToast(data.message || "Office hours advising slot confirmed", "success");
+        setIsAdvisingModalOpen(false);
+      } else {
+        showToast(data.error || "Failed to book advising slot", "error");
+      }
+    } catch {
+      showToast("Network error booking advising slot", "error");
+    } finally {
+      setIsSubmittingAdvising(false);
+    }
+  };
+
   async function loadFaculty() {
     try {
       setLoading(true);
@@ -510,23 +546,35 @@ export default function FacultyDetailPage({
               </div>
               <div className="divide-y divide-border/60 dark:divide-charcoal-700">
                 {faculty.courses.map((course) => (
-                  <div key={course.id} className="p-4 flex items-center justify-between text-xs">
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className="font-mono font-bold text-rose-primary dark:text-rose-light">
-                          {course.code}
-                        </span>
-                        <span className="font-bold text-charcoal-900 dark:text-ivory-100">
-                          {course.title}
+                  <div key={course.id} className="p-4 flex flex-col gap-2 text-xs">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="font-mono font-bold text-rose-primary dark:text-rose-light">
+                            {course.code}
+                          </span>
+                          <span className="font-bold text-charcoal-900 dark:text-ivory-100">
+                            {course.title}
+                          </span>
+                        </div>
+                        <span className="text-[11px] text-charcoal-500 mt-0.5 block">
+                          Type: {course.type} • {course.credits} Credits • {course.enrolledCount} Enrolled Scholars
                         </span>
                       </div>
-                      <span className="text-[11px] text-charcoal-500 mt-1 block">
-                        Type: {course.type} • {course.credits} Credits • {course.enrolledCount} Enrolled Scholars
+                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-academic-success-subtle text-academic-success border border-green-200 dark:border-green-800 shrink-0">
+                        LEAD INSTRUCTOR
                       </span>
                     </div>
-                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-academic-success-subtle text-academic-success border border-green-200 dark:border-green-800">
-                      LEAD INSTRUCTOR
-                    </span>
+
+                    <div className="pt-2 border-t border-border/40 dark:border-charcoal-700/60">
+                      <div className="flex items-center justify-between text-[10px] text-charcoal-500 mb-1">
+                        <span className="font-semibold">Curriculum Syllabus Progression</span>
+                        <span className="font-mono font-bold text-rose-primary">78% Covered (Module 4 of 5)</span>
+                      </div>
+                      <div className="w-full bg-surface-soft dark:bg-charcoal-700 h-1.5 rounded-full overflow-hidden">
+                        <div className="bg-rose-primary h-full rounded-full" style={{ width: "78%" }} />
+                      </div>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -661,9 +709,20 @@ export default function FacultyDetailPage({
                       <span className="font-bold text-charcoal-900 dark:text-ivory-100 block text-sm">{adh.day}</span>
                       <span className="text-[11px] text-charcoal-500 mt-0.5 block">{adh.purpose}</span>
                     </div>
-                    <span className="font-mono text-xs font-bold text-rose-primary px-2.5 py-1 rounded-lg bg-rose-container/50">
-                      {adh.time}
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono text-xs font-bold text-rose-primary px-2.5 py-1 rounded-lg bg-rose-container/50">
+                        {adh.time}
+                      </span>
+                      <button
+                        onClick={() => {
+                          setSelectedSlotTime(`${adh.day} ${adh.time}`);
+                          setIsAdvisingModalOpen(true);
+                        }}
+                        className="px-2.5 py-1 rounded-lg bg-rose-primary hover:bg-rose-deep text-white font-bold text-[11px] transition-all shadow-xs"
+                      >
+                        Reserve Slot
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -1169,6 +1228,69 @@ export default function FacultyDetailPage({
                 className="px-4 py-2 rounded-xl bg-rose-primary text-white font-bold hover:bg-rose-deep disabled:opacity-50"
               >
                 {isSubmittingNote ? "Dispatching..." : "Dispatch Guidance"}
+              </button>
+            </div>
+          </form>
+        </Modal>
+      )}
+
+      {/* Advising Office Hours Slot Booking Modal */}
+      {isAdvisingModalOpen && (
+        <Modal
+          isOpen={isAdvisingModalOpen}
+          onClose={() => setIsAdvisingModalOpen(false)}
+          title={`Reserve Office Hours: ${faculty.name}`}
+          description={`Confirm your 1-on-1 academic consultation or research advising slot with ${faculty.designation}.`}
+        >
+          <form onSubmit={handleBookAdvisingSlot} className="space-y-4 text-xs">
+            <div>
+              <label className="block font-bold text-charcoal-700 dark:text-charcoal-300 mb-1">
+                Selected Advisory Slot *
+              </label>
+              <input
+                type="text"
+                readOnly
+                value={selectedSlotTime}
+                className="w-full px-3 py-2 rounded-xl bg-surface-soft dark:bg-charcoal-900 border border-border dark:border-charcoal-700 font-mono font-bold text-rose-primary"
+              />
+            </div>
+
+            <div>
+              <label className="block font-bold text-charcoal-700 dark:text-charcoal-300 mb-1">
+                Consultation Agenda / Purpose *
+              </label>
+              <select
+                value={advisingPurpose}
+                onChange={(e) => setAdvisingPurpose(e.target.value)}
+                className="w-full px-3 py-2 rounded-xl bg-ivory-100 dark:bg-charcoal-900 border border-border dark:border-charcoal-700 text-charcoal-900 dark:text-ivory-100"
+              >
+                <option value="Academic & Research Mentorship">Academic & Research Mentorship</option>
+                <option value="Midterm & Exam Revision Queries">Midterm & Exam Revision Queries</option>
+                <option value="Capstone & Final Project Guidance">Capstone & Final Project Guidance</option>
+                <option value="Career & Graduate School Recommendation">Career & Graduate School Recommendation</option>
+                <option value="Coursework & Lab Assignment Clarification">Coursework & Lab Assignment Clarification</option>
+              </select>
+            </div>
+
+            <div className="p-3 rounded-xl bg-ivory-50 dark:bg-charcoal-900/60 border border-border text-[11px] text-charcoal-600 dark:text-charcoal-400">
+              <span>Location: <strong>{faculty.officeRoom}</strong></span>
+              <span className="block mt-0.5">Direct Intercom / Desk: <strong>{faculty.phone}</strong></span>
+            </div>
+
+            <div className="flex justify-end gap-2 pt-2 border-t border-border dark:border-charcoal-700">
+              <button
+                type="button"
+                onClick={() => setIsAdvisingModalOpen(false)}
+                className="px-4 py-2 rounded-xl bg-ivory-100 dark:bg-charcoal-700 text-charcoal-700 dark:text-charcoal-300 font-bold"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={isSubmittingAdvising}
+                className="px-4 py-2 rounded-xl bg-rose-primary text-white font-bold hover:bg-rose-deep disabled:opacity-50"
+              >
+                {isSubmittingAdvising ? "Reserving..." : "Confirm Reservation"}
               </button>
             </div>
           </form>

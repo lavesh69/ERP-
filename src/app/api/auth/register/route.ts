@@ -11,6 +11,8 @@ const registerSchema = z.object({
   email: z.string().email("Valid email address is required"),
   phone: z.string().optional(),
   programCode: z.string().optional(),
+  role: z.enum(["STUDENT", "PARENT"]).optional().default("STUDENT"),
+  wardRollNumber: z.string().optional(),
   password: z.string().min(8, "Password must be at least 8 characters"),
 });
 
@@ -26,7 +28,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const { firstName, lastName, email, phone, programCode, password } = parsed.data;
+    const { firstName, lastName, email, phone, programCode, role, wardRollNumber, password } = parsed.data;
     const cleanEmail = email.toLowerCase().trim();
 
     // 1. Check if user already exists
@@ -50,6 +52,80 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Institution environment not configured" }, { status: 500 });
     }
 
+    // 3. Hash password using NIST SP 800-63B PBKDF2-SHA512
+    const hashedPassword = await hashPassword(password);
+
+    // 3B. Handle Parent / Guardian Self-Registration
+    if (role === "PARENT") {
+      const parentUser = await prisma.user.create({
+        data: {
+          institutionId: institution.id,
+          email: cleanEmail,
+          passwordHash: hashedPassword,
+          firstName: firstName.trim(),
+          lastName: lastName.trim(),
+          phone: phone ? phone.trim() : null,
+          role: "PARENT",
+          isActive: true,
+          parentProfile: {
+            create: {
+              relation: "GUARDIAN",
+              occupation: "Registered Parent",
+            },
+          },
+        },
+        include: {
+          parentProfile: true,
+        },
+      });
+
+      // Link to student ward if roll number specified
+      if (wardRollNumber && parentUser.parentProfile) {
+        const ward = await prisma.student.findFirst({
+          where: {
+            OR: [
+              { rollNumber: wardRollNumber.trim() },
+              { admissionNumber: wardRollNumber.trim() },
+            ],
+          },
+        });
+        if (ward) {
+          await prisma.studentParentRelation.create({
+            data: {
+              studentId: ward.id,
+              parentId: parentUser.parentProfile.id,
+              isPrimary: true,
+            },
+          }).catch(() => {});
+        }
+      }
+
+      const clientIp = req.headers.get("x-forwarded-for") || "127.0.0.1";
+      await prisma.auditLog.create({
+        data: {
+          institutionId: institution.id,
+          actorUserId: parentUser.id,
+          action: "PARENT_SELF_REGISTERED",
+          targetEntity: "User",
+          targetId: parentUser.id,
+          ipAddress: clientIp,
+          detailsJson: JSON.stringify({ email: cleanEmail, role: "PARENT", wardRollNumber }),
+        },
+      });
+
+      return NextResponse.json({
+        success: true,
+        message: "Parent / Guardian registration successful! You can now sign in.",
+        user: {
+          id: parentUser.id,
+          email: parentUser.email,
+          role: "PARENT",
+          fullName: `${parentUser.firstName} ${parentUser.lastName}`,
+        },
+      });
+    }
+
+    // Resolve academic program for student
     let program = null;
     if (programCode) {
       program = await prisma.program.findFirst({
@@ -57,7 +133,7 @@ export async function POST(req: NextRequest) {
       });
     }
     if (!program) {
-      program = await prisma.program.findFirst() || await prisma.program.create({
+      program = (await prisma.program.findFirst()) || (await prisma.program.create({
         data: {
           departmentId: (await prisma.department.findFirst())?.id || "dept-cs-01",
           code: "BTECH-CS",
@@ -66,11 +142,8 @@ export async function POST(req: NextRequest) {
           durationYears: 4,
           totalCredits: 160,
         },
-      });
+      }));
     }
-
-    // 3. Hash password using NIST SP 800-63B PBKDF2-SHA512
-    const hashedPassword = await hashPassword(password);
 
     // 4. Generate standardized applicant roll number
     const randomSuffix = Math.floor(1000 + Math.random() * 9000);

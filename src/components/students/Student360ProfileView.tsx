@@ -229,6 +229,83 @@ function StudentProfileContent({ initialStudentId }: { initialStudentId?: string
   const [reviewRemarks, setReviewRemarks] = useState("");
   const [isSavingReview, setIsSavingReview] = useState(false);
 
+  // Document Vault State
+  const [isUploadDocModalOpen, setIsUploadDocModalOpen] = useState(false);
+  const [docUploadTitle, setDocUploadTitle] = useState("");
+  const [docUploadCategory, setDocUploadCategory] = useState("CERTIFICATE");
+  const [isUploadingDoc, setIsUploadingDoc] = useState(false);
+
+  // Attendance Dispute State
+  const [isDisputeModalOpen, setIsDisputeModalOpen] = useState(false);
+  const [disputeRecord, setDisputeRecord] = useState<any>(null);
+  const [disputeReason, setDisputeReason] = useState("");
+  const [isSubmittingDispute, setIsSubmittingDispute] = useState(false);
+
+  const handleUploadDoc = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!docUploadTitle.trim()) return;
+    setIsUploadingDoc(true);
+    try {
+      const res = await fetch("/api/students", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          studentId: student?.id,
+          action: "UPLOAD_DOCUMENT",
+          title: docUploadTitle.trim(),
+          category: docUploadCategory,
+        }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        showToast("Document saved to institutional vault!", "success");
+        setIsUploadDocModalOpen(false);
+        setDocUploadTitle("");
+        const refreshed = await fetch(`/api/students?id=${student?.id}`).then((r) => r.json());
+        if (refreshed.student) setStudent(refreshed.student);
+      } else {
+        showToast(data.error || "Failed to upload document", "danger");
+      }
+    } catch {
+      showToast("Network error uploading document", "danger");
+    } finally {
+      setIsUploadingDoc(false);
+    }
+  };
+
+  const handleSubmitDispute = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!disputeReason.trim() || !disputeRecord) return;
+    setIsSubmittingDispute(true);
+    try {
+      const res = await fetch("/api/students", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          studentId: student?.id,
+          action: "DISPUTE_ATTENDANCE",
+          attendanceId: disputeRecord.id,
+          courseCode: disputeRecord.courseCode,
+          disputeReason: disputeReason.trim(),
+        }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        showToast("Dispute registered! Academic advisor notified.", "success");
+        setIsDisputeModalOpen(false);
+        setDisputeReason("");
+        setDisputeRecord(null);
+        fetchRequests();
+      } else {
+        showToast(data.error || "Failed to register dispute", "danger");
+      }
+    } catch {
+      showToast("Network error registering dispute", "danger");
+    } finally {
+      setIsSubmittingDispute(false);
+    }
+  };
+
   const fetchRequests = async () => {
     try {
       setLoadingRequests(true);
@@ -1147,7 +1224,15 @@ Registrar Stamp: [APEX-ACADEMIC-SEAL]
                     <FileText className="h-4 w-4 text-rose-accent" />
                     Verified Academic Document Vault
                   </h3>
-                  <span className="text-[10px] text-charcoal-400">Institutional Repository</span>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => setIsUploadDocModalOpen(true)}
+                      className="px-2.5 py-1 text-[11px] font-bold rounded-lg bg-rose-primary text-white hover:bg-rose-dark shadow-xs transition-all"
+                    >
+                      + Upload Certificate
+                    </button>
+                    <span className="text-[10px] text-charcoal-400">Institutional Repository</span>
+                  </div>
                 </div>
                 <div className="space-y-2.5 text-xs">
                   {(student.documentsVault || [
@@ -1417,6 +1502,7 @@ Registrar Stamp: [APEX-ACADEMIC-SEAL]
                       <th className="p-3.5">Course Title</th>
                       <th className="p-3.5">Date</th>
                       <th className="p-3.5 text-center">Status</th>
+                      <th className="p-3.5 text-right">Action</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border/60 dark:divide-charcoal-700">
@@ -1443,6 +1529,20 @@ Registrar Stamp: [APEX-ACADEMIC-SEAL]
                           >
                             {a.status}
                           </span>
+                        </td>
+                        <td className="p-3.5 text-right">
+                          {a.status !== "PRESENT" && (
+                            <button
+                              onClick={() => {
+                                setDisputeRecord(a);
+                                setDisputeReason(`Discrepancy reported for ${a.courseCode} on ${a.date}`);
+                                setIsDisputeModalOpen(true);
+                              }}
+                              className="px-2 py-0.5 rounded text-[10px] font-bold text-rose-primary hover:bg-rose-container dark:hover:bg-rose-950/40 border border-rose-primary/30 transition-all"
+                            >
+                              Dispute
+                            </button>
+                          )}
                         </td>
                       </tr>
                     ))}
@@ -2301,6 +2401,121 @@ Registrar Stamp: [APEX-ACADEMIC-SEAL]
               >
                 <MessageSquare className="h-3.5 w-3.5" />
                 <span>{sendingPastoralOutreach ? "Sending..." : "Dispatch Advisory"}</span>
+              </button>
+            </div>
+          </form>
+        )}
+      </Modal>
+
+      {/* Modal: Upload Academic Document */}
+      <Modal
+        isOpen={isUploadDocModalOpen}
+        onClose={() => setIsUploadDocModalOpen(false)}
+        title="Upload Academic Document / Certificate"
+        description="Submit an accredited certificate, transcript, or achievement affidavit to your institutional locker."
+      >
+        <form onSubmit={handleUploadDoc} className="flex flex-col gap-4 pt-2">
+          <div>
+            <label className="text-xs font-semibold text-charcoal-700 dark:text-charcoal-300 block mb-1">
+              Document / Credential Title:
+            </label>
+            <input
+              type="text"
+              required
+              value={docUploadTitle}
+              onChange={(e) => setDocUploadTitle(e.target.value)}
+              placeholder="e.g. AWS Certified Cloud Practitioner / Hackathon 1st Prize"
+              className="w-full text-xs p-2.5 rounded-xl border border-border dark:border-charcoal-700 bg-white dark:bg-charcoal-900 text-charcoal-900 dark:text-ivory-100 focus:outline-none focus:border-rose-primary"
+            />
+          </div>
+
+          <div>
+            <label className="text-xs font-semibold text-charcoal-700 dark:text-charcoal-300 block mb-1">
+              Document Classification:
+            </label>
+            <select
+              value={docUploadCategory}
+              onChange={(e) => setDocUploadCategory(e.target.value)}
+              className="w-full text-xs p-2.5 rounded-xl border border-border dark:border-charcoal-700 bg-white dark:bg-charcoal-900 text-charcoal-900 dark:text-ivory-100 focus:outline-none focus:border-rose-primary"
+            >
+              <option value="CERTIFICATE">Industry Certificate / Accreditation</option>
+              <option value="TRANSCRIPT">Provisional Marksheet / Transcript</option>
+              <option value="ID_PROOF">Government Identity Proof</option>
+              <option value="AFFIDAVIT">Undertaking / Medical Affidavit</option>
+            </select>
+          </div>
+
+          <div className="flex items-center justify-end gap-2 pt-3 border-t border-border dark:border-charcoal-700">
+            <button
+              type="button"
+              onClick={() => setIsUploadDocModalOpen(false)}
+              className="px-4 py-2 rounded-xl text-xs font-bold border border-border dark:border-charcoal-700 text-charcoal-700 dark:text-ivory-200 hover:bg-surface-soft"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={isUploadingDoc || !docUploadTitle.trim()}
+              className="px-4 py-2 rounded-xl text-xs font-bold bg-rose-primary hover:bg-rose-deep text-white shadow-xs disabled:opacity-50"
+            >
+              {isUploadingDoc ? "Saving..." : "Store in Document Vault"}
+            </button>
+          </div>
+        </form>
+      </Modal>
+
+      {/* Modal: Dispute Attendance Session */}
+      <Modal
+        isOpen={isDisputeModalOpen}
+        onClose={() => setIsDisputeModalOpen(false)}
+        title="Biometric Attendance Discrepancy Dispute"
+        description="Submit a formal attendance dispute petition to the Academic Registrar and course instructor."
+      >
+        {disputeRecord && (
+          <form onSubmit={handleSubmitDispute} className="flex flex-col gap-4 pt-2">
+            <div className="bg-surface-soft dark:bg-charcoal-900/60 p-3 rounded-xl border border-border dark:border-charcoal-700 text-xs space-y-1">
+              <div className="flex justify-between">
+                <span className="text-charcoal-500">Course:</span>
+                <span className="font-bold text-charcoal-900 dark:text-ivory-100">{disputeRecord.courseCode} - {disputeRecord.courseTitle}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-charcoal-500">Date:</span>
+                <span className="font-medium text-charcoal-900 dark:text-ivory-100">{disputeRecord.date}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-charcoal-500">Logged Status:</span>
+                <span className="font-bold text-red-600">{disputeRecord.status}</span>
+              </div>
+            </div>
+
+            <div>
+              <label className="text-xs font-semibold text-charcoal-700 dark:text-charcoal-300 block mb-1">
+                Discrepancy Justification:
+              </label>
+              <textarea
+                rows={3}
+                required
+                value={disputeReason}
+                onChange={(e) => setDisputeReason(e.target.value)}
+                placeholder="Explain why this status is incorrect (e.g., RFID turnstile error, on-duty lab project, medical leave submitted)..."
+                className="w-full text-xs p-2.5 rounded-xl border border-border dark:border-charcoal-700 bg-white dark:bg-charcoal-900 text-charcoal-900 dark:text-ivory-100 focus:outline-none focus:border-rose-primary"
+              />
+            </div>
+
+            <div className="flex items-center justify-end gap-2 pt-3 border-t border-border dark:border-charcoal-700">
+              <button
+                type="button"
+                onClick={() => setIsDisputeModalOpen(false)}
+                className="px-4 py-2 rounded-xl text-xs font-bold border border-border dark:border-charcoal-700 text-charcoal-700 dark:text-ivory-200 hover:bg-surface-soft"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={isSubmittingDispute || !disputeReason.trim()}
+                className="px-4 py-2 rounded-xl text-xs font-bold bg-rose-primary hover:bg-rose-deep text-white shadow-xs disabled:opacity-50"
+              >
+                {isSubmittingDispute ? "Submitting..." : "Submit Formal Dispute"}
               </button>
             </div>
           </form>

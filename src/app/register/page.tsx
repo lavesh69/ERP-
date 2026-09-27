@@ -29,6 +29,8 @@ export default function RegisterPage() {
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
+  const [role, setRole] = useState<"STUDENT" | "PARENT">("STUDENT");
+  const [wardRollNumber, setWardRollNumber] = useState("");
   const [programCode, setProgramCode] = useState("BTECH-CS");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -38,8 +40,9 @@ export default function RegisterPage() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [registeredData, setRegisteredData] = useState<{
     email: string;
-    applicationNumber: string;
+    applicationNumber?: string;
     fullName: string;
+    role: string;
   } | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -67,7 +70,9 @@ export default function RegisterPage() {
           lastName,
           email,
           phone,
-          programCode,
+          role,
+          wardRollNumber: role === "PARENT" ? wardRollNumber : undefined,
+          programCode: role === "STUDENT" ? programCode : undefined,
           password,
         }),
       });
@@ -75,11 +80,12 @@ export default function RegisterPage() {
       const data = await res.json();
 
       if (res.ok) {
-        showToast("Application registered successfully!", "success");
+        showToast(data.message || "Account registered successfully!", "success");
         setRegisteredData({
           email: data.user.email,
-          applicationNumber: data.user.applicationNumber,
+          applicationNumber: data.user.applicantNumber || data.user.id,
           fullName: data.user.fullName,
+          role: data.user.role || role,
         });
       } else {
         setErrorMessage(data.error || "Registration failed. Please try again.");
@@ -142,7 +148,7 @@ export default function RegisterPage() {
                 <div className="flex items-center justify-between text-xs">
                   <span className="text-charcoal-500 font-medium">Assigned Role:</span>
                   <span className="font-semibold text-xs px-2 py-0.5 rounded bg-rose-primary text-white">
-                    Scholar (STUDENT)
+                    {registeredData.role === "PARENT" ? "Guardian (PARENT)" : "Scholar (STUDENT)"}
                   </span>
                 </div>
               </div>
@@ -165,6 +171,32 @@ export default function RegisterPage() {
                   <span>{errorMessage}</span>
                 </div>
               )}
+
+              {/* Role Selection Switcher */}
+              <div className="flex rounded-xl bg-ivory-100 dark:bg-charcoal-900 p-1 border border-border dark:border-charcoal-700">
+                <button
+                  type="button"
+                  onClick={() => setRole("STUDENT")}
+                  className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${
+                    role === "STUDENT"
+                      ? "bg-rose-primary text-white shadow-xs"
+                      : "text-charcoal-600 dark:text-charcoal-400 hover:text-charcoal-900"
+                  }`}
+                >
+                  🎓 Scholar / Student Admission
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setRole("PARENT")}
+                  className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${
+                    role === "PARENT"
+                      ? "bg-rose-primary text-white shadow-xs"
+                      : "text-charcoal-600 dark:text-charcoal-400 hover:text-charcoal-900"
+                  }`}
+                >
+                  👨‍👩‍👧 Parent / Guardian Registry
+                </button>
+              </div>
 
               {/* Name fields */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -211,7 +243,7 @@ export default function RegisterPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-bold text-charcoal-700 dark:text-charcoal-300">
-                    Applicant Email Address
+                    {role === "PARENT" ? "Guardian Email Address" : "Applicant Email Address"}
                   </label>
                   <div className="mt-1 relative rounded-xl shadow-sm">
                     <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-charcoal-400">
@@ -247,28 +279,48 @@ export default function RegisterPage() {
                 </div>
               </div>
 
-              {/* Degree Program */}
-              <div>
-                <label className="block text-xs font-bold text-charcoal-700 dark:text-charcoal-300">
-                  Target Academic Degree Program
-                </label>
-                <div className="mt-1 relative rounded-xl shadow-sm">
-                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-charcoal-400">
-                    <BookOpen className="h-4 w-4" />
+              {/* Role-Specific Fields */}
+              {role === "STUDENT" ? (
+                <div>
+                  <label className="block text-xs font-bold text-charcoal-700 dark:text-charcoal-300">
+                    Target Academic Degree Program
+                  </label>
+                  <div className="mt-1 relative rounded-xl shadow-sm">
+                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-charcoal-400">
+                      <BookOpen className="h-4 w-4" />
+                    </div>
+                    <select
+                      value={programCode}
+                      onChange={(e) => setProgramCode(e.target.value)}
+                      className="block w-full pl-10 pr-3 py-2.5 rounded-xl border border-border dark:border-charcoal-700 bg-ivory-100 dark:bg-charcoal-900 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-rose-primary"
+                    >
+                      <option value="BTECH-CS">B.Tech - Computer Science & Engineering</option>
+                      <option value="BTECH-MECH">B.Tech - Mechanical Engineering & Robotics</option>
+                      <option value="BTECH-EE">B.Tech - Electrical & Electronics Engineering</option>
+                      <option value="MBA-TECH">MBA - Technology & Business Leadership</option>
+                      <option value="MS-DATA">M.S. - Applied Artificial Intelligence & Data Science</option>
+                    </select>
                   </div>
-                  <select
-                    value={programCode}
-                    onChange={(e) => setProgramCode(e.target.value)}
-                    className="block w-full pl-10 pr-3 py-2.5 rounded-xl border border-border dark:border-charcoal-700 bg-ivory-100 dark:bg-charcoal-900 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-rose-primary"
-                  >
-                    <option value="BTECH-CS">B.Tech - Computer Science & Engineering</option>
-                    <option value="BTECH-MECH">B.Tech - Mechanical Engineering & Robotics</option>
-                    <option value="BTECH-EE">B.Tech - Electrical & Electronics Engineering</option>
-                    <option value="MBA-TECH">MBA - Technology & Business Leadership</option>
-                    <option value="MS-DATA">M.S. - Applied Artificial Intelligence & Data Science</option>
-                  </select>
                 </div>
-              </div>
+              ) : (
+                <div>
+                  <label className="block text-xs font-bold text-charcoal-700 dark:text-charcoal-300">
+                    Student Ward Roll Number / Admission No (Optional Link)
+                  </label>
+                  <div className="mt-1 relative rounded-xl shadow-sm">
+                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-charcoal-400">
+                      <GraduationCap className="h-4 w-4" />
+                    </div>
+                    <input
+                      type="text"
+                      value={wardRollNumber}
+                      onChange={(e) => setWardRollNumber(e.target.value)}
+                      placeholder="e.g. 2024-CSE-042 or ADM-2024-102"
+                      className="block w-full pl-10 pr-3 py-2.5 rounded-xl border border-border dark:border-charcoal-700 bg-ivory-100 dark:bg-charcoal-900 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-rose-primary"
+                    />
+                  </div>
+                </div>
+              )}
 
               {/* Passwords */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">

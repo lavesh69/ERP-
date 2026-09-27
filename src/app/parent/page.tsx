@@ -65,6 +65,86 @@ export default function ParentPortalPage() {
   const [leaveReasonText, setLeaveReasonText] = useState("");
   const [isSubmittingLeave, setIsSubmittingLeave] = useState(false);
 
+  // PTM Booking State
+  const [isPtmModalOpen, setIsPtmModalOpen] = useState(false);
+  const [ptmDate, setPtmDate] = useState(new Date(Date.now() + 86400000 * 3).toISOString().split("T")[0]);
+  const [ptmTime, setPtmTime] = useState("14:30 - 15:00");
+  const [ptmAgenda, setPtmAgenda] = useState("");
+  const [isBookingPtm, setIsBookingPtm] = useState(false);
+
+  // Installment Request State
+  const [isInstallmentModalOpen, setIsInstallmentModalOpen] = useState(false);
+  const [installmentReason, setInstallmentReason] = useState("");
+  const [isSubmittingInstallment, setIsSubmittingInstallment] = useState(false);
+
+  const handleBookPtm = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!ptmAgenda.trim()) {
+      showToast("Please provide agenda topics for the PTM", "error");
+      return;
+    }
+    setIsBookingPtm(true);
+    try {
+      const res = await fetch("/api/parent", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "SCHEDULE_PTM",
+          studentId: data?.child?.id,
+          preferredDate: ptmDate,
+          preferredTime: ptmTime,
+          agenda: ptmAgenda.trim(),
+        }),
+      });
+      const resData = await res.json();
+      if (res.ok) {
+        showToast("PTM conference successfully booked with academic advisor!", "success");
+        setIsPtmModalOpen(false);
+        setPtmAgenda("");
+        loadParentData(selectedChildId || undefined);
+      } else {
+        showToast(resData.error || "Failed to schedule PTM", "error");
+      }
+    } catch {
+      showToast("Network error scheduling PTM", "error");
+    } finally {
+      setIsBookingPtm(false);
+    }
+  };
+
+  const handleRequestInstallment = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!installmentReason.trim()) {
+      showToast("Please provide justification for installment plan", "error");
+      return;
+    }
+    setIsSubmittingInstallment(true);
+    try {
+      const res = await fetch("/api/parent", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "REQUEST_INSTALLMENT",
+          studentId: data?.child?.id,
+          reason: installmentReason.trim(),
+        }),
+      });
+      const resData = await res.json();
+      if (res.ok) {
+        showToast("3-Stage fee installment request filed with University Bursar!", "success");
+        setIsInstallmentModalOpen(false);
+        setInstallmentReason("");
+        loadParentData(selectedChildId || undefined);
+      } else {
+        showToast(resData.error || "Failed to submit installment request", "error");
+      }
+    } catch {
+      showToast("Network error submitting installment request", "error");
+    } finally {
+      setIsSubmittingInstallment(false);
+    }
+  };
+
   const handleRequestOtp = async () => {
     setIsRequestingOtp(true);
     try {
@@ -745,6 +825,15 @@ export default function ParentPortalPage() {
                   <span>Settle Balance (${data.finances.outstandingBalance.toLocaleString()})</span>
                 </button>
               )}
+              {data?.finances?.outstandingBalance > 0 && (
+                <button
+                  onClick={() => setIsInstallmentModalOpen(true)}
+                  className="w-full py-2 rounded-xl bg-ivory-100 dark:bg-charcoal-800 hover:bg-rose-container dark:hover:bg-charcoal-700 text-charcoal-800 dark:text-ivory-100 text-xs font-bold border border-border dark:border-charcoal-700 flex items-center justify-center gap-1.5 transition-all"
+                >
+                  <Calendar className="h-3.5 w-3.5 text-rose-primary" />
+                  <span>Request 3-Part Installment Plan</span>
+                </button>
+              )}
               <button
                 onClick={handleDownloadBursarStatement}
                 className="w-full py-2 rounded-xl bg-ivory-100 dark:bg-charcoal-800 hover:bg-rose-container dark:hover:bg-charcoal-700 text-rose-primary dark:text-rose-accent text-xs font-bold border border-border dark:border-charcoal-700 flex items-center justify-center gap-1.5 transition-all"
@@ -765,9 +854,18 @@ export default function ParentPortalPage() {
                 Advisory Inquiries & Pastoral Communication
               </span>
             </div>
-            <span className="text-[11px] text-charcoal-400">
-              Direct line to {data?.child?.advisor?.name || "Course Advisor"}
-            </span>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setIsPtmModalOpen(true)}
+                className="px-3 py-1.5 text-xs font-bold rounded-xl bg-rose-primary text-white hover:bg-rose-dark shadow-xs transition-all flex items-center gap-1.5 btn-primary-glow"
+              >
+                <Calendar className="h-3.5 w-3.5" />
+                <span>Book 1-on-1 PTM Conference</span>
+              </button>
+              <span className="text-[11px] text-charcoal-400">
+                Direct line to {data?.child?.advisor?.name || "Course Advisor"}
+              </span>
+            </div>
           </div>
 
           {(data?.recentInquiries || []).length === 0 ? (
@@ -1179,6 +1277,129 @@ export default function ParentPortalPage() {
                 className="px-4 py-2 rounded-xl bg-rose-primary hover:bg-rose-dark text-white text-xs font-bold shadow-sm disabled:opacity-50"
               >
                 {isSavingParentProfile ? "Saving..." : "Verify & Save Details"}
+              </button>
+            </div>
+          </form>
+        </Modal>
+
+        {/* Modal: Book PTM Conference */}
+        <Modal
+          isOpen={isPtmModalOpen}
+          onClose={() => setIsPtmModalOpen(false)}
+          title="Book 1-on-1 Parent-Teacher Conference (PTM)"
+          description={`Schedule a dedicated virtual or cabin conference with ${data?.child?.advisor?.name || "the Academic Mentor"}.`}
+        >
+          <form onSubmit={handleBookPtm} className="flex flex-col gap-4 text-xs">
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="font-bold text-charcoal-700 dark:text-charcoal-300 block mb-1">
+                  Preferred Conference Date
+                </label>
+                <input
+                  type="date"
+                  value={ptmDate}
+                  onChange={(e) => setPtmDate(e.target.value)}
+                  className="w-full bg-ivory-100 dark:bg-charcoal-900 border border-border dark:border-charcoal-700 rounded-xl p-2.5 font-medium text-charcoal-900 dark:text-ivory-100"
+                  required
+                />
+              </div>
+              <div>
+                <label className="font-bold text-charcoal-700 dark:text-charcoal-300 block mb-1">
+                  Meeting Time Window
+                </label>
+                <select
+                  value={ptmTime}
+                  onChange={(e) => setPtmTime(e.target.value)}
+                  className="w-full bg-ivory-100 dark:bg-charcoal-900 border border-border dark:border-charcoal-700 rounded-xl p-2.5 font-medium text-charcoal-900 dark:text-ivory-100"
+                >
+                  <option value="10:00 - 10:30">10:00 - 10:30 (Morning Slot)</option>
+                  <option value="14:30 - 15:00">14:30 - 15:00 (Afternoon Slot)</option>
+                  <option value="16:00 - 16:30">16:00 - 16:30 (Post-Class Slot)</option>
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label className="font-bold text-charcoal-700 dark:text-charcoal-300 block mb-1">
+                Agenda Topics / Specific Academic Concerns
+              </label>
+              <textarea
+                rows={3}
+                value={ptmAgenda}
+                onChange={(e) => setPtmAgenda(e.target.value)}
+                placeholder="Mention specific areas for discussion (e.g., semester progress, exam preparation, campus housing, pastoral wellbeing)..."
+                className="w-full bg-ivory-100 dark:bg-charcoal-900 border border-border dark:border-charcoal-700 rounded-xl p-2.5 font-medium text-charcoal-900 dark:text-ivory-100"
+                required
+              />
+            </div>
+
+            <div className="flex items-center justify-end gap-2 pt-3 border-t border-border dark:border-charcoal-700">
+              <button
+                type="button"
+                onClick={() => setIsPtmModalOpen(false)}
+                className="px-4 py-2 rounded-xl bg-ivory-100 dark:bg-charcoal-700 text-charcoal-700 dark:text-charcoal-300 text-xs font-bold"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={isBookingPtm || !ptmAgenda.trim()}
+                className="px-4 py-2 rounded-xl bg-rose-primary hover:bg-rose-dark text-white text-xs font-bold shadow-sm disabled:opacity-50 flex items-center gap-1.5"
+              >
+                <Calendar className="h-3.5 w-3.5" />
+                <span>{isBookingPtm ? "Scheduling..." : "Confirm & Send Invitation"}</span>
+              </button>
+            </div>
+          </form>
+        </Modal>
+
+        {/* Modal: Request 3-Stage Fee Installment Plan */}
+        <Modal
+          isOpen={isInstallmentModalOpen}
+          onClose={() => setIsInstallmentModalOpen(false)}
+          title="Apply for Tuition 3-Part Installment Schedule"
+          description="Submit an official request to the University Bursar to divide your outstanding semester balance into 3 equal monthly installments."
+        >
+          <form onSubmit={handleRequestInstallment} className="flex flex-col gap-4 text-xs">
+            <div className="p-3.5 rounded-xl bg-surface-soft dark:bg-charcoal-900/60 border border-border dark:border-charcoal-700 flex flex-col gap-1.5">
+              <div className="flex justify-between font-bold">
+                <span>Total Balance to Split:</span>
+                <span className="text-rose-primary">${data?.finances?.outstandingBalance?.toLocaleString() || "0.00"}</span>
+              </div>
+              <div className="flex justify-between text-charcoal-500">
+                <span>Proposed Schedule:</span>
+                <span>3 equal monthly payments of ${data?.finances?.outstandingBalance ? (data.finances.outstandingBalance / 3).toFixed(2) : "0.00"}</span>
+              </div>
+            </div>
+
+            <div>
+              <label className="font-bold text-charcoal-700 dark:text-charcoal-300 block mb-1">
+                Reason / Hardship Statement
+              </label>
+              <textarea
+                rows={3}
+                value={installmentReason}
+                onChange={(e) => setInstallmentReason(e.target.value)}
+                placeholder="State your justification for requesting an installment plan (e.g., temporary liquidity constraint, educational loan processing delay)..."
+                className="w-full bg-ivory-100 dark:bg-charcoal-900 border border-border dark:border-charcoal-700 rounded-xl p-2.5 font-medium text-charcoal-900 dark:text-ivory-100"
+                required
+              />
+            </div>
+
+            <div className="flex items-center justify-end gap-2 pt-3 border-t border-border dark:border-charcoal-700">
+              <button
+                type="button"
+                onClick={() => setIsInstallmentModalOpen(false)}
+                className="px-4 py-2 rounded-xl bg-ivory-100 dark:bg-charcoal-700 text-charcoal-700 dark:text-charcoal-300 text-xs font-bold"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={isSubmittingInstallment || !installmentReason.trim()}
+                className="px-4 py-2 rounded-xl bg-rose-primary hover:bg-rose-dark text-white text-xs font-bold shadow-sm disabled:opacity-50"
+              >
+                {isSubmittingInstallment ? "Submitting..." : "Submit Installment Petition"}
               </button>
             </div>
           </form>

@@ -162,6 +162,32 @@ export async function GET(req: NextRequest) {
             officeRoom: "Room 304, CSE Block",
           };
 
+      // Dynamic backlogs computation
+      const calculatedActiveBacklogs = student.examResults.filter((r) => {
+        const percent = r.exam.totalMarks > 0 ? (r.marksObtained / r.exam.totalMarks) * 100 : 0;
+        return (percent < 40 && r.exam.totalMarks > 0) || r.gradeLetter === "F";
+      }).length;
+
+      // Real or institutional document vault
+      const realDocs = await prisma.academicDocument.findMany({
+        where: { userId: student.userId },
+        orderBy: { uploadedAt: "desc" },
+      });
+
+      const vaultList = [
+        ...realDocs.map((d) => ({
+          id: d.id,
+          title: d.title,
+          status: "VERIFIED",
+          date: d.uploadedAt.toISOString().split("T")[0],
+          fileUrl: d.fileUrl,
+        })),
+        { id: "doc-1", title: "Secondary School Board Certificate (10th)", status: "VERIFIED", date: "2020-06-15" },
+        { id: "doc-2", title: "Senior Secondary School Certificate (12th)", status: "VERIFIED", date: "2022-07-20" },
+        { id: "doc-3", title: "National Anti-Ragging Affidavit", status: "DIGITALLY_SIGNED", date: "2024-08-01" },
+        { id: "doc-4", title: "Institutional RFID Smartcard & Health Pass", status: "ACTIVE", date: "2024-08-10" },
+      ];
+
       return NextResponse.json({
         student: {
           id: student.id,
@@ -194,7 +220,7 @@ export async function GET(req: NextRequest) {
             maskedGovtId: "XXXX-XXXX-8842",
           },
           academicProgression: {
-            activeBacklogs: 0,
+            activeBacklogs: calculatedActiveBacklogs,
             clearedArrears: 0,
             clearedBacklogs: 0,
             semesterProgression: [
@@ -215,12 +241,7 @@ export async function GET(req: NextRequest) {
               lab: Math.floor(dynamicallyEarnedCredits * 0.1),
             },
           },
-          documentsVault: [
-            { id: "doc-1", title: "Secondary School Board Certificate (10th)", status: "VERIFIED", date: "2020-06-15" },
-            { id: "doc-2", title: "Senior Secondary School Certificate (12th)", status: "VERIFIED", date: "2022-07-20" },
-            { id: "doc-3", title: "National Anti-Ragging Affidavit", status: "DIGITALLY_SIGNED", date: "2024-08-01" },
-            { id: "doc-4", title: "Institutional RFID Smartcard & Health Pass", status: "ACTIVE", date: "2024-08-10" },
-          ],
+          documentsVault: vaultList,
           portfolio: {
             github: "https://github.com/scholar-alex",
             linkedin: "https://linkedin.com/in/scholar-alex",
@@ -546,7 +567,7 @@ export async function PATCH(req: NextRequest) {
   try {
     const session = await getOptionalSession(req);
     const body = await req.json();
-    const { studentId, phone, status, cgpa, attendanceRate } = body;
+    const { studentId, phone, status, cgpa, attendanceRate, action } = body;
 
     if (!studentId) {
       return NextResponse.json({ error: "studentId is required" }, { status: 400 });
@@ -569,6 +590,67 @@ export async function PATCH(req: NextRequest) {
         { error: "Unauthorized: You may only update your own scholar profile." },
         { status: 403 }
       );
+    }
+
+    // A. Scholar Biometric Attendance Grievance / Dispute
+    if (action === "DISPUTE_ATTENDANCE") {
+      const petition = await prisma.studentRequest.create({
+        data: {
+          studentId: student.id,
+          type: "ATTENDANCE_CORRECTION",
+          title: `Biometric Attendance Dispute: ${body.courseCode || "General Session"}`,
+          reason: body.disputeReason || "Discrepancy reported by scholar for marked attendance session.",
+          status: "PENDING_REVIEW",
+        },
+      });
+
+      await logAuditEvent({
+        institutionId: student.user.institutionId || "inst-apex-01",
+        actorUserId: session?.userId || student.userId,
+        action: "ATTENDANCE_DISPUTE_FILED",
+        targetEntity: "StudentRequest",
+        targetId: petition.id,
+        details: { studentId: student.id, disputeReason: body.disputeReason },
+      });
+
+      return NextResponse.json({
+        success: true,
+        message: "Attendance correction dispute successfully logged with Registrar & Academic Advisor.",
+        petition,
+      });
+    }
+
+    // B. Scholar Document Vault Upload
+    if (action === "UPLOAD_DOCUMENT") {
+      const docTitle = body.title || body.documentTitle;
+      if (!docTitle || !docTitle.trim()) {
+        return NextResponse.json({ error: "Document title is required" }, { status: 400 });
+      }
+      const newDoc = await prisma.academicDocument.create({
+        data: {
+          userId: student.userId,
+          title: docTitle.trim(),
+          category: body.category || "TRANSCRIPT",
+          fileUrl: body.fileUrl || "/documents/vault/" + Date.now() + ".pdf",
+          mimeType: "application/pdf",
+          fileSizeKb: 256,
+        },
+      });
+
+      await logAuditEvent({
+        institutionId: student.user.institutionId || "inst-apex-01",
+        actorUserId: session?.userId || student.userId,
+        action: "DOCUMENT_UPLOADED",
+        targetEntity: "AcademicDocument",
+        targetId: newDoc.id,
+        details: { title: docTitle, category: body.category },
+      });
+
+      return NextResponse.json({
+        success: true,
+        message: "Academic document successfully stored in institutional vault.",
+        document: newDoc,
+      });
     }
 
     const [updatedStudent] = await prisma.$transaction([
