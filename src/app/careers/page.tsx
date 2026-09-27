@@ -19,6 +19,10 @@ import {
   ExternalLink,
   Plus,
   Send,
+  Calendar,
+  Video,
+  Award,
+  Zap,
 } from "lucide-react";
 
 export default function CareersPage() {
@@ -39,6 +43,28 @@ export default function CareersPage() {
     placementRate: "95.6%",
     averageCtc: "$148,500",
   });
+
+  // Scheduled Interviews State
+  const [interviews, setInterviews] = useState<any[]>([]);
+
+  // ATS Resume Breakdown Modal State
+  const [selectedAtsJob, setSelectedAtsJob] = useState<any>(null);
+  const [isAtsModalOpen, setIsAtsModalOpen] = useState(false);
+
+  // Recruiter Interview Scheduler Modal State
+  const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
+  const [scheduleForm, setScheduleForm] = useState({
+    jobId: "",
+    companyName: "",
+    jobTitle: "",
+    candidateName: "Alex Mercer",
+    candidateRollNo: "CS2026-0042",
+    roundName: "Technical Round 1: Distributed Architectures",
+    scheduledAt: new Date(Date.now() + 48 * 3600 * 1000).toISOString().slice(0, 16),
+    interviewerName: "Dr. Evelyn Vance (Principal Research Scientist)",
+    meetingLink: "https://meet.google.com/apex-cs-intv",
+  });
+  const [isScheduling, setIsScheduling] = useState(false);
 
   // Admin Job creation form
   const [jobForm, setJobForm] = useState({
@@ -64,6 +90,7 @@ export default function CareersPage() {
         if (res.ok) {
           const data = await res.json();
           setJobs(data.jobs || []);
+          if (data.interviews) setInterviews(data.interviews);
           if (data.metrics) setMetrics(data.metrics);
         }
       } catch (err) {
@@ -74,6 +101,37 @@ export default function CareersPage() {
     }
     loadCareers();
   }, [refreshTrigger]);
+
+  const handleScheduleInterview = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!scheduleForm.candidateName || !scheduleForm.roundName) {
+      showToast("Candidate name and round name are required", "error");
+      return;
+    }
+    setIsScheduling(true);
+    try {
+      const res = await fetch("/api/careers", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "SCHEDULE_INTERVIEW",
+          ...scheduleForm,
+        }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        showToast(data.message || "Interview round scheduled successfully!", "success");
+        setIsScheduleModalOpen(false);
+        triggerRefresh();
+      } else {
+        showToast(data.error || "Failed to schedule interview", "error");
+      }
+    } catch {
+      showToast("Network error scheduling interview", "error");
+    } finally {
+      setIsScheduling(false);
+    }
+  };
 
   const handleCreateJob = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -288,6 +346,35 @@ export default function CareersPage() {
                       Requirements: {j.requirements}
                     </p>
 
+                    {/* ATS Resume Match Badge & Modal Trigger */}
+                    {j.atsAnalysis && (
+                      <div className="flex items-center gap-2 mt-2 flex-wrap">
+                        <span
+                          className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                            j.atsAnalysis.matchPercentage >= 80
+                              ? "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800"
+                              : "bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-300 dark:border-amber-800"
+                          }`}
+                        >
+                          🎯 {j.atsAnalysis.matchPercentage}% ATS Match ({j.atsAnalysis.grade})
+                        </span>
+                        <span className="text-[10px] text-charcoal-500 font-medium">
+                          {j.atsAnalysis.matchedSkills.length} skills matched
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSelectedAtsJob(j);
+                            setIsAtsModalOpen(true);
+                          }}
+                          className="text-[10px] font-bold text-rose-primary dark:text-rose-accent hover:underline flex items-center gap-1"
+                        >
+                          <Sparkles className="h-3 w-3" />
+                          <span>View Match Analysis</span>
+                        </button>
+                      </div>
+                    )}
+
                     {j.myApplication && (
                       <div className="mt-2 p-2 rounded-lg bg-academic-info-subtle border border-blue-200 text-[11px] text-academic-info font-semibold flex items-center gap-1.5">
                         <CheckCircle2 className="h-3.5 w-3.5" />
@@ -299,17 +386,36 @@ export default function CareersPage() {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2 self-start md:self-auto shrink-0">
+                <div className="flex items-center gap-2 self-start md:self-auto shrink-0 flex-wrap">
                   {["SUPER_ADMIN", "INSTITUTION_ADMIN", "FACULTY", "HOD"].includes(currentRole) && (
-                    <button
-                      onClick={() => {
-                        setSelectedJob(j);
-                        setIsApplicantsModalOpen(true);
-                      }}
-                      className="px-3.5 py-2 rounded-xl text-xs font-bold bg-ivory-100 dark:bg-charcoal-700 hover:bg-rose-container text-charcoal-800 dark:text-ivory-200 border border-border dark:border-charcoal-600 transition-all"
-                    >
-                      Applicants ({j.applications?.length || 0})
-                    </button>
+                    <>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setScheduleForm((prev) => ({
+                            ...prev,
+                            jobId: j.id,
+                            companyName: j.company,
+                            jobTitle: j.title,
+                          }));
+                          setIsScheduleModalOpen(true);
+                        }}
+                        className="px-3 py-2 rounded-xl text-xs font-bold bg-surface-soft dark:bg-charcoal-700 hover:bg-rose-container text-charcoal-800 dark:text-ivory-200 border border-border dark:border-charcoal-600 transition-all flex items-center gap-1"
+                      >
+                        <Calendar className="h-3.5 w-3.5 text-rose-primary" />
+                        <span>Schedule</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSelectedJob(j);
+                          setIsApplicantsModalOpen(true);
+                        }}
+                        className="px-3.5 py-2 rounded-xl text-xs font-bold bg-ivory-100 dark:bg-charcoal-700 hover:bg-rose-container text-charcoal-800 dark:text-ivory-200 border border-border dark:border-charcoal-600 transition-all"
+                      >
+                        Applicants ({j.applications?.length || 0})
+                      </button>
+                    </>
                   )}
                   <button
                     onClick={() => {
@@ -329,6 +435,66 @@ export default function CareersPage() {
             ))
           )}
         </div>
+
+        {/* Scheduled Interviews & Assessment Rounds Section */}
+        {interviews.length > 0 && (
+          <div className="glass-panel rounded-2xl shadow-soft p-5 flex flex-col gap-3">
+            <div className="flex items-center justify-between pb-2 border-b border-border dark:border-charcoal-700">
+              <div className="flex items-center gap-2">
+                <Calendar className="h-4 w-4 text-rose-primary" />
+                <span className="text-xs font-bold text-charcoal-900 dark:text-ivory-100 uppercase tracking-wider">
+                  Confirmed Technical Interviews & Assessment Rounds ({interviews.length})
+                </span>
+              </div>
+              <span className="text-[11px] text-charcoal-500 font-medium">
+                Live Google Meet integration with Campus Recruitment Cell
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {interviews.map((intv) => (
+                <div
+                  key={intv.id}
+                  className="p-3.5 rounded-xl border border-border/80 dark:border-charcoal-700 bg-surface-soft dark:bg-charcoal-900/40 flex flex-col justify-between gap-2"
+                >
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <span className="text-[10px] font-bold text-rose-primary uppercase tracking-wider block">
+                        {intv.companyName}
+                      </span>
+                      <h4 className="text-xs font-bold text-charcoal-900 dark:text-ivory-100">
+                        {intv.roundName}
+                      </h4>
+                      <span className="text-[11px] text-charcoal-500 block mt-0.5">
+                        Candidate: <strong className="text-charcoal-800 dark:text-ivory-200">{intv.candidateName}</strong> ({intv.candidateRollNo})
+                      </span>
+                    </div>
+                    <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-academic-success-subtle text-academic-success border border-emerald-300">
+                      {intv.status}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center justify-between pt-2 border-t border-border/60 dark:border-charcoal-700 text-[11px]">
+                    <div className="flex items-center gap-1.5 text-charcoal-600 dark:text-charcoal-400">
+                      <Clock className="h-3.5 w-3.5 text-rose-accent" />
+                      <span>{new Date(intv.scheduledAt).toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" })}</span>
+                    </div>
+
+                    <a
+                      href={intv.meetingLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="px-3 py-1 rounded-lg bg-rose-primary hover:bg-rose-dark text-white font-bold text-[10px] flex items-center gap-1 shadow-2xs transition-colors"
+                    >
+                      <Video className="h-3 w-3" />
+                      <span>Join Call</span>
+                    </a>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Apply Modal */}
@@ -557,6 +723,201 @@ export default function CareersPage() {
             </button>
           </div>
         </div>
+      </Modal>
+
+      {/* 4. Student/Recruiter: ATS Resume Match Breakdown Modal */}
+      <Modal
+        isOpen={isAtsModalOpen}
+        onClose={() => setIsAtsModalOpen(false)}
+        title={`ATS Score Breakdown: ${selectedAtsJob?.title || "Job Position"}`}
+        description={`${selectedAtsJob?.company || "Recruiter"} • Automated algorithmic resume parser`}
+      >
+        <div className="flex flex-col gap-4 text-xs mt-2">
+          {/* Top Score Banner */}
+          <div className="p-4 rounded-xl bg-surface-soft dark:bg-charcoal-900/60 border border-border dark:border-charcoal-700 flex items-center justify-between">
+            <div className="flex flex-col">
+              <span className="text-[10px] font-bold text-rose-primary uppercase tracking-wider">
+                Overall Resume Match
+              </span>
+              <span className="text-2xl font-display font-bold text-charcoal-900 dark:text-ivory-100">
+                {selectedAtsJob?.atsAnalysis?.matchPercentage || 85}% Match
+              </span>
+              <span className="text-[11px] text-charcoal-500">
+                Classification: <strong className="text-emerald-600 dark:text-emerald-400">{selectedAtsJob?.atsAnalysis?.grade || "STRONG"} FIT</strong>
+              </span>
+            </div>
+
+            <div className="text-right">
+              <span className="text-[10px] font-bold text-charcoal-500 uppercase block">CGPA Standing</span>
+              <span className="text-sm font-bold text-emerald-600 dark:text-emerald-400">
+                {selectedAtsJob?.atsAnalysis?.cgpaEligible ? "✅ Meets 3.0 Cutoff (3.80)" : "⚠️ Below Cutoff"}
+              </span>
+            </div>
+          </div>
+
+          {/* Matched Skills */}
+          <div className="flex flex-col gap-1.5">
+            <span className="text-[11px] font-bold text-charcoal-800 dark:text-ivory-200 uppercase tracking-wider">
+              Identified Core Competencies (Matched)
+            </span>
+            <div className="flex flex-wrap gap-1.5">
+              {(selectedAtsJob?.atsAnalysis?.matchedSkills || []).map((sk: string) => (
+                <span
+                  key={sk}
+                  className="px-2.5 py-1 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 font-bold border border-emerald-300 dark:border-emerald-800 text-[10px]"
+                >
+                  ✓ {sk}
+                </span>
+              ))}
+            </div>
+          </div>
+
+          {/* Missing Skills */}
+          {selectedAtsJob?.atsAnalysis?.missingSkills?.length > 0 && (
+            <div className="flex flex-col gap-1.5">
+              <span className="text-[11px] font-bold text-amber-700 dark:text-amber-300 uppercase tracking-wider">
+                Target Keywords to Incorporate
+              </span>
+              <div className="flex flex-wrap gap-1.5">
+                {selectedAtsJob.atsAnalysis.missingSkills.map((sk: string) => (
+                  <span
+                    key={sk}
+                    className="px-2.5 py-1 rounded-lg bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-200 font-bold border border-amber-300 dark:border-amber-800 text-[10px]"
+                  >
+                    + {sk}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Recommendations */}
+          <div className="p-3.5 rounded-xl bg-ivory-50 dark:bg-charcoal-900 border border-border dark:border-charcoal-700 flex flex-col gap-2">
+            <span className="font-bold text-charcoal-900 dark:text-ivory-100 uppercase text-[10px] tracking-wider">
+              Automated Resume Optimization Strategy
+            </span>
+            <ul className="list-disc pl-4 space-y-1 text-charcoal-600 dark:text-charcoal-400 text-[11px]">
+              {(selectedAtsJob?.atsAnalysis?.recommendations || []).map((rec: string, i: number) => (
+                <li key={i}>{rec}</li>
+              ))}
+            </ul>
+          </div>
+
+          <div className="flex items-center justify-end pt-3 border-t border-border dark:border-charcoal-800">
+            <button
+              type="button"
+              onClick={() => setIsAtsModalOpen(false)}
+              className="px-4 py-2 text-xs font-bold bg-rose-primary hover:bg-rose-dark text-white rounded-xl shadow-sm"
+            >
+              Done
+            </button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* 5. Recruiter: Schedule Interview Modal */}
+      <Modal
+        isOpen={isScheduleModalOpen}
+        onClose={() => setIsScheduleModalOpen(false)}
+        title="Schedule Candidate Technical Round"
+        description="Book a technical or behavioral evaluation round with verified calendar links."
+      >
+        <form onSubmit={handleScheduleInterview} className="flex flex-col gap-3.5 text-xs mt-2">
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-[11px] font-bold text-charcoal-700 dark:text-charcoal-300 block mb-1">
+                Candidate Name
+              </label>
+              <input
+                type="text"
+                required
+                value={scheduleForm.candidateName}
+                onChange={(e) => setScheduleForm({ ...scheduleForm, candidateName: e.target.value })}
+                className="w-full p-2.5 rounded-xl border border-border dark:border-charcoal-700 bg-white dark:bg-charcoal-800 text-charcoal-900 dark:text-ivory-100"
+              />
+            </div>
+            <div>
+              <label className="text-[11px] font-bold text-charcoal-700 dark:text-charcoal-300 block mb-1">
+                Roll Number
+              </label>
+              <input
+                type="text"
+                value={scheduleForm.candidateRollNo}
+                onChange={(e) => setScheduleForm({ ...scheduleForm, candidateRollNo: e.target.value })}
+                className="w-full p-2.5 rounded-xl border border-border dark:border-charcoal-700 bg-white dark:bg-charcoal-800 text-charcoal-900 dark:text-ivory-100 font-mono"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="text-[11px] font-bold text-charcoal-700 dark:text-charcoal-300 block mb-1">
+              Interview Round Title
+            </label>
+            <input
+              type="text"
+              required
+              value={scheduleForm.roundName}
+              onChange={(e) => setScheduleForm({ ...scheduleForm, roundName: e.target.value })}
+              className="w-full p-2.5 rounded-xl border border-border dark:border-charcoal-700 bg-white dark:bg-charcoal-800 text-charcoal-900 dark:text-ivory-100"
+              placeholder="e.g. Technical Round 1: Distributed Architectures"
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-[11px] font-bold text-charcoal-700 dark:text-charcoal-300 block mb-1">
+                Scheduled Date & Time
+              </label>
+              <input
+                type="datetime-local"
+                required
+                value={scheduleForm.scheduledAt}
+                onChange={(e) => setScheduleForm({ ...scheduleForm, scheduledAt: e.target.value })}
+                className="w-full p-2.5 rounded-xl border border-border dark:border-charcoal-700 bg-white dark:bg-charcoal-800 text-charcoal-900 dark:text-ivory-100"
+              />
+            </div>
+            <div>
+              <label className="text-[11px] font-bold text-charcoal-700 dark:text-charcoal-300 block mb-1">
+                Interviewer Name & Role
+              </label>
+              <input
+                type="text"
+                value={scheduleForm.interviewerName}
+                onChange={(e) => setScheduleForm({ ...scheduleForm, interviewerName: e.target.value })}
+                className="w-full p-2.5 rounded-xl border border-border dark:border-charcoal-700 bg-white dark:bg-charcoal-800 text-charcoal-900 dark:text-ivory-100"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="text-[11px] font-bold text-charcoal-700 dark:text-charcoal-300 block mb-1">
+              Google Meet / Zoom URL
+            </label>
+            <input
+              type="url"
+              value={scheduleForm.meetingLink}
+              onChange={(e) => setScheduleForm({ ...scheduleForm, meetingLink: e.target.value })}
+              className="w-full p-2.5 rounded-xl border border-border dark:border-charcoal-700 bg-white dark:bg-charcoal-800 text-charcoal-900 dark:text-ivory-100 font-mono"
+            />
+          </div>
+
+          <div className="flex items-center justify-end gap-2 pt-3 border-t border-border dark:border-charcoal-800">
+            <button
+              type="button"
+              onClick={() => setIsScheduleModalOpen(false)}
+              className="px-4 py-2 text-xs font-bold text-charcoal-600 dark:text-charcoal-400 hover:bg-ivory-100 rounded-xl"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={isScheduling}
+              className="px-4 py-2 text-xs font-bold bg-rose-primary hover:bg-rose-dark text-white rounded-xl shadow-sm disabled:opacity-50"
+            >
+              {isScheduling ? "Scheduling..." : "Confirm & Send Calendar Invite"}
+            </button>
+          </div>
+        </form>
       </Modal>
     </AppShell>
   );

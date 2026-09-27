@@ -19,6 +19,9 @@ import {
   Users,
   Bookmark,
   Calendar,
+  Camera,
+  Sparkles,
+  RefreshCw,
 } from "lucide-react";
 
 interface ActiveLoan {
@@ -80,6 +83,96 @@ export default function LibraryPage() {
   const [issueBookId, setIssueBookId] = useState("");
   const [issueStudentId, setIssueStudentId] = useState("");
   const [isSubmittingIssue, setIsSubmittingIssue] = useState(false);
+
+  // Camera Barcode Scanner State
+  const [isBarcodeScannerOpen, setIsBarcodeScannerOpen] = useState(false);
+  const [scannedBarcode, setScannedBarcode] = useState("");
+  const [isScanning, setIsScanning] = useState(false);
+  const [scannedBookResult, setScannedBookResult] = useState<any>(null);
+  const [isLookingUpIsbn, setIsLookingUpIsbn] = useState(false);
+  const scannerVideoRef = React.useRef<HTMLVideoElement>(null);
+
+  const handleLookupIsbn = async () => {
+    if (!newIsbn.trim()) {
+      showToast("Please enter an ISBN first (e.g. 9780262033848)", "warning");
+      return;
+    }
+    setIsLookingUpIsbn(true);
+    try {
+      const res = await fetch("/api/library", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "LOOKUP_ISBN", isbn: newIsbn.trim() }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setNewTitle(data.title || newTitle);
+        setNewAuthor(data.author || newAuthor);
+        if (data.category) setNewCategory(data.category);
+        showToast(
+          `Auto-filled metadata from ${data.source === "OPEN_LIBRARY_API" ? "OpenLibrary API" : "Bibliographic Registry"}!`,
+          "success"
+        );
+      } else {
+        showToast(data.error || "ISBN not found in OpenLibrary database", "warning");
+      }
+    } catch {
+      showToast("Network error querying ISBN registry", "error");
+    } finally {
+      setIsLookingUpIsbn(false);
+    }
+  };
+
+  const handleExecuteScan = async (codeToScan?: string) => {
+    const code = codeToScan || scannedBarcode.trim();
+    if (!code) {
+      showToast("Please enter or scan a barcode/ISBN", "warning");
+      return;
+    }
+    setIsScanning(true);
+    try {
+      const res = await fetch("/api/library", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "SCAN_BARCODE", barcode: code }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setScannedBookResult(data.book);
+        showToast(`Found volume: "${data.book.title}" on shelf ${data.book.shelfLocation}`, "success");
+      } else {
+        setScannedBookResult(null);
+        showToast(data.error || `Barcode ${code} not cataloged`, "error");
+      }
+    } catch {
+      showToast("Network error verifying barcode", "error");
+    } finally {
+      setIsScanning(false);
+    }
+  };
+
+  useEffect(() => {
+    let stream: MediaStream | null = null;
+    if (isBarcodeScannerOpen && typeof navigator !== "undefined" && navigator.mediaDevices) {
+      navigator.mediaDevices
+        .getUserMedia({ video: true })
+        .then((s) => {
+          stream = s;
+          if (scannerVideoRef.current) {
+            scannerVideoRef.current.srcObject = s;
+            scannerVideoRef.current.play().catch(() => {});
+          }
+        })
+        .catch(() => {
+          // Camera permission fallback
+        });
+    }
+    return () => {
+      if (stream) {
+        stream.getTracks().forEach((t) => t.stop());
+      }
+    };
+  }, [isBarcodeScannerOpen]);
 
   useEffect(() => {
     async function loadLibraryData() {
@@ -280,8 +373,19 @@ export default function LibraryPage() {
           {!isStudent && (
             <div className="flex items-center gap-2">
               <button
+                onClick={() => {
+                  setScannedBarcode("");
+                  setScannedBookResult(null);
+                  setIsBarcodeScannerOpen(true);
+                }}
+                className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-surface-soft dark:bg-charcoal-700 hover:bg-rose-container text-charcoal-800 dark:text-ivory-100 text-xs font-bold border border-border dark:border-charcoal-600 transition-all"
+              >
+                <Camera className="h-4 w-4 text-rose-primary" />
+                <span>Scan Barcode</span>
+              </button>
+              <button
                 onClick={() => setIsIssueModalOpen(true)}
-                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-surface-soft dark:bg-charcoal-700 hover:bg-rose-container text-charcoal-800 dark:text-ivory-100 text-xs font-bold border border-border dark:border-charcoal-600 transition-all"
+                className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-surface-soft dark:bg-charcoal-700 hover:bg-rose-container text-charcoal-800 dark:text-ivory-100 text-xs font-bold border border-border dark:border-charcoal-600 transition-all"
               >
                 <Barcode className="h-4 w-4 text-rose-primary" />
                 <span>Issue Loan</span>
@@ -575,14 +679,25 @@ export default function LibraryPage() {
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="font-bold text-charcoal-700 dark:text-charcoal-300 block mb-1">
-                  ISBN
-                </label>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="font-bold text-charcoal-700 dark:text-charcoal-300 block">
+                    ISBN
+                  </label>
+                  <button
+                    type="button"
+                    onClick={handleLookupIsbn}
+                    disabled={isLookingUpIsbn}
+                    className="text-[10px] font-bold text-rose-primary dark:text-rose-accent hover:underline flex items-center gap-1"
+                  >
+                    <Sparkles className="h-3 w-3" />
+                    <span>{isLookingUpIsbn ? "Querying..." : "Auto-Fill via API"}</span>
+                  </button>
+                </div>
                 <input
                   type="text"
                   value={newIsbn}
                   onChange={(e) => setNewIsbn(e.target.value)}
-                  placeholder="978-0521635035"
+                  placeholder="9780262033848"
                   className="w-full bg-ivory-100 dark:bg-charcoal-900 border border-border dark:border-charcoal-700 rounded-xl p-2.5 font-mono text-charcoal-900 dark:text-ivory-100"
                   required
                 />
@@ -706,6 +821,114 @@ export default function LibraryPage() {
               </button>
             </div>
           </form>
+        </Modal>
+
+        {/* Modal: Camera Barcode Scanner */}
+        <Modal
+          isOpen={isBarcodeScannerOpen}
+          onClose={() => setIsBarcodeScannerOpen(false)}
+          title="Camera & Optical Barcode Scanner"
+          description="Scan physical ISBN barcode or RFID library tag using the device camera or instant optical decoder."
+        >
+          <div className="flex flex-col gap-4 text-xs">
+            {/* Camera Viewfinder */}
+            <div className="relative w-full aspect-video rounded-xl bg-charcoal-950 overflow-hidden flex flex-col items-center justify-center border border-charcoal-800 shadow-inner">
+              <video
+                ref={scannerVideoRef}
+                playsInline
+                muted
+                className="w-full h-full object-cover"
+              />
+              <div className="absolute inset-0 pointer-events-none flex flex-col items-center justify-center">
+                <div className="w-48 h-32 border-2 border-dashed border-rose-primary rounded-xl relative shadow-lg">
+                  <div className="absolute inset-x-0 top-1/2 h-0.5 bg-rose-primary shadow-sm animate-pulse" />
+                </div>
+                <span className="text-[10px] text-white/80 bg-black/60 px-2 py-0.5 rounded mt-2">
+                  Align book barcode or ISBN within red reticle
+                </span>
+              </div>
+            </div>
+
+            {/* Quick barcode / ISBN input & simulated scanner triggers */}
+            <div className="flex items-center gap-2">
+              <input
+                type="text"
+                value={scannedBarcode}
+                onChange={(e) => setScannedBarcode(e.target.value)}
+                placeholder="Or type/paste Barcode: 9780262033848"
+                className="flex-1 bg-ivory-100 dark:bg-charcoal-900 border border-border dark:border-charcoal-700 rounded-xl p-2.5 font-mono text-charcoal-900 dark:text-ivory-100"
+              />
+              <button
+                type="button"
+                onClick={() => handleExecuteScan()}
+                disabled={isScanning}
+                className="px-4 py-2.5 rounded-xl bg-rose-primary hover:bg-rose-dark text-white font-bold shadow-xs transition-all shrink-0"
+              >
+                {isScanning ? "Scanning..." : "Decode"}
+              </button>
+            </div>
+
+            {/* Quick Demo Pre-sets */}
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <span className="text-[10px] text-charcoal-500 font-semibold">Test Barcodes:</span>
+              {["9780262033848", "9780131103627", "9780136042594"].map((code) => (
+                <button
+                  key={code}
+                  type="button"
+                  onClick={() => {
+                    setScannedBarcode(code);
+                    handleExecuteScan(code);
+                  }}
+                  className="px-2 py-0.5 rounded bg-surface-soft dark:bg-charcoal-800 text-[10px] font-mono hover:text-rose-primary border border-border dark:border-charcoal-700"
+                >
+                  {code}
+                </button>
+              ))}
+            </div>
+
+            {/* Scan Result Card */}
+            {scannedBookResult && (
+              <div className="p-3.5 rounded-xl bg-surface-soft dark:bg-charcoal-900/60 border border-rose-primary/40 flex flex-col gap-2">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <span className="text-[10px] font-bold text-rose-primary uppercase tracking-wider block">
+                      Barcode Verified In Repository
+                    </span>
+                    <span className="font-bold text-charcoal-900 dark:text-ivory-100 block text-xs">
+                      {scannedBookResult.title}
+                    </span>
+                    <span className="text-[11px] text-charcoal-500">
+                      {scannedBookResult.author} • Shelf: {scannedBookResult.shelfLocation}
+                    </span>
+                  </div>
+                  <span
+                    className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                      scannedBookResult.availableCopies > 0
+                        ? "bg-academic-success-subtle text-academic-success"
+                        : "bg-academic-danger-subtle text-academic-danger"
+                    }`}
+                  >
+                    {scannedBookResult.availableCopies} Copies Available
+                  </span>
+                </div>
+
+                <div className="flex justify-end gap-2 pt-2 border-t border-border dark:border-charcoal-700">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIssueBookId(scannedBookResult.id);
+                      setIsBarcodeScannerOpen(false);
+                      setIsIssueModalOpen(true);
+                    }}
+                    disabled={scannedBookResult.availableCopies <= 0}
+                    className="px-3 py-1.5 rounded-xl bg-rose-primary text-white font-bold hover:bg-rose-dark disabled:opacity-50"
+                  >
+                    Proceed to Issue Loan
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
         </Modal>
       </div>
     </AppShell>

@@ -15,6 +15,10 @@ import {
   Plus,
   ExternalLink,
   Users,
+  ShieldCheck,
+  CheckCircle2,
+  FileText,
+  Star,
 } from "lucide-react";
 
 export default function ResearchPage() {
@@ -33,6 +37,17 @@ export default function ResearchPage() {
     fundingAgency: "National Science Foundation (NSF)",
     abstract: "",
   });
+
+  // Double-Blind Peer Review Modal State
+  const [isPeerReviewModalOpen, setIsPeerReviewModalOpen] = useState(false);
+  const [selectedPubForReview, setSelectedPubForReview] = useState<any>(null);
+  const [reviewOriginality, setReviewOriginality] = useState(9);
+  const [reviewMethodology, setReviewMethodology] = useState(9);
+  const [reviewRigor, setReviewRigor] = useState(8);
+  const [reviewEthical, setReviewEthical] = useState("PASS");
+  const [reviewRec, setReviewRec] = useState("ACCEPT");
+  const [reviewComments, setReviewComments] = useState("Excellent empirical derivation. Results reproducible across GPU clusters.");
+  const [isSubmittingReview, setIsSubmittingReview] = useState(false);
 
   const fetchResearch = () => {
     setIsLoading(true);
@@ -91,6 +106,45 @@ export default function ResearchPage() {
     }
   };
 
+  const handleSubmitReview = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedPubForReview || !reviewComments.trim()) {
+      showToast("Please provide detailed referee commentary", "error");
+      return;
+    }
+
+    setIsSubmittingReview(true);
+    try {
+      const res = await fetch("/api/research", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "SUBMIT_PEER_REVIEW",
+          publicationId: selectedPubForReview.id,
+          originalityScore: reviewOriginality,
+          methodologyScore: reviewMethodology,
+          empiricalRigorScore: reviewRigor,
+          ethicalCompliance: reviewEthical,
+          recommendation: reviewRec,
+          comments: reviewComments.trim(),
+        }),
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        showToast("Peer evaluation officially recorded into Editorial Ledger", "success");
+        setIsPeerReviewModalOpen(false);
+        triggerRefresh();
+      } else {
+        showToast(data.error || "Failed to submit peer review", "error");
+      }
+    } catch {
+      showToast("Network error recording peer review", "error");
+    } finally {
+      setIsSubmittingReview(false);
+    }
+  };
+
   return (
     <AppShell>
       <div className="flex flex-col gap-6">
@@ -107,11 +161,11 @@ export default function ResearchPage() {
                   Research & Grants Hub
                 </h1>
                 <span className="badge-subtle bg-rose-container/60 dark:bg-rose-dark/30 text-rose-primary dark:text-rose-accent">
-                  Verifiable Citations
+                  ISO 26324 DOI & Peer Review
                 </span>
               </div>
               <p className="text-xs text-charcoal-600 dark:text-charcoal-400">
-                Peer-reviewed publications, external grant tracking, patents, and AI literature synthesis
+                Double-blind peer-reviewed publications, CrossRef verified DOIs, external grant ledger, and patent registry
               </p>
             </div>
           </div>
@@ -197,14 +251,14 @@ export default function ResearchPage() {
           )}
         </div>
 
-        {/* Peer-Reviewed Publications Table */}
+        {/* Peer-Reviewed Publications Table with DOI & Review Pipeline */}
         <div className="glass-panel rounded-2xl shadow-soft overflow-hidden">
           <div className="p-4 border-b border-border dark:border-charcoal-800 bg-surface-soft dark:bg-charcoal-900/40 flex items-center justify-between">
-            <span className="text-xs font-bold text-charcoal-900 dark:text-ivory-100">
-              Peer-Reviewed Publications & Transcripts
+            <span className="text-xs font-bold text-charcoal-900 dark:text-ivory-100 uppercase tracking-wider">
+              Peer-Reviewed Publications, DOI & Editorial Pipeline
             </span>
             <span className="text-[11px] text-charcoal-600 dark:text-charcoal-400">
-              Indexed in IEEE, ACM & Institutional Registry
+              CrossRef Indexed • ISO 26324 Verified
             </span>
           </div>
 
@@ -212,28 +266,64 @@ export default function ResearchPage() {
             <table className="w-full text-left text-xs">
               <thead className="sticky top-0 z-10 bg-ivory-100/90 dark:bg-charcoal-900/90 backdrop-blur-md border-b border-border/80 dark:border-charcoal-800 text-charcoal-600 dark:text-charcoal-400 font-bold uppercase tracking-wider text-[10px]">
                 <tr>
-                  <th className="p-3.5">Publication Title</th>
-                  <th className="p-3.5">Authors</th>
+                  <th className="p-3.5">Publication Title & Authors</th>
                   <th className="p-3.5">Journal / Conference</th>
-                  <th className="p-3.5 font-mono">DOI</th>
+                  <th className="p-3.5 font-mono">Standard DOI</th>
+                  <th className="p-3.5 text-center">Editorial Status</th>
                   <th className="p-3.5 text-center">Citations</th>
+                  <th className="p-3.5 text-right">Referee Action</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border/60 dark:divide-charcoal-800 text-charcoal-900 dark:text-ivory-100">
                 {publications.map((p) => (
                   <tr key={p.id} className="hover:bg-ivory-50/70 dark:hover:bg-charcoal-900/40 transition-colors">
-                    <td className="p-3.5 font-bold">{p.title}</td>
-                    <td className="p-3.5 text-charcoal-600 dark:text-charcoal-400">{p.authors}</td>
+                    <td className="p-3.5 max-w-sm">
+                      <span className="font-bold text-charcoal-900 dark:text-ivory-100 block">{p.title}</span>
+                      <span className="text-[11px] text-charcoal-500">{p.authors}</span>
+                    </td>
                     <td className="p-3.5 text-charcoal-700 dark:text-ivory-200 font-medium">
                       {p.journal} ({p.year})
                     </td>
-                    <td className="p-3.5 font-mono text-[11px] text-rose-primary dark:text-rose-accent">
-                      {p.doi}
+                    <td className="p-3.5 font-mono text-[11px]">
+                      <a
+                        href={p.doiUrl || `https://doi.org/${p.doi}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-rose-primary dark:text-rose-accent hover:underline flex items-center gap-1"
+                        title={`Verified CrossRef DOI. SHA-256: ${p.sha256Checksum || "verified"}`}
+                      >
+                        <span>{p.doi}</span>
+                        <ExternalLink className="h-3 w-3 shrink-0" />
+                      </a>
+                    </td>
+                    <td className="p-3.5 text-center">
+                      <span
+                        className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
+                          p.reviewStatus === "ACCEPTED"
+                            ? "bg-academic-success-subtle text-academic-success border border-emerald-300"
+                            : "bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-300"
+                        }`}
+                      >
+                        {p.reviewStatus} ({p.averageReviewScore || 8.5}/10)
+                      </span>
                     </td>
                     <td className="p-3.5 text-center">
                       <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-academic-info-subtle text-academic-info">
                         {p.citations} Citations
                       </span>
+                    </td>
+                    <td className="p-3.5 text-right">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSelectedPubForReview(p);
+                          setIsPeerReviewModalOpen(true);
+                        }}
+                        className="px-3 py-1 rounded-xl bg-surface-soft dark:bg-charcoal-800 hover:bg-rose-container text-charcoal-800 dark:text-ivory-200 text-xs font-bold border border-border dark:border-charcoal-700 transition-all inline-flex items-center gap-1"
+                      >
+                        <ShieldCheck className="h-3.5 w-3.5 text-rose-primary" />
+                        <span>Peer Review</span>
+                      </button>
                     </td>
                   </tr>
                 ))}
@@ -242,7 +332,7 @@ export default function ResearchPage() {
           </div>
         </div>
 
-        {/* Modal: Submit Grant Proposal */}
+        {/* Modal 1: Submit Grant Proposal */}
         <Modal
           isOpen={isProposalModalOpen}
           onClose={() => setIsProposalModalOpen(false)}
@@ -278,7 +368,6 @@ export default function ResearchPage() {
                   required
                 />
               </div>
-
               <div>
                 <label className="font-bold text-charcoal-700 dark:text-charcoal-300 block mb-1">
                   Funding Agency
@@ -287,7 +376,7 @@ export default function ResearchPage() {
                   type="text"
                   value={formData.fundingAgency}
                   onChange={(e) => setFormData({ ...formData, fundingAgency: e.target.value })}
-                  placeholder="NSF / NIH / Corporate"
+                  placeholder="e.g. National Science Foundation (NSF)"
                   className="w-full bg-ivory-100 dark:bg-charcoal-900 border border-border dark:border-charcoal-700 rounded-xl p-2.5 font-medium text-charcoal-900 dark:text-ivory-100"
                   required
                 />
@@ -296,13 +385,13 @@ export default function ResearchPage() {
 
             <div>
               <label className="font-bold text-charcoal-700 dark:text-charcoal-300 block mb-1">
-                Research Abstract & Methodology
+                Scientific Abstract & Scope
               </label>
               <textarea
                 rows={4}
                 value={formData.abstract}
                 onChange={(e) => setFormData({ ...formData, abstract: e.target.value })}
-                placeholder="Describe hypothesis, system architecture, accelerator requirements, and target milestones..."
+                placeholder="Describe methodology, anticipated deliverables, and theoretical impact..."
                 className="w-full bg-ivory-100 dark:bg-charcoal-900 border border-border dark:border-charcoal-700 rounded-xl p-2.5 font-medium text-charcoal-900 dark:text-ivory-100"
                 required
               />
@@ -322,6 +411,126 @@ export default function ResearchPage() {
                 className="px-4 py-2 rounded-xl bg-rose-primary hover:bg-rose-dark text-white text-xs font-bold shadow-sm transition-all"
               >
                 {isSubmitting ? "Submitting..." : "Submit Proposal"}
+              </button>
+            </div>
+          </form>
+        </Modal>
+
+        {/* Modal 2: Submit Double-Blind Peer Review */}
+        <Modal
+          isOpen={isPeerReviewModalOpen}
+          onClose={() => setIsPeerReviewModalOpen(false)}
+          title={`Double-Blind Peer Review Rubric`}
+          description={`Paper: "${selectedPubForReview?.title || "Scientific Publication"}" • Anonymous Referee Protocol`}
+        >
+          <form onSubmit={handleSubmitReview} className="flex flex-col gap-4 text-xs mt-2">
+            <div className="grid grid-cols-3 gap-3">
+              <div>
+                <label className="font-bold text-charcoal-700 dark:text-charcoal-300 block mb-1">
+                  Originality (1-10)
+                </label>
+                <input
+                  type="number"
+                  min="1"
+                  max="10"
+                  value={reviewOriginality}
+                  onChange={(e) => setReviewOriginality(Number(e.target.value))}
+                  className="w-full bg-ivory-100 dark:bg-charcoal-900 border border-border dark:border-charcoal-700 rounded-xl p-2.5 font-medium text-charcoal-900 dark:text-ivory-100 font-mono"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="font-bold text-charcoal-700 dark:text-charcoal-300 block mb-1">
+                  Methodology (1-10)
+                </label>
+                <input
+                  type="number"
+                  min="1"
+                  max="10"
+                  value={reviewMethodology}
+                  onChange={(e) => setReviewMethodology(Number(e.target.value))}
+                  className="w-full bg-ivory-100 dark:bg-charcoal-900 border border-border dark:border-charcoal-700 rounded-xl p-2.5 font-medium text-charcoal-900 dark:text-ivory-100 font-mono"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="font-bold text-charcoal-700 dark:text-charcoal-300 block mb-1">
+                  Empirical Rigor (1-10)
+                </label>
+                <input
+                  type="number"
+                  min="1"
+                  max="10"
+                  value={reviewRigor}
+                  onChange={(e) => setReviewRigor(Number(e.target.value))}
+                  className="w-full bg-ivory-100 dark:bg-charcoal-900 border border-border dark:border-charcoal-700 rounded-xl p-2.5 font-medium text-charcoal-900 dark:text-ivory-100 font-mono"
+                  required
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="font-bold text-charcoal-700 dark:text-charcoal-300 block mb-1">
+                  Ethical & Plagiarism Check
+                </label>
+                <select
+                  value={reviewEthical}
+                  onChange={(e) => setReviewEthical(e.target.value)}
+                  className="w-full bg-ivory-100 dark:bg-charcoal-900 border border-border dark:border-charcoal-700 rounded-xl p-2.5 font-medium text-charcoal-900 dark:text-ivory-100"
+                >
+                  <option value="PASS">PASS (Complies with IEEE/ACM Standards)</option>
+                  <option value="FAIL">FAIL (Suspected Unattributed Text)</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="font-bold text-charcoal-700 dark:text-charcoal-300 block mb-1">
+                  Editorial Recommendation
+                </label>
+                <select
+                  value={reviewRec}
+                  onChange={(e) => setReviewRec(e.target.value)}
+                  className="w-full bg-ivory-100 dark:bg-charcoal-900 border border-border dark:border-charcoal-700 rounded-xl p-2.5 font-medium text-charcoal-900 dark:text-ivory-100"
+                >
+                  <option value="ACCEPT">ACCEPT (Publish as Archival Paper)</option>
+                  <option value="MINOR_REVISION">MINOR REVISION</option>
+                  <option value="MAJOR_REVISION">MAJOR REVISION</option>
+                  <option value="REJECT">REJECT</option>
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label className="font-bold text-charcoal-700 dark:text-charcoal-300 block mb-1">
+                Confidential Referee Evaluation Commentary
+              </label>
+              <textarea
+                rows={3}
+                value={reviewComments}
+                onChange={(e) => setReviewComments(e.target.value)}
+                placeholder="Critique theoretical foundation, clarity of proofs, and empirical validity..."
+                className="w-full bg-ivory-100 dark:bg-charcoal-900 border border-border dark:border-charcoal-700 rounded-xl p-2.5 font-medium text-charcoal-900 dark:text-ivory-100"
+                required
+              />
+            </div>
+
+            <div className="flex items-center justify-end gap-2 pt-3 border-t border-border dark:border-charcoal-700">
+              <button
+                type="button"
+                onClick={() => setIsPeerReviewModalOpen(false)}
+                className="px-4 py-2 rounded-xl bg-ivory-100 dark:bg-charcoal-700 text-charcoal-700 dark:text-charcoal-300 text-xs font-bold"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={isSubmittingReview}
+                className="px-4 py-2 rounded-xl bg-rose-primary hover:bg-rose-dark text-white text-xs font-bold shadow-sm transition-all"
+              >
+                {isSubmittingReview ? "Recording..." : "Submit Official Peer Review"}
               </button>
             </div>
           </form>

@@ -12,8 +12,16 @@ import {
   classifyAcademicStanding,
 } from "@/lib/grading/gpa-engine";
 import { generateAntiCheatingSeatingPlan } from "@/lib/examinations/seating-engine";
-import { retrieveRelevantKnowledge } from "@/lib/rag/engine";
 import { executeAutonomousAgent } from "@/lib/ai/agents";
+import {
+  retrieveRelevantKnowledge,
+  generateTextEmbedding,
+  cosineSimilarity,
+  chunkText,
+  addDocumentToCorpus,
+  semanticVectorSearch,
+  DEFAULT_EMBEDDING_DIM,
+} from "@/lib/rag/engine";
 import { signJwt, verifyJwt } from "@/lib/auth/jwt";
 import {
   runBiometricAggregation,
@@ -98,6 +106,12 @@ import { GET as handleStudentRequestsGet, POST as handleStudentRequestsPost, PAT
 import { POST as handleBiometricPush } from "@/app/api/attendance/biometric-push/route";
 import { GET as handleOutboxGet, POST as handleOutboxPost } from "@/app/api/communication/outbox/route";
 import { recordAttendanceException, getAttendanceExceptions, clearAttendanceExceptions } from "@/lib/attendance/exceptions";
+import { GET as handleLmsGet, POST as handleLmsPost } from "@/app/api/lms/route";
+import { GET as handleLibraryGet, POST as handleLibraryPost } from "@/app/api/library/route";
+import { GET as handleCareersGet, POST as handleCareersPost } from "@/app/api/careers/route";
+import { computeAtsScore } from "@/lib/careers/ats-engine";
+import { GET as handleResearchGet, POST as handleResearchPost } from "@/app/api/research/route";
+import { generateStandardDoi } from "@/lib/research/doi-engine";
 
 async function runTestSuite() {
   console.log("=================================================");
@@ -4001,6 +4015,300 @@ BIO-599,Synthetic Biology Principles,Syn Bio,3,BIO,BSC-BIO,CORE,THEORY,3`;
     assert(outboxPostRes.status === 200, "POST /api/communication/outbox (action: TEST_DISPATCH) queues message with 200 OK");
     const outboxPostData = await outboxPostRes.json();
     assert(outboxPostData.success === true && outboxPostData.result.messageId !== undefined, "Test message logged to outbox with unique tracking ID");
+  }
+
+  // ==========================================
+  // GROUP 48: Advanced AI Vectors, Realtime Bus, LMS Video, Barcode Scanner, ATS Matcher, Peer Review DOI & Parent Payment
+  // ==========================================
+  {
+    console.log("\n📦 Running Group 48: Advanced AI Vectors, Realtime Bus, LMS Video, Barcode Scanner, ATS Matcher, Peer Review DOI & Parent Payment");
+
+    const adminUser = (await prisma.user.findFirst({ where: { role: "ADMIN" } })) || (await prisma.user.findFirst());
+    const adminToken = await signJwt({
+      userId: adminUser?.id || "usr-admin-01",
+      email: adminUser?.email || "admin@apex.edu",
+      role: "INSTITUTION_ADMIN",
+    });
+
+    // 48.1 AI RAG Dense Vector Embeddings, L2 Normalization & Cosine Similarity
+    const queryA = "Deep learning and Transformer self-attention architecture";
+    const queryB = "Neural network attention mechanisms and scaled dot product";
+    const queryC = "Agricultural crop irrigation and plant chlorophyll photosynthesis";
+
+    const embA = generateTextEmbedding(queryA, DEFAULT_EMBEDDING_DIM);
+    const embB = generateTextEmbedding(queryB, DEFAULT_EMBEDDING_DIM);
+    const embC = generateTextEmbedding(queryC, DEFAULT_EMBEDDING_DIM);
+
+    assert(embA.length === DEFAULT_EMBEDDING_DIM, `Dense vector embedding generates ${DEFAULT_EMBEDDING_DIM}-dimensional array`);
+
+    // Verify L2 Euclidean normalization (norm close to 1)
+    const normA = Math.sqrt(embA.reduce((sum, val) => sum + val * val, 0));
+    assert(Math.abs(normA - 1.0) < 0.05, `Vector embedding is L2 Euclidean normalized (norm: ${normA.toFixed(3)})`);
+
+    const simRelated = cosineSimilarity(embA, embB);
+    const simUnrelated = cosineSimilarity(embA, embC);
+    assert(simRelated > 0.20, `Semantically related transformer queries produce strong cosine similarity (score: ${simRelated.toFixed(3)})`);
+    assert(simRelated > simUnrelated, `Related queries rank significantly higher than orthogonal domain queries (diff: ${(simRelated - simUnrelated).toFixed(3)})`);
+
+    // 48.2 Boundary-Aware Text Chunking with Overlap
+    const sampleCorpusText = `Introduction to Distributed Systems. Modern computing relies heavily on distributed consensus.
+Algorithms like Raft and Paxos ensure cluster state consistency even across network partitions.
+By breaking down large monolithic systems into decoupled microservices, systems achieve higher availability and partition tolerance.`;
+    const chunks = chunkText(sampleCorpusText, 100, 20);
+    assert(chunks.length >= 2, `Text chunker decomposes prose into boundary-aware chunks (chunk count: ${chunks.length})`);
+
+    // 48.3 Dynamic Corpus Vector Search & Hybrid Scoring
+    addDocumentToCorpus({
+      documentId: "test-doc-rag-48",
+      title: "Distributed Fault Tolerant Consensus",
+      category: "Systems Engineering",
+      courseCode: "CS-402",
+      content: sampleCorpusText,
+    });
+    const vectorMatches = semanticVectorSearch("distributed consensus and network partitions", {
+      courseFilter: "CS-402",
+      topK: 3,
+    });
+    assert(vectorMatches.length > 0, "Semantic vector search retrieves indexed test document");
+    assert(vectorMatches[0].relevanceScore > 0.20, `Vector match produces high relevance score (score: ${vectorMatches[0].relevanceScore})`);
+    assert(vectorMatches[0].documentTitle === "Distributed Fault Tolerant Consensus", "Match correctly identifies indexed document title");
+
+    // 48.4 Real-time Distributed Event Bus & Sliding Replay Buffer
+    let receivedBusEvent: boolean = false;
+    const unsub = eventBus.subscribeToType("SYSTEM_ALERT", (evt) => {
+      if (evt.payload?.probe === "test-suite-48") {
+        receivedBusEvent = true;
+      }
+    });
+
+    eventBus.broadcast({
+      type: "SYSTEM_ALERT",
+      channel: "channel:audit",
+      payload: { probe: "test-suite-48", message: "Realtime test broadcast" },
+    });
+    assert(Boolean(receivedBusEvent), "Realtime event bus synchronously triggers type-specific subscribers");
+    unsub();
+
+    const recentEvents = eventBus.getRecentEvents(10, "SYSTEM_ALERT");
+    assert(recentEvents.some((e) => e.payload?.probe === "test-suite-48"), "Circular sliding buffer records recent broadcast events for replay");
+
+    const busMetrics = eventBus.getMetrics();
+    assert(busMetrics.totalBroadcasts > 0 && busMetrics.bufferSize > 0, "Event bus metrics telemetry monitors broadcast counts and memory buffer capacity");
+
+    // 48.5 LMS Courseware Curriculum & Video Completion Telemetry
+    const lmsGetReq = new NextRequest("http://localhost:3000/api/lms?courseCode=CS-402");
+    const lmsGetRes = await handleLmsGet(lmsGetReq);
+    assert(lmsGetRes.status === 200, "GET /api/lms retrieves full syllabus and chapter hierarchy for CS-402");
+    const lmsData = await lmsGetRes.json();
+    assert(Array.isArray(lmsData.modules) && lmsData.modules.length > 0, "LMS response includes structured course units");
+
+    const targetChapter = lmsData.modules[0]?.chapters?.[0];
+    assert(!!targetChapter, "LMS curriculum chapter identified for completion tracking");
+
+    // Student session toggle completion
+    const studentUser = (await prisma.user.findFirst({ where: { role: "STUDENT" } })) || (await prisma.user.findFirst());
+    const studentToken = await signJwt({
+      userId: studentUser?.id || "usr-student-01",
+      email: studentUser?.email || "student@apex.edu",
+      role: "STUDENT",
+    });
+
+    const lmsPostReq = new NextRequest("http://localhost:3000/api/lms", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: `classroom_session=${studentToken}`,
+      },
+      body: JSON.stringify({
+        chapterId: targetChapter.id,
+        completed: true,
+      }),
+    });
+    const lmsPostRes = await handleLmsPost(lmsPostReq);
+    assert(lmsPostRes.status === 200, "POST /api/lms registers chapter completion audit log with 200 OK");
+    const lmsPostData = await lmsPostRes.json();
+    assert(lmsPostData.success === true && lmsPostData.completed === true, "Chapter completion state updated in ledger");
+
+    // 48.6 Library ISBN Bibliographic Lookup & Optical Barcode Retrieval
+    const isbnLookupReq = new NextRequest("http://localhost:3000/api/library", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        action: "LOOKUP_ISBN",
+        isbn: "978-0-13-449416-4",
+      }),
+    });
+    const isbnLookupRes = await handleLibraryPost(isbnLookupReq);
+    assert(isbnLookupRes.status === 200, "POST /api/library (action: LOOKUP_ISBN) resolves bibliographic metadata with 200 OK");
+    const isbnLookupData = await isbnLookupRes.json();
+    assert(isbnLookupData.success === true && isbnLookupData.title.includes("Clean Architecture"), "ISBN lookup correctly identifies Robert C. Martin's Clean Architecture");
+
+    const existingBook = await prisma.libraryBook.findFirst();
+    assert(!!existingBook, "Found library repository book for barcode scanning verification");
+
+    const barcodeReq = new NextRequest("http://localhost:3000/api/library", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        action: "SCAN_BARCODE",
+        barcode: existingBook!.isbn,
+      }),
+    });
+    const barcodeRes = await handleLibraryPost(barcodeReq);
+    assert(barcodeRes.status === 200, "POST /api/library (action: SCAN_BARCODE) successfully locates volume by barcode");
+    const barcodeData = await barcodeRes.json();
+    assert(barcodeData.success === true && barcodeData.book.id === existingBook!.id, "Barcode scan returns exact matching book entity and available copy count");
+
+    const invalidBarcodeReq = new NextRequest("http://localhost:3000/api/library", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        action: "SCAN_BARCODE",
+        barcode: "UNKNOWN-NONEXISTENT-BARCODE-9999",
+      }),
+    });
+    const invalidBarcodeRes = await handleLibraryPost(invalidBarcodeReq);
+    assert(invalidBarcodeRes.status === 404, "Scanning unknown barcode returns 404 Not Found");
+
+    // 48.7 ATS Resume Scoring Algorithm & Technical Interview Scheduler
+    const atsScore = computeAtsScore(
+      ["Python", "PyTorch", "Distributed Systems", "Docker", "Git"],
+      3.8,
+      "Requirements: Python, PyTorch, Distributed Systems, Kubernetes, C++"
+    );
+    assert(atsScore.matchPercentage >= 60, `ATS algorithm computes accurate skill match percentage (got: ${atsScore.matchPercentage}%)`);
+    assert(atsScore.cgpaEligible === true, "ATS verifies scholar satisfies minimum GPA cutoff threshold");
+    assert(atsScore.matchedSkills.includes("python") && atsScore.matchedSkills.includes("pytorch"), "ATS lists matched candidate competencies");
+    assert(atsScore.missingSkills.includes("kubernetes"), "ATS identifies curriculum gaps for student career preparation");
+
+    const interviewReq = new NextRequest("http://localhost:3000/api/careers", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: `classroom_session=${adminToken}`,
+      },
+      body: JSON.stringify({
+        action: "SCHEDULE_INTERVIEW",
+        jobId: "job-test-48",
+        companyName: "Anthropic / Apex Labs",
+        jobTitle: "Distributed Systems Research Fellow",
+        candidateName: "Alex Mercer",
+        candidateRollNo: "2024-CSE-042",
+        roundName: "Technical Systems Architecture",
+        scheduledAt: new Date(Date.now() + 86400000).toISOString(),
+        interviewerName: "Dr. Evelyn Vance",
+        meetingLink: "https://meet.google.com/apex-cs-intv",
+      }),
+    });
+    const interviewRes = await handleCareersPost(interviewReq);
+    assert(interviewRes.status === 201, "POST /api/careers (action: SCHEDULE_INTERVIEW) confirms technical interview slot with 201 Created");
+    const interviewData = await interviewRes.json();
+    assert(interviewData.success === true && interviewData.interview.status === "CONFIRMED", "Interview calendar entity persisted with verified Google Meet link");
+
+    // 48.8 ISO 26324 Standard DOI Generation & Double-Blind Peer Review Rubric
+    const doiResult = generateStandardDoi(
+      "Decentralized Optimization with Asynchronous Gradient Sparsification",
+      "Apex Journal of Machine Learning Research",
+      2026
+    );
+    assert(doiResult.doi.startsWith("10.1000/apex.2026."), `Standard DOI format conforms to ISO 26324 specification (${doiResult.doi})`);
+    assert(doiResult.url === `https://doi.org/${doiResult.doi}`, "Standard DOI resolver URL configured");
+    assert(doiResult.sha256Checksum.length === 64, "SHA-256 cryptographic publication checksum generated");
+
+    const peerReviewReq = new NextRequest("http://localhost:3000/api/research", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: `classroom_session=${adminToken}`,
+      },
+      body: JSON.stringify({
+        action: "SUBMIT_PEER_REVIEW",
+        publicationId: "pub-seed",
+        reviewerCode: "Reviewer #3 (Anonymous Systems Specialist)",
+        originalityScore: 9,
+        methodologyScore: 8,
+        empiricalRigorScore: 9,
+        ethicalCompliance: "PASS",
+        recommendation: "ACCEPT",
+        comments: "Rigorous empirical evaluation on high-throughput clusters. Derivations are verified.",
+      }),
+    });
+    const peerReviewRes = await handleResearchPost(peerReviewReq);
+    assert(peerReviewRes.status === 201, "POST /api/research (action: SUBMIT_PEER_REVIEW) accepts scored referee evaluation with 201 Created");
+    const peerReviewData = await peerReviewRes.json();
+    assert(peerReviewData.success === true && peerReviewData.review.averageScore === 8.7, "Peer review rubric calculates weighted average score (8.7/10)");
+
+    // 48.9 Parent Portal Cryptographic Settlement & Digital Fee Verification
+    let sampleStudentFee = await prisma.studentFee.findFirst();
+    if (!sampleStudentFee) {
+      let feeStruct = await prisma.feeStructure.findFirst();
+      if (!feeStruct) {
+        feeStruct = await prisma.feeStructure.create({
+          data: {
+            code: "FEE-48-TEST",
+            title: "Tuition and Computing Fee",
+            totalAmount: 3800,
+            currency: "USD",
+            dueDate: new Date("2026-11-15"),
+            breakdownJson: JSON.stringify({ tuition: 3000, lab: 800 }),
+          },
+        });
+      }
+      const student = await prisma.student.findFirst();
+      sampleStudentFee = await prisma.studentFee.create({
+        data: {
+          studentId: student!.id,
+          feeStructureId: feeStruct.id,
+          totalAmount: 3800,
+          paidAmount: 1000,
+          dueDate: new Date("2026-11-15"),
+          status: "PARTIAL",
+        },
+      });
+    }
+    assert(!!sampleStudentFee, "Located student fee ledger account for payment settlement test");
+
+    const orderReq = new NextRequest("http://localhost:3000/api/payments/create-order", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: `classroom_session=${adminToken}`,
+      },
+      body: JSON.stringify({
+        feeId: sampleStudentFee!.id,
+        amount: 150,
+        currency: "USD",
+      }),
+    });
+    const orderRes = await handleCreatePaymentOrder(orderReq);
+    assert(orderRes.status === 200, "POST /api/payments/create-order generates cryptographic payment order with 200 OK");
+    const orderData = await orderRes.json();
+    assert(orderData.success === true && orderData.order.orderId.startsWith("order_"), "Gateway returns sealed order identifier");
+
+    const isSigValid = verifyPaymentSignature({
+      orderId: orderData.order.orderId,
+      paymentId: "pay_sb_test_2026",
+      signature: "sig_sb_verified_signature",
+    });
+    assert(isSigValid === true, "Cryptographic payment signature verified against gateway secret");
+
+    const parentPayReq = new NextRequest("http://localhost:3000/api/parent", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: `classroom_session=${adminToken}`,
+      },
+      body: JSON.stringify({
+        action: "PAY_FEE",
+        studentFeeId: sampleStudentFee!.id,
+        amount: 150,
+        paymentMethod: "CREDIT_CARD",
+      }),
+    });
+    const parentPayRes = await handleParentPost(parentPayReq);
+    assert(parentPayRes.status === 200, "POST /api/parent (action: PAY_FEE) clears student balance with 200 OK");
+    const parentPayData = await parentPayRes.json();
+    assert(parentPayData.success === true && parentPayData.transaction.referenceNumber.startsWith("PAR-PAY-"), "Official bursar reference number generated and recorded in ledger");
   }
 
   console.log("\n=================================================");

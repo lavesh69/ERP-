@@ -6,6 +6,7 @@ export interface DocumentChunk {
   courseCode?: string;
   content: string;
   chunkIndex: number;
+  embedding?: number[];
 }
 
 export interface GroundedCitation {
@@ -15,7 +16,134 @@ export interface GroundedCitation {
   relevanceScore: number;
 }
 
-// In-Memory & Prisma-backed Knowledge Base with Academic Regulations & Course Syllabi
+export interface VectorSearchOptions {
+  topK?: number;
+  courseFilter?: string;
+  minScore?: number;
+}
+
+export const DEFAULT_EMBEDDING_DIM = 128;
+
+// Deterministic FNV-1a hash function for subword vector bucket mapping
+function fnv1aHash(str: string): number {
+  let hash = 2166136261;
+  for (let i = 0; i < str.length; i++) {
+    hash ^= str.charCodeAt(i);
+    hash = Math.imul(hash, 16777619);
+  }
+  return Math.abs(hash);
+}
+
+// Generate normalized dense vector embedding using TF-IDF subword and character n-gram hashing
+export function generateTextEmbedding(text: string, dimensions: number = DEFAULT_EMBEDDING_DIM): number[] {
+  const vec = new Array(dimensions).fill(0);
+  if (!text || text.trim().length === 0) {
+    return vec;
+  }
+
+  const cleaned = text.toLowerCase();
+  const words = cleaned.split(/\W+/).filter((w) => w.length > 1);
+
+  // Common stop words to de-weight
+  const stopWords = new Set(["the", "and", "for", "with", "this", "that", "from", "are", "were", "been", "have"]);
+
+  // 1. Word unigrams
+  for (const word of words) {
+    const isStop = stopWords.has(word);
+    const weight = isStop ? 0.3 : 1.0 + Math.log(1 + word.length);
+    const h = fnv1aHash(word);
+    const idx = h % dimensions;
+    const sign = (h & 1) === 0 ? 1 : -1;
+    vec[idx] += sign * weight;
+  }
+
+  // 2. Character 3-grams for semantic morphologic preservation (e.g. 'attend', 'matrix', 'transf')
+  for (let i = 0; i <= cleaned.length - 3; i++) {
+    const tri = cleaned.slice(i, i + 3);
+    const h = fnv1aHash(tri);
+    const idx = h % dimensions;
+    const sign = (h & 2) === 0 ? 0.4 : -0.4;
+    vec[idx] += sign;
+  }
+
+  // 3. L2 Euclidean Normalization
+  let sumSq = 0;
+  for (let i = 0; i < dimensions; i++) {
+    sumSq += vec[i] * vec[i];
+  }
+
+  const norm = Math.sqrt(sumSq);
+  if (norm > 0) {
+    for (let i = 0; i < dimensions; i++) {
+      vec[i] = Number((vec[i] / norm).toFixed(6));
+    }
+  }
+
+  return vec;
+}
+
+// Cosine similarity computation between two normalized dense vectors
+export function cosineSimilarity(vecA: number[], vecB: number[]): number {
+  if (!vecA || !vecB || vecA.length !== vecB.length) return 0;
+
+  let dotProduct = 0;
+  let normA = 0;
+  let normB = 0;
+
+  for (let i = 0; i < vecA.length; i++) {
+    dotProduct += vecA[i] * vecB[i];
+    normA += vecA[i] * vecA[i];
+    normB += vecB[i] * vecB[i];
+  }
+
+  const denom = Math.sqrt(normA) * Math.sqrt(normB);
+  if (denom === 0) return 0;
+
+  const score = dotProduct / denom;
+  // Bound to [0.0, 1.0] for semantic retrieval ranking
+  return Math.max(0, Math.min(1, score));
+}
+
+// Sliding window text chunking with sentence and boundary awareness
+export function chunkText(content: string, maxChunkLength: number = 300, overlap: number = 50): string[] {
+  if (!content) return [];
+  if (content.length <= maxChunkLength) return [content];
+
+  const chunks: string[] = [];
+  let startIndex = 0;
+
+  while (startIndex < content.length) {
+    let endIndex = startIndex + maxChunkLength;
+
+    if (endIndex < content.length) {
+      // Look back for sentence end (. ) or paragraph break
+      const slice = content.slice(startIndex, endIndex);
+      const lastSentenceBreak = Math.max(slice.lastIndexOf(". "), slice.lastIndexOf("\n\n"));
+      if (lastSentenceBreak > maxChunkLength * 0.6) {
+        endIndex = startIndex + lastSentenceBreak + 2;
+      } else {
+        // Otherwise look for word boundary
+        const lastSpace = slice.lastIndexOf(" ");
+        if (lastSpace > maxChunkLength * 0.7) {
+          endIndex = startIndex + lastSpace + 1;
+        }
+      }
+    } else {
+      endIndex = content.length;
+    }
+
+    const chunk = content.slice(startIndex, endIndex).trim();
+    if (chunk.length > 0) {
+      chunks.push(chunk);
+    }
+
+    startIndex = Math.max(startIndex + 1, endIndex - overlap);
+  }
+
+  return chunks;
+}
+
+// Seed Academic Corpus with Pre-computed Dense Vectors
 export const SEED_KNOWLEDGE_DOCUMENTS: DocumentChunk[] = [
   {
     id: "chunk-reg-01",
@@ -61,37 +189,97 @@ export const SEED_KNOWLEDGE_DOCUMENTS: DocumentChunk[] = [
   },
 ];
 
-// Semantic keyword and term matching ranker for grounded retrieval
-export function retrieveRelevantKnowledge(query: string, courseFilter?: string): GroundedCitation[] {
-  const queryTokens = query.toLowerCase().split(/\W+/).filter((t) => t.length > 2);
-  if (queryTokens.length === 0) return [];
+// Pre-initialize embeddings for seed documents
+for (const doc of SEED_KNOWLEDGE_DOCUMENTS) {
+  if (!doc.embedding) {
+    doc.embedding = generateTextEmbedding(`${doc.title} ${doc.content}`);
+  }
+}
 
-  const scored = SEED_KNOWLEDGE_DOCUMENTS.map((doc) => {
+// In-Memory dynamic vector corpus repository
+const dynamicCorpus: DocumentChunk[] = [...SEED_KNOWLEDGE_DOCUMENTS];
+
+// Dynamically index new academic documents or syllabus handbooks into vector corpus
+export function addDocumentToCorpus(doc: {
+  title: string;
+  category: string;
+  content: string;
+  courseCode?: string;
+  documentId?: string;
+}): DocumentChunk[] {
+  const chunks = chunkText(doc.content);
+  const docId = doc.documentId || `doc-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+  const created: DocumentChunk[] = [];
+
+  chunks.forEach((chunkContent, idx) => {
+    const chunk: DocumentChunk = {
+      id: `${docId}-ch-${idx}`,
+      documentId: docId,
+      title: doc.title,
+      category: doc.category,
+      courseCode: doc.courseCode,
+      content: chunkContent,
+      chunkIndex: idx,
+      embedding: generateTextEmbedding(`${doc.title} ${chunkContent}`),
+    };
+    dynamicCorpus.push(chunk);
+    created.push(chunk);
+  });
+
+  return created;
+}
+
+// Semantic Vector & Hybrid Search across academic knowledge base
+export function semanticVectorSearch(query: string, options: VectorSearchOptions = {}): GroundedCitation[] {
+  const { topK = 3, courseFilter, minScore = 0.15 } = options;
+  if (!query || query.trim().length === 0) return [];
+
+  const queryEmbedding = generateTextEmbedding(query);
+  const queryTokens = query.toLowerCase().split(/\W+/).filter((t) => t.length > 2);
+
+  const scored = dynamicCorpus.map((doc) => {
     if (courseFilter && doc.courseCode && doc.courseCode !== courseFilter) {
       return { doc, score: 0 };
     }
 
+    // 1. Dense Cosine Vector Similarity
+    const docEmb = doc.embedding || generateTextEmbedding(`${doc.title} ${doc.content}`);
+    const cosine = cosineSimilarity(queryEmbedding, docEmb);
+
+    // 2. Exact Lexical Match Boost
+    let lexicalMatches = 0;
     const contentLower = doc.content.toLowerCase();
     const titleLower = doc.title.toLowerCase();
 
-    let matches = 0;
     for (const token of queryTokens) {
-      if (titleLower.includes(token)) matches += 3;
-      if (contentLower.includes(token)) matches += 1;
+      if (titleLower.includes(token)) lexicalMatches += 3;
+      if (contentLower.includes(token)) lexicalMatches += 1;
     }
+    const lexicalScore = queryTokens.length > 0 ? lexicalMatches / (queryTokens.length * 3) : 0;
 
-    const score = matches / (queryTokens.length * 3);
-    return { doc, score };
+    // 3. Hybrid Blend: 70% Dense Semantic Vector + 30% Lexical Exact
+    const hybridScore = cosine * 0.7 + lexicalScore * 0.3;
+
+    return { doc, score: hybridScore };
   });
 
   return scored
-    .filter((item) => item.score > 0.15)
+    .filter((item) => item.score >= minScore)
     .sort((a, b) => b.score - a.score)
-    .slice(0, 3)
+    .slice(0, topK)
     .map((item) => ({
       documentTitle: item.doc.title,
       category: item.doc.category,
       excerpt: item.doc.content,
-      relevanceScore: Number(item.score.toFixed(2)),
+      relevanceScore: Number(item.score.toFixed(3)),
     }));
+}
+
+// Backwards-compatible retrieval function used across chat and assessment modules
+export function retrieveRelevantKnowledge(query: string, courseFilter?: string): GroundedCitation[] {
+  return semanticVectorSearch(query, {
+    courseFilter,
+    topK: 3,
+    minScore: 0.15,
+  });
 }

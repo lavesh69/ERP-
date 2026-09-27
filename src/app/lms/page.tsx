@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { AppShell } from "@/components/layout/AppShell";
 import { useApp } from "@/context/AppContext";
 import { SkeletonCard } from "@/components/common/SkeletonLoader";
@@ -26,6 +26,13 @@ import {
   FileCode,
   Video,
   Trash2,
+  Play,
+  Pause,
+  RotateCcw,
+  Volume2,
+  VolumeX,
+  Maximize2,
+  Zap,
 } from "lucide-react";
 
 interface Chapter {
@@ -82,6 +89,109 @@ export default function LMSPage() {
   const isFacultyOrAdmin = ["FACULTY", "PROFESSOR", "HOD", "PRINCIPAL", "SUPER_ADMIN", "INSTITUTION_ADMIN"].includes(
     currentRole
   );
+
+  // HTML5 Video Player & Telemetry State
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [playbackSpeed, setPlaybackSpeed] = useState<number>(1);
+  const [videoProgress, setVideoProgress] = useState<number>(0);
+  const [currentTimeSec, setCurrentTimeSec] = useState<number>(0);
+  const [durationSec, setDurationSec] = useState<number>(180);
+  const [streamQuality, setStreamQuality] = useState<string>("1080p HD");
+  const [isMuted, setIsMuted] = useState(false);
+  const [hasTriggeredAutoMilestone, setHasTriggeredAutoMilestone] = useState(false);
+
+  // In-Video Interactive Comprehension Checkpoint State
+  const [isCheckpointModalOpen, setIsCheckpointModalOpen] = useState(false);
+  const [quizSelectedOption, setQuizSelectedOption] = useState<number | null>(null);
+  const [quizSubmitted, setQuizSubmitted] = useState(false);
+  const [quizEarnedXp, setQuizEarnedXp] = useState(false);
+
+  const formatTime = (seconds: number) => {
+    if (isNaN(seconds) || seconds < 0) return "0:00";
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${mins}:${secs < 10 ? "0" : ""}${secs}`;
+  };
+
+  const handleTimeUpdate = () => {
+    if (!videoRef.current) return;
+    const current = videoRef.current.currentTime;
+    const dur = videoRef.current.duration || 180;
+    setCurrentTimeSec(current);
+    setDurationSec(dur);
+    const progress = Math.min(100, (current / dur) * 100);
+    setVideoProgress(progress);
+
+    // Auto completion when watch time reaches >= 80%
+    if (progress >= 80 && !hasTriggeredAutoMilestone && activeChapter && !activeChapter.completed) {
+      setHasTriggeredAutoMilestone(true);
+      handleToggleCompletion(activeChapter.id, false);
+      showToast("🎉 80% Lecture milestone reached! Database progress automatically recorded.", "success");
+    }
+  };
+
+  const handleTogglePlay = () => {
+    if (!videoRef.current) return;
+    if (isPlaying) {
+      videoRef.current.pause();
+      setIsPlaying(false);
+    } else {
+      videoRef.current
+        .play()
+        .then(() => setIsPlaying(true))
+        .catch(() => {
+          setIsPlaying(true);
+        });
+    }
+  };
+
+  const handleSetSpeed = (speed: number) => {
+    setPlaybackSpeed(speed);
+    if (videoRef.current) {
+      videoRef.current.playbackRate = speed;
+    }
+    showToast(`Playback speed set to ${speed}x`, "info");
+  };
+
+  const handleSeek = (deltaSeconds: number) => {
+    if (!videoRef.current) return;
+    const newTime = Math.max(0, Math.min(durationSec, videoRef.current.currentTime + deltaSeconds));
+    videoRef.current.currentTime = newTime;
+    setCurrentTimeSec(newTime);
+  };
+
+  const handleSeekToPercent = (percent: number) => {
+    if (!videoRef.current) return;
+    const targetTime = (percent / 100) * durationSec;
+    videoRef.current.currentTime = targetTime;
+    setCurrentTimeSec(targetTime);
+    setVideoProgress(percent);
+  };
+
+  const checkpointQuiz = {
+    title: "Comprehension Checkpoint: Matrix Gradient Formulations",
+    question: "In high-dimensional backpropagation, how is the weight gradient computed using batch size m, activation matrix A, and error delta?",
+    options: [
+      { text: "d(L)/d(W) = (1/m) * delta * A^(T)", correct: true, explanation: "Correct! The batch gradient is the outer product of incoming delta and transpose of preceding activation matrix A." },
+      { text: "d(L)/d(W) = delta + A^(T)", correct: false, explanation: "Incorrect: Activation scaling requires matrix multiplication with transposed activations, not vector addition." },
+      { text: "d(L)/d(W) = delta * (1 / ||A||)", correct: false, explanation: "Incorrect: Loss gradients depend directly on activations A rather than its Euclidean norm inverse." },
+    ],
+  };
+
+  const handleQuizSubmit = () => {
+    if (quizSelectedOption === null) {
+      showToast("Please choose an answer option", "warning");
+      return;
+    }
+    setQuizSubmitted(true);
+    if (checkpointQuiz.options[quizSelectedOption].correct) {
+      setQuizEarnedXp(true);
+      showToast("⭐ Correct derivation! +10 XP awarded to your learning profile.", "success");
+    } else {
+      showToast("Review the mathematical derivation below and retry.", "warning");
+    }
+  };
 
   useEffect(() => {
     async function loadLMS() {
@@ -564,19 +674,160 @@ Verification Code: APX-LMS-2026-${Date.now()}
             {/* Active Lecture Player / Reader Workspace (7 cols) */}
             <div className="lg:col-span-7 flex flex-col gap-4">
               <div className="glass-panel rounded-2xl shadow-soft p-6 flex flex-col gap-4">
-                {/* Simulated Lecture Media Player Container */}
-                <div className="w-full aspect-video rounded-xl bg-charcoal-900 text-white flex flex-col items-center justify-center p-6 relative overflow-hidden group shadow-md">
-                  <PlayCircle className="h-16 w-16 text-rose-accent group-hover:scale-110 transition-transform cursor-pointer" />
-                  <span className="text-xs font-bold mt-2 text-center px-4">
-                    {activeChapter?.title || "1.1 High-Dimensional Matrix Calculus & Backpropagation"}
-                  </span>
-                  <span className="text-[10px] text-charcoal-400">
-                    Lecturer: Prof. Sarah Chen • Recorded in Alan Turing Hall (LH-4B)
-                  </span>
-                  <div className="absolute bottom-3 right-3 flex items-center gap-2">
-                    <span className="px-2 py-0.5 rounded bg-black/60 text-[10px] font-mono">
-                      1080p HD
-                    </span>
+                {/* Real HTML5 Lecture Media Player Container */}
+                <div className="w-full aspect-video rounded-xl bg-charcoal-950 text-white flex flex-col justify-between p-4 relative overflow-hidden group shadow-lg border border-charcoal-800">
+                  {/* HTML5 Video Element */}
+                  <video
+                    ref={videoRef}
+                    onTimeUpdate={handleTimeUpdate}
+                    onEnded={() => {
+                      setIsPlaying(false);
+                      if (activeChapter && !activeChapter.completed) {
+                        handleToggleCompletion(activeChapter.id, false);
+                      }
+                    }}
+                    poster="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=1200&auto=format&fit=crop"
+                    className="absolute inset-0 w-full h-full object-cover"
+                    src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4"
+                    muted={isMuted}
+                    playsInline
+                  />
+
+                  {/* Gradient Overlay for Controls */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-black/40 pointer-events-none" />
+
+                  {/* Top Bar: Title & Quality Selector */}
+                  <div className="relative z-10 flex items-center justify-between">
+                    <div className="flex flex-col">
+                      <span className="text-xs font-bold text-white drop-shadow truncate max-w-md">
+                        {activeChapter?.title || "1.1 High-Dimensional Matrix Calculus & Backpropagation"}
+                      </span>
+                      <span className="text-[10px] text-ivory-300 drop-shadow">
+                        Prof. Sarah Chen • Alan Turing Hall (LH-4B) • Stream Verified
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => setIsCheckpointModalOpen(true)}
+                        className="px-2.5 py-1 rounded-lg bg-rose-primary/90 hover:bg-rose-primary text-white text-[10px] font-bold flex items-center gap-1 shadow-xs transition-colors backdrop-blur-sm"
+                      >
+                        <Zap className="h-3 w-3 text-amber-300" />
+                        <span>Checkpoint Quiz</span>
+                      </button>
+
+                      <select
+                        value={streamQuality}
+                        onChange={(e) => {
+                          setStreamQuality(e.target.value);
+                          showToast(`Stream calibrated to ${e.target.value}`, "info");
+                        }}
+                        className="px-2 py-0.5 rounded bg-black/60 text-[10px] font-mono border border-white/20 text-white outline-none cursor-pointer"
+                      >
+                        <option value="1080p HD">1080p HD</option>
+                        <option value="720p">720p</option>
+                        <option value="480p">480p</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* Center Play Button Overlay (when paused) */}
+                  {!isPlaying && (
+                    <button
+                      onClick={handleTogglePlay}
+                      className="absolute inset-0 m-auto h-16 w-16 rounded-full bg-rose-primary/90 hover:bg-rose-primary text-white flex items-center justify-center shadow-lg transition-transform hover:scale-110 z-10"
+                    >
+                      <Play className="h-7 w-7 ml-1 text-white fill-white" />
+                    </button>
+                  )}
+
+                  {/* Bottom Controls Bar */}
+                  <div className="relative z-10 flex flex-col gap-2">
+                    {/* Scrubbing Progress Bar */}
+                    <div className="flex items-center gap-2">
+                      <div
+                        onClick={(e) => {
+                          const rect = e.currentTarget.getBoundingClientRect();
+                          const clickX = e.clientX - rect.left;
+                          const pct = (clickX / rect.width) * 100;
+                          handleSeekToPercent(pct);
+                        }}
+                        className="flex-1 h-2 bg-white/25 rounded-full overflow-hidden cursor-pointer relative group/bar"
+                      >
+                        <div
+                          className="h-full bg-rose-primary rounded-full transition-all duration-100"
+                          style={{ width: `${videoProgress}%` }}
+                        />
+                      </div>
+                      <span className="text-[10px] font-mono text-white/90 shrink-0">
+                        {formatTime(currentTimeSec)} / {formatTime(durationSec)}
+                      </span>
+                    </div>
+
+                    {/* Button Row */}
+                    <div className="flex items-center justify-between text-xs">
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={handleTogglePlay}
+                          className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white transition-colors"
+                          title={isPlaying ? "Pause" : "Play"}
+                        >
+                          {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4 fill-white" />}
+                        </button>
+
+                        <button
+                          onClick={() => handleSeek(-10)}
+                          className="px-2 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-white text-[10px] font-bold"
+                          title="Rewind 10 seconds"
+                        >
+                          -10s
+                        </button>
+
+                        <button
+                          onClick={() => handleSeek(10)}
+                          className="px-2 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-white text-[10px] font-bold"
+                          title="Forward 10 seconds"
+                        >
+                          +10s
+                        </button>
+
+                        <button
+                          onClick={() => setIsMuted(!isMuted)}
+                          className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white transition-colors"
+                          title={isMuted ? "Unmute" : "Mute"}
+                        >
+                          {isMuted ? <VolumeX className="h-4 w-4 text-red-400" /> : <Volume2 className="h-4 w-4" />}
+                        </button>
+                      </div>
+
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-[10px] text-white/70 font-semibold mr-1">Speed:</span>
+                        {[0.75, 1.0, 1.25, 1.5, 2.0].map((spd) => (
+                          <button
+                            key={spd}
+                            onClick={() => handleSetSpeed(spd)}
+                            className={`px-1.5 py-0.5 rounded text-[10px] font-bold transition-all ${
+                              playbackSpeed === spd
+                                ? "bg-rose-primary text-white"
+                                : "bg-white/10 hover:bg-white/20 text-white/80"
+                            }`}
+                          >
+                            {spd}x
+                          </button>
+                        ))}
+
+                        <div className="ml-2 pl-2 border-l border-white/20 flex items-center gap-1">
+                          <span className="text-[10px] font-mono text-emerald-400 font-bold">
+                            {Math.round(videoProgress)}%
+                          </span>
+                          {videoProgress >= 80 && (
+                            <span title="80% Milestone Reached">
+                              <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400 shrink-0" />
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
 
@@ -881,6 +1132,96 @@ Verification Code: APX-LMS-2026-${Date.now()}
             </button>
           </div>
         </form>
+      </Modal>
+
+      {/* Interactive Comprehension Checkpoint Quiz Modal */}
+      <Modal
+        isOpen={isCheckpointModalOpen}
+        onClose={() => setIsCheckpointModalOpen(false)}
+        title={checkpointQuiz.title}
+        description="Verify your comprehension of the core mathematical principles from this lecture segment to earn course mastery points."
+      >
+        <div className="flex flex-col gap-4 mt-2">
+          <div className="p-3.5 rounded-xl bg-surface-soft dark:bg-charcoal-800/80 border border-border dark:border-charcoal-700">
+            <span className="text-[10px] font-bold text-rose-primary dark:text-rose-accent uppercase tracking-wider block mb-1">
+              Lecture Checkpoint Question
+            </span>
+            <p className="text-xs font-bold text-charcoal-900 dark:text-ivory-100 leading-relaxed">
+              {checkpointQuiz.question}
+            </p>
+          </div>
+
+          <div className="flex flex-col gap-2">
+            {checkpointQuiz.options.map((opt, idx) => (
+              <button
+                key={idx}
+                type="button"
+                onClick={() => {
+                  if (!quizSubmitted) setQuizSelectedOption(idx);
+                }}
+                className={`p-3 rounded-xl border text-left text-xs transition-all flex items-start gap-2.5 ${
+                  quizSelectedOption === idx
+                    ? "border-rose-primary bg-rose-container/40 dark:bg-rose-dark/20 text-rose-primary dark:text-rose-accent font-bold"
+                    : "border-border dark:border-charcoal-700 hover:bg-surface-soft dark:hover:bg-charcoal-800 text-charcoal-800 dark:text-ivory-200"
+                } ${
+                  quizSubmitted && opt.correct
+                    ? "border-emerald-500 bg-emerald-50 dark:bg-emerald-950/30 text-emerald-800 dark:text-emerald-200 font-bold"
+                    : ""
+                }`}
+              >
+                <span className="h-5 w-5 rounded-full border border-current flex items-center justify-center text-[10px] shrink-0 mt-0.5">
+                  {String.fromCharCode(65 + idx)}
+                </span>
+                <div className="flex flex-col gap-1">
+                  <span>{opt.text}</span>
+                  {quizSubmitted && (
+                    <span className={`text-[10px] ${opt.correct ? "text-emerald-600 dark:text-emerald-400 font-medium" : "text-charcoal-500"}`}>
+                      {opt.explanation}
+                    </span>
+                  )}
+                </div>
+              </button>
+            ))}
+          </div>
+
+          {quizEarnedXp && (
+            <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-300 dark:border-emerald-700 flex items-center gap-2 text-xs font-bold text-emerald-800 dark:text-emerald-200">
+              <Award className="h-5 w-5 text-emerald-600" />
+              <span>Checkpoint Cleared! +10 XP awarded to your academic transcript.</span>
+            </div>
+          )}
+
+          <div className="flex items-center justify-end gap-2 pt-3 border-t border-border dark:border-charcoal-800">
+            <button
+              type="button"
+              onClick={() => setIsCheckpointModalOpen(false)}
+              className="px-4 py-2 rounded-xl text-xs font-bold border border-border dark:border-charcoal-700 text-charcoal-700 dark:text-ivory-200 hover:bg-surface-soft"
+            >
+              Close
+            </button>
+            {!quizSubmitted ? (
+              <button
+                type="button"
+                onClick={handleQuizSubmit}
+                className="px-4 py-2 rounded-xl text-xs font-bold bg-rose-primary hover:bg-rose-dark text-white shadow-xs"
+              >
+                Submit Answer
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={() => {
+                  setQuizSubmitted(false);
+                  setQuizSelectedOption(null);
+                  setQuizEarnedXp(false);
+                }}
+                className="px-4 py-2 rounded-xl text-xs font-bold bg-surface-soft text-charcoal-800 dark:text-ivory-100 hover:bg-rose-container"
+              >
+                Retry Checkpoint
+              </button>
+            )}
+          </div>
+        </div>
       </Modal>
     </AppShell>
   );
