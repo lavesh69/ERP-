@@ -7,13 +7,26 @@ const ALLOWED_ORIGIN_PATTERNS = [
   /^https:\/\/.*-lavesh69s-projects\.vercel\.app$/,
 ];
 
-function isOriginAllowed(origin: string | null): boolean {
-  if (!origin) return false;
+function isOriginAllowed(origin: string | null, host: string | null): boolean {
+  if (!origin) return true; // direct server or same-origin without header
+  if (host && (origin.includes(host) || origin.endsWith(host))) return true;
   return ALLOWED_ORIGIN_PATTERNS.some((pattern) => pattern.test(origin));
 }
 
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
+  const host = req.headers.get("host");
+  const origin = req.headers.get("origin");
+
+  // CSRF Protection for state-mutating API requests
+  if (pathname.startsWith("/api/") && ["POST", "PUT", "PATCH", "DELETE"].includes(req.method)) {
+    if (origin && !isOriginAllowed(origin, host)) {
+      return NextResponse.json(
+        { error: "Forbidden: CSRF Origin verification failed." },
+        { status: 403 }
+      );
+    }
+  }
 
   // Skip static files, Next.js internals, and public api/auth endpoints
   if (
@@ -93,8 +106,7 @@ export async function middleware(req: NextRequest) {
 
 
   // CORS Handling for APIs
-  const origin = req.headers.get("origin");
-  const isAllowed = isOriginAllowed(origin);
+  const isAllowed = isOriginAllowed(origin, host);
 
   if (req.method === "OPTIONS") {
     const preflightHeaders = new Headers();
