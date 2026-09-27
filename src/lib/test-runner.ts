@@ -71,6 +71,7 @@ import { GET as handleFinance } from "@/app/api/finance/route";
 import { GET as handleParentGet, POST as handleParentPost } from "@/app/api/parent/route";
 import { GET as handleFacultyGet, PATCH as handleFacultyPatch, POST as handleFacultyPost } from "@/app/api/faculty/route";
 import { GET as handleStudentGet, PATCH as handleStudentPatch } from "@/app/api/students/route";
+import { GET as handleTimetableGet, PATCH as handleTimetablePatch } from "@/app/api/timetable/route";
 import { recordAttendanceException, getAttendanceExceptions, clearAttendanceExceptions } from "@/lib/attendance/exceptions";
 
 async function runTestSuite() {
@@ -3408,6 +3409,138 @@ BIO-599,Synthetic Biology Principles,Syn Bio,3,BIO,BSC-BIO,CORE,THEORY,3`;
     assert(!!dataStudentById.student.portfolio, "Co-curricular technical portfolio returned");
     assert(Array.isArray(dataStudentById.student.portfolio.certifications), "Technical certifications array present in portfolio");
     assert(Array.isArray(dataStudentById.student.portfolio.clubMemberships), "Student society / club memberships recorded");
+
+    // ==========================================
+    // GROUP 44: Intelligent Timetable Engine, Space Conflict & Substitute Workflows
+    // ==========================================
+    console.log("\n📦 Running Group 44: Intelligent Timetable Engine, Space Conflict & Substitute Workflows");
+
+    // 44.1 GET /api/timetable returns slots, metrics, and metadata
+    const timetableReq = new NextRequest("http://localhost:3000/api/timetable");
+    const timetableRes = await handleTimetableGet(timetableReq);
+    assert(timetableRes.status === 200, "GET /api/timetable returns 200 OK");
+    const timetableData = await timetableRes.json();
+    assert(Array.isArray(timetableData.slots) && timetableData.slots.length > 0, "Timetable slots array populated");
+    assert(!!timetableData.metrics, "Academic scheduling telemetry metrics returned");
+    assert(typeof timetableData.metrics.totalSlots === "number", "Total scheduled slots counter computed");
+    assert(typeof timetableData.metrics.totalLectureHours === "number", "Total lecture contact hours computed");
+    assert(timetableData.metrics.clashesCount === 0, "Collision engine confirms 0 space/faculty clashes");
+
+    // 44.2 EXAM Mode Timetable
+    const examTimetableReq = new NextRequest("http://localhost:3000/api/timetable?mode=EXAM");
+    const examTimetableRes = await handleTimetableGet(examTimetableReq);
+    assert(examTimetableRes.status === 200, "GET /api/timetable?mode=EXAM returns 200 OK");
+    const examData = await examTimetableRes.json();
+    assert(examData.mode === "EXAM", "Timetable mode reports EXAM");
+    assert(Array.isArray(examData.slots) && examData.slots.length > 0, "Examination schedule slots populated");
+    assert(examData.slots.some((s: any) => s.courseType === "EXAM"), "Exam slot contains EXAM courseType");
+
+    // 44.3 Capacity Mismatch Prevention
+    const capacityMismatch = detectTimetableConflict(
+      {
+        dayOfWeek: "FRIDAY",
+        startTime: "14:00",
+        endTime: "15:30",
+        roomId: "rm-bio-lab",
+        roomName: "CRISPR Wet Lab",
+        facultyId: "fac-chen-01",
+        facultyName: "Prof. Sarah Chen",
+        courseCode: "CS-402",
+        courseTitle: "Neural Networks",
+        sectionId: "sec-cs-5a",
+        sectionName: "Section 5-A",
+        roomCapacity: 40,
+        sectionCapacity: 60,
+      },
+      []
+    );
+    assert(capacityMismatch.hasConflict && capacityMismatch.type === "CAPACITY_MISMATCH", "Capacity mismatch prevented when section size exceeds room desks");
+
+    // 44.4 Specialized Lab Space Matching
+    const labSpaceMismatch = detectTimetableConflict(
+      {
+        dayOfWeek: "THURSDAY",
+        startTime: "10:00",
+        endTime: "12:00",
+        roomId: "rm-4b",
+        roomName: "Alan Turing Lecture Hall",
+        facultyId: "fac-chen-01",
+        facultyName: "Prof. Sarah Chen",
+        courseCode: "CS-402L",
+        courseTitle: "Deep Learning Lab",
+        sectionId: "sec-cs-5a",
+        sectionName: "Section 5-A",
+        courseType: "LAB",
+        roomType: "LECTURE_HALL",
+      },
+      []
+    );
+    assert(labSpaceMismatch.hasConflict && labSpaceMismatch.type === "ROOM_TYPE_MISMATCH", "Lab course prevented from being booked in non-lab lecture hall");
+
+    // 44.5 Invalid Chronological Time Bounds
+    const invalidTime = detectTimetableConflict(
+      {
+        dayOfWeek: "MONDAY",
+        startTime: "14:00",
+        endTime: "13:00",
+        roomId: "rm-4b",
+        roomName: "Alan Turing Lecture Hall",
+        facultyId: "fac-chen-01",
+        facultyName: "Prof. Sarah Chen",
+        courseCode: "CS-402",
+        courseTitle: "Neural Networks",
+        sectionId: "sec-cs-5a",
+        sectionName: "Section 5-A",
+      },
+      []
+    );
+    assert(invalidTime.hasConflict && invalidTime.type === "TIME_INVALID", "Invalid chronological time range strictly rejected");
+
+    // 44.6 Substitute Faculty Assignment via PATCH
+    const sampleSlot = await prisma.timetableSlot.findFirst({
+      include: { faculty: true },
+    });
+    if (sampleSlot) {
+      const busyFacultyIds = (
+        await prisma.timetableSlot.findMany({
+          where: { dayOfWeek: sampleSlot.dayOfWeek },
+          select: { facultyId: true },
+        })
+      ).map((s) => s.facultyId);
+
+      const freeFaculty = await prisma.faculty.findFirst({
+        where: { id: { notIn: [...busyFacultyIds, sampleSlot.facultyId] } },
+      });
+
+      if (freeFaculty) {
+        const adminUser = (await prisma.user.findFirst({ where: { role: "ADMIN" } })) || (await prisma.user.findFirst({ where: { role: "SUPER_ADMIN" } }));
+        const testAdminToken = await signJwt({
+          userId: adminUser?.id || "usr-admin-01",
+          email: adminUser?.email || "admin@apex.edu",
+          role: "INSTITUTION_ADMIN",
+        });
+
+        const substituteReq = new NextRequest("http://localhost:3000/api/timetable", {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Cookie: `classroom_session=${testAdminToken}`,
+          },
+          body: JSON.stringify({
+            action: "ASSIGN_SUBSTITUTE",
+            slotId: sampleSlot.id,
+            substituteFacultyId: freeFaculty.id,
+            remarks: "Faculty attending international research symposium",
+          }),
+        });
+
+        const substituteRes = await handleTimetablePatch(substituteReq);
+        assert(substituteRes.status === 200, "PATCH /api/timetable ASSIGN_SUBSTITUTE succeeds with 200 OK");
+        const subData = await substituteRes.json();
+        assert(subData.success === true, "Substitute teacher assignment confirmed");
+        assert(subData.slot.facultyId === freeFaculty.id, "Slot facultyId updated to substitute instructor");
+      }
+    }
   }
 
   console.log("\n=================================================");
