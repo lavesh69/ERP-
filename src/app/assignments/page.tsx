@@ -110,21 +110,35 @@ export default function AssignmentsPage() {
     if (!selectedAssignment) return;
     setIsSubmitting(true);
     try {
-      const res = await fetch("/api/assignments/submit", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          assignmentId: selectedAssignment.id,
-          content: submitContent || "Student completed coursework solution",
-          fileUrl: submitFileUrl || "/uploads/submissions/assignment-solution.pdf",
-        }),
-      });
+      let res: Response;
+      if (selectedFile) {
+        const formData = new FormData();
+        formData.append("assignmentId", selectedAssignment.id);
+        formData.append("content", submitContent || "Student completed coursework solution");
+        formData.append("file", selectedFile);
+        res = await fetch("/api/assignments/submit", {
+          method: "POST",
+          body: formData,
+        });
+      } else {
+        res = await fetch("/api/assignments/submit", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            assignmentId: selectedAssignment.id,
+            content: submitContent || "Student completed coursework solution",
+            fileUrl: submitFileUrl || "/uploads/submissions/assignment-solution.pdf",
+          }),
+        });
+      }
+
       const data = await res.json();
       if (res.ok) {
         showToast(data.message || "Solution submitted successfully", "success");
         setIsSubmitModalOpen(false);
         setSubmitContent("");
         setSubmitFileUrl("");
+        setSelectedFile(null);
         triggerRefresh();
       } else {
         showToast(data.error || "Failed to submit assignment", "error");

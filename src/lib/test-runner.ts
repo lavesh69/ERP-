@@ -112,6 +112,10 @@ import { GET as handleCareersGet, POST as handleCareersPost } from "@/app/api/ca
 import { computeAtsScore } from "@/lib/careers/ats-engine";
 import { GET as handleResearchGet, POST as handleResearchPost } from "@/app/api/research/route";
 import { generateStandardDoi } from "@/lib/research/doi-engine";
+import { GET as handleAdminSettingsGet, POST as handleAdminSettingsPost } from "@/app/api/admin/settings/route";
+import { GET as handleEmailsGet } from "@/app/api/emails/route";
+import { GET as handleDocumentDownloadGet } from "@/app/api/documents/download/route";
+import { POST as handleResetPasswordPost } from "@/app/api/auth/reset-password/route";
 
 async function runTestSuite() {
   console.log("=================================================");
@@ -4309,6 +4313,93 @@ By breaking down large monolithic systems into decoupled microservices, systems 
     assert(parentPayRes.status === 200, "POST /api/parent (action: PAY_FEE) clears student balance with 200 OK");
     const parentPayData = await parentPayRes.json();
     assert(parentPayData.success === true && parentPayData.transaction.referenceNumber.startsWith("PAR-PAY-"), "Official bursar reference number generated and recorded in ledger");
+  }
+
+  // TEST 49: Enterprise Hardening & Vulnerability Remediation (Phase 19 Verification)
+  console.log("📌 Group 49: Enterprise Hardening & Vulnerability Remediation");
+  {
+    // 1. Admin Settings Endpoint RBAC Authorization Check (CWE-306 Remediation)
+    const settingsUnauthReq = new NextRequest("http://localhost:3000/api/admin/settings", {
+      method: "GET",
+    });
+    const settingsUnauthRes = await handleAdminSettingsGet(settingsUnauthReq);
+    assert(settingsUnauthRes.status === 401, "GET /api/admin/settings without auth returns 401 Unauthorized (CWE-306 resolved)");
+
+    const superAdminToken = await signJwt({
+      userId: "test-admin-sec-id",
+      email: "secadmin@university.edu",
+      role: "SUPER_ADMIN",
+    });
+
+    const settingsAdminReq = new NextRequest("http://localhost:3000/api/admin/settings", {
+      method: "GET",
+      headers: {
+        Cookie: `classroom_session=${superAdminToken}`,
+      },
+    });
+    const settingsAdminRes = await handleAdminSettingsGet(settingsAdminReq);
+    assert(settingsAdminRes.status === 200, "GET /api/admin/settings with admin JWT returns 200 OK and settings payload");
+
+    // 2. Email Outbox Exposure Remediation (CWE-200 / CWE-306 Remediation)
+    const emailsUnauthReq = new NextRequest("http://localhost:3000/api/emails", {
+      method: "GET",
+    });
+    const emailsUnauthRes = await handleEmailsGet(emailsUnauthReq);
+    assert(emailsUnauthRes.status === 401, "GET /api/emails without auth returns 401 Unauthorized (CWE-200 closed)");
+
+    const emailsAdminReq = new NextRequest("http://localhost:3000/api/emails", {
+      method: "GET",
+      headers: {
+        Cookie: `classroom_session=${superAdminToken}`,
+      },
+    });
+    const emailsAdminRes = await handleEmailsGet(emailsAdminReq);
+    assert(emailsAdminRes.status === 200, "GET /api/emails with admin JWT returns outbox with 200 OK");
+
+    // 3. Document Download Route & Signature Security (Missing Route / Path Traversal Remediation)
+    const downloadTamperedReq = new NextRequest("http://localhost:3000/api/documents/download?key=secret.pdf&sig=invalid_signature&expires=9999999999999", {
+      method: "GET",
+    });
+    const downloadTamperedRes = await handleDocumentDownloadGet(downloadTamperedReq);
+    assert(downloadTamperedRes.status === 403, "GET /api/documents/download with forged HMAC token returns 403 Forbidden");
+
+    const downloadMissingReq = new NextRequest("http://localhost:3000/api/documents/download", {
+      method: "GET",
+    });
+    const downloadMissingRes = await handleDocumentDownloadGet(downloadMissingReq);
+    assert(downloadMissingRes.status === 400, "GET /api/documents/download without filename key returns 400 Bad Request");
+
+    // 4. Password Reset Token Single-Use Revocation (Replay Prevention)
+    const testUser = await prisma.user.findFirst();
+    assert(!!testUser, "Found existing seed user for password reset token lifecycle test");
+
+    const testResetToken = createPasswordResetToken(testUser!.email, testUser!.id);
+    assert((await isTokenRevoked(testResetToken)) === false, "Generated password reset token is active prior to use");
+
+    // First use: password reset
+    const firstResetReq = new NextRequest("http://localhost:3000/api/auth/reset-password", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        token: testResetToken,
+        newPassword: "StrongEnterprisePassword2026!@#",
+      }),
+    });
+    const firstResetRes = await handleResetPasswordPost(firstResetReq);
+    assert(firstResetRes.status === 200, "POST /api/auth/reset-password successfully resets password on first attempt");
+    assert((await isTokenRevoked(testResetToken)) === true, "Password reset token is revoked immediately upon consumption");
+
+    // Second use: replay attack attempt
+    const replayResetReq = new NextRequest("http://localhost:3000/api/auth/reset-password", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        token: testResetToken,
+        newPassword: "AttackerReplayPassword2026!@#",
+      }),
+    });
+    const replayResetRes = await handleResetPasswordPost(replayResetReq);
+    assert(replayResetRes.status === 400, "POST /api/auth/reset-password rejects replayed/revoked reset token with 400 Bad Request");
   }
 
   console.log("\n=================================================");

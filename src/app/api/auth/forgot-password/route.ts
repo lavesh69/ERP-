@@ -61,11 +61,12 @@ export async function POST(req: NextRequest) {
 
     recordOtpDispatch(cleanEmail, clientIp);
 
+    const isDev = process.env.NODE_ENV !== "production";
+
     return NextResponse.json({
       success: true,
       message: `Password reset instructions dispatched to ${cleanEmail}. Check inbox or Outbox.`,
-      resetToken,
-      otpCode,
+      ...(isDev ? { resetToken, otpCode } : {}),
       expiresInMinutes: 30,
     });
   } catch (error: any) {

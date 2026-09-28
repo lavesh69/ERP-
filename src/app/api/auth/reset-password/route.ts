@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db/prisma";
 import { verifyPasswordResetToken, hashPassword } from "@/lib/auth/password";
+import { isTokenRevoked, revokeToken } from "@/lib/auth/token-revocation";
 
 export async function POST(req: NextRequest) {
   try {
@@ -21,6 +22,13 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    if (await isTokenRevoked(token)) {
+      return NextResponse.json(
+        { error: "This password reset token has already been used or invalidated." },
+        { status: 400 }
+      );
+    }
+
     const verification = verifyPasswordResetToken(token);
     if (!verification.valid || !verification.userId) {
       return NextResponse.json(
@@ -36,6 +44,9 @@ export async function POST(req: NextRequest) {
       where: { id: verification.userId },
       data: { passwordHash: hashedPassword },
     });
+
+    // Invalidate the reset token to prevent reuse
+    await revokeToken(token, 1800);
 
     return NextResponse.json({
       success: true,

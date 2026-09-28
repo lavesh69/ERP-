@@ -17,19 +17,20 @@ export function MobileBottomBar() {
   const { setIsAIChatOpen, currentRole } = useApp();
 
   const isStudent = currentRole === "STUDENT";
+  const isParent = currentRole === "PARENT";
 
   const navItems = [
     {
       name: "Dashboard",
-      href: "/",
+      href: isParent ? "/parent" : "/",
       icon: LayoutDashboard,
-      isActive: pathname === "/",
+      isActive: isParent ? pathname === "/parent" : pathname === "/",
     },
     {
-      name: "Students",
-      href: isStudent ? "/students/profile" : "/students",
+      name: isParent ? "Ward Portal" : "Students",
+      href: isParent ? "/parent" : isStudent ? "/students/profile" : "/students",
       icon: GraduationCap,
-      isActive: pathname.startsWith("/students"),
+      isActive: isParent ? pathname.startsWith("/parent") : pathname.startsWith("/students"),
     },
     {
       name: "Attendance",
@@ -38,10 +39,10 @@ export function MobileBottomBar() {
       isActive: pathname.startsWith("/attendance"),
     },
     {
-      name: "LMS",
-      href: "/lms",
+      name: isParent ? "Bursar Fees" : "LMS",
+      href: isParent ? "/parent" : "/lms",
       icon: BookOpen,
-      isActive: pathname.startsWith("/lms"),
+      isActive: isParent ? pathname.startsWith("/parent") : pathname.startsWith("/lms"),
     },
   ];
 

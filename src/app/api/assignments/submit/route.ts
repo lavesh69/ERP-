@@ -2,12 +2,43 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db/prisma";
 import { getOptionalSession } from "@/lib/auth/admin-guard";
 import { logger } from "@/lib/logging/logger";
+import { getStorageProvider } from "@/lib/storage";
 
 export async function POST(req: NextRequest) {
   try {
     const session = await getOptionalSession(req);
-    const body = await req.json();
-    const { assignmentId, content, fileUrl } = body;
+    const contentType = req.headers.get("content-type") || "";
+
+    let assignmentId = "";
+    let content = "";
+    let fileUrl = "";
+
+    if (contentType.includes("multipart/form-data")) {
+      const formData = await req.formData();
+      assignmentId = (formData.get("assignmentId") as string) || "";
+      content = (formData.get("content") as string) || "";
+      const customUrl = formData.get("fileUrl") as string;
+      if (customUrl) fileUrl = customUrl;
+
+      const file = formData.get("file") as File | null;
+      if (file && typeof file.arrayBuffer === "function") {
+        const bytes = await file.arrayBuffer();
+        const buffer = Buffer.from(bytes);
+        const storage = getStorageProvider();
+        const uploadResult = await storage.upload(
+          buffer,
+          file.name,
+          file.type || "application/pdf",
+          false
+        );
+        fileUrl = uploadResult.fileUrl;
+      }
+    } else {
+      const body = await req.json().catch(() => ({}));
+      assignmentId = body.assignmentId;
+      content = body.content;
+      fileUrl = body.fileUrl;
+    }
 
     if (!assignmentId) {
       return NextResponse.json(
@@ -27,7 +58,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Resolve student record from authenticated user or fallback for dev
+    // Resolve student record from authenticated user or fallback for dev sandbox
     let student = null;
     if (session?.userId) {
       student = await prisma.student.findFirst({
@@ -41,8 +72,8 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // Fallback to first student if not found in session
-    if (!student) {
+    // Fallback only permitted in development sandbox mode
+    if (!student && process.env.NODE_ENV !== "production") {
       student = await prisma.student.findFirst({
         include: { user: true },
       });
@@ -50,7 +81,7 @@ export async function POST(req: NextRequest) {
 
     if (!student) {
       return NextResponse.json(
-        { error: "No eligible student profile found for submission" },
+        { error: "Access Denied: No active scholar profile linked to current session." },
         { status: 403 }
       );
     }

@@ -35,7 +35,7 @@ export default function RootLayout({
         <script
           dangerouslySetInnerHTML={{
             __html: `
-              if ('serviceWorker' in navigator && window.location.protocol === 'https:') {
+              if ('serviceWorker' in navigator && (window.location.protocol === 'https:' || window.location.hostname === 'localhost')) {
                 window.addEventListener('load', () => {
                   navigator.serviceWorker.register('/sw.js').catch(() => {});
                 });

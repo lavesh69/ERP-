@@ -128,7 +128,19 @@ export default function DocumentsPage() {
   };
 
   const handleDownload = (doc: DocItem) => {
-    // If local file exists, download it, or generate certificate blob
+    if (doc.fileUrl && (doc.fileUrl.startsWith("/") || doc.fileUrl.startsWith("http"))) {
+      const a = document.createElement("a");
+      a.href = doc.fileUrl;
+      a.download = doc.title;
+      a.target = "_blank";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      showToast(`Initiated download for ${doc.title}`, "success");
+      return;
+    }
+
+    // Fallback certificate generation if raw binary not directly linked
     const content = `=====================================================
             APEX ACADEMIC VAULT VERIFIED DOCUMENT
 =====================================================

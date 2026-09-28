@@ -36,12 +36,20 @@ function writeSettings(settings: any) {
   }
 }
 
-export async function GET() {
+import { requireAdminAuth } from "@/lib/auth/admin-guard";
+
+export async function GET(req: NextRequest) {
+  const auth = await requireAdminAuth(req);
+  if (auth instanceof NextResponse) return auth;
+
   const settings = readSettings();
   return NextResponse.json({ settings });
 }
 
 export async function POST(req: NextRequest) {
+  const auth = await requireAdminAuth(req);
+  if (auth instanceof NextResponse) return auth;
+
   try {
     const body = await req.json();
     const current = readSettings();
@@ -60,3 +68,4 @@ export async function POST(req: NextRequest) {
     );
   }
 }
+

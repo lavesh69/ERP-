@@ -1,14 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import { executeAutonomousAgent } from "@/lib/ai/agents";
 import { logAuditEvent } from "@/lib/audit/logger";
+import { getOptionalSession } from "@/lib/auth/admin-guard";
 
 export async function POST(req: NextRequest) {
   try {
+    const session = await getOptionalSession(req);
     const body = await req.json();
     const prompt = body.prompt || body.query || "";
     const agentId = body.agentId || "academic";
-    const userId = body.userId || body.context?.userEmail || "usr-anon-01";
-    const userRole = body.userRole || body.context?.role || "STUDENT";
+    // Always bind to verified session identity if logged in; prevent client role tampering
+    const userId = session?.userId || session?.email || body.userId || "usr-anon-01";
+    const userRole = session?.role || "STUDENT";
 
     if (!prompt.trim()) {
       return NextResponse.json(

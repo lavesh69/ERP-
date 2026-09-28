@@ -1595,10 +1595,11 @@ export default function DashboardPage() {
         <form onSubmit={handleCreateStudent} className="flex flex-col gap-3">
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-[11px] font-bold text-charcoal-700 dark:text-charcoal-300 block mb-1">
+              <label htmlFor="studentFirstName" className="text-[11px] font-bold text-charcoal-700 dark:text-charcoal-300 block mb-1">
                 First Name
               </label>
               <input
+                id="studentFirstName"
                 type="text"
                 required
                 value={studentForm.firstName}
@@ -1608,10 +1609,11 @@ export default function DashboardPage() {
               />
             </div>
             <div>
-              <label className="text-[11px] font-bold text-charcoal-700 dark:text-charcoal-300 block mb-1">
+              <label htmlFor="studentLastName" className="text-[11px] font-bold text-charcoal-700 dark:text-charcoal-300 block mb-1">
                 Last Name
               </label>
               <input
+                id="studentLastName"
                 type="text"
                 required
                 value={studentForm.lastName}
@@ -1623,10 +1625,11 @@ export default function DashboardPage() {
           </div>
 
           <div>
-            <label className="text-[11px] font-bold text-charcoal-700 dark:text-charcoal-300 block mb-1">
+            <label htmlFor="studentEmail" className="text-[11px] font-bold text-charcoal-700 dark:text-charcoal-300 block mb-1">
               Institutional Email
             </label>
             <input
+              id="studentEmail"
               type="email"
               required
               value={studentForm.email}
@@ -1638,10 +1641,11 @@ export default function DashboardPage() {
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-[11px] font-bold text-charcoal-700 dark:text-charcoal-300 block mb-1">
+              <label htmlFor="studentDept" className="text-[11px] font-bold text-charcoal-700 dark:text-charcoal-300 block mb-1">
                 Department
               </label>
               <select
+                id="studentDept"
                 value={studentForm.departmentCode}
                 onChange={(e) => setStudentForm({ ...studentForm, departmentCode: e.target.value })}
                 className="w-full text-xs p-2 rounded-lg border border-border dark:border-charcoal-700 bg-white dark:bg-charcoal-800 text-charcoal-900 dark:text-ivory-100"
@@ -1651,10 +1655,11 @@ export default function DashboardPage() {
               </select>
             </div>
             <div>
-              <label className="text-[11px] font-bold text-charcoal-700 dark:text-charcoal-300 block mb-1">
+              <label htmlFor="studentSemester" className="text-[11px] font-bold text-charcoal-700 dark:text-charcoal-300 block mb-1">
                 Semester
               </label>
               <select
+                id="studentSemester"
                 value={studentForm.semester}
                 onChange={(e) => setStudentForm({ ...studentForm, semester: e.target.value })}
                 className="w-full text-xs p-2 rounded-lg border border-border dark:border-charcoal-700 bg-white dark:bg-charcoal-800 text-charcoal-900 dark:text-ivory-100"
