@@ -176,7 +176,7 @@ export default function ParentPortalPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           action: "SUBMIT_OFFLINE_CHALLAN",
-          studentFeeId: data?.finances?.studentFeeId || "fee-sample-01",
+          studentFeeId: data?.finances?.studentFeeId || data?.finances?.breakdown?.[0]?.id || "",
           amount: parseFloat(challanAmount),
           bankName: challanBank,
           branchName: challanBranch,

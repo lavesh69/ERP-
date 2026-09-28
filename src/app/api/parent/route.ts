@@ -362,6 +362,7 @@ export async function GET(req: NextRequest) {
       })),
       finances: {
         term: "Fall 2026",
+        studentFeeId: feeBreakdown[0]?.id || null,
         totalAmount: totalFees,
         paidAmount: paidFees,
         outstandingBalance: pendingFees,
