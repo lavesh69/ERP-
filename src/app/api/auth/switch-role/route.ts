@@ -53,6 +53,15 @@ export async function POST(req: NextRequest) {
     // Preserve original role if not already recorded
     const originalRole = payload.originalRole || payload.role;
 
+    // Security Gate: Only administrative roles may switch perspectives to preview or simulate other roles
+    const PERMITTED_SWITCH_ROLES = ["SUPER_ADMIN", "INSTITUTION_ADMIN", "PRINCIPAL"];
+    if (!PERMITTED_SWITCH_ROLES.includes(originalRole) && targetRole !== originalRole) {
+      return NextResponse.json(
+        { error: "Forbidden: Only administrative users may switch operational perspectives." },
+        { status: 403 }
+      );
+    }
+
     // Mint new JWT with switched perspective role
     const updatedPayload = {
       ...payload,

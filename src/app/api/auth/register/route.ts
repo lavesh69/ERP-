@@ -79,7 +79,7 @@ export async function POST(req: NextRequest) {
         },
       });
 
-      // Link to student ward if roll number specified
+      // Link to student ward if roll number specified (pending verification; not set as primary guardian)
       if (wardRollNumber && parentUser.parentProfile) {
         const ward = await prisma.student.findFirst({
           where: {
@@ -94,7 +94,7 @@ export async function POST(req: NextRequest) {
             data: {
               studentId: ward.id,
               parentId: parentUser.parentProfile.id,
-              isPrimary: true,
+              isPrimary: false,
             },
           }).catch(() => {});
         }

@@ -22,14 +22,16 @@ export async function GET(req: NextRequest) {
     });
 
     const formatted = assignments.map((a) => {
-      // If caller is student, strictly return only their own submission
+      // If caller is student, strictly return only their own submission; anonymous callers see none
       const visibleSubmissions = isStudent
         ? a.submissions.filter(
             (sub) =>
               sub.student.userId === session?.userId ||
               sub.student.user.email === session?.email
           )
-        : a.submissions;
+        : session
+        ? a.submissions
+        : [];
 
       return {
         id: a.id,

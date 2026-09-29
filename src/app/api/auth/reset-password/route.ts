@@ -42,7 +42,11 @@ export async function POST(req: NextRequest) {
 
     await prisma.user.update({
       where: { id: verification.userId },
-      data: { passwordHash: hashedPassword },
+      data: {
+        passwordHash: hashedPassword,
+        failedLoginAttempts: 0,
+        lockedUntil: null,
+      },
     });
 
     // Invalidate the reset token to prevent reuse

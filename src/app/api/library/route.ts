@@ -54,45 +54,47 @@ export async function GET(req: NextRequest) {
         availableCopies: b.availableCopies,
         shelfLocation: b.shelfLocation,
         activeLoansCount: b.loans.filter((l) => l.status === "ISSUED").length,
-        activeLoans: b.loans
-          .filter((l) => {
-            if (l.status !== "ISSUED") return false;
-            if (isStudent && session) {
-              return (
-                l.student.userId === session.userId ||
-                l.student.user.email === session.email
-              );
-            }
-            return true;
-          })
-          .map((l) => {
-            const dueDate = new Date(l.dueDate);
-            const issuedAt = new Date(l.issuedAt);
-            const isOverdue = now > dueDate;
-            const daysOverdue = isOverdue
-              ? Math.ceil((now.getTime() - dueDate.getTime()) / MS_PER_DAY)
-              : 0;
-            const accruedFine = daysOverdue * 5.0;
-            const durationDays = Math.round((dueDate.getTime() - issuedAt.getTime()) / MS_PER_DAY);
-            const renewalsUsed = Math.max(0, Math.round((durationDays - 14) / 14));
-            const canRenew = renewalsUsed < 3 && !isOverdue;
+        activeLoans: !session
+          ? []
+          : b.loans
+              .filter((l) => {
+                if (l.status !== "ISSUED") return false;
+                if (isStudent && session) {
+                  return (
+                    l.student.userId === session.userId ||
+                    l.student.user.email === session.email
+                  );
+                }
+                return true;
+              })
+              .map((l) => {
+                const dueDate = new Date(l.dueDate);
+                const issuedAt = new Date(l.issuedAt);
+                const isOverdue = now > dueDate;
+                const daysOverdue = isOverdue
+                  ? Math.ceil((now.getTime() - dueDate.getTime()) / MS_PER_DAY)
+                  : 0;
+                const accruedFine = daysOverdue * 5.0;
+                const durationDays = Math.round((dueDate.getTime() - issuedAt.getTime()) / MS_PER_DAY);
+                const renewalsUsed = Math.max(0, Math.round((durationDays - 14) / 14));
+                const canRenew = renewalsUsed < 3 && !isOverdue;
 
-            return {
-              id: l.id,
-              studentName: `${l.student.user.firstName} ${l.student.user.lastName}`,
-              rollNo: l.student.rollNumber,
-              dueDate: l.dueDate.toISOString().split("T")[0],
-              issuedAt: l.issuedAt.toISOString().split("T")[0],
-              isOverdue,
-              daysOverdue,
-              accruedFine,
-              renewalsUsed,
-              maxRenewals: 3,
-              canRenew,
-            };
-          }),
+                return {
+                  id: l.id,
+                  studentName: `${l.student.user.firstName} ${l.student.user.lastName}`,
+                  rollNo: l.student.rollNumber,
+                  dueDate: l.dueDate.toISOString().split("T")[0],
+                  issuedAt: l.issuedAt.toISOString().split("T")[0],
+                  isOverdue,
+                  daysOverdue,
+                  accruedFine,
+                  renewalsUsed,
+                  maxRenewals: 3,
+                  canRenew,
+                };
+              }),
       })),
-      students: isStudent
+      students: !session || isStudent
         ? []
         : students.map((s) => ({
             id: s.id,

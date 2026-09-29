@@ -97,7 +97,7 @@ export async function GET(req: NextRequest) {
         status: j.status,
         atsAnalysis,
         applicationCount: j.applications.length,
-        applications: isStudent
+        applications: !session || isStudent
           ? []
           : j.applications.map((app) => ({
               id: app.id,
@@ -123,9 +123,18 @@ export async function GET(req: NextRequest) {
     const totalApplicationsCount = jobs.reduce((acc, j) => acc + j.applications.length, 0);
     const topRecruitersCount = new Set(jobs.map((j) => j.companyName)).size;
 
+    const visibleInterviews = !session || isStudent
+      ? SCHEDULED_INTERVIEWS.filter(
+          (intv) =>
+            session?.userId &&
+            (intv.candidateName.toLowerCase().includes(session.fullName?.toLowerCase() || "") ||
+              intv.candidateRollNo === session.rollNumber)
+        )
+      : SCHEDULED_INTERVIEWS;
+
     return NextResponse.json({
       jobs: formatted,
-      interviews: SCHEDULED_INTERVIEWS,
+      interviews: visibleInterviews,
       metrics: {
         activeDrivesCount: jobs.filter((j) => j.status === "ACTIVE").length,
         totalApplicationsCount,

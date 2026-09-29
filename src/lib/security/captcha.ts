@@ -21,8 +21,8 @@ export async function verifyTurnstileToken(
     return { success: true };
   }
 
-  // 2. Explicit Development/Test token bypass
-  if (token === "cf-turnstile-development-bypass" || token === "sandbox_captcha_token") {
+  // 2. Explicit Development/Test token bypass (strictly disallowed in production)
+  if (process.env.NODE_ENV !== "production" && (token === "cf-turnstile-development-bypass" || token === "sandbox_captcha_token")) {
     return { success: true };
   }
 

@@ -20,12 +20,6 @@ export async function GET(req: NextRequest) {
       });
     }
 
-    if (!student) {
-      student = await prisma.student.findFirst({
-        include: { user: true },
-      });
-    }
-
     const scholarships = await prisma.scholarship.findMany({
       include: {
         applications: {
@@ -73,7 +67,7 @@ export async function GET(req: NextRequest) {
 
     const isStudent = session?.role === "STUDENT";
 
-    const allApplications = isStudent
+    const allApplications = !session || isStudent
       ? []
       : scholarships.flatMap((s) =>
           s.applications.map((app) => ({

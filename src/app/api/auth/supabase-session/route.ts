@@ -104,13 +104,8 @@ export async function POST(req: NextRequest) {
         });
       }
 
-      const assignedRole: UserRole = [
-        "SUPER_ADMIN",
-        "INSTITUTION_ADMIN",
-        "FACULTY",
-        "STUDENT",
-        "PARENT",
-      ].includes(role)
+      // Security Guard: Disallow self-assignment of administrative or faculty roles
+      const assignedRole: UserRole = (role === "PARENT" || role === "GUEST")
         ? (role as UserRole)
         : "STUDENT";
 

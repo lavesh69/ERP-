@@ -313,6 +313,31 @@ export default function LoginPage() {
     }
   };
 
+  const handleUnlockAndFillDemo = async () => {
+    setIsLoading(true);
+    try {
+      const targetEmail = email.trim() || "provost.evans@classroom.edu";
+      const res = await fetch("/api/auth/unlock", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: targetEmail, resetPasswordToDefault: true }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setEmail(targetEmail);
+        setPassword("Classroom@2026");
+        setErrorMessage(null);
+        showToast("Account unlocked! Demo password filled: Classroom@2026", "success");
+      } else {
+        showToast(data.error || "Failed to unlock account", "error");
+      }
+    } catch {
+      showToast("Network error unlocking account", "error");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     handleLogin(email, password);
@@ -470,9 +495,19 @@ export default function LoginPage() {
         <div className="glass-panel py-8 px-6 shadow-elevated rounded-3xl sm:px-10 flex flex-col gap-6">
           {/* Error Alert Banner */}
           {errorMessage && (
-            <div className="p-3.5 rounded-xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800/50 text-red-700 dark:text-red-300 text-xs font-semibold flex items-center gap-2">
-              <AlertCircle className="h-4 w-4 shrink-0 text-red-500" />
-              <span>{errorMessage}</span>
+            <div className="p-3.5 rounded-2xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800/50 text-red-700 dark:text-red-300 text-xs font-semibold flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm">
+              <div className="flex items-center gap-2">
+                <AlertCircle className="h-4 w-4 shrink-0 text-red-500" />
+                <span>{errorMessage}</span>
+              </div>
+              <button
+                type="button"
+                onClick={handleUnlockAndFillDemo}
+                className="shrink-0 flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-[11px] shadow transition-all hover:scale-105 active:scale-95"
+              >
+                <RotateCcw className="h-3.5 w-3.5" />
+                <span>Auto-Fill Demo &amp; Unlock</span>
+              </button>
             </div>
           )}
 
@@ -561,72 +596,139 @@ export default function LoginPage() {
             </div>
           ) : (
             /* Standard Unified Email + Password Form */
-            <form onSubmit={handleFormSubmit} className="space-y-4">
-              <div>
-                <label className="block text-xs font-bold text-charcoal-700 dark:text-charcoal-300 mb-1">
-                  Email Address
-                </label>
-                <div className="relative rounded-xl shadow-sm">
-                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-charcoal-400">
-                    <Mail className="h-4 w-4" />
-                  </div>
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => {
-                      setEmail(e.target.value);
-                      if (errorMessage) setErrorMessage(null);
-                    }}
-                    className="block w-full pl-10 pr-3 py-3 rounded-xl border border-border dark:border-charcoal-700 bg-ivory-100 dark:bg-charcoal-900 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-rose-primary"
-                    placeholder="example@gmail.com, name@college.edu"
-                    required
-                  />
+            <div className="space-y-4">
+              {/* Quick 1-Click Demo Login Selector */}
+              <div className="p-3.5 rounded-2xl bg-white/70 dark:bg-charcoal-900/60 border border-border/80 dark:border-charcoal-800 space-y-2.5 shadow-soft">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-charcoal-600 dark:text-charcoal-300 flex items-center gap-1.5">
+                    <Zap className="h-3.5 w-3.5 text-amber-500 fill-amber-500" />
+                    Quick Demo Access (1-Click)
+                  </span>
+                  <span className="text-[11px] text-charcoal-500 dark:text-charcoal-400">
+                    Pass: <code className="font-mono font-bold text-rose-primary bg-rose-50 dark:bg-rose-950/40 px-1.5 py-0.5 rounded border border-rose-200 dark:border-rose-900/40">Classroom@2026</code>
+                  </span>
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-5 gap-1.5">
+                  {[
+                    { label: "Super Admin", roleDesc: "Provost Evans", email: "provost.evans@classroom.edu", icon: "👑" },
+                    { label: "Registrar", roleDesc: "Marcus Vance", email: "admin@apex.edu", icon: "🏫" },
+                    { label: "Faculty", roleDesc: "Dr. Sharma", email: "faculty.sharma@apex.edu", icon: "👨‍🏫" },
+                    { label: "Student", roleDesc: "Alex Mercer", email: "alex.mercer@apex.edu", icon: "🎓" },
+                    { label: "Parent", roleDesc: "Sarah Mercer", email: "parent.mercer@apex.edu", icon: "👨‍👩‍👦" },
+                  ].map((demo) => {
+                    const isSelected = email.toLowerCase() === demo.email.toLowerCase();
+                    return (
+                      <button
+                        key={demo.email}
+                        type="button"
+                        onClick={() => {
+                          setEmail(demo.email);
+                          setPassword("Classroom@2026");
+                          setErrorMessage(null);
+                          showToast(`Loaded ${demo.label} (${demo.roleDesc})`, "info");
+                        }}
+                        className={`px-2 py-1.5 rounded-xl border text-[11px] font-bold flex flex-col items-center justify-center gap-0.5 transition-all text-center ${
+                          isSelected
+                            ? "bg-rose-primary text-white border-rose-primary shadow-sm"
+                            : "bg-white dark:bg-charcoal-800/80 border-border dark:border-charcoal-700 text-charcoal-700 dark:text-charcoal-200 hover:border-rose-primary/50"
+                        }`}
+                      >
+                        <span className="text-sm">{demo.icon}</span>
+                        <span className="truncate max-w-full font-semibold">{demo.label}</span>
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
 
-              <div>
-                <div className="flex items-center justify-between mb-1">
-                  <label className="block text-xs font-bold text-charcoal-700 dark:text-charcoal-300">
-                    Password
+              <form onSubmit={handleFormSubmit} className="space-y-4">
+                <div>
+                  <label className="block text-xs font-bold text-charcoal-700 dark:text-charcoal-300 mb-1">
+                    Email Address
                   </label>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setForgotEmail(email);
-                      setForgotStep(1);
-                      setForgotError(null);
-                      setForgotSuccessMsg(null);
-                      setShowForgotModal(true);
-                    }}
-                    className="text-[11px] font-semibold text-rose-primary hover:underline"
-                  >
-                    Forgot Password?
-                  </button>
-                </div>
-                <div className="relative rounded-xl shadow-sm">
-                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-charcoal-400">
-                    <Lock className="h-4 w-4" />
+                  <div className="relative rounded-xl shadow-sm">
+                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-charcoal-400">
+                      <Mail className="h-4 w-4" />
+                    </div>
+                    <input
+                      type="email"
+                      value={email}
+                      onChange={(e) => {
+                        setEmail(e.target.value);
+                        if (errorMessage) setErrorMessage(null);
+                      }}
+                      className="block w-full pl-10 pr-3 py-3 rounded-xl border border-border dark:border-charcoal-700 bg-ivory-100 dark:bg-charcoal-900 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-rose-primary"
+                      placeholder="example@gmail.com, name@college.edu"
+                      required
+                    />
                   </div>
-                  <input
-                    type={showPassword ? "text" : "password"}
-                    value={password}
-                    onChange={(e) => {
-                      setPassword(e.target.value);
-                      if (errorMessage) setErrorMessage(null);
-                    }}
-                    className="block w-full pl-10 pr-10 py-3 rounded-xl border border-border dark:border-charcoal-700 bg-ivory-100 dark:bg-charcoal-900 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-rose-primary"
-                    placeholder="Enter your password"
-                    required
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-charcoal-400 hover:text-charcoal-600 dark:hover:text-charcoal-200"
-                  >
-                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                  </button>
                 </div>
-              </div>
+
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="block text-xs font-bold text-charcoal-700 dark:text-charcoal-300">
+                      Password
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setForgotEmail(email);
+                        setForgotStep(1);
+                        setForgotError(null);
+                        setForgotSuccessMsg(null);
+                        setShowForgotModal(true);
+                      }}
+                      className="text-[11px] font-semibold text-rose-primary hover:underline"
+                    >
+                      Forgot Password?
+                    </button>
+                  </div>
+                  <div className="relative rounded-xl shadow-sm">
+                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-charcoal-400">
+                      <Lock className="h-4 w-4" />
+                    </div>
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      value={password}
+                      onChange={(e) => {
+                        setPassword(e.target.value);
+                        if (errorMessage) setErrorMessage(null);
+                      }}
+                      className="block w-full pl-10 pr-10 py-3 rounded-xl border border-border dark:border-charcoal-700 bg-ivory-100 dark:bg-charcoal-900 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-rose-primary"
+                      placeholder="Enter your password"
+                      required
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute inset-y-0 right-0 pr-3 flex items-center text-charcoal-400 hover:text-charcoal-600 dark:hover:text-charcoal-200"
+                    >
+                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                  </div>
+
+                  {/* Demo Password Helper & Auto-Fill */}
+                  <div className="flex items-center justify-between text-[11px] text-charcoal-500 dark:text-charcoal-400 pt-1.5">
+                    <span className="flex items-center gap-1.5">
+                      <KeyRound className="h-3.5 w-3.5 text-rose-primary shrink-0" />
+                      <span>Demo pass:</span>
+                      <code className="font-mono font-bold text-rose-primary bg-rose-50 dark:bg-rose-950/40 px-1.5 py-0.5 rounded border border-rose-200 dark:border-rose-900/50">
+                        Classroom@2026
+                      </code>
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setPassword("Classroom@2026");
+                        if (errorMessage) setErrorMessage(null);
+                        showToast("Demo password auto-filled!", "info");
+                      }}
+                      className="text-rose-primary font-bold hover:underline px-2 py-0.5 rounded hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors"
+                    >
+                      Auto-Fill
+                    </button>
+                  </div>
+                </div>
 
               {/* Remember Me & From Redirect Status */}
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs pt-1">
@@ -695,7 +797,8 @@ export default function LoginPage() {
                   <ArrowRight className="h-3.5 w-3.5" />
                 </Link>
               </div>
-            </form>
+              </form>
+            </div>
           )}
 
           <div className="flex items-center justify-center gap-2 pt-1 border-t border-border/60 dark:border-charcoal-700 text-[11px] text-charcoal-500">

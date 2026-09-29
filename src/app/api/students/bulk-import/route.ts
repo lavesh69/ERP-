@@ -61,6 +61,27 @@ export async function POST(req: NextRequest) {
     const seenEmails = new Set<string>();
     const seenRolls = new Set<string>();
 
+    // Prefetch all existing emails and roll numbers in 1 single batched query (eliminates N+1 bottleneck)
+    const batchEmails = rows.map((r) => (r.email || "").toLowerCase().trim()).filter(Boolean);
+    const batchRolls = rows
+      .map((r) => (r.rollnumber || r.roll_number || r["roll no"] || r["roll number"] || "").trim().toUpperCase())
+      .filter(Boolean);
+
+    const existingUsers = await prisma.user.findMany({
+      where: {
+        OR: [
+          { email: { in: batchEmails } },
+          { studentProfile: { rollNumber: { in: batchRolls } } },
+        ],
+      },
+      select: { email: true, studentProfile: { select: { rollNumber: true } } },
+    });
+
+    const existingEmailSet = new Set(existingUsers.map((u) => u.email.toLowerCase()));
+    const existingRollSet = new Set(
+      existingUsers.map((u) => u.studentProfile?.rollNumber?.toUpperCase()).filter(Boolean) as string[]
+    );
+
     for (let i = 0; i < rows.length; i++) {
       const r = rows[i];
       const rowNum = i + 2; // Row 1 is header
@@ -87,11 +108,8 @@ export async function POST(req: NextRequest) {
         continue;
       }
 
-      // Check DB existence
-      const existingUser = await prisma.user.findFirst({
-        where: { OR: [{ email }, { studentProfile: { rollNumber } }] },
-      });
-      if (existingUser) {
+      // Instant O(1) in-memory check instead of DB round-trip per row
+      if (existingEmailSet.has(email) || existingRollSet.has(rollNumber)) {
         errors.push({ rowNumber: rowNum, email, reason: "User with this email or roll number already registered" });
         continue;
       }

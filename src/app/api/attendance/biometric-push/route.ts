@@ -8,8 +8,8 @@ export async function POST(req: NextRequest) {
     const deviceKey = req.headers.get("x-device-key") || req.headers.get("authorization");
     const configuredKey = process.env.BIOMETRIC_DEVICE_KEY || "apex-biometric-secret-2026";
 
-    // Validate device authorization
-    if (deviceKey && deviceKey.replace(/^Bearer\s+/i, "") !== configuredKey) {
+    // Validate device authorization: header is mandatory
+    if (!deviceKey || deviceKey.replace(/^Bearer\s+/i, "") !== configuredKey) {
       return NextResponse.json({ error: "Unauthorized hardware biometric device" }, { status: 401 });
     }
 

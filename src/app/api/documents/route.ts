@@ -273,6 +273,10 @@ export async function GET(req: NextRequest) {
 
     const filtered = docs
       .filter((d) => {
+        // Privacy isolation: unauthenticated visitors strictly only see public categories
+        if (!session) {
+          return PUBLIC_DOCUMENT_CATEGORIES.includes(d.category);
+        }
         // Privacy isolation for students: only see own docs or public institutional categories
         if (isStudent) {
           const isOwn = d.userId === session?.userId || d.user?.email === session?.email;

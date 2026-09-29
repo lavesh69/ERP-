@@ -129,8 +129,11 @@ export function verifyPaymentSignature(params: {
     return generated === params.signature;
   }
 
-  // Sandbox signature validator
+  // Sandbox signature validator (strictly disallowed in production)
   if (params.orderId.startsWith("order_sb_")) {
+    if (process.env.NODE_ENV === "production") {
+      return false;
+    }
     const expectedPrefix = "sig_sb_";
     return (
       params.signature.startsWith(expectedPrefix) ||

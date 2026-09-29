@@ -74,7 +74,7 @@ export async function GET(req: NextRequest) {
             remarks: r.remarks,
             isPublished: true,
           }));
-      } else {
+      } else if (session) {
         // Teacher / Admin: view all student results (both drafts and published)
         visibleResults = e.results.map((r) => ({
           id: r.id,
@@ -88,8 +88,8 @@ export async function GET(req: NextRequest) {
         }));
       }
 
-      // Enrolled class roster for marks entry (Faculty view)
-      const classRoster = isStudent
+      // Enrolled class roster for marks entry (Faculty view only)
+      const classRoster = !session || isStudent
         ? []
         : e.course.enrollments.map((enr) => {
             const existingResult = e.results.find((r) => r.studentId === enr.student.id);
@@ -111,6 +111,18 @@ export async function GET(req: NextRequest) {
             };
           });
 
+      // Questions are only visible to Faculty / Admin
+      const visibleQuestions = !session || isStudent
+        ? []
+        : e.questions.map((q) => ({
+            id: q.id,
+            text: q.questionText,
+            type: q.type,
+            marks: q.marks,
+            difficulty: q.difficulty,
+            bloomTaxonomy: q.bloomTaxonomy,
+          }));
+
       return {
         id: e.id,
         title: e.title,
@@ -123,14 +135,7 @@ export async function GET(req: NextRequest) {
         durationMins: e.durationMins,
         status: e.status,
         questionCount: e.questions.length,
-        questions: e.questions.map((q) => ({
-          id: q.id,
-          text: q.questionText,
-          type: q.type,
-          marks: q.marks,
-          difficulty: q.difficulty,
-          bloomTaxonomy: q.bloomTaxonomy,
-        })),
+        questions: visibleQuestions,
         results: visibleResults,
         classRoster,
       };

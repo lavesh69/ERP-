@@ -6,7 +6,7 @@ import { rateLimiter } from "@/lib/auth/rate-limiter";
 import { verifyPassword } from "@/lib/auth/password";
 import { loginSchema } from "@/lib/validation/schemas";
 import { logger } from "@/lib/logging/logger";
-import { ensureDbUsers } from "@/lib/auth/ensure-db-users";
+import { ensureDbUsers, DEFAULT_DEMO_PASSWORD } from "@/lib/auth/ensure-db-users";
 import { is2FARequiredForUser, verify2FACode, getUserTotpSecret } from "@/lib/auth/two-factor";
 import { verifyTurnstileToken } from "@/lib/security/captcha";
 import { supabaseSignIn } from "@/lib/supabase/auth";
@@ -47,21 +47,25 @@ export async function POST(req: NextRequest) {
 
     const rateLimitKey = `login:${clientIp}:${cleanEmail}`;
 
-    // 2. Brute-force protection: Max 5 attempts per 60 seconds
+    // 2. Brute-force protection: Max 5 attempts per 60 seconds (relaxed in development)
     const limitCheck = rateLimiter.check(rateLimitKey, 5, 60000);
     if (!limitCheck.allowed) {
-      const waitSeconds = Math.ceil(limitCheck.resetTimeMs / 1000);
-      return NextResponse.json(
-        {
-          error: `Security Alert: Too many failed login attempts. Account temporarily locked for ${waitSeconds} seconds.`,
-        },
-        {
-          status: 429,
-          headers: {
-            "Retry-After": String(waitSeconds),
+      if (process.env.NODE_ENV !== "production") {
+        rateLimiter.reset(rateLimitKey);
+      } else {
+        const waitSeconds = Math.ceil(limitCheck.resetTimeMs / 1000);
+        return NextResponse.json(
+          {
+            error: `Security Alert: Too many failed login attempts. Account temporarily locked for ${waitSeconds} seconds.`,
           },
-        }
-      );
+          {
+            status: 429,
+            headers: {
+              "Retry-After": String(waitSeconds),
+            },
+          }
+        );
+      }
     }
 
     // 3. Ensure all 16 database accounts exist
@@ -88,16 +92,26 @@ export async function POST(req: NextRequest) {
 
       // 5a. Check Persistent Database Account Lockout
       if (dbUser.lockedUntil && dbUser.lockedUntil > new Date()) {
-        const remainingSeconds = Math.ceil((dbUser.lockedUntil.getTime() - Date.now()) / 1000);
-        const remainingMinutes = Math.ceil(remainingSeconds / 60);
-        return NextResponse.json(
-          {
-            error: `Security Lockout: Account temporarily locked due to repeated failed attempts. Try again in ${remainingMinutes} minute(s).`,
-            lockedUntil: dbUser.lockedUntil.toISOString(),
-            remainingSeconds,
-          },
-          { status: 423 }
-        );
+        if (process.env.NODE_ENV !== "production") {
+          // In development mode, auto-unlock to avoid freezing testing workflows
+          await prisma.user.update({
+            where: { id: dbUser.id },
+            data: { failedLoginAttempts: 0, lockedUntil: null },
+          });
+          dbUser.lockedUntil = null;
+          dbUser.failedLoginAttempts = 0;
+        } else {
+          const remainingSeconds = Math.ceil((dbUser.lockedUntil.getTime() - Date.now()) / 1000);
+          const remainingMinutes = Math.ceil(remainingSeconds / 60);
+          return NextResponse.json(
+            {
+              error: `Security Lockout: Account temporarily locked due to repeated failed attempts. Try again in ${remainingMinutes} minute(s).`,
+              lockedUntil: dbUser.lockedUntil.toISOString(),
+              remainingSeconds,
+            },
+            { status: 423 }
+          );
+        }
       }
 
       // Check local cryptographic PBKDF2 password
@@ -150,14 +164,15 @@ export async function POST(req: NextRequest) {
       logger.warn("Authentication failed: invalid credentials", { email: cleanEmail, ip: clientIp });
 
       if (dbUser) {
+        const isDev = process.env.NODE_ENV !== "production";
         const newFailedAttempts = (dbUser.failedLoginAttempts || 0) + 1;
-        const shouldLock = newFailedAttempts >= 5;
+        const shouldLock = !isDev && newFailedAttempts >= 5;
         const lockExpiry = shouldLock ? new Date(Date.now() + 15 * 60 * 1000) : null;
 
         await prisma.user.update({
           where: { id: dbUser.id },
           data: {
-            failedLoginAttempts: shouldLock ? 0 : newFailedAttempts,
+            failedLoginAttempts: isDev ? 0 : (shouldLock ? 0 : newFailedAttempts),
             lockedUntil: lockExpiry,
           },
         });
@@ -184,6 +199,17 @@ export async function POST(req: NextRequest) {
               error: "Security Alert: Account has been locked for 15 minutes due to 5 consecutive failed attempts.",
             },
             { status: 423 }
+          );
+        }
+
+        if (isDev) {
+          return NextResponse.json(
+            {
+              error: 'Invalid password. Default demo password is "Classroom@2026". Click Auto-Fill below to sign in.',
+              isDemoAccount: true,
+              suggestedPassword: DEFAULT_DEMO_PASSWORD,
+            },
+            { status: 401 }
           );
         }
 

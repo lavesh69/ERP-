@@ -3343,6 +3343,9 @@ BIO-599,Synthetic Biology Principles,Syn Bio,3,BIO,BSC-BIO,CORE,THEORY,3`;
 
     const reqStudentById = new NextRequest(`http://localhost:3000/api/students?id=${studentScholar!.id}`, {
       method: "GET",
+      headers: {
+        Cookie: `classroom_session=${studentToken}`,
+      },
     });
     const resStudentById = await handleStudentGet(reqStudentById);
     const dataStudentById = await resStudentById.json();
@@ -4370,7 +4373,9 @@ By breaking down large monolithic systems into decoupled microservices, systems 
     assert(downloadMissingRes.status === 400, "GET /api/documents/download without filename key returns 400 Bad Request");
 
     // 4. Password Reset Token Single-Use Revocation (Replay Prevention)
-    const testUser = await prisma.user.findFirst();
+    const testUser = (await prisma.user.findFirst({
+      where: { role: { in: ["GUEST", "ALUMNI", "STUDENT"] } },
+    })) || (await prisma.user.findFirst());
     assert(!!testUser, "Found existing seed user for password reset token lifecycle test");
 
     const testResetToken = createPasswordResetToken(testUser!.email, testUser!.id);

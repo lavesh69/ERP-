@@ -1,12 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db/prisma";
 import { generateRotatingQrToken } from "@/lib/attendance/qr-token";
+import { getOptionalSession } from "@/lib/auth/admin-guard";
 
 export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const userSession = await getOptionalSession(req);
+    if (userSession?.role === "STUDENT") {
+      return NextResponse.json(
+        { error: "Access denied: QR projector feed is restricted to faculty members." },
+        { status: 403 }
+      );
+    }
+
     const { id: sessionId } = await params;
 
     const session = await prisma.attendanceSession.findUnique({

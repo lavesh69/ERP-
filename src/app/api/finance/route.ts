@@ -7,7 +7,13 @@ import { getOptionalSession } from "@/lib/auth/admin-guard";
 export async function GET(req: NextRequest) {
   try {
     const session = await getOptionalSession(req);
-    const role = session?.role;
+    if (!session) {
+      return NextResponse.json(
+        { error: "Authentication required to access financial ledgers." },
+        { status: 401 }
+      );
+    }
+    const role = session.role;
 
     // FERPA Compliance: Academic faculty have zero access to student billing & ledgers
     if (role && ["FACULTY", "PROFESSOR", "CLASS_TEACHER", "HOD"].includes(role)) {

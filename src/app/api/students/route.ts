@@ -11,7 +11,13 @@ import { logAuditEvent } from "@/lib/audit/logger";
 export async function GET(req: NextRequest) {
   try {
     const session = await getOptionalSession(req);
-    const isStudent = session?.role === "STUDENT";
+    if (!session) {
+      return NextResponse.json(
+        { error: "Authentication required to access student profiles or directory." },
+        { status: 401 }
+      );
+    }
+    const isStudent = session.role === "STUDENT";
 
     const { searchParams } = new URL(req.url);
     const id = searchParams.get("id");

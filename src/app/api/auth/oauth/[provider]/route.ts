@@ -90,8 +90,18 @@ export async function GET(
       }
     }
 
-    // Check query override for role/email if specified
-    const targetEmail = searchParams.get("email") || preset.email;
+    // In production, strictly reject unconfigured mock OAuth or unauthenticated email query spoofing
+    if (process.env.NODE_ENV === "production" && !authCode && !process.env.GOOGLE_CLIENT_ID) {
+      return NextResponse.json(
+        { error: "OAuth provider is not configured for production environment." },
+        { status: 503 }
+      );
+    }
+
+    // Check query override for role/email only in development/sandbox mode
+    const targetEmail = process.env.NODE_ENV !== "production"
+      ? (searchParams.get("email") || preset.email)
+      : preset.email;
 
     // Find or link user in database
     let dbUser = await prisma.user.findUnique({
