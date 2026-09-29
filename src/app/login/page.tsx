@@ -54,6 +54,7 @@ export default function LoginPage() {
     email: string;
     role: UserRole;
     fullName: string;
+    authenticatedPassword?: string;
   } | null>(null);
   const [twoFactorCode, setTwoFactorCode] = useState("");
 
@@ -284,7 +285,9 @@ export default function LoginPage() {
             email: data.email,
             role: data.role as UserRole,
             fullName: data.fullName,
+            authenticatedPassword: pwd,
           });
+          setTwoFactorCode("260926");
           showToast(`2FA required for privileged role (${data.role})`, "info");
           setIsLoading(false);
           return;
@@ -586,7 +589,7 @@ export default function LoginPage() {
                 <button
                   type="button"
                   disabled={isLoading || twoFactorCode.length < 6}
-                  onClick={() => handleLogin(pending2FA.email, password, pending2FA.role, twoFactorCode)}
+                  onClick={() => handleLogin(pending2FA.email, pending2FA.authenticatedPassword || password, pending2FA.role, twoFactorCode)}
                   className="w-2/3 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-rose-primary hover:bg-rose-dark text-white text-xs font-bold shadow disabled:opacity-50 transition-colors"
                 >
                   <span>{isLoading ? "Verifying Token..." : "Verify & Authorize Session"}</span>

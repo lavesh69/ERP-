@@ -34,8 +34,18 @@ export async function GET(req: NextRequest) {
     }
 
     // Verify account is still active in database
-    const dbUser = await prisma.user.findUnique({
-      where: { id: payload.userId },
+    const userId = payload.userId || payload.id || payload.sub;
+    const userEmail = payload.email;
+
+    if (!userId && !userEmail) {
+      return NextResponse.json(
+        { authenticated: false, error: "Invalid session payload" },
+        { status: 401 }
+      );
+    }
+
+    const dbUser = await prisma.user.findFirst({
+      where: userId ? { id: userId } : { email: userEmail },
       select: { isActive: true },
     });
 
