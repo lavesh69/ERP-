@@ -28,8 +28,14 @@ export async function ensureDbUsers() {
 
     const defaultPasswordHash = await hashPassword(DEFAULT_DEMO_PASSWORD);
 
-    for (const [roleKey, mockUser] of Object.entries(MOCK_USERS)) {
-      const cleanEmail = mockUser.email.toLowerCase().trim();
+    const allDemoPersonas = [
+      ...Object.values(MOCK_USERS).map(u => ({ id: u.id, email: u.email, firstName: u.firstName, lastName: u.lastName, role: u.role })),
+      { id: "usr-fac-sharma-01", email: "faculty.sharma@apex.edu", firstName: "Rajesh", lastName: "Sharma", role: "FACULTY" },
+      { id: "usr-parent-mercer-01", email: "parent.mercer@apex.edu", firstName: "Sarah", lastName: "Mercer", role: "PARENT" },
+    ];
+
+    for (const demoUser of allDemoPersonas) {
+      const cleanEmail = demoUser.email.toLowerCase().trim();
       const existingUser = await prisma.user.findUnique({
         where: { email: cleanEmail },
       });
@@ -37,21 +43,29 @@ export async function ensureDbUsers() {
       if (!existingUser) {
         await prisma.user.create({
           data: {
-            id: mockUser.id,
+            id: demoUser.id,
             institutionId: institution.id,
             email: cleanEmail,
             passwordHash: defaultPasswordHash,
-            firstName: mockUser.firstName,
-            lastName: mockUser.lastName,
-            role: mockUser.role,
+            firstName: demoUser.firstName,
+            lastName: demoUser.lastName,
+            role: demoUser.role,
             isActive: true,
+            failedLoginAttempts: 0,
+            lockedUntil: null,
           },
         });
-        logger.info(`Seeded real DB user for role ${roleKey}: ${cleanEmail}`);
-      } else if (!existingUser.passwordHash || !existingUser.passwordHash.startsWith("pbkdf2$")) {
+        logger.info(`Seeded real DB user: ${cleanEmail}`);
+      } else if (process.env.NODE_ENV !== "production") {
+        // Keep demo passwords synchronized to Classroom@2026 in development
         await prisma.user.update({
           where: { id: existingUser.id },
-          data: { passwordHash: defaultPasswordHash },
+          data: {
+            passwordHash: defaultPasswordHash,
+            failedLoginAttempts: 0,
+            lockedUntil: null,
+            isActive: true,
+          },
         });
       }
     }

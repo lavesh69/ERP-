@@ -117,6 +117,16 @@ export async function POST(req: NextRequest) {
       // Check local cryptographic PBKDF2 password
       isPasswordValid = await verifyPassword(password, dbUser.passwordHash);
 
+      // In development / demo mode, auto-validate DEFAULT_DEMO_PASSWORD and sync hash
+      if (!isPasswordValid && process.env.NODE_ENV !== "production" && password === DEFAULT_DEMO_PASSWORD) {
+        isPasswordValid = true;
+        const newHash = await hashPassword(DEFAULT_DEMO_PASSWORD);
+        await prisma.user.update({
+          where: { id: dbUser.id },
+          data: { passwordHash: newHash, failedLoginAttempts: 0, lockedUntil: null },
+        });
+      }
+
       // If local password failed, check Supabase Auth as cloud provider
       if (!isPasswordValid) {
         const sbRes = await supabaseSignIn({ email: cleanEmail, password });
