@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db/prisma";
 import { seedCohortStudents } from "./full-cohort";
+import { getBiologyCoursesMaster } from "./biology-courses";
 
 /**
  * CLASSROOM Academic OS — Central Academic Master Data Synchronizer
@@ -271,11 +272,31 @@ export async function ensureAcademicMasterData() {
       isCurrent: false,
     },
     {
+      id: "sem-bio-sem1-2026",
+      programCode: "BSC-BIO",
+      academicYearId: ayCurrent.id,
+      semesterNumber: 1,
+      title: "Fall 2026 (Semester I - Foundational)",
+      startDate: new Date("2026-08-15"),
+      endDate: new Date("2026-12-20"),
+      isCurrent: true,
+    },
+    {
       id: "sem-bio-fall-2026",
       programCode: "BSC-BIO",
       academicYearId: ayCurrent.id,
       semesterNumber: 3,
       title: "Fall 2026 (Semester III)",
+      startDate: new Date("2026-08-15"),
+      endDate: new Date("2026-12-20"),
+      isCurrent: true,
+    },
+    {
+      id: "sem-bio-sem5-2026",
+      programCode: "BSC-BIO",
+      academicYearId: ayCurrent.id,
+      semesterNumber: 5,
+      title: "Fall 2026 (Semester V - Advanced)",
       startDate: new Date("2026-08-15"),
       endDate: new Date("2026-12-20"),
       isCurrent: true,
@@ -457,6 +478,17 @@ export async function ensureAcademicMasterData() {
       designation: "Assistant Professor",
       specialization: "Technical Rhetoric & Environmental Ethics",
     },
+    {
+      userId: "usr-fac-sharma-01",
+      email: "faculty.sharma@apex.edu",
+      firstName: "Rajesh",
+      lastName: "Sharma",
+      facultyId: "fac-sharma-05",
+      deptId: facultyDeptBio,
+      employeeCode: "FAC-BIO-205",
+      designation: "Associate Professor",
+      specialization: "Applied Microbiology, Molecular Virology & Antimicrobial Resistance",
+    },
   ];
 
   const facultyMap: Record<string, string> = {};
@@ -497,6 +529,8 @@ export async function ensureAcademicMasterData() {
   // 10. Complete Course / Subject Catalog
   const semCsFall = semesterMap["sem-fall-2026"];
   const semBioFall = semesterMap["sem-bio-fall-2026"];
+  const semBioSem1 = semesterMap["sem-bio-sem1-2026"];
+  const semBioSem5 = semesterMap["sem-bio-sem5-2026"];
   const semBbaFall = semesterMap["sem-bba-fall-2026"];
   const semCsPast = semesterMap["sem-cs-fall-2025"];
 
@@ -734,6 +768,14 @@ export async function ensureAcademicMasterData() {
       isCommon: false,
       assignedFacultyId: "fac-raman-02",
     },
+
+    // Expanded Biology Curriculum (Botany, Zoology, Genetics, Microbiology, Immunology, CRISPR, Capstone)
+    ...getBiologyCoursesMaster({
+      facultyDeptBio,
+      semBioSem1,
+      semBioFall,
+      semBioSem5,
+    }),
 
     // Business Administration Subjects
     {
@@ -1024,7 +1066,10 @@ export async function ensureAcademicMasterData() {
   }
 
   if (mayaStudent) {
-    const mayaCourses = ["BIO-301", "BIO-301L", "BIO-302", "BIO-303", "BIO-350", "ENV-201"];
+    const mayaCourses = [
+      "BIO-301", "BIO-301L", "BIO-302", "BIO-303", "BIO-350", "ENV-201",
+      "BIO-101", "BIO-101L", "BIO-201", "BIO-203", "BIO-310", "MIC-201"
+    ];
     for (const cCode of mayaCourses) {
       const crs = await prisma.course.findFirst({ where: { code: cCode } });
       if (crs) {
