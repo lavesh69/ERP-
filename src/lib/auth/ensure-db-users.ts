@@ -5,6 +5,30 @@ import { logger } from "@/lib/logging/logger";
 
 export const DEFAULT_DEMO_PASSWORD = "Classroom@2026";
 
+export const ALL_DEMO_PERSONAS = [
+  ...Object.values(MOCK_USERS).map((u) => ({
+    id: u.id,
+    email: u.email,
+    firstName: u.firstName,
+    lastName: u.lastName,
+    role: u.role,
+  })),
+  {
+    id: "usr-fac-sharma-01",
+    email: "faculty.sharma@apex.edu",
+    firstName: "Rajesh",
+    lastName: "Sharma",
+    role: "FACULTY" as const,
+  },
+  {
+    id: "usr-parent-mercer-01",
+    email: "parent.mercer@apex.edu",
+    firstName: "Sarah",
+    lastName: "Mercer",
+    role: "PARENT" as const,
+  },
+];
+
 /**
  * Ensures all 16 institutional RBAC roles exist as real user rows in the database
  * with real PBKDF2 password hashes for "Classroom@2026".
@@ -28,13 +52,7 @@ export async function ensureDbUsers() {
 
     const defaultPasswordHash = await hashPassword(DEFAULT_DEMO_PASSWORD);
 
-    const allDemoPersonas = [
-      ...Object.values(MOCK_USERS).map(u => ({ id: u.id, email: u.email, firstName: u.firstName, lastName: u.lastName, role: u.role })),
-      { id: "usr-fac-sharma-01", email: "faculty.sharma@apex.edu", firstName: "Rajesh", lastName: "Sharma", role: "FACULTY" },
-      { id: "usr-parent-mercer-01", email: "parent.mercer@apex.edu", firstName: "Sarah", lastName: "Mercer", role: "PARENT" },
-    ];
-
-    for (const demoUser of allDemoPersonas) {
+    for (const demoUser of ALL_DEMO_PERSONAS) {
       const cleanEmail = demoUser.email.toLowerCase().trim();
       const existingUser = await prisma.user.findUnique({
         where: { email: cleanEmail },

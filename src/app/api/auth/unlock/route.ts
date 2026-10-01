@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db/prisma";
 import { rateLimiter } from "@/lib/auth/rate-limiter";
 import { hashPassword } from "@/lib/auth/password";
-import { DEFAULT_DEMO_PASSWORD } from "@/lib/auth/ensure-db-users";
+import { DEFAULT_DEMO_PASSWORD, ALL_DEMO_PERSONAS } from "@/lib/auth/ensure-db-users";
 import { logger } from "@/lib/logging/logger";
 
 export async function POST(req: NextRequest) {
@@ -19,12 +19,32 @@ export async function POST(req: NextRequest) {
     rateLimiter.reset(`login:${clientIp}:${email}`);
     rateLimiter.reset(`login:127.0.0.1:${email}`);
 
-    const user = await prisma.user.findUnique({
+    let user = await prisma.user.findUnique({
       where: { email },
     });
 
     if (!user) {
-      return NextResponse.json({ error: "User account not found." }, { status: 404 });
+      const demoPersona = ALL_DEMO_PERSONAS.find((p) => p.email.toLowerCase() === email);
+      if (demoPersona) {
+        const defaultInst = await prisma.institution.findFirst();
+        const defaultHash = await hashPassword(DEFAULT_DEMO_PASSWORD);
+        user = await prisma.user.create({
+          data: {
+            id: demoPersona.id,
+            institutionId: defaultInst?.id || "inst-apex-001",
+            email,
+            passwordHash: defaultHash,
+            firstName: demoPersona.firstName,
+            lastName: demoPersona.lastName,
+            role: demoPersona.role,
+            isActive: true,
+            failedLoginAttempts: 0,
+            lockedUntil: null,
+          },
+        });
+      } else {
+        return NextResponse.json({ error: "User account not found." }, { status: 404 });
+      }
     }
 
     const shouldResetPassword = body.resetPasswordToDefault ?? true;
