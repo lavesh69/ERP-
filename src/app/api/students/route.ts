@@ -4,7 +4,7 @@ import { calculateLetterGrade } from "@/lib/grading/gpa-engine";
 import { enrollStudentSchema } from "@/lib/validation/schemas";
 import { hashPassword } from "@/lib/auth/password";
 import { logger } from "@/lib/logging/logger";
-import { requireAdminAuth, getOptionalSession } from "@/lib/auth/admin-guard";
+import { requireAdminAuth, requireRoleAuth, getOptionalSession } from "@/lib/auth/admin-guard";
 import { ensureAcademicMasterData } from "@/lib/academic/master-data";
 import { logAuditEvent } from "@/lib/audit/logger";
 
@@ -340,10 +340,25 @@ export async function GET(req: NextRequest) {
       });
     }
 
-    // Backend Directory Defense: Students are restricted from scraping institutional rosters
-    if (isStudent) {
+    // Backend Directory Defense: Restrict full directory to authorized academic and institutional staff
+    const allowedStaffRoles = [
+      "SUPER_ADMIN",
+      "INSTITUTION_ADMIN",
+      "PRINCIPAL",
+      "HOD",
+      "FACULTY",
+      "CLASS_TEACHER",
+      "LIBRARIAN",
+      "PLACEMENT_OFFICER",
+      "HR_STAFF",
+      "ACCOUNTANT",
+      "EXAMINATION_CONTROLLER",
+      "RESEARCH_COORDINATOR",
+    ];
+
+    if (!session || !allowedStaffRoles.includes(session.role)) {
       return NextResponse.json(
-        { error: "Access denied. Student directory is restricted to academic staff." },
+        { error: "Access denied. Student directory is restricted to authorized academic and institutional staff." },
         { status: 403 }
       );
     }
@@ -488,8 +503,8 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  // Admin only authorization
-  const auth = await requireAdminAuth(req);
+  // Admin & Principal authorization
+  const auth = await requireRoleAuth(req, ["SUPER_ADMIN", "INSTITUTION_ADMIN", "PRINCIPAL"]);
   if (auth instanceof NextResponse) return auth;
 
   try {
@@ -606,11 +621,18 @@ export async function PATCH(req: NextRequest) {
     }
 
     const isOwner = session?.userId === student.userId || session?.email === student.user.email;
-    const isStaff = session?.role === "SUPER_ADMIN" || session?.role === "INSTITUTION_ADMIN" || session?.role === "FACULTY";
+    const isStaff = !!session?.role && [
+      "SUPER_ADMIN",
+      "INSTITUTION_ADMIN",
+      "PRINCIPAL",
+      "HOD",
+      "FACULTY",
+      "CLASS_TEACHER",
+    ].includes(session.role);
 
-    if (session && !isOwner && !isStaff) {
+    if (!session || (!isOwner && !isStaff)) {
       return NextResponse.json(
-        { error: "Unauthorized: You may only update your own scholar profile." },
+        { error: "Unauthorized: You may only update your own scholar profile or require administrative privileges." },
         { status: 403 }
       );
     }

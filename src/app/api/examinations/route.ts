@@ -20,10 +20,36 @@ const EXAM_EDIT_ROLES: UserRole[] = [
   "PRINCIPAL",
 ];
 
+const COE_ROLES: UserRole[] = [
+  "SUPER_ADMIN",
+  "INSTITUTION_ADMIN",
+  "EXAMINATION_CONTROLLER",
+  "PRINCIPAL",
+];
+
 export async function GET(req: NextRequest) {
   try {
     const session = await getOptionalSession(req);
     const isStudent = session?.role === "STUDENT";
+    const isParent = session?.role === "PARENT";
+    const canManageExams = !!session && EXAM_EDIT_ROLES.includes(session.role);
+
+    // Resolve parent's wards if caller is a parent
+    let parentStudentIds: string[] = [];
+    if (isParent && session?.userId) {
+      const parentRecord = await prisma.parent.findFirst({
+        where: {
+          OR: [
+            { userId: session.userId },
+            { user: { email: session.email } },
+          ],
+        },
+        include: { students: true },
+      });
+      if (parentRecord) {
+        parentStudentIds = parentRecord.students.map((rel) => rel.studentId);
+      }
+    }
 
     const exams = await prisma.exam.findMany({
       include: {
@@ -74,7 +100,25 @@ export async function GET(req: NextRequest) {
             remarks: r.remarks,
             isPublished: true,
           }));
-      } else if (session) {
+      } else if (isParent && parentStudentIds.length > 0) {
+        // Parent only sees verified published results for their registered wards
+        visibleResults = e.results
+          .filter(
+            (r) =>
+              parentStudentIds.includes(r.studentId) &&
+              r.isVerified &&
+              r.publishedAt !== null
+          )
+          .map((r) => ({
+            id: r.id,
+            studentId: r.studentId,
+            studentName: `${r.student.user.firstName} ${r.student.user.lastName}`,
+            marksObtained: r.marksObtained,
+            gradeLetter: r.gradeLetter,
+            remarks: r.remarks,
+            isPublished: true,
+          }));
+      } else if (canManageExams) {
         // Teacher / Admin: view all student results (both drafts and published)
         visibleResults = e.results.map((r) => ({
           id: r.id,
@@ -88,10 +132,9 @@ export async function GET(req: NextRequest) {
         }));
       }
 
-      // Enrolled class roster for marks entry (Faculty view only)
-      const classRoster = !session || isStudent
-        ? []
-        : e.course.enrollments.map((enr) => {
+      // Enrolled class roster for marks entry (Faculty / Exam Controller view only)
+      const classRoster = canManageExams
+        ? e.course.enrollments.map((enr) => {
             const existingResult = e.results.find((r) => r.studentId === enr.student.id);
             const courseAtt = (enr.student.attendance || []).filter((a: any) => a.session?.courseId === e.courseId);
             const totalAtt = courseAtt.length;
@@ -109,19 +152,20 @@ export async function GET(req: NextRequest) {
               attendancePercent: Number(attRate.toFixed(1)),
               isAttendanceDefaulter,
             };
-          });
+          })
+        : [];
 
-      // Questions are only visible to Faculty / Admin
-      const visibleQuestions = !session || isStudent
-        ? []
-        : e.questions.map((q) => ({
+      // Questions are only visible to Faculty / Exam Controller
+      const visibleQuestions = canManageExams
+        ? e.questions.map((q) => ({
             id: q.id,
             text: q.questionText,
             type: q.type,
             marks: q.marks,
             difficulty: q.difficulty,
             bloomTaxonomy: q.bloomTaxonomy,
-          }));
+          }))
+        : [];
 
       return {
         id: e.id,
@@ -213,6 +257,13 @@ export async function POST(req: NextRequest) {
 
     // CoE Actions: APPLY_GRACE_MARKS
     if (action === "APPLY_GRACE_MARKS") {
+      if (!COE_ROLES.includes(auth.payload.role)) {
+        return NextResponse.json(
+          { error: "Forbidden: Only Controller of Examinations or Institutional Leadership can apply Senate grace marks." },
+          { status: 403 }
+        );
+      }
+
       const { examId, maxGraceAllowed } = body;
       if (!examId) return NextResponse.json({ error: "examId is required" }, { status: 400 });
 
@@ -288,6 +339,13 @@ export async function POST(req: NextRequest) {
 
     // CoE Actions: CERTIFY_COE_RESULTS
     if (action === "CERTIFY_COE_RESULTS") {
+      if (!COE_ROLES.includes(auth.payload.role)) {
+        return NextResponse.json(
+          { error: "Forbidden: Only Controller of Examinations or Institutional Leadership can certify and publish final results." },
+          { status: 403 }
+        );
+      }
+
       const { examId } = body;
       if (!examId) return NextResponse.json({ error: "examId is required" }, { status: 400 });
 
@@ -429,6 +487,13 @@ export async function PUT(req: NextRequest) {
       }
 
       if (publish === true) {
+        const canPublish = COE_ROLES.includes(auth.payload.role) || auth.payload.role === "HOD";
+        if (!canPublish) {
+          return NextResponse.json(
+            { error: "Forbidden: Only Controller of Examinations, HOD, or Administrator can certify and publish final results." },
+            { status: 403 }
+          );
+        }
         await prisma.exam.update({
           where: { id: examId },
           data: { status: "PUBLISHED" },
@@ -450,6 +515,16 @@ export async function PUT(req: NextRequest) {
         { error: "studentId and marksObtained or batchEntries are required" },
         { status: 400 }
       );
+    }
+
+    if (publish === true) {
+      const canPublish = COE_ROLES.includes(auth.payload.role) || auth.payload.role === "HOD";
+      if (!canPublish) {
+        return NextResponse.json(
+          { error: "Forbidden: Only Controller of Examinations, HOD, or Administrator can certify and publish final results." },
+          { status: 403 }
+        );
+      }
     }
 
     const percentage = (Number(marksObtained) / exam.totalMarks) * 100;

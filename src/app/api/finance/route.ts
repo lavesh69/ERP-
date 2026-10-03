@@ -15,22 +15,40 @@ export async function GET(req: NextRequest) {
     }
     const role = session.role;
 
-    // FERPA Compliance: Academic faculty have zero access to student billing & ledgers
-    if (role && ["FACULTY", "PROFESSOR", "CLASS_TEACHER", "HOD"].includes(role)) {
+    const isFinanceOrAdmin = ["SUPER_ADMIN", "INSTITUTION_ADMIN", "ACCOUNTANT", "PRINCIPAL"].includes(role);
+    const isStudent = role === "STUDENT";
+    const isParent = role === "PARENT";
+
+    if (!isFinanceOrAdmin && !isStudent && !isParent) {
       return NextResponse.json(
-        { error: "Forbidden: Academic faculty are restricted from accessing student financial records (FERPA compliance)." },
+        { error: "Forbidden: You are not authorized to access student financial records (FERPA compliance)." },
         { status: 403 }
       );
     }
-
-    const isStudent = role === "STUDENT";
 
     const { searchParams } = new URL(req.url);
     const search = searchParams.get("search");
     const page = Math.max(1, parseInt(searchParams.get("page") || "1", 10));
     const limit = Math.max(1, parseInt(searchParams.get("limit") || "10", 10));
 
-    // Role-based scoping: students only see their own fees and transactions
+    // Resolve parent's wards if caller is a parent
+    let parentStudentIds: string[] = [];
+    if (isParent && session.userId) {
+      const parentRecord = await prisma.parent.findFirst({
+        where: {
+          OR: [
+            { userId: session.userId },
+            { user: { email: session.email } },
+          ],
+        },
+        include: { students: true },
+      });
+      if (parentRecord) {
+        parentStudentIds = parentRecord.students.map((rel) => rel.studentId);
+      }
+    }
+
+    // Role-based scoping: students see only their own fees; parents see their wards; finance staff see all
     const studentFeeWhere = isStudent
       ? {
           student: {
@@ -39,6 +57,10 @@ export async function GET(req: NextRequest) {
               { user: { email: session?.email } },
             ],
           },
+        }
+      : isParent
+      ? {
+          studentId: { in: parentStudentIds },
         }
       : {};
 
@@ -51,6 +73,12 @@ export async function GET(req: NextRequest) {
                 { user: { email: session?.email } },
               ],
             },
+          },
+        }
+      : isParent
+      ? {
+          studentFee: {
+            studentId: { in: parentStudentIds },
           },
         }
       : {};
@@ -219,6 +247,14 @@ export async function POST(req: NextRequest) {
 
     // Bursar Offline Challan Approval & Settlement
     if (body.action === "APPROVE_CHALLAN") {
+      const allowedApprovers = ["SUPER_ADMIN", "INSTITUTION_ADMIN", "ACCOUNTANT", "PRINCIPAL"];
+      if (!session || !allowedApprovers.includes(session.role)) {
+        return NextResponse.json(
+          { error: "Access denied. Only bursars and finance administrators can reconcile offline challans." },
+          { status: 403 }
+        );
+      }
+
       const { transactionId, referenceNumber } = body;
       if (!transactionId && !referenceNumber) {
         return NextResponse.json({ error: "transactionId or referenceNumber is required" }, { status: 400 });

@@ -43,6 +43,9 @@ export async function GET(req: NextRequest) {
     const now = new Date();
     const MS_PER_DAY = 1000 * 60 * 60 * 24;
 
+    const canViewAllLoans = !!session && ["SUPER_ADMIN", "INSTITUTION_ADMIN", "LIBRARIAN"].includes(session.role);
+    const canViewStudentRoster = !!session && ["SUPER_ADMIN", "INSTITUTION_ADMIN", "LIBRARIAN", "PRINCIPAL", "FACULTY", "HOD"].includes(session.role);
+
     return NextResponse.json({
       books: filtered.map((b) => ({
         id: b.id,
@@ -59,13 +62,14 @@ export async function GET(req: NextRequest) {
           : b.loans
               .filter((l) => {
                 if (l.status !== "ISSUED") return false;
+                if (canViewAllLoans) return true;
                 if (isStudent && session) {
                   return (
                     l.student.userId === session.userId ||
                     l.student.user.email === session.email
                   );
                 }
-                return true;
+                return false;
               })
               .map((l) => {
                 const dueDate = new Date(l.dueDate);
@@ -94,13 +98,13 @@ export async function GET(req: NextRequest) {
                 };
               }),
       })),
-      students: !session || isStudent
-        ? []
-        : students.map((s) => ({
+      students: canViewStudentRoster
+        ? students.map((s) => ({
             id: s.id,
             name: `${s.user.firstName} ${s.user.lastName}`,
             rollNo: s.rollNumber,
-          })),
+          }))
+        : [],
     });
   } catch (error) {
     logger.error("Library GET Error:", error);
@@ -117,11 +121,12 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const { action, bookId, studentId, title, author, isbn, category, totalCopies } = body;
 
-    // RBAC: Students and Parents cannot catalog books or perform administrative circulation
-    if (session?.role === "STUDENT" || session?.role === "PARENT") {
-      if (action === "ADD_BOOK") {
+    // RBAC: Circulation and cataloging operations require librarian or admin credentials
+    const circulationStaff = ["SUPER_ADMIN", "INSTITUTION_ADMIN", "LIBRARIAN"];
+    if (action && ["ADD_BOOK", "ISSUE", "RETURN"].includes(action)) {
+      if (!session || !circulationStaff.includes(session.role)) {
         return NextResponse.json(
-          { error: "Forbidden: Students and parents cannot catalog books into the repository" },
+          { error: "Forbidden: Only librarians and administrators can perform circulation and cataloging operations." },
           { status: 403 }
         );
       }

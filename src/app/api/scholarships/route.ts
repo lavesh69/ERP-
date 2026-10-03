@@ -65,11 +65,17 @@ export async function GET(req: NextRequest) {
       };
     });
 
-    const isStudent = session?.role === "STUDENT";
+    const canViewApplications = !!session && [
+      "SUPER_ADMIN",
+      "INSTITUTION_ADMIN",
+      "ACCOUNTANT",
+      "HOD",
+      "PRINCIPAL",
+      "FACULTY",
+    ].includes(session.role);
 
-    const allApplications = !session || isStudent
-      ? []
-      : scholarships.flatMap((s) =>
+    const allApplications = canViewApplications
+      ? scholarships.flatMap((s) =>
           s.applications.map((app) => ({
             id: app.id,
             scholarshipId: s.id,
@@ -85,7 +91,8 @@ export async function GET(req: NextRequest) {
             status: app.status,
             appliedAt: app.appliedAt.toISOString().split("T")[0],
           }))
-        );
+        )
+      : [];
 
     return NextResponse.json({
       scholarships: formatted,
@@ -210,8 +217,8 @@ export async function POST(req: NextRequest) {
 export async function PATCH(req: NextRequest) {
   try {
     const session = await getOptionalSession(req);
-    const allowedRoles = ["SUPER_ADMIN", "INSTITUTION_ADMIN", "FACULTY", "HOD", "ACCOUNTANT"];
-    if (session?.role && !allowedRoles.includes(session.role)) {
+    const allowedRoles = ["SUPER_ADMIN", "INSTITUTION_ADMIN", "FACULTY", "HOD", "ACCOUNTANT", "PRINCIPAL"];
+    if (!session || !allowedRoles.includes(session.role)) {
       return NextResponse.json({ error: "Access denied. Administrative role required." }, { status: 403 });
     }
 

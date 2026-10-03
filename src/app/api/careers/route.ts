@@ -81,6 +81,15 @@ export async function GET(req: NextRequest) {
       orderBy: { deadline: "asc" },
     });
 
+    const canViewApplications = !!session && [
+      "SUPER_ADMIN",
+      "INSTITUTION_ADMIN",
+      "PLACEMENT_OFFICER",
+      "PRINCIPAL",
+      "HOD",
+      "FACULTY",
+    ].includes(session.role);
+
     const formatted = jobs.map((j) => {
       const myApplication = studentId ? j.applications.find((app) => app.studentId === studentId) : null;
       const atsAnalysis = computeAtsScore(defaultCandidateSkills, studentCgpa, j.requirements);
@@ -97,9 +106,8 @@ export async function GET(req: NextRequest) {
         status: j.status,
         atsAnalysis,
         applicationCount: j.applications.length,
-        applications: !session || isStudent
-          ? []
-          : j.applications.map((app) => ({
+        applications: canViewApplications
+          ? j.applications.map((app) => ({
               id: app.id,
               studentName: `${app.student.user.firstName} ${app.student.user.lastName}`,
               rollNumber: app.student.rollNumber,
@@ -108,7 +116,8 @@ export async function GET(req: NextRequest) {
               status: app.status,
               appliedAt: app.appliedAt.toISOString().split("T")[0],
               resumeUrl: app.resumeUrl,
-            })),
+            }))
+          : [],
         myApplication: myApplication
           ? {
               id: myApplication.id,
@@ -123,14 +132,14 @@ export async function GET(req: NextRequest) {
     const totalApplicationsCount = jobs.reduce((acc, j) => acc + j.applications.length, 0);
     const topRecruitersCount = new Set(jobs.map((j) => j.companyName)).size;
 
-    const visibleInterviews = !session || isStudent
-      ? SCHEDULED_INTERVIEWS.filter(
+    const visibleInterviews = canViewApplications
+      ? SCHEDULED_INTERVIEWS
+      : SCHEDULED_INTERVIEWS.filter(
           (intv) =>
             session?.userId &&
             (intv.candidateName.toLowerCase().includes(session.fullName?.toLowerCase() || "") ||
               intv.candidateRollNo === session.rollNumber)
-        )
-      : SCHEDULED_INTERVIEWS;
+        );
 
     return NextResponse.json({
       jobs: formatted,
@@ -157,8 +166,8 @@ export async function POST(req: NextRequest) {
 
     // 1. Placement Officer: Create Job
     if (body.action === "CREATE_JOB") {
-      const allowedRoles = ["SUPER_ADMIN", "INSTITUTION_ADMIN", "FACULTY", "HOD"];
-      if (session?.role && !allowedRoles.includes(session.role)) {
+      const allowedRoles = ["SUPER_ADMIN", "INSTITUTION_ADMIN", "PLACEMENT_OFFICER", "FACULTY", "HOD", "PRINCIPAL"];
+      if (!session || !allowedRoles.includes(session.role)) {
         return NextResponse.json(
           { error: "Access denied. Only placement officers or administrators can post new job drives." },
           { status: 403 }
@@ -212,6 +221,14 @@ export async function POST(req: NextRequest) {
 
     // 3. Action: Schedule Recruiter Interview
     if (body.action === "SCHEDULE_INTERVIEW") {
+      const allowedRoles = ["SUPER_ADMIN", "INSTITUTION_ADMIN", "PLACEMENT_OFFICER", "FACULTY", "HOD", "PRINCIPAL"];
+      if (!session || !allowedRoles.includes(session.role)) {
+        return NextResponse.json(
+          { error: "Access denied. Only placement officers or administrators can schedule interviews." },
+          { status: 403 }
+        );
+      }
+
       const { jobId, candidateName, candidateRollNo, roundName, scheduledAt, interviewerName, meetingLink } = body;
 
       if (!candidateName || !roundName) {
@@ -251,6 +268,10 @@ export async function POST(req: NextRequest) {
     }
 
     // 4. Student Application Submission
+    if (session?.role && !["STUDENT", "SUPER_ADMIN", "INSTITUTION_ADMIN"].includes(session.role)) {
+      return NextResponse.json({ error: "Access denied. Only students can apply for job postings." }, { status: 403 });
+    }
+
     const { jobId, resumeUrl } = body;
     if (!jobId) {
       return NextResponse.json({ error: "jobId is required" }, { status: 400 });

@@ -10,6 +10,21 @@ export async function GET(req: NextRequest) {
     const studentIdParam = searchParams.get("studentId");
 
     const isParentRole = session?.role === "PARENT";
+    const isLeadershipStaff = !!session && [
+      "SUPER_ADMIN",
+      "INSTITUTION_ADMIN",
+      "PRINCIPAL",
+      "HOD",
+      "CLASS_TEACHER",
+    ].includes(session.role);
+
+    if (!isParentRole && !isLeadershipStaff) {
+      return NextResponse.json(
+        { error: "Access Denied: Only authorized parents, guardians, and academic leadership can access the parent portal." },
+        { status: 403 }
+      );
+    }
+
     let availableWards: any[] = [];
     let student: any = null;
 
@@ -412,6 +427,14 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const session = await getOptionalSession(req);
+    const allowedRoles = ["PARENT", "SUPER_ADMIN", "INSTITUTION_ADMIN"];
+    if (!session || !allowedRoles.includes(session.role)) {
+      return NextResponse.json(
+        { error: "Access Denied: Only parents, guardians, or administrators can perform parental operations." },
+        { status: 403 }
+      );
+    }
+
     const body = await req.json();
     const { action, studentFeeId, amount, paymentMethod, message, advisorEmail, studentId, subject } = body;
 

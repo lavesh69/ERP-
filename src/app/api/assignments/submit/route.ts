@@ -58,6 +58,13 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    if (session?.role && !["STUDENT", "SUPER_ADMIN", "INSTITUTION_ADMIN"].includes(session.role)) {
+      return NextResponse.json(
+        { error: "Access Denied: Only students may submit assignments." },
+        { status: 403 }
+      );
+    }
+
     // Resolve student record from authenticated user or fallback for dev sandbox
     let student = null;
     if (session?.userId) {

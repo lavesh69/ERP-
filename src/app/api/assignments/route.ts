@@ -21,15 +21,24 @@ export async function GET(req: NextRequest) {
       orderBy: { dueDate: "asc" },
     });
 
+    const canViewAllSubmissions = !!session && [
+      "SUPER_ADMIN",
+      "INSTITUTION_ADMIN",
+      "PRINCIPAL",
+      "HOD",
+      "FACULTY",
+      "CLASS_TEACHER",
+    ].includes(session.role);
+
     const formatted = assignments.map((a) => {
-      // If caller is student, strictly return only their own submission; anonymous callers see none
+      // If caller is student, strictly return only their own submission; staff sees all; guests/parents see none
       const visibleSubmissions = isStudent
         ? a.submissions.filter(
             (sub) =>
               sub.student.userId === session?.userId ||
               sub.student.user.email === session?.email
           )
-        : session
+        : canViewAllSubmissions
         ? a.submissions
         : [];
 

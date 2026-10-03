@@ -22,7 +22,8 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const session = await getOptionalSession(req);
-    if (!session || (session.role !== "SUPER_ADMIN" && session.role !== "INSTITUTION_ADMIN")) {
+    const allowedEnrollmentRoles = ["SUPER_ADMIN", "INSTITUTION_ADMIN", "PRINCIPAL"];
+    if (!session || !allowedEnrollmentRoles.includes(session.role)) {
       return NextResponse.json({ error: "Access Denied: Registrar or Administrative privileges required." }, { status: 403 });
     }
 

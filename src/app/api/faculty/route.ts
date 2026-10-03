@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db/prisma";
-import { getOptionalSession, requireAdminAuth } from "@/lib/auth/admin-guard";
+import { getOptionalSession, requireAdminAuth, requireRoleAuth } from "@/lib/auth/admin-guard";
 import { hashPassword } from "@/lib/auth/password";
 import { logger } from "@/lib/logging/logger";
 import { logAuditEvent } from "@/lib/audit/logger";
@@ -331,13 +331,13 @@ export async function PATCH(req: NextRequest) {
       return NextResponse.json({ error: "Faculty member not found" }, { status: 404 });
     }
 
-    // Role Guard: Can only update if SUPER_ADMIN, ADMIN, or the faculty member themselves
+    // Role Guard: Can only update if SUPER_ADMIN, ADMIN, PRINCIPAL, HR_STAFF, or the faculty member themselves
     const isOwner = session?.userId === faculty.userId || session?.email === faculty.user.email;
-    const isAdmin = session?.role === "SUPER_ADMIN" || session?.role === "INSTITUTION_ADMIN";
+    const isAdmin = !!session?.role && ["SUPER_ADMIN", "INSTITUTION_ADMIN", "PRINCIPAL", "HR_STAFF"].includes(session.role);
 
-    if (session && !isOwner && !isAdmin) {
+    if (!session || (!isOwner && !isAdmin)) {
       return NextResponse.json(
-        { error: "Unauthorized: You may only update your own faculty profile." },
+        { error: "Unauthorized: You may only update your own faculty profile or require administrative privileges." },
         { status: 403 }
       );
     }
@@ -518,8 +518,8 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // Admin only authorization for new faculty onboarding
-    const auth = await requireAdminAuth(req);
+    // Administrative & HR authorization for new faculty onboarding
+    const auth = await requireRoleAuth(req, ["SUPER_ADMIN", "INSTITUTION_ADMIN", "PRINCIPAL", "HR_STAFF"]);
     if (auth instanceof NextResponse) return auth;
 
     const { firstName, lastName, email, designation, departmentCode, specialization, qualification, officeRoom } = body;

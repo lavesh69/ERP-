@@ -5,15 +5,38 @@ import { logger } from "@/lib/logging/logger";
 
 import { isTokenRevoked } from "@/lib/auth/token-revocation";
 
-const ADMIN_ROLES: UserRole[] = ["SUPER_ADMIN", "INSTITUTION_ADMIN"];
+export const ADMIN_ROLES: UserRole[] = ["SUPER_ADMIN", "INSTITUTION_ADMIN"];
 
-const FACULTY_LEADERSHIP_ROLES: UserRole[] = [
+export const ACADEMIC_LEADERSHIP_ROLES: UserRole[] = [
+  "SUPER_ADMIN",
+  "INSTITUTION_ADMIN",
+  "PRINCIPAL",
+  "HOD",
+];
+
+export const FACULTY_LEADERSHIP_ROLES: UserRole[] = [
   "SUPER_ADMIN",
   "INSTITUTION_ADMIN",
   "PRINCIPAL",
   "HOD",
   "FACULTY",
   "CLASS_TEACHER",
+  "RESEARCH_COORDINATOR",
+];
+
+export const STAFF_ROLES: UserRole[] = [
+  "SUPER_ADMIN",
+  "INSTITUTION_ADMIN",
+  "PRINCIPAL",
+  "HOD",
+  "FACULTY",
+  "CLASS_TEACHER",
+  "ACCOUNTANT",
+  "LIBRARIAN",
+  "EXAMINATION_CONTROLLER",
+  "PLACEMENT_OFFICER",
+  "RESEARCH_COORDINATOR",
+  "HR_STAFF",
 ];
 
 function extractToken(req: NextRequest): string | undefined {

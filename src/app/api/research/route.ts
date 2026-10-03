@@ -128,10 +128,7 @@ export async function POST(req: NextRequest) {
   try {
     const authResult = await requireFacultyOrAdminAuth(req);
     if (authResult instanceof NextResponse) {
-      const session = await getOptionalSession(req);
-      if (!session) {
-        // Dev fallback
-      }
+      return authResult;
     }
 
     const body = await req.json();
