@@ -246,8 +246,8 @@ export function semanticVectorSearch(query: string, options: VectorSearchOptions
   const queryTokens = query.toLowerCase().split(/\W+/).filter((t) => t.length > 2);
 
   const scored = dynamicCorpus.map((doc) => {
-    // Multi-tenant isolation: exclude documents belonging to other institutions
-    if (institutionId && doc.institutionId && doc.institutionId !== institutionId) {
+    // Multi-tenant isolation: strictly exclude documents belonging to another institution or unscoped callers
+    if (doc.institutionId && doc.institutionId !== institutionId) {
       return { doc, score: 0 };
     }
 

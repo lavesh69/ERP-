@@ -303,24 +303,29 @@ export async function executeAutonomousAgent(
   let dbContext = "";
   try {
     if (request.agentId === "academic") {
+      const courseFilter = request.institutionId ? { department: { campus: { institutionId: request.institutionId } } } : {};
       const [courses, assignments, exams] = await Promise.all([
-        prisma.course.findMany({ take: 3 }),
-        prisma.assignment.findMany({ take: 2, orderBy: { dueDate: "asc" } }),
-        prisma.exam.findMany({ take: 2, orderBy: { examDate: "asc" } }),
+        prisma.course.findMany({ where: courseFilter, take: 3 }),
+        prisma.assignment.findMany({ where: request.institutionId ? { course: courseFilter } : {}, take: 2, orderBy: { dueDate: "asc" } }),
+        prisma.exam.findMany({ where: request.institutionId ? { course: courseFilter } : {}, take: 2, orderBy: { examDate: "asc" } }),
       ]);
       const activeCoursesStr = courses.map((c) => `${c.code}: ${c.title}`).join(", ");
       const pendingAssignStr = assignments.map((a) => `${a.title} (Due: ${a.dueDate.toISOString().split("T")[0]})`).join("; ");
       const upcomingExamStr = exams.map((e) => `${e.title} (${e.examDate.toISOString().split("T")[0]})`).join("; ");
       dbContext = `\n\n**Live Academic Schedule Grounding**:\n- **Registered Courses**: ${activeCoursesStr || "CS-402, BIO-210"}\n- **Upcoming Assignments**: ${pendingAssignStr || "None pending"}\n- **Scheduled Exams**: ${upcomingExamStr || "Fall Mid-Terms scheduled"}`;
     } else if (request.agentId === "analytics") {
+      const instFilter = request.institutionId ? { user: { institutionId: request.institutionId } } : {};
       const [totalStudents, defaulters, avgAttendance] = await Promise.all([
-        prisma.student.count(),
-        prisma.student.findMany({ where: { attendanceRate: { lt: 75.0 } }, include: { user: true }, take: 5 }),
-        prisma.student.aggregate({ _avg: { attendanceRate: true } }),
+        prisma.student.count({ where: instFilter }),
+        prisma.student.findMany({ where: { ...instFilter, attendanceRate: { lt: 75.0 } }, include: { user: true }, take: 5 }),
+        prisma.student.aggregate({ where: instFilter, _avg: { attendanceRate: true } }),
       ]);
       const rate = avgAttendance._avg.attendanceRate ? avgAttendance._avg.attendanceRate.toFixed(1) : "94.6";
+      const isStaff = ["SUPER_ADMIN", "INSTITUTION_ADMIN", "PRINCIPAL", "HOD", "FACULTY"].includes(request.userRole);
       const defaulterList = defaulters.length > 0 
-        ? defaulters.map((d) => `${d.user.firstName} ${d.user.lastName} (${d.rollNumber} - ${d.attendanceRate.toFixed(1)}%)`).join(", ")
+        ? (isStaff 
+            ? defaulters.map((d) => `${d.user.firstName} ${d.user.lastName} (${d.rollNumber} - ${d.attendanceRate.toFixed(1)}%)`).join(", ")
+            : `${defaulters.length} scholars currently flagged below Senate 75% threshold (individual PII protected)`)
         : "None (All scholars above 75% threshold)";
       dbContext = `\n\n**Live Institution Telemetry**:\n- **Total Enrolled Scholars**: ${totalStudents}\n- **Cohort Biometric Average**: ${rate}%\n- **Defaulter Risk Flag (<75%)**: ${defaulterList}`;
     } else if (request.agentId === "student-support" || request.agentId === "administration") {
@@ -330,7 +335,8 @@ export async function executeAutonomousAgent(
       ]);
       dbContext = `\n\n**Campus Infrastructure & Resources**:\n- **Available Smart Pods**: ${rooms.map((r) => `${r.name} (${r.code} - Cap: ${r.capacity})`).join(", ")}\n- **Circulation Reserves**: ${books.map((b) => `"${b.title}" (${b.availableCopies}/${b.totalCopies} available)`).join(", ")}`;
     } else if (request.agentId === "faculty-assistant") {
-      const faculty = await prisma.faculty.findMany({ include: { user: true, department: true }, take: 3 });
+      const facFilter = request.institutionId ? { user: { institutionId: request.institutionId } } : {};
+      const faculty = await prisma.faculty.findMany({ where: facFilter, include: { user: true, department: true }, take: 3 });
       dbContext = `\n\n**Faculty Allocation Registry**:\n${faculty.map((f) => `- **${f.user.firstName} ${f.user.lastName}** (${f.designation}, ${f.department.code}): ${f.weeklyHours} hrs/week`).join("\n")}`;
     }
   } catch (err) {

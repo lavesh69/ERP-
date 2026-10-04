@@ -52,7 +52,21 @@ export async function GET(req: NextRequest) {
       }
     }
 
+    const tenantFilter =
+      !session || session.role === "SUPER_ADMIN" || !session.institutionId
+        ? {}
+        : {
+            course: {
+              department: {
+                campus: {
+                  institutionId: session.institutionId,
+                },
+              },
+            },
+          };
+
     const exams = await prisma.exam.findMany({
+      where: tenantFilter,
       include: {
         course: {
           include: {
@@ -218,9 +232,12 @@ export async function POST(req: NextRequest) {
         });
         targetStudentId = student?.id;
       }
+
       if (!targetStudentId) {
-        const anyStudent = await prisma.student.findFirst();
-        targetStudentId = anyStudent?.id || "student-generic";
+        return NextResponse.json(
+          { error: "Authenticated student record could not be resolved for reevaluation request." },
+          { status: 400 }
+        );
       }
 
       const reqRef = `REV-${Date.now()}`;
@@ -383,10 +400,21 @@ export async function POST(req: NextRequest) {
 
     const course = await prisma.course.findFirst({
       where: { code: courseCode },
+      include: { department: { include: { campus: true } } },
     });
 
     if (!course) {
       return NextResponse.json({ error: "Course not found" }, { status: 404 });
+    }
+
+    if (auth.payload.role !== "SUPER_ADMIN" && auth.payload.institutionId) {
+      const courseTenant = course.department?.campus?.institutionId;
+      if (courseTenant && courseTenant !== auth.payload.institutionId) {
+        return NextResponse.json(
+          { error: "Forbidden: You cannot schedule examinations for another institution's courses." },
+          { status: 403 }
+        );
+      }
     }
 
     const exam = await prisma.exam.create({
@@ -450,7 +478,7 @@ export async function PUT(req: NextRequest) {
         course: {
           include: {
             faculty: { include: { faculty: { include: { user: true } } } },
-            department: true,
+            department: { include: { campus: true } },
           },
         },
       },
@@ -458,6 +486,17 @@ export async function PUT(req: NextRequest) {
 
     if (!exam) {
       return NextResponse.json({ error: "Exam not found" }, { status: 404 });
+    }
+
+    // Multi-Tenant Isolation Gate
+    if (auth.payload.role !== "SUPER_ADMIN" && auth.payload.institutionId) {
+      const examTenant = exam.course?.department?.campus?.institutionId;
+      if (examTenant && examTenant !== auth.payload.institutionId) {
+        return NextResponse.json(
+          { error: "Forbidden: You cannot modify examinations for another institution." },
+          { status: 403 }
+        );
+      }
     }
 
     // Role Scoping & Course Assignment Verification

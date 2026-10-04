@@ -49,7 +49,12 @@ export async function GET(req: NextRequest) {
       }
     }
 
-    // Role-based scoping: students see only their own fees; parents see their wards; finance staff see all
+    // Role-based scoping: students see only their own fees; parents see their wards; finance staff see their institution
+    const tenantCondition =
+      session && session.role !== "SUPER_ADMIN" && session.institutionId
+        ? { student: { user: { institutionId: session.institutionId } } }
+        : {};
+
     const studentFeeWhere = isStudent
       ? {
           student: {
@@ -63,7 +68,9 @@ export async function GET(req: NextRequest) {
       ? {
           studentId: { in: parentStudentIds },
         }
-      : {};
+      : {
+          ...tenantCondition,
+        };
 
     const transactionWhere = isStudent
       ? {
@@ -80,6 +87,12 @@ export async function GET(req: NextRequest) {
       ? {
           studentFee: {
             studentId: { in: parentStudentIds },
+          },
+        }
+      : session && session.role !== "SUPER_ADMIN" && session.institutionId
+      ? {
+          studentFee: {
+            student: { user: { institutionId: session.institutionId } },
           },
         }
       : {};
@@ -264,15 +277,26 @@ export async function POST(req: NextRequest) {
       const txn = transactionId
         ? await prisma.paymentTransaction.findUnique({
             where: { id: transactionId },
-            include: { studentFee: true },
+            include: { studentFee: { include: { student: { include: { user: true } } } } },
           })
         : await prisma.paymentTransaction.findFirst({
             where: { referenceNumber },
-            include: { studentFee: true },
+            include: { studentFee: { include: { student: { include: { user: true } } } } },
           });
 
       if (!txn) {
         return NextResponse.json({ error: "Transaction record not found" }, { status: 404 });
+      }
+
+      if (
+        session.role !== "SUPER_ADMIN" &&
+        session.institutionId &&
+        txn.studentFee.student.user.institutionId !== session.institutionId
+      ) {
+        return NextResponse.json(
+          { error: "Forbidden: You cannot reconcile transactions for another institution." },
+          { status: 403 }
+        );
       }
 
       const fee = txn.studentFee;
@@ -344,24 +368,25 @@ export async function POST(req: NextRequest) {
 
     const referenceNumber = `TXN-REC-${Date.now()}-${Math.floor(100 + Math.random() * 900)}`;
 
-    const transaction = await prisma.paymentTransaction.create({
-      data: {
-        studentFeeId,
-        amount: payAmount,
-        paymentMethod: paymentMethod || "DIRECT_DEPOSIT",
-        referenceNumber,
-        status: "SUCCESS",
-        gatewayResponse: "RECORDED_BY_BURSAR",
-      },
-    });
-
-    await prisma.studentFee.update({
-      where: { id: studentFeeId },
-      data: {
-        paidAmount: newPaidAmount,
-        status: newStatus,
-      },
-    });
+    const [transaction] = await prisma.$transaction([
+      prisma.paymentTransaction.create({
+        data: {
+          studentFeeId,
+          amount: payAmount,
+          paymentMethod: paymentMethod || "DIRECT_DEPOSIT",
+          referenceNumber,
+          status: "SUCCESS",
+          gatewayResponse: "RECORDED_BY_BURSAR",
+        },
+      }),
+      prisma.studentFee.update({
+        where: { id: studentFeeId },
+        data: {
+          paidAmount: newPaidAmount,
+          status: newStatus,
+        },
+      }),
+    ]);
 
     // C4: Audit log
     await logAuditEvent({

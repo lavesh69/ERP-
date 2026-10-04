@@ -30,17 +30,22 @@ export async function GET(req: NextRequest) {
     if (expires && sig) {
       const expiresAt = parseInt(expires, 10);
       if (!isNaN(expiresAt) && Date.now() <= expiresAt) {
-        const secret = process.env.SESSION_SECRET || "classroom-storage-secret";
-        const expectedSig = crypto
-          .createHmac("sha256", secret)
-          .update(`${cleanKey}:${expiresAt}`)
-          .digest("hex");
+        const secret =
+          process.env.SESSION_SECRET ||
+          (process.env.NODE_ENV === "production" ? "" : "classroom-storage-secret");
 
-        if (
-          expectedSig.length === sig.length &&
-          crypto.timingSafeEqual(Buffer.from(expectedSig), Buffer.from(sig))
-        ) {
-          isAuthorized = true;
+        if (secret) {
+          const expectedSig = crypto
+            .createHmac("sha256", secret)
+            .update(`${cleanKey}:${expiresAt}`)
+            .digest("hex");
+
+          if (
+            expectedSig.length === sig.length &&
+            crypto.timingSafeEqual(Buffer.from(expectedSig), Buffer.from(sig))
+          ) {
+            isAuthorized = true;
+          }
         }
       }
     }
@@ -68,11 +73,23 @@ export async function GET(req: NextRequest) {
             "CALENDAR",
             "TEMPLATE",
           ].includes(doc.category);
+          const isConfidential = [
+            "TRANSCRIPT",
+            "DISCIPLINARY",
+            "FINANCIAL",
+            "PAYROLL",
+            "MEDICAL",
+          ].includes(doc.category);
           const isSameTenant =
             session.role === "SUPER_ADMIN" ||
             doc.user.institutionId === session.institutionId;
           const isOwner =
             doc.userId === session.userId || doc.user.email === session.email;
+          const isLeadership = [
+            "SUPER_ADMIN",
+            "INSTITUTION_ADMIN",
+            "PRINCIPAL",
+          ].includes(session.role);
           const isStaff = [
             "SUPER_ADMIN",
             "INSTITUTION_ADMIN",
@@ -82,8 +99,16 @@ export async function GET(req: NextRequest) {
             "HR_STAFF",
           ].includes(session.role);
 
-          if (isSameTenant && (isPublic || isOwner || isStaff)) {
-            isAuthorized = true;
+          if (isSameTenant) {
+            if (isConfidential) {
+              if (isOwner || isLeadership) {
+                isAuthorized = true;
+              }
+            } else {
+              if (isPublic || isOwner || isStaff) {
+                isAuthorized = true;
+              }
+            }
           }
         }
       }

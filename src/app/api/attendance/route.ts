@@ -61,35 +61,6 @@ export async function GET(req: NextRequest) {
       });
 
       if (!student) {
-        student = await prisma.student.findFirst({
-          include: {
-            user: true,
-            program: true,
-            section: true,
-            enrollments: {
-              include: {
-                course: {
-                  include: {
-                    department: true,
-                    semester: {
-                      include: { program: true },
-                    },
-                    faculty: {
-                      include: {
-                        faculty: {
-                          include: { user: true },
-                        },
-                      },
-                    },
-                  },
-                },
-              },
-            },
-          },
-        });
-      }
-
-      if (!student) {
         return NextResponse.json({ error: "Student record not found" }, { status: 404 });
       }
 
@@ -411,7 +382,7 @@ export async function GET(req: NextRequest) {
       course = await prisma.course.findUnique({
         where: { id: courseIdParam },
         include: {
-          department: true,
+          department: { include: { campus: true } },
           faculty: { include: { faculty: { include: { user: true } } } },
           semester: {
             include: { program: true, sections: true },
@@ -435,7 +406,7 @@ export async function GET(req: NextRequest) {
       course = await prisma.course.findFirst({
         where: { code: courseCodeParam },
         include: {
-          department: true,
+          department: { include: { campus: true } },
           faculty: { include: { faculty: { include: { user: true } } } },
           semester: {
             include: { program: true, sections: true },
@@ -453,6 +424,17 @@ export async function GET(req: NextRequest) {
           },
         },
       });
+    }
+
+    // Multi-tenant boundary check: verify target course belongs to caller's institution
+    if (course && session?.role !== "SUPER_ADMIN" && session?.institutionId) {
+      const courseInstId = course.department?.campus?.institutionId;
+      if (courseInstId && courseInstId !== session.institutionId) {
+        return NextResponse.json(
+          { error: "Forbidden: You cannot access course attendance from another institution." },
+          { status: 403 }
+        );
+      }
     }
 
     if (!course && availableCourses.length > 0) {

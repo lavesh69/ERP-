@@ -28,10 +28,9 @@ export async function middleware(req: NextRequest) {
     }
   }
 
-  // Skip static files, Next.js internals, and public api/auth endpoints
+  // Skip static files, Next.js internals
   if (
     pathname.startsWith("/_next") ||
-    pathname.startsWith("/api/auth") ||
     pathname === "/favicon.ico" ||
     pathname.includes(".")
   ) {
@@ -39,10 +38,13 @@ export async function middleware(req: NextRequest) {
   }
 
   const sessionCookie = req.cookies.get("classroom_session")?.value;
+  const authHeader = req.headers.get("authorization");
+  const bearerToken = authHeader?.startsWith("Bearer ") ? authHeader.substring(7) : null;
+  const rawToken = sessionCookie || bearerToken;
   let userSession = null;
 
-  if (sessionCookie) {
-    userSession = await verifyJwt<any>(sessionCookie);
+  if (rawToken) {
+    userSession = await verifyJwt<any>(rawToken);
   }
 
   // Role-Based Access Control (RBAC) Route Matrix
@@ -95,6 +97,23 @@ export async function middleware(req: NextRequest) {
       return NextResponse.redirect(new URL(getRoleDefaultHome(userSession.role), req.url));
     }
     return NextResponse.next();
+  }
+
+  const isPublicApiRoute =
+    pathname.startsWith("/api/auth/") ||
+    pathname === "/api/health" ||
+    pathname === "/api/institution/register" ||
+    pathname === "/api/supabase/status" ||
+    pathname === "/api/payments/verify" ||
+    pathname === "/api/attendance/biometric-push" ||
+    pathname === "/api/ai/query";
+
+  // Require active authenticated session for all protected API routes
+  if (!userSession && pathname.startsWith("/api/") && !isPublicApiRoute) {
+    return NextResponse.json(
+      { error: "Unauthorized: Active authenticated session required." },
+      { status: 401 }
+    );
   }
 
   // Require active authenticated session for all application page routes

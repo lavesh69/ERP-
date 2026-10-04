@@ -124,17 +124,28 @@ export async function POST(req: NextRequest) {
     if (courseId) {
       targetCourse = await prisma.course.findUnique({
         where: { id: courseId },
-        include: { faculty: true },
+        include: { faculty: true, department: { include: { campus: true } } },
       });
     } else if (courseCode) {
       targetCourse = await prisma.course.findFirst({
         where: { code: courseCode },
-        include: { faculty: true },
+        include: { faculty: true, department: { include: { campus: true } } },
       });
     }
 
     if (!targetCourse) {
       return NextResponse.json({ error: "Valid course ID or course code is required" }, { status: 400 });
+    }
+
+    // Multi-tenant boundary check: verify target course belongs to caller's institution
+    if (auth.payload.role !== "SUPER_ADMIN" && auth.payload.institutionId) {
+      const courseInstId = targetCourse.department?.campus?.institutionId;
+      if (courseInstId && courseInstId !== auth.payload.institutionId) {
+        return NextResponse.json(
+          { error: "Forbidden: You cannot schedule attendance sessions for another institution's courses." },
+          { status: 403 }
+        );
+      }
     }
 
     // Resolve Faculty
@@ -151,21 +162,33 @@ export async function POST(req: NextRequest) {
     }
 
     if (!targetFacultyId) {
-      const fallbackFaculty = await prisma.faculty.findFirst();
-      if (!fallbackFaculty) {
+      const assignedFaculty = await prisma.faculty.findFirst({
+        where: auth.payload.role === "SUPER_ADMIN" || !auth.payload.institutionId
+          ? {}
+          : { user: { institutionId: auth.payload.institutionId } },
+      });
+      if (!assignedFaculty) {
         return NextResponse.json({ error: "No faculty found to assign session" }, { status: 400 });
       }
-      targetFacultyId = fallbackFaculty.id;
+      targetFacultyId = assignedFaculty.id;
     }
 
-    // Resolve Section
+    // Resolve Section: ensure section is scoped to the course or caller's institution
     let targetSectionId = sectionId;
     if (!targetSectionId) {
-      const fallbackSection = await prisma.section.findFirst();
-      if (!fallbackSection) {
-        return NextResponse.json({ error: "No section found in institution" }, { status: 400 });
+      const scopedSection = await prisma.section.findFirst({
+        where: {
+          semester: {
+            program: {
+              departmentId: targetCourse.departmentId,
+            },
+          },
+        },
+      });
+      if (!scopedSection) {
+        return NextResponse.json({ error: "A valid sectionId within the department is required to schedule session." }, { status: 400 });
       }
-      targetSectionId = fallbackSection.id;
+      targetSectionId = scopedSection.id;
     }
 
     // Resolve Room and Coordinates

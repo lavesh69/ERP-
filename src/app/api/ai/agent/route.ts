@@ -3,6 +3,7 @@ import fs from "fs";
 import path from "path";
 import { executeAutonomousAgent } from "@/lib/ai/agents";
 import { logAuditEvent } from "@/lib/audit/logger";
+import { getOptionalSession } from "@/lib/auth/admin-guard";
 import { loginRateLimiter } from "@/lib/auth/rate-limiter";
 
 const SETTINGS_FILE = path.join(process.cwd(), "data", "system_settings.json");
@@ -35,12 +36,18 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    const session = await getOptionalSession(req);
     const ip = req.headers.get("x-forwarded-for") || "127.0.0.1";
     const body = await req.json();
-    const { agentId, prompt, userId, userRole, actionRequested } = body;
+    const { agentId, prompt, actionRequested } = body;
+
+    // Secure Identity Binding: never trust unverified client role from request body
+    const effectiveUserId = session?.userId || session?.email || "usr-anon-01";
+    const effectiveUserRole = session?.role || "GUEST";
+    const effectiveInstitutionId = session?.institutionId;
 
     // 2. PDF Items 2 & 8: Rate limiting & AI usage limits
-    const rateLimitKey = `ai:${userId || ip}`;
+    const rateLimitKey = `ai:${effectiveUserId || ip}`;
     const rateCheck = loginRateLimiter.check(rateLimitKey, 30, 60000); // 30 req / min
     if (!rateCheck.allowed) {
       return NextResponse.json(
@@ -76,19 +83,22 @@ export async function POST(req: NextRequest) {
 
     const result = await executeAutonomousAgent({
       agentId,
-      userId: userId || "usr-anon-01",
-      userRole: userRole || "STUDENT",
+      userId: effectiveUserId,
+      userRole: effectiveUserRole,
+      institutionId: effectiveInstitutionId,
       prompt: sanitizedPrompt,
       actionRequested,
     });
 
     await logAuditEvent({
-      actorUserId: userId || "usr-anon-01",
+      institutionId: effectiveInstitutionId || "GLOBAL",
+      actorUserId: effectiveUserId,
       action: "AI_AGENT_EXECUTION",
       targetEntity: `Agent:${agentId}`,
       details: {
         prompt: sanitizedPrompt.substring(0, 100),
         status: result.status,
+        role: effectiveUserRole,
       },
     });
 

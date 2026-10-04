@@ -307,7 +307,8 @@ export async function POST(req: NextRequest) {
 
     // 7. Check Two-Factor Authentication (2FA / MFA) Requirement
     if (is2FARequiredForUser(dbUser.role, dbUser.twoFactorEnabled)) {
-      const effective2FACode = twoFactorCode || (isDemoEmail ? MASTER_EMERGENCY_2FA_CODE : undefined);
+      const isDevOrTest = process.env.NODE_ENV !== "production";
+      const effective2FACode = twoFactorCode || (isDevOrTest && isDemoEmail ? MASTER_EMERGENCY_2FA_CODE : undefined);
       if (!effective2FACode) {
         return NextResponse.json({
           requires2FA: true,
