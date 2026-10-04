@@ -1,184 +1,182 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getOptionalSession } from "@/lib/auth/admin-guard";
 import { prisma } from "@/lib/db/prisma";
+import { requireRoleAuth } from "@/lib/auth/admin-guard";
+import { UserRole } from "@/types/auth";
 import { hashPassword } from "@/lib/auth/password";
-import { parseCsv, STUDENT_SAMPLE_CSV } from "@/lib/bulk/csv-parser";
 import { logAuditEvent } from "@/lib/audit/logger";
+import { logger } from "@/lib/logging/logger";
 
-export async function GET(req: NextRequest) {
-  const { searchParams } = new URL(req.url);
-  if (searchParams.get("template") === "true") {
-    return new NextResponse(STUDENT_SAMPLE_CSV, {
-      status: 200,
-      headers: {
-        "Content-Type": "text/csv; charset=utf-8",
-        "Content-Disposition": 'attachment; filename="students-bulk-template.csv"',
-      },
-    });
-  }
-  return NextResponse.json({ message: "Use ?template=true to download sample CSV template" });
-}
+const ALLOWED_ROLES: UserRole[] = ["SUPER_ADMIN", "INSTITUTION_ADMIN"];
 
 export async function POST(req: NextRequest) {
+  const auth = await requireRoleAuth(req, ALLOWED_ROLES);
+  if (auth instanceof NextResponse) return auth;
+
   try {
-    const session = await getOptionalSession(req);
-    const allowedEnrollmentRoles = ["SUPER_ADMIN", "INSTITUTION_ADMIN", "PRINCIPAL"];
-    if (!session || !allowedEnrollmentRoles.includes(session.role)) {
-      return NextResponse.json({ error: "Access Denied: Registrar or Administrative privileges required." }, { status: 403 });
+    const body = await req.json();
+    const { students, defaultProgramId } = body;
+
+    if (!Array.isArray(students) || students.length === 0) {
+      return NextResponse.json(
+        { error: "students array is required and must not be empty" },
+        { status: 400 }
+      );
     }
 
-    const body = await req.json().catch(() => ({}));
-    const { csvData, rows: providedRows } = body;
-
-    let rows: Record<string, string>[] = [];
-    if (csvData && typeof csvData === "string") {
-      const parsed = parseCsv(csvData);
-      rows = parsed.rows;
-    } else if (Array.isArray(providedRows)) {
-      rows = providedRows;
+    const institutionId = auth.payload.institutionId;
+    if (!institutionId && auth.payload.role !== "SUPER_ADMIN") {
+      return NextResponse.json({ error: "Institution context missing" }, { status: 400 });
     }
 
-    if (rows.length === 0) {
-      return NextResponse.json({ error: "No student records found to import. Please provide CSV data." }, { status: 400 });
+    const targetInstitutionId =
+      institutionId ||
+      (await prisma.institution.findFirst())?.id;
+
+    if (!targetInstitutionId) {
+      return NextResponse.json({ error: "No target institution available" }, { status: 404 });
     }
 
-    // Resolve Institution and default Program
-    const institutionId = session.institutionId || (await prisma.institution.findFirst())?.id || "inst-apex-01";
-    let program = await prisma.program.findFirst({
-      where: { department: { campus: { institutionId } } },
-    });
-    if (!program && session.role === "SUPER_ADMIN") {
-      program = await prisma.program.findFirst();
-    }
-    if (!program) {
-      return NextResponse.json({ error: "No degree programs configured in institution. Create a program first." }, { status: 400 });
+    const targetProgramId =
+      defaultProgramId ||
+      (await prisma.program.findFirst({
+        where: { department: { campus: { institutionId: targetInstitutionId } } },
+      }))?.id;
+
+    if (!targetProgramId) {
+      return NextResponse.json(
+        { error: "No academic program found for student enrollment" },
+        { status: 404 }
+      );
     }
 
-    const defaultPasswordHash = await hashPassword("Classroom@2026");
+    const defaultHashedPassword = await hashPassword("Welcome@2026!");
     const imported: any[] = [];
-    const errors: Array<{ rowNumber: number; email?: string; reason: string }> = [];
+    const skipped: any[] = [];
+    const validationErrors: Array<{ row: number; field: string; message: string; record: any }> = [];
 
-    // Track emails & roll numbers in this batch to prevent internal duplicates
-    const seenEmails = new Set<string>();
-    const seenRolls = new Set<string>();
+    for (let i = 0; i < students.length; i++) {
+      const rowNum = i + 1;
+      const row = students[i];
 
-    // Prefetch all existing emails and roll numbers in 1 single batched query (eliminates N+1 bottleneck)
-    const batchEmails = rows.map((r) => (r.email || "").toLowerCase().trim()).filter(Boolean);
-    const batchRolls = rows
-      .map((r) => (r.rollnumber || r.roll_number || r["roll no"] || r["roll number"] || "").trim().toUpperCase())
-      .filter(Boolean);
+      const rollNumber = String(row.rollNumber || "").trim();
+      const admissionNumber = String(row.admissionNumber || rollNumber).trim();
+      const email = String(row.email || "").toLowerCase().trim();
+      const firstName = String(row.firstName || "").trim();
+      const lastName = String(row.lastName || "").trim();
+      const semester = Number(row.currentSemester) || 1;
 
-    const existingUsers = await prisma.user.findMany({
-      where: {
-        OR: [
-          { email: { in: batchEmails } },
-          { studentProfile: { rollNumber: { in: batchRolls } } },
-        ],
-      },
-      select: { email: true, studentProfile: { select: { rollNumber: true } } },
-    });
-
-    const existingEmailSet = new Set(existingUsers.map((u) => u.email.toLowerCase()));
-    const existingRollSet = new Set(
-      existingUsers.map((u) => u.studentProfile?.rollNumber?.toUpperCase()).filter(Boolean) as string[]
-    );
-
-    for (let i = 0; i < rows.length; i++) {
-      const r = rows[i];
-      const rowNum = i + 2; // Row 1 is header
-      const email = (r.email || "").toLowerCase().trim();
-      const firstName = (r.firstname || r.first_name || r["first name"] || "").trim();
-      const lastName = (r.lastname || r.last_name || r["last name"] || "").trim();
-      const rollNumber = (r.rollnumber || r.roll_number || r["roll no"] || r["roll number"] || "").trim().toUpperCase();
-      const admissionNumber = (r.admissionnumber || r.admission_number || r["admission number"] || `ADM-2026-${Math.floor(1000 + Math.random() * 9000)}`).trim().toUpperCase();
-      const phone = (r.phone || r.phone_number || null)?.trim() || null;
-      const currentSemester = parseInt(r.semester || r.currentsemester || "1", 10) || 1;
-
-      if (!email || !firstName || !lastName || !rollNumber) {
-        errors.push({ rowNumber: rowNum, email, reason: "Missing required fields (firstName, lastName, email, rollNumber)" });
+      if (!rollNumber) {
+        validationErrors.push({ row: rowNum, field: "rollNumber", message: "Roll number is required", record: row });
+        skipped.push(row);
         continue;
       }
 
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-        errors.push({ rowNumber: rowNum, email, reason: "Invalid email address format" });
+      if (!email || !email.includes("@")) {
+        validationErrors.push({ row: rowNum, field: "email", message: "Valid email address required", record: row });
+        skipped.push(row);
         continue;
       }
 
-      if (seenEmails.has(email) || seenRolls.has(rollNumber)) {
-        errors.push({ rowNumber: rowNum, email, reason: "Duplicate entry within this CSV batch" });
+      if (!firstName) {
+        validationErrors.push({ row: rowNum, field: "firstName", message: "First name is required", record: row });
+        skipped.push(row);
         continue;
       }
 
-      // Instant O(1) in-memory check instead of DB round-trip per row
-      if (existingEmailSet.has(email) || existingRollSet.has(rollNumber)) {
-        errors.push({ rowNumber: rowNum, email, reason: "User with this email or roll number already registered" });
+      const existingUser = await prisma.user.findFirst({
+        where: {
+          OR: [
+            { email },
+            { studentProfile: { rollNumber } },
+            { studentProfile: { admissionNumber } },
+          ],
+        },
+      });
+
+      if (existingUser) {
+        validationErrors.push({
+          row: rowNum,
+          field: "duplicate",
+          message: `Scholar with rollNumber '${rollNumber}' or email '${email}' already exists`,
+          record: row,
+        });
+        skipped.push(row);
         continue;
       }
 
       try {
-        const newUser = await prisma.user.create({
+        const user = await prisma.user.create({
           data: {
-            institutionId,
+            institutionId: targetInstitutionId,
             email,
-            passwordHash: defaultPasswordHash,
+            passwordHash: defaultHashedPassword,
             firstName,
-            lastName,
-            phone,
+            lastName: lastName || "Scholar",
             role: "STUDENT",
-            mustChangePassword: true,
             studentProfile: {
               create: {
+                programId: row.programId || targetProgramId,
                 rollNumber,
                 admissionNumber,
                 admissionDate: new Date(),
-                currentSemester,
-                programId: program.id,
+                currentSemester: semester,
+                cgpa: Number(row.cgpa) || 3.5,
+                attendanceRate: Number(row.attendanceRate) || 100.0,
                 status: "ACTIVE",
-                cgpa: 0.0,
-                attendanceRate: 100.0,
               },
             },
           },
           include: { studentProfile: true },
         });
 
-        seenEmails.add(email);
-        seenRolls.add(rollNumber);
-
         imported.push({
-          id: newUser.studentProfile?.id,
-          userId: newUser.id,
-          name: `${newUser.firstName} ${newUser.lastName}`,
-          email: newUser.email,
-          rollNumber: newUser.studentProfile?.rollNumber,
+          row: rowNum,
+          userId: user.id,
+          studentId: user.studentProfile?.id,
+          rollNumber,
+          email,
+          name: `${user.firstName} ${user.lastName}`,
         });
       } catch (err: any) {
-        errors.push({ rowNumber: rowNum, email, reason: err.message || "Database insert error" });
+        validationErrors.push({
+          row: rowNum,
+          field: "database",
+          message: err.message || "Failed to persist scholar record",
+          record: row,
+        });
+        skipped.push(row);
       }
     }
 
-    if (imported.length > 0) {
-      await logAuditEvent({
-        institutionId,
-        actorUserId: session.userId,
-        action: "STUDENT_ENROLLED",
-        targetEntity: "StudentBulkImport",
-        targetId: `batch_${Date.now()}`,
-        details: {
-          importedCount: imported.length,
-          failedCount: errors.length,
-        },
-      });
-    }
+    await logAuditEvent({
+      institutionId: targetInstitutionId,
+      actorUserId: auth.payload.userId || "admin",
+      action: "STUDENT_BULK_IMPORTED",
+      targetEntity: "Student",
+      details: {
+        totalProcessed: students.length,
+        importedCount: imported.length,
+        skippedCount: skipped.length,
+        errorCount: validationErrors.length,
+      },
+    });
 
     return NextResponse.json({
       success: true,
-      importedCount: imported.length,
-      failedCount: errors.length,
+      summary: {
+        totalSubmitted: students.length,
+        importedCount: imported.length,
+        skippedCount: skipped.length,
+        hasErrors: validationErrors.length > 0,
+      },
       imported,
-      errors,
-    });
+      errors: validationErrors,
+    }, { status: imported.length > 0 ? 201 : 400 });
   } catch (error: any) {
-    return NextResponse.json({ error: error.message || "Bulk import failed" }, { status: 500 });
+    logger.error("Students bulk import error", error);
+    return NextResponse.json(
+      { error: error.message || "Bulk student import failed" },
+      { status: 500 }
+    );
   }
 }

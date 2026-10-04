@@ -106,7 +106,9 @@ export async function middleware(req: NextRequest) {
     pathname === "/api/supabase/status" ||
     pathname === "/api/payments/verify" ||
     pathname === "/api/attendance/biometric-push" ||
-    pathname === "/api/ai/query";
+    pathname === "/api/ai/query" ||
+    pathname.startsWith("/api/admissions/") ||
+    pathname === "/api/alumni/verification";
 
   // Require active authenticated session for all protected API routes
   if (!userSession && pathname.startsWith("/api/") && !isPublicApiRoute) {
