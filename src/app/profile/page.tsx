@@ -48,6 +48,11 @@ import {
   Zap,
   TrendingUp,
   BadgeCheck,
+  Star,
+  Crown,
+  Fingerprint,
+  Palette,
+  Eye,
 } from "lucide-react";
 
 interface UserProfileResponse {
@@ -97,6 +102,8 @@ const AVATAR_PRESETS = [
   "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=256&h=256&q=80",
 ];
 
+type ThemePalette = "rose" | "emerald" | "amber" | "violet";
+
 export default function ProfileHubPage() {
   const { showToast, currentUser } = useApp();
 
@@ -106,8 +113,9 @@ export default function ProfileHubPage() {
   const [activeTab, setActiveTab] = useState<"personal" | "academic" | "security">("personal");
   const [showIdCardModal, setShowIdCardModal] = useState(false);
   const [idCardFlipped, setIdCardFlipped] = useState(false);
+  const [embeddedCardFlipped, setEmbeddedCardFlipped] = useState(false);
   const [showAvatarModal, setShowAvatarModal] = useState(false);
-  const [copiedField, setCopiedField] = useState<string | null>(null);
+  const [themePalette, setThemePalette] = useState<ThemePalette>("rose");
 
   // Base profile state
   const [firstName, setFirstName] = useState("");
@@ -250,9 +258,7 @@ export default function ProfileHubPage() {
   const handleCopy = (text: string, label: string) => {
     if (!text) return;
     navigator.clipboard.writeText(text);
-    setCopiedField(label);
     showToast(`Copied ${label} to clipboard!`, "info");
-    setTimeout(() => setCopiedField(null), 2500);
   };
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -382,7 +388,15 @@ export default function ProfileHubPage() {
 
   const completeness = calculateCompleteness();
   const attendanceVal = profileData?.attendanceRate ?? 100.0;
-  const strokeDashoffsetVal = 201 - (201 * Math.min(100, Math.max(0, attendanceVal))) / 100;
+  const strokeDashoffsetVal = 163 - (163 * Math.min(100, Math.max(0, attendanceVal))) / 100;
+
+  // Dynamic Theme Gradients
+  const themeBackdrops: Record<ThemePalette, string> = {
+    rose: "from-[#2A0E1C] via-[#5C1F3A] to-[#993A60]",
+    emerald: "from-[#0A2619] via-[#144D34] to-[#1E7B54]",
+    amber: "from-[#2A1D0B] via-[#5C3F18] to-[#9E6C26]",
+    violet: "from-[#1D0E2B] via-[#401C5E] to-[#7232A8]",
+  };
 
   return (
     <AppShell>
@@ -396,33 +410,74 @@ export default function ProfileHubPage() {
             ]}
           />
 
-          {/* Perspective View Switcher: Micro Snapshot vs Macro Dossier */}
-          <div className="inline-flex items-center p-1 rounded-2xl bg-white dark:bg-charcoal-900 border border-border dark:border-charcoal-800 shadow-soft self-start sm:self-auto backdrop-blur-md">
-            <button
-              type="button"
-              onClick={() => setProfileViewMode("micro")}
-              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                profileViewMode === "micro"
-                  ? "bg-gradient-to-r from-rose-primary to-rose-hover text-white shadow-md shadow-rose-primary/25 scale-[1.02]"
-                  : "text-charcoal-600 dark:text-charcoal-400 hover:text-charcoal-900 dark:hover:text-ivory-100"
-              }`}
-            >
-              <Compass className="h-3.5 w-3.5" />
-              <span>Micro Snapshot</span>
-            </button>
+          <div className="flex items-center gap-3">
+            {/* Theme Mood Selector */}
+            <div className="hidden sm:flex items-center gap-1.5 p-1 rounded-2xl bg-white dark:bg-charcoal-900 border border-border dark:border-charcoal-800 shadow-soft">
+              <span className="text-[10px] font-bold text-charcoal-400 pl-2 pr-1 uppercase tracking-wider">
+                Mood:
+              </span>
+              <button
+                type="button"
+                onClick={() => setThemePalette("rose")}
+                className={`h-4 w-4 rounded-full bg-rose-primary transition-all ${
+                  themePalette === "rose" ? "ring-2 ring-rose-primary/50 scale-110" : "opacity-60"
+                }`}
+                title="Rose Academic"
+              />
+              <button
+                type="button"
+                onClick={() => setThemePalette("emerald")}
+                className={`h-4 w-4 rounded-full bg-emerald-600 transition-all ${
+                  themePalette === "emerald" ? "ring-2 ring-emerald-500/50 scale-110" : "opacity-60"
+                }`}
+                title="Emerald Sovereign"
+              />
+              <button
+                type="button"
+                onClick={() => setThemePalette("amber")}
+                className={`h-4 w-4 rounded-full bg-amber-500 transition-all ${
+                  themePalette === "amber" ? "ring-2 ring-amber-500/50 scale-110" : "opacity-60"
+                }`}
+                title="Imperial Gold"
+              />
+              <button
+                type="button"
+                onClick={() => setThemePalette("violet")}
+                className={`h-4 w-4 rounded-full bg-purple-600 transition-all ${
+                  themePalette === "violet" ? "ring-2 ring-purple-500/50 scale-110" : "opacity-60"
+                }`}
+                title="Midnight Violet"
+              />
+            </div>
 
-            <button
-              type="button"
-              onClick={() => setProfileViewMode("macro")}
-              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                profileViewMode === "macro"
-                  ? "bg-gradient-to-r from-rose-primary to-rose-hover text-white shadow-md shadow-rose-primary/25 scale-[1.02]"
-                  : "text-charcoal-600 dark:text-charcoal-400 hover:text-charcoal-900 dark:hover:text-ivory-100"
-              }`}
-            >
-              <Layers className="h-3.5 w-3.5" />
-              <span>Macro 360 Dossier</span>
-            </button>
+            {/* Perspective View Switcher: Micro vs Macro */}
+            <div className="inline-flex items-center p-1 rounded-2xl bg-white dark:bg-charcoal-900 border border-border dark:border-charcoal-800 shadow-soft self-start sm:self-auto backdrop-blur-md">
+              <button
+                type="button"
+                onClick={() => setProfileViewMode("micro")}
+                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                  profileViewMode === "micro"
+                    ? "bg-gradient-to-r from-rose-primary to-rose-hover text-white shadow-md shadow-rose-primary/25 scale-[1.02]"
+                    : "text-charcoal-600 dark:text-charcoal-400 hover:text-charcoal-900 dark:hover:text-ivory-100"
+                }`}
+              >
+                <Compass className="h-3.5 w-3.5" />
+                <span>Micro Snapshot</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setProfileViewMode("macro")}
+                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                  profileViewMode === "macro"
+                    ? "bg-gradient-to-r from-rose-primary to-rose-hover text-white shadow-md shadow-rose-primary/25 scale-[1.02]"
+                    : "text-charcoal-600 dark:text-charcoal-400 hover:text-charcoal-900 dark:hover:text-ivory-100"
+                }`}
+              >
+                <Layers className="h-3.5 w-3.5" />
+                <span>Macro 360 Dossier</span>
+              </button>
+            </div>
           </div>
         </div>
 
@@ -437,14 +492,15 @@ export default function ProfileHubPage() {
             {/* LUXURY EDITORIAL COVER BANNER & IDENTITY CARD                            */}
             {/* ========================================================================= */}
             <div className="rounded-3xl border border-border dark:border-charcoal-800 shadow-elevated bg-white dark:bg-charcoal-950 overflow-hidden relative">
-              {/* Atmospheric Gradient Mesh Backdrop */}
-              <div className="h-40 sm:h-52 w-full bg-gradient-to-br from-[#2E0F1E] via-[#63223E] to-[#9E3E64] relative overflow-hidden">
-                {/* Tech Geometric Rings & Particles */}
+              {/* Dynamic Atmospheric Gradient Backdrop */}
+              <div
+                className={`h-40 sm:h-52 w-full bg-gradient-to-br ${themeBackdrops[themePalette]} relative overflow-hidden transition-colors duration-700`}
+              >
                 <div className="absolute inset-0 opacity-20 bg-[radial-gradient(#FAF0F4_1.5px,transparent_1.5px)] [background-size:20px_20px]" />
-                <div className="absolute -top-16 -right-16 w-80 h-80 bg-rose-accent/25 rounded-full blur-3xl pointer-events-none" />
+                <div className="absolute -top-16 -right-16 w-80 h-80 bg-white/10 rounded-full blur-3xl pointer-events-none" />
                 <div className="absolute -bottom-10 left-1/4 w-60 h-60 bg-emerald-500/15 rounded-full blur-3xl pointer-events-none" />
 
-                {/* Institutional Insignia & Holographic Mark */}
+                {/* Institutional Insignia */}
                 <div className="absolute top-4 left-6 flex items-center gap-2.5 text-white/90 text-[11px] font-mono tracking-widest uppercase">
                   <div className="p-1 rounded-lg bg-white/10 backdrop-blur-md border border-white/20">
                     <Sparkles className="h-3.5 w-3.5 text-rose-300" />
@@ -606,6 +662,59 @@ export default function ProfileHubPage() {
             </div>
 
             {/* ========================================================================= */}
+            {/* GAMIFIED INSTITUTIONAL HONORS & MERIT RIBBON                             */}
+            {/* ========================================================================= */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <div className="p-3.5 rounded-2xl bg-gradient-to-br from-amber-500/10 via-amber-500/5 to-transparent border border-amber-500/20 flex items-center gap-3">
+                <div className="p-2 rounded-xl bg-amber-500/20 text-amber-600 dark:text-amber-400 shrink-0">
+                  <Crown className="h-4 w-4" />
+                </div>
+                <div className="min-w-0">
+                  <span className="text-[11px] font-bold text-charcoal-900 dark:text-ivory-100 block truncate">
+                    Senate Merit List
+                  </span>
+                  <span className="text-[9px] text-charcoal-500 block truncate">Top 5% Cohort Tier</span>
+                </div>
+              </div>
+
+              <div className="p-3.5 rounded-2xl bg-gradient-to-br from-emerald-500/10 via-emerald-500/5 to-transparent border border-emerald-500/20 flex items-center gap-3">
+                <div className="p-2 rounded-xl bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 shrink-0">
+                  <Fingerprint className="h-4 w-4" />
+                </div>
+                <div className="min-w-0">
+                  <span className="text-[11px] font-bold text-charcoal-900 dark:text-ivory-100 block truncate">
+                    Turnstile Streak
+                  </span>
+                  <span className="text-[9px] text-charcoal-500 block truncate">Zero Defaulter Flag</span>
+                </div>
+              </div>
+
+              <div className="p-3.5 rounded-2xl bg-gradient-to-br from-rose-500/10 via-rose-500/5 to-transparent border border-rose-500/20 flex items-center gap-3">
+                <div className="p-2 rounded-xl bg-rose-500/20 text-rose-primary shrink-0">
+                  <Star className="h-4 w-4" />
+                </div>
+                <div className="min-w-0">
+                  <span className="text-[11px] font-bold text-charcoal-900 dark:text-ivory-100 block truncate">
+                    Curriculum Verified
+                  </span>
+                  <span className="text-[9px] text-charcoal-500 block truncate">Prerequisites Cleared</span>
+                </div>
+              </div>
+
+              <div className="p-3.5 rounded-2xl bg-gradient-to-br from-blue-500/10 via-blue-500/5 to-transparent border border-blue-500/20 flex items-center gap-3">
+                <div className="p-2 rounded-xl bg-blue-500/20 text-blue-600 dark:text-blue-400 shrink-0">
+                  <ShieldCheck className="h-4 w-4" />
+                </div>
+                <div className="min-w-0">
+                  <span className="text-[11px] font-bold text-charcoal-900 dark:text-ivory-100 block truncate">
+                    FERPA & SOC2
+                  </span>
+                  <span className="text-[9px] text-charcoal-500 block truncate">Security Clearance</span>
+                </div>
+              </div>
+            </div>
+
+            {/* ========================================================================= */}
             {/* VIEW MODE 1: MICRO PROFILE SNAPSHOT                                     */}
             {/* ========================================================================= */}
             {profileViewMode === "micro" && (
@@ -645,7 +754,7 @@ export default function ProfileHubPage() {
                           stroke="currentColor"
                           strokeWidth="5"
                           strokeDasharray={163}
-                          strokeDashoffset={163 - (163 * Math.min(100, Math.max(0, attendanceVal))) / 100}
+                          strokeDashoffset={strokeDashoffsetVal}
                           strokeLinecap="round"
                           className="text-emerald-500 transition-all duration-1000 ease-out"
                           fill="transparent"
@@ -727,79 +836,127 @@ export default function ProfileHubPage() {
                   </div>
                 </div>
 
-                {/* Micro Bento Matrix: Identity Snapshot & Interactive Smart Card */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  {/* Left: Quick Snapshot Badge */}
-                  <div className="glass-panel p-6 rounded-3xl border border-border dark:border-charcoal-800 shadow-soft space-y-4">
-                    <div className="flex items-center justify-between border-b border-border dark:border-charcoal-800 pb-3">
-                      <h3 className="text-xs font-bold uppercase tracking-wider text-charcoal-500">
-                        Identity Snapshot
-                      </h3>
+                {/* Embedded Collegiate Smartcard + Bento Information */}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                  {/* Left: Interactive Live Smartcard Widget */}
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between px-1">
+                      <span className="text-xs font-bold uppercase tracking-wider text-charcoal-500 flex items-center gap-1.5">
+                        <QrCode className="h-3.5 w-3.5 text-rose-primary" />
+                        <span>Smart RFID Card Preview</span>
+                      </span>
                       <button
                         type="button"
-                        onClick={() => setShowIdCardModal(true)}
+                        onClick={() => setEmbeddedCardFlipped(!embeddedCardFlipped)}
                         className="text-xs font-bold text-rose-primary hover:underline flex items-center gap-1 cursor-pointer"
                       >
-                        <QrCode className="h-3.5 w-3.5" />
-                        <span>Inspect Card</span>
+                        <RotateCcw className="h-3 w-3" />
+                        <span>Flip ({embeddedCardFlipped ? "Front" : "Back"})</span>
                       </button>
                     </div>
 
-                    <div className="space-y-3 text-xs">
-                      <div className="flex items-center justify-between">
-                        <span className="text-charcoal-400">Department:</span>
-                        <span className="font-semibold text-charcoal-900 dark:text-ivory-100 text-right">
-                          {profileData?.departmentName || "Engineering & Computing"}
-                        </span>
-                      </div>
+                    {/* LIVE INTERACTIVE FLIPPABLE CARD ON PAGE */}
+                    {!embeddedCardFlipped ? (
+                      <div className="w-full rounded-3xl bg-gradient-to-br from-[#1C161D] via-[#2D1C26] to-[#171219] text-white p-5 shadow-elevated border border-charcoal-700 relative overflow-hidden space-y-4">
+                        <div className="flex items-center justify-between border-b border-charcoal-800 pb-2.5">
+                          <div className="flex items-center gap-2">
+                            <div className="h-6 w-6 rounded-lg bg-rose-primary flex items-center justify-center text-[10px] font-bold">
+                              AU
+                            </div>
+                            <span className="text-xs font-bold truncate max-w-[150px]">
+                              {institutionName || "APEX UNIVERSITY"}
+                            </span>
+                          </div>
+                          <div className="h-5 w-8 rounded-sm bg-gradient-to-tr from-amber-400 via-amber-200 to-amber-500 p-0.5">
+                            <div className="w-full h-full border border-amber-600/50 rounded-[2px]" />
+                          </div>
+                        </div>
 
-                      <div className="flex items-center justify-between">
-                        <span className="text-charcoal-400">Program / Degree:</span>
-                        <span className="font-semibold text-charcoal-900 dark:text-ivory-100">
-                          {profileData?.programName || profileData?.designation || "Institutional Operations"}
-                        </span>
-                      </div>
+                        <div className="flex items-center gap-3">
+                          <div className="h-16 w-16 rounded-2xl bg-rose-primary/20 border border-rose-primary/50 flex items-center justify-center text-xl font-bold overflow-hidden shrink-0">
+                            {avatarUrl ? (
+                              <img
+                                src={avatarUrl}
+                                alt={`${firstName} ${lastName}`}
+                                className="h-full w-full object-cover"
+                              />
+                            ) : (
+                              <span>{firstName && lastName ? `${firstName[0]}${lastName[0]}` : "U"}</span>
+                            )}
+                          </div>
+                          <div className="space-y-0.5 min-w-0">
+                            <h4 className="font-bold text-sm text-white truncate">
+                              {firstName} {lastName}
+                            </h4>
+                            <p className="text-[10px] text-rose-300 font-mono">
+                              {profileData?.rollNumber
+                                ? `ROLL: ${profileData.rollNumber}`
+                                : profileData?.employeeCode
+                                ? `EMP: ${profileData.employeeCode}`
+                                : "ID: ADM-2026"}
+                            </p>
+                            <span className="inline-block px-2 py-0.2 rounded-full text-[9px] font-bold bg-rose-primary text-white">
+                              {role}
+                            </span>
+                          </div>
+                        </div>
 
-                      <div className="flex items-center justify-between">
-                        <span className="text-charcoal-400">Academic Cohort:</span>
-                        <span className="font-semibold text-rose-primary">
-                          {role === "STUDENT" ? `Semester ${currentSemester}` : "Active Faculty Tenure"}
-                        </span>
-                      </div>
+                        <div className="grid grid-cols-3 gap-1.5 p-2 rounded-xl bg-charcoal-900/80 border border-charcoal-800 text-[9px]">
+                          <div>
+                            <span className="text-charcoal-400 block">Blood:</span>
+                            <strong className="text-white font-bold">{bloodGroup || "O+"}</strong>
+                          </div>
+                          <div>
+                            <span className="text-charcoal-400 block">Status:</span>
+                            <strong className="text-emerald-400 font-bold">Active</strong>
+                          </div>
+                          <div>
+                            <span className="text-charcoal-400 block">Exp:</span>
+                            <strong className="text-white font-bold">2030</strong>
+                          </div>
+                        </div>
 
-                      <div className="flex items-center justify-between">
-                        <span className="text-charcoal-400">Blood Group:</span>
-                        <span className="font-bold text-rose-600 dark:text-rose-400">
-                          {bloodGroup || "Not recorded"}
-                        </span>
+                        <div className="flex items-center justify-between text-[8px] font-mono text-charcoal-500 pt-1 border-t border-charcoal-800">
+                          <span>||||| ||| |||||||</span>
+                          <span className="text-emerald-400">CRYPTOGRAPHIC CHIP</span>
+                        </div>
                       </div>
-
-                      <div className="flex items-center justify-between">
-                        <span className="text-charcoal-400">City / Origin:</span>
-                        <span className="font-semibold text-charcoal-900 dark:text-ivory-100">
-                          {city ? `${city}, ${country}` : "Campus Residential"}
-                        </span>
+                    ) : (
+                      <div className="w-full rounded-3xl bg-gradient-to-br from-[#171219] via-[#241720] to-[#1C161D] text-white p-5 shadow-elevated border border-charcoal-700 relative overflow-hidden space-y-3">
+                        <div className="-mx-5 -mt-2 h-7 bg-charcoal-950 border-y border-charcoal-800" />
+                        <div className="text-[9px] text-charcoal-400 space-y-1">
+                          <div className="flex justify-between border-b border-charcoal-800 pb-1">
+                            <span className="text-white font-bold">EMERGENCY SOS:</span>
+                            <span className="text-rose-300 font-bold font-mono">
+                              {emergencyContactPhone || "+91 99887 76655"}
+                            </span>
+                          </div>
+                          <p>Turnstile authentication is registered on campus network.</p>
+                          <p>Found cards to be surrendered to Campus Security.</p>
+                        </div>
+                        <div className="flex items-end justify-between pt-1 border-t border-charcoal-800">
+                          <div className="p-1 rounded-lg bg-white">
+                            <QrCode className="h-7 w-7 text-charcoal-900" />
+                          </div>
+                          <span className="text-[8px] text-charcoal-500 uppercase tracking-widest font-mono">
+                            Dean of Academic Senate
+                          </span>
+                        </div>
                       </div>
-                    </div>
+                    )}
 
-                    {/* Switch to Macro Edit Action */}
-                    <div className="pt-2">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setProfileViewMode("macro");
-                          setActiveTab("personal");
-                        }}
-                        className="w-full py-2.5 px-4 rounded-2xl bg-ivory-100 dark:bg-charcoal-900 hover:bg-rose-primary hover:text-white text-charcoal-800 dark:text-ivory-100 text-xs font-bold transition-all text-center flex items-center justify-center gap-2 cursor-pointer border border-border dark:border-charcoal-700 shadow-xs"
-                      >
-                        <span>Edit Full Demographic Profile</span>
-                        <ChevronRight className="h-3.5 w-3.5" />
-                      </button>
-                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setShowIdCardModal(true)}
+                      className="w-full py-2 px-3 rounded-2xl bg-ivory-100 dark:bg-charcoal-900 hover:bg-rose-primary hover:text-white text-charcoal-800 dark:text-ivory-100 text-xs font-bold transition-all text-center flex items-center justify-center gap-1.5 cursor-pointer border border-border dark:border-charcoal-700 shadow-xs"
+                    >
+                      <Eye className="h-3.5 w-3.5" />
+                      <span>Full Printable Smartcard View</span>
+                    </button>
                   </div>
 
-                  {/* Middle: Active Portfolio / Registered Courses */}
-                  <div className="glass-panel p-6 rounded-3xl border border-border dark:border-charcoal-800 shadow-soft space-y-4 md:col-span-2">
+                  {/* Right: Active Portfolio / Registered Courses */}
+                  <div className="glass-panel p-6 rounded-3xl border border-border dark:border-charcoal-800 shadow-soft space-y-4 lg:col-span-2">
                     <div className="flex items-center justify-between border-b border-border dark:border-charcoal-800 pb-3">
                       <h3 className="text-xs font-bold uppercase tracking-wider text-charcoal-500 flex items-center gap-1.5">
                         <BookOpen className="h-3.5 w-3.5 text-rose-primary" />
