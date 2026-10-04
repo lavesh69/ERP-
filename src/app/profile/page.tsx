@@ -40,11 +40,14 @@ import {
   Check,
   X,
   Copy,
-  Eye,
   Layers,
   Compass,
   Activity,
   ChevronRight,
+  RotateCcw,
+  Zap,
+  TrendingUp,
+  BadgeCheck,
 } from "lucide-react";
 
 interface UserProfileResponse {
@@ -102,6 +105,7 @@ export default function ProfileHubPage() {
   const [profileViewMode, setProfileViewMode] = useState<"macro" | "micro">("micro");
   const [activeTab, setActiveTab] = useState<"personal" | "academic" | "security">("personal");
   const [showIdCardModal, setShowIdCardModal] = useState(false);
+  const [idCardFlipped, setIdCardFlipped] = useState(false);
   const [showAvatarModal, setShowAvatarModal] = useState(false);
   const [copiedField, setCopiedField] = useState<string | null>(null);
 
@@ -377,11 +381,13 @@ export default function ProfileHubPage() {
   };
 
   const completeness = calculateCompleteness();
+  const attendanceVal = profileData?.attendanceRate ?? 100.0;
+  const strokeDashoffsetVal = 201 - (201 * Math.min(100, Math.max(0, attendanceVal))) / 100;
 
   return (
     <AppShell>
       <div className="space-y-6 max-w-5xl mx-auto pb-16">
-        {/* Top Control Navigation */}
+        {/* Top Control Navigation & Perspective Toggle */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <Breadcrumbs
             items={[
@@ -390,14 +396,14 @@ export default function ProfileHubPage() {
             ]}
           />
 
-          {/* Perspective View Switcher: Micro vs Macro */}
-          <div className="inline-flex items-center p-1 rounded-2xl bg-ivory-100 dark:bg-charcoal-900 border border-border dark:border-charcoal-700 shadow-xs self-start sm:self-auto">
+          {/* Perspective View Switcher: Micro Snapshot vs Macro Dossier */}
+          <div className="inline-flex items-center p-1 rounded-2xl bg-white dark:bg-charcoal-900 border border-border dark:border-charcoal-800 shadow-soft self-start sm:self-auto backdrop-blur-md">
             <button
               type="button"
               onClick={() => setProfileViewMode("micro")}
-              className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                 profileViewMode === "micro"
-                  ? "bg-rose-primary text-white shadow-xs"
+                  ? "bg-gradient-to-r from-rose-primary to-rose-hover text-white shadow-md shadow-rose-primary/25 scale-[1.02]"
                   : "text-charcoal-600 dark:text-charcoal-400 hover:text-charcoal-900 dark:hover:text-ivory-100"
               }`}
             >
@@ -408,9 +414,9 @@ export default function ProfileHubPage() {
             <button
               type="button"
               onClick={() => setProfileViewMode("macro")}
-              className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                 profileViewMode === "macro"
-                  ? "bg-rose-primary text-white shadow-xs"
+                  ? "bg-gradient-to-r from-rose-primary to-rose-hover text-white shadow-md shadow-rose-primary/25 scale-[1.02]"
                   : "text-charcoal-600 dark:text-charcoal-400 hover:text-charcoal-900 dark:hover:text-ivory-100"
               }`}
             >
@@ -427,73 +433,101 @@ export default function ProfileHubPage() {
           </div>
         ) : (
           <>
-            {/* ULTRA-AESTHETIC COVER BANNER & IDENTITY CARD */}
+            {/* ========================================================================= */}
+            {/* LUXURY EDITORIAL COVER BANNER & IDENTITY CARD                            */}
+            {/* ========================================================================= */}
             <div className="rounded-3xl border border-border dark:border-charcoal-800 shadow-elevated bg-white dark:bg-charcoal-950 overflow-hidden relative">
-              {/* Artistic Academic Cover Backdrop */}
-              <div className="h-36 sm:h-44 w-full bg-gradient-to-r from-rose-deep via-rose-primary to-rose-accent relative overflow-hidden">
-                <div className="absolute inset-0 opacity-15 bg-[radial-gradient(#ffffff_1px,transparent_1px)] [background-size:16px_16px]" />
-                <div className="absolute -top-12 -right-12 w-64 h-64 bg-white/10 rounded-full blur-2xl pointer-events-none" />
-                <div className="absolute top-4 left-6 flex items-center gap-2 text-white/80 text-[11px] font-mono tracking-widest uppercase">
-                  <Sparkles className="h-3.5 w-3.5 text-rose-light" />
-                  <span>Apex University Autonomous Ledger</span>
+              {/* Atmospheric Gradient Mesh Backdrop */}
+              <div className="h-40 sm:h-52 w-full bg-gradient-to-br from-[#2E0F1E] via-[#63223E] to-[#9E3E64] relative overflow-hidden">
+                {/* Tech Geometric Rings & Particles */}
+                <div className="absolute inset-0 opacity-20 bg-[radial-gradient(#FAF0F4_1.5px,transparent_1.5px)] [background-size:20px_20px]" />
+                <div className="absolute -top-16 -right-16 w-80 h-80 bg-rose-accent/25 rounded-full blur-3xl pointer-events-none" />
+                <div className="absolute -bottom-10 left-1/4 w-60 h-60 bg-emerald-500/15 rounded-full blur-3xl pointer-events-none" />
+
+                {/* Institutional Insignia & Holographic Mark */}
+                <div className="absolute top-4 left-6 flex items-center gap-2.5 text-white/90 text-[11px] font-mono tracking-widest uppercase">
+                  <div className="p-1 rounded-lg bg-white/10 backdrop-blur-md border border-white/20">
+                    <Sparkles className="h-3.5 w-3.5 text-rose-300" />
+                  </div>
+                  <span className="font-semibold drop-shadow-xs">Apex Autonomous University</span>
+                  <span className="hidden sm:inline-block px-2 py-0.5 rounded-full text-[9px] bg-white/15 border border-white/20 text-rose-100 font-bold">
+                    NAAC A++ • ISO 9001
+                  </span>
                 </div>
-                {/* ID Card Floating Button on Cover */}
+
+                {/* ID Card Floating Action Button */}
                 <div className="absolute top-4 right-4">
                   <button
                     type="button"
                     onClick={() => setShowIdCardModal(true)}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-charcoal-950/70 hover:bg-charcoal-950 text-white backdrop-blur-md text-[11px] font-bold transition-all border border-white/10 cursor-pointer shadow-md"
+                    className="flex items-center gap-2 px-3.5 py-1.5 rounded-2xl bg-charcoal-950/80 hover:bg-charcoal-950 text-white backdrop-blur-md text-xs font-bold transition-all border border-white/15 cursor-pointer shadow-lg hover:shadow-glow hover:scale-105 active:scale-95"
                   >
-                    <QrCode className="h-3.5 w-3.5 text-rose-accent" />
-                    <span>Digital ID Card</span>
+                    <QrCode className="h-4 w-4 text-rose-300" />
+                    <span>Collegiate ID Card</span>
                   </button>
                 </div>
               </div>
 
-              {/* Profile Details Bar */}
+              {/* Profile Details Layer */}
               <div className="p-6 sm:p-8 pt-0 relative">
-                <div className="flex flex-col sm:flex-row items-center sm:items-end justify-between gap-6 -mt-16 sm:-mt-20">
-                  {/* Avatar with Halo Ring */}
+                <div className="flex flex-col sm:flex-row items-center sm:items-end justify-between gap-6 -mt-16 sm:-mt-22">
+                  {/* Glowing Dual-Ring Avatar Frame */}
                   <div className="relative group shrink-0">
-                    <div className="h-28 w-28 sm:h-32 sm:w-32 rounded-3xl p-1 bg-white dark:bg-charcoal-950 shadow-elevated ring-4 ring-rose-primary/20">
-                      <div className="h-full w-full rounded-[22px] bg-gradient-to-tr from-rose-primary to-rose-accent text-white flex items-center justify-center text-3xl sm:text-4xl font-display font-bold overflow-hidden">
+                    <div className="h-32 w-32 sm:h-36 sm:w-36 rounded-3xl p-1.5 bg-white dark:bg-charcoal-950 shadow-elevated ring-4 ring-rose-primary/30 relative">
+                      <div className="h-full w-full rounded-[22px] bg-gradient-to-tr from-rose-primary via-rose-hover to-rose-accent text-white flex items-center justify-center text-4xl sm:text-5xl font-display font-bold overflow-hidden shadow-inner">
                         {avatarUrl ? (
                           <img
                             src={avatarUrl}
                             alt={`${firstName} ${lastName}`}
-                            className="h-full w-full object-cover"
+                            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                           />
                         ) : (
                           <span>{firstName && lastName ? `${firstName[0]}${lastName[0]}` : "U"}</span>
                         )}
                       </div>
+
+                      {/* Online Status Pulse Orb */}
+                      <span
+                        className="absolute top-3 right-3 flex h-3.5 w-3.5"
+                        title="Online on Institutional Grid"
+                      >
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                        <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-emerald-500 border-2 border-white dark:border-charcoal-950 shadow-xs" />
+                      </span>
                     </div>
-                    {/* Camera Change Action */}
+
+                    {/* Camera Action Button */}
                     <button
                       type="button"
                       onClick={() => setShowAvatarModal(true)}
-                      className="absolute bottom-1 right-1 p-2 rounded-xl bg-charcoal-900 text-white dark:bg-ivory-100 dark:text-charcoal-900 shadow-md hover:scale-110 active:scale-95 transition-all cursor-pointer border border-white/20"
-                      title="Upload or Change Avatar"
+                      className="absolute bottom-1 right-1 p-2.5 rounded-2xl bg-charcoal-900 text-white dark:bg-ivory-100 dark:text-charcoal-900 shadow-elevated hover:scale-110 active:scale-95 transition-all cursor-pointer border border-white/20"
+                      title="Upload Photo or Choose Preset"
                     >
-                      <Camera className="h-3.5 w-3.5" />
+                      <Camera className="h-4 w-4" />
                     </button>
                   </div>
 
-                  {/* Quick Profile Completion Pill */}
-                  <div className="w-full sm:w-64 p-3 rounded-2xl bg-ivory-50 dark:bg-charcoal-900 border border-border dark:border-charcoal-800 space-y-1.5 self-center sm:self-end">
-                    <div className="flex items-center justify-between text-[11px] font-bold">
-                      <span className="text-charcoal-600 dark:text-charcoal-400">Profile Health</span>
-                      <span className="text-rose-primary">{completeness}% Complete</span>
+                  {/* Profile Health Meter Pill */}
+                  <div className="w-full sm:w-72 p-4 rounded-3xl bg-ivory-50 dark:bg-charcoal-900/90 border border-border dark:border-charcoal-800 shadow-soft space-y-2 self-center sm:self-end">
+                    <div className="flex items-center justify-between text-xs font-bold">
+                      <span className="text-charcoal-600 dark:text-charcoal-400 flex items-center gap-1.5">
+                        <Zap className="h-3.5 w-3.5 text-rose-primary" />
+                        <span>Dossier Health</span>
+                      </span>
+                      <span className="text-rose-primary font-display">{completeness}% Complete</span>
                     </div>
-                    <div className="w-full h-2 rounded-full bg-ivory-200 dark:bg-charcoal-800 overflow-hidden">
+                    <div className="w-full h-2.5 rounded-full bg-ivory-200 dark:bg-charcoal-800 overflow-hidden p-0.5">
                       <div
-                        className="h-full bg-gradient-to-r from-rose-accent to-rose-primary rounded-full transition-all duration-500"
+                        className="h-full bg-gradient-to-r from-rose-accent to-rose-primary rounded-full transition-all duration-700 ease-out shadow-xs"
                         style={{ width: `${completeness}%` }}
                       />
                     </div>
-                    <span className="text-[10px] text-charcoal-500 block text-right">
-                      {completeness === 100 ? "Fully Verified Dossier" : "Complete bio & contacts"}
-                    </span>
+                    <div className="flex items-center justify-between text-[10px] text-charcoal-500">
+                      <span>{completeness >= 90 ? "Senate Verified" : "Needs bio/address"}</span>
+                      <span className="text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1">
+                        <BadgeCheck className="h-3 w-3" /> Tier 1 Record
+                      </span>
+                    </div>
                   </div>
                 </div>
 
@@ -503,21 +537,21 @@ export default function ProfileHubPage() {
                     <h1 className="text-2xl sm:text-3xl font-display font-bold text-charcoal-900 dark:text-ivory-100">
                       {firstName} {lastName}
                     </h1>
-                    <span className="px-3 py-0.5 rounded-full text-xs font-bold bg-rose-primary text-white shadow-xs">
+                    <span className="px-3.5 py-1 rounded-full text-xs font-bold bg-rose-primary text-white shadow-xs">
                       {role.replace("_", " ")}
                     </span>
-                    <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-2.5 py-0.5 rounded-md border border-emerald-200 dark:border-emerald-800">
+                    <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-3 py-1 rounded-full border border-emerald-200 dark:border-emerald-800">
                       <CheckCircle2 className="h-3.5 w-3.5" />
                       Active Member
                     </span>
                   </div>
 
                   <p className="text-xs text-charcoal-600 dark:text-charcoal-400 font-medium">
-                    {institutionName} • Member ID:{" "}
+                    {institutionName} • Identifier:{" "}
                     <button
                       type="button"
                       onClick={() => handleCopy(profileData?.rollNumber || profileData?.employeeCode || currentUser?.id || "", "ID")}
-                      className="font-mono font-bold text-rose-primary hover:underline cursor-pointer inline-flex items-center gap-1"
+                      className="font-mono font-bold text-rose-primary hover:underline cursor-pointer inline-flex items-center gap-1 bg-rose-50 dark:bg-rose-950/40 px-2 py-0.5 rounded-md"
                     >
                       <span>
                         {profileData?.rollNumber || profileData?.employeeCode || currentUser?.id?.slice(-8).toUpperCase() || "ADM-2026"}
@@ -533,8 +567,8 @@ export default function ProfileHubPage() {
                   )}
 
                   {/* Core Attribute Badges */}
-                  <div className="pt-3 flex flex-wrap justify-center sm:justify-start items-center gap-4 text-xs text-charcoal-600 dark:text-charcoal-300">
-                    <div className="flex items-center gap-1.5">
+                  <div className="pt-3 flex flex-wrap justify-center sm:justify-start items-center gap-3 text-xs text-charcoal-600 dark:text-charcoal-300">
+                    <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-ivory-50 dark:bg-charcoal-900 border border-border dark:border-charcoal-800">
                       <Mail className="h-3.5 w-3.5 text-rose-primary" />
                       <button
                         type="button"
@@ -547,22 +581,22 @@ export default function ProfileHubPage() {
                     </div>
 
                     {phone && (
-                      <div className="flex items-center gap-1.5">
+                      <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-ivory-50 dark:bg-charcoal-900 border border-border dark:border-charcoal-800">
                         <Phone className="h-3.5 w-3.5 text-rose-primary" />
                         <span>{phone}</span>
                       </div>
                     )}
 
                     {bloodGroup && (
-                      <div className="flex items-center gap-1.5 text-rose-600 dark:text-rose-400 font-bold px-2 py-0.5 rounded-md bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900">
+                      <div className="flex items-center gap-1.5 text-rose-600 dark:text-rose-400 font-bold px-3 py-1.5 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900">
                         <HeartPulse className="h-3.5 w-3.5" />
                         <span>Blood: {bloodGroup}</span>
                       </div>
                     )}
 
                     {emergencyContactPhone && (
-                      <div className="flex items-center gap-1.5 text-[11px] text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/30 px-2 py-0.5 rounded-md border border-amber-200 dark:border-amber-900">
-                        <Phone className="h-3 w-3" />
+                      <div className="flex items-center gap-1.5 text-xs text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/30 px-3 py-1.5 rounded-xl border border-amber-200 dark:border-amber-900">
+                        <Phone className="h-3.5 w-3.5" />
                         <span>SOS: {emergencyContactPhone}</span>
                       </div>
                     )}
@@ -575,80 +609,125 @@ export default function ProfileHubPage() {
             {/* VIEW MODE 1: MICRO PROFILE SNAPSHOT                                     */}
             {/* ========================================================================= */}
             {profileViewMode === "micro" && (
-              <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
-                {/* Micro Key Performance Pulse Grid */}
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                  {/* Attendance Ring Pulse */}
-                  <div className="glass-panel p-5 rounded-3xl border border-border dark:border-charcoal-800 shadow-soft hover:shadow-card transition-all relative overflow-hidden">
-                    <span className="text-[10px] font-bold text-charcoal-400 uppercase tracking-wider block">
-                      Biometric Pulse
-                    </span>
-                    <div className="mt-2 flex items-baseline gap-1.5">
-                      <span className="text-2xl sm:text-3xl font-bold font-display text-emerald-600 dark:text-emerald-400">
-                        {profileData?.attendanceRate ? profileData.attendanceRate.toFixed(1) : "100.0"}%
+              <div className="space-y-6 animate-in fade-in slide-in-from-bottom-3 duration-300">
+                {/* Micro Key Performance Pulse Grid with Circular Rings */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                  {/* Circular Biometric Attendance Gauge */}
+                  <div className="glass-panel p-5 rounded-3xl border border-border dark:border-charcoal-800 shadow-soft hover:shadow-card transition-all relative overflow-hidden flex items-center justify-between">
+                    <div>
+                      <span className="text-[10px] font-bold text-charcoal-400 uppercase tracking-wider block">
+                        Biometric Pulse
                       </span>
+                      <div className="mt-1 text-2xl font-bold font-display text-emerald-600 dark:text-emerald-400">
+                        {attendanceVal.toFixed(1)}%
+                      </div>
+                      <div className="mt-1 flex items-center gap-1 text-[11px] text-charcoal-500">
+                        <Activity className="h-3 w-3 text-emerald-500" />
+                        <span>Turnstile Clear</span>
+                      </div>
                     </div>
-                    <div className="mt-2 flex items-center gap-1 text-[11px] text-charcoal-500">
-                      <Activity className="h-3.5 w-3.5 text-emerald-500" />
-                      <span>Campus Gate Compliant</span>
+
+                    <div className="relative shrink-0">
+                      <svg className="w-16 h-16 transform -rotate-90">
+                        <circle
+                          cx="32"
+                          cy="32"
+                          r="26"
+                          stroke="currentColor"
+                          strokeWidth="5"
+                          className="text-ivory-200 dark:text-charcoal-800"
+                          fill="transparent"
+                        />
+                        <circle
+                          cx="32"
+                          cy="32"
+                          r="26"
+                          stroke="currentColor"
+                          strokeWidth="5"
+                          strokeDasharray={163}
+                          strokeDashoffset={163 - (163 * Math.min(100, Math.max(0, attendanceVal))) / 100}
+                          strokeLinecap="round"
+                          className="text-emerald-500 transition-all duration-1000 ease-out"
+                          fill="transparent"
+                        />
+                      </svg>
+                      <div className="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
+                        ✓
+                      </div>
                     </div>
                   </div>
 
                   {/* Academic / Senate Gauge */}
-                  <div className="glass-panel p-5 rounded-3xl border border-border dark:border-charcoal-800 shadow-soft hover:shadow-card transition-all relative overflow-hidden">
-                    <span className="text-[10px] font-bold text-charcoal-400 uppercase tracking-wider block">
-                      {role === "STUDENT" ? "Senate Standing" : "Faculty Workload"}
-                    </span>
-                    <div className="mt-2 flex items-baseline gap-1.5">
-                      <span className="text-2xl sm:text-3xl font-bold font-display text-rose-primary">
+                  <div className="glass-panel p-5 rounded-3xl border border-border dark:border-charcoal-800 shadow-soft hover:shadow-card transition-all relative overflow-hidden flex items-center justify-between">
+                    <div>
+                      <span className="text-[10px] font-bold text-charcoal-400 uppercase tracking-wider block">
+                        {role === "STUDENT" ? "Senate Standing" : "Teaching Load"}
+                      </span>
+                      <div className="mt-1 text-2xl font-bold font-display text-rose-primary">
                         {role === "STUDENT"
                           ? profileData?.cgpa
                             ? profileData.cgpa.toFixed(2)
                             : "0.00"
-                          : `${weeklyHours || 18}h`}
+                          : `${weeklyHours || 18} hrs`}
+                        {role === "STUDENT" && <span className="text-xs text-charcoal-400 font-normal"> / 4.00</span>}
+                      </div>
+                      <div className="mt-1 flex items-center gap-1 text-[11px] text-charcoal-500">
+                        <ShieldCheck className="h-3 w-3 text-rose-primary" />
+                        <span>{role === "STUDENT" ? "Verified CGPA" : "Weekly Allocation"}</span>
+                      </div>
+                    </div>
+
+                    <div className="p-3 rounded-2xl bg-rose-50 dark:bg-rose-950/50 text-rose-primary border border-rose-200 dark:border-rose-900 shrink-0">
+                      <Award className="h-6 w-6" />
+                    </div>
+                  </div>
+
+                  {/* Campus Desk / Room */}
+                  <div className="glass-panel p-5 rounded-3xl border border-border dark:border-charcoal-800 shadow-soft hover:shadow-card transition-all relative overflow-hidden flex items-center justify-between">
+                    <div>
+                      <span className="text-[10px] font-bold text-charcoal-400 uppercase tracking-wider block">
+                        Assigned Campus Base
                       </span>
-                      {role === "STUDENT" && <span className="text-xs text-charcoal-400">/ 4.00</span>}
+                      <div className="mt-1 text-sm font-bold text-charcoal-900 dark:text-ivory-100 line-clamp-1">
+                        {profileData?.officeRoom || profileData?.sectionName || "Academic Complex A"}
+                      </div>
+                      <div className="mt-1 flex items-center gap-1 text-[11px] text-charcoal-500">
+                        <MapPin className="h-3 w-3 text-rose-primary" />
+                        <span>Main Academic Zone</span>
+                      </div>
                     </div>
-                    <div className="mt-2 flex items-center gap-1 text-[11px] text-charcoal-500">
-                      <ShieldCheck className="h-3.5 w-3.5 text-rose-primary" />
-                      <span>{role === "STUDENT" ? "Accredited CGPA" : "Weekly Lecture Load"}</span>
+
+                    <div className="p-3 rounded-2xl bg-ivory-100 dark:bg-charcoal-800 text-charcoal-700 dark:text-ivory-200 border border-border dark:border-charcoal-700 shrink-0">
+                      <Building className="h-6 w-6" />
                     </div>
                   </div>
 
-                  {/* Primary Desk / Room */}
-                  <div className="glass-panel p-5 rounded-3xl border border-border dark:border-charcoal-800 shadow-soft hover:shadow-card transition-all relative overflow-hidden">
-                    <span className="text-[10px] font-bold text-charcoal-400 uppercase tracking-wider block">
-                      Assigned Location
-                    </span>
-                    <div className="mt-2 text-sm font-bold text-charcoal-900 dark:text-ivory-100 line-clamp-1">
-                      {profileData?.officeRoom || profileData?.sectionName || "Academic Complex A"}
+                  {/* Ledger / Fees Status */}
+                  <div className="glass-panel p-5 rounded-3xl border border-border dark:border-charcoal-800 shadow-soft hover:shadow-card transition-all relative overflow-hidden flex items-center justify-between">
+                    <div>
+                      <span className="text-[10px] font-bold text-charcoal-400 uppercase tracking-wider block">
+                        Ledger Standing
+                      </span>
+                      <div className="mt-1 text-sm font-bold text-charcoal-900 dark:text-ivory-100">
+                        {role === "STUDENT"
+                          ? profileData?.feeSummary?.isCleared
+                            ? "Clear / No Dues"
+                            : `₹${profileData?.feeSummary?.pendingDues?.toLocaleString() || "0"} Due`
+                          : "Institutional Officer"}
+                      </div>
+                      <div className="mt-1 flex items-center gap-1 text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold">
+                        <CheckCircle2 className="h-3 w-3" />
+                        <span>Active Standing</span>
+                      </div>
                     </div>
-                    <div className="mt-2 flex items-center gap-1 text-[11px] text-charcoal-500">
-                      <MapPin className="h-3.5 w-3.5 text-rose-primary" />
-                      <span>Main Campus Block</span>
-                    </div>
-                  </div>
 
-                  {/* Account / Dues Status */}
-                  <div className="glass-panel p-5 rounded-3xl border border-border dark:border-charcoal-800 shadow-soft hover:shadow-card transition-all relative overflow-hidden">
-                    <span className="text-[10px] font-bold text-charcoal-400 uppercase tracking-wider block">
-                      Ledger Standing
-                    </span>
-                    <div className="mt-2 text-sm font-bold text-charcoal-900 dark:text-ivory-100">
-                      {role === "STUDENT"
-                        ? profileData?.feeSummary?.isCleared
-                          ? "Clear / No Dues"
-                          : `₹${profileData?.feeSummary?.pendingDues?.toLocaleString() || "0"} Due`
-                        : "Institutional Officer"}
-                    </div>
-                    <div className="mt-2 flex items-center gap-1 text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold">
-                      <CheckCircle2 className="h-3.5 w-3.5" />
-                      <span>Active Standing</span>
+                    <div className="p-3 rounded-2xl bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-900 shrink-0">
+                      <CreditCard className="h-6 w-6" />
                     </div>
                   </div>
                 </div>
 
-                {/* Micro Snapshot Bento Matrix */}
+                {/* Micro Bento Matrix: Identity Snapshot & Interactive Smart Card */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   {/* Left: Quick Snapshot Badge */}
                   <div className="glass-panel p-6 rounded-3xl border border-border dark:border-charcoal-800 shadow-soft space-y-4">
@@ -659,10 +738,10 @@ export default function ProfileHubPage() {
                       <button
                         type="button"
                         onClick={() => setShowIdCardModal(true)}
-                        className="text-xs font-bold text-rose-primary hover:underline flex items-center gap-1"
+                        className="text-xs font-bold text-rose-primary hover:underline flex items-center gap-1 cursor-pointer"
                       >
                         <QrCode className="h-3.5 w-3.5" />
-                        <span>Card</span>
+                        <span>Inspect Card</span>
                       </button>
                     </div>
 
@@ -675,14 +754,14 @@ export default function ProfileHubPage() {
                       </div>
 
                       <div className="flex items-center justify-between">
-                        <span className="text-charcoal-400">Degree / Tier:</span>
+                        <span className="text-charcoal-400">Program / Degree:</span>
                         <span className="font-semibold text-charcoal-900 dark:text-ivory-100">
                           {profileData?.programName || profileData?.designation || "Institutional Operations"}
                         </span>
                       </div>
 
                       <div className="flex items-center justify-between">
-                        <span className="text-charcoal-400">Current Cohort:</span>
+                        <span className="text-charcoal-400">Academic Cohort:</span>
                         <span className="font-semibold text-rose-primary">
                           {role === "STUDENT" ? `Semester ${currentSemester}` : "Active Faculty Tenure"}
                         </span>
@@ -696,14 +775,14 @@ export default function ProfileHubPage() {
                       </div>
 
                       <div className="flex items-center justify-between">
-                        <span className="text-charcoal-400">Residence:</span>
+                        <span className="text-charcoal-400">City / Origin:</span>
                         <span className="font-semibold text-charcoal-900 dark:text-ivory-100">
                           {city ? `${city}, ${country}` : "Campus Residential"}
                         </span>
                       </div>
                     </div>
 
-                    {/* Quick Micro Switch to Edit */}
+                    {/* Switch to Macro Edit Action */}
                     <div className="pt-2">
                       <button
                         type="button"
@@ -711,7 +790,7 @@ export default function ProfileHubPage() {
                           setProfileViewMode("macro");
                           setActiveTab("personal");
                         }}
-                        className="w-full py-2 px-3 rounded-xl bg-ivory-100 dark:bg-charcoal-900 hover:bg-rose-primary hover:text-white text-charcoal-800 dark:text-ivory-100 text-xs font-bold transition-all text-center flex items-center justify-center gap-1.5 cursor-pointer border border-border dark:border-charcoal-700"
+                        className="w-full py-2.5 px-4 rounded-2xl bg-ivory-100 dark:bg-charcoal-900 hover:bg-rose-primary hover:text-white text-charcoal-800 dark:text-ivory-100 text-xs font-bold transition-all text-center flex items-center justify-center gap-2 cursor-pointer border border-border dark:border-charcoal-700 shadow-xs"
                       >
                         <span>Edit Full Demographic Profile</span>
                         <ChevronRight className="h-3.5 w-3.5" />
@@ -719,7 +798,7 @@ export default function ProfileHubPage() {
                     </div>
                   </div>
 
-                  {/* Middle: Active Portfolio / Courses at a Glance */}
+                  {/* Middle: Active Portfolio / Registered Courses */}
                   <div className="glass-panel p-6 rounded-3xl border border-border dark:border-charcoal-800 shadow-soft space-y-4 md:col-span-2">
                     <div className="flex items-center justify-between border-b border-border dark:border-charcoal-800 pb-3">
                       <h3 className="text-xs font-bold uppercase tracking-wider text-charcoal-500 flex items-center gap-1.5">
@@ -738,9 +817,9 @@ export default function ProfileHubPage() {
                           setProfileViewMode("macro");
                           setActiveTab("academic");
                         }}
-                        className="text-xs font-bold text-rose-primary hover:underline flex items-center gap-1"
+                        className="text-xs font-bold text-rose-primary hover:underline flex items-center gap-1 cursor-pointer"
                       >
-                        <span>View All & Edit</span>
+                        <span>Manage in Macro 360</span>
                         <ChevronRight className="h-3 w-3" />
                       </button>
                     </div>
@@ -751,17 +830,17 @@ export default function ProfileHubPage() {
                         profileData.enrolledCourses.slice(0, 4).map((c: any) => (
                           <div
                             key={c.id}
-                            className="p-3 rounded-2xl bg-ivory-50 dark:bg-charcoal-900 border border-border dark:border-charcoal-800 flex items-center justify-between"
+                            className="p-3.5 rounded-2xl bg-ivory-50 dark:bg-charcoal-900 border border-border dark:border-charcoal-800 flex items-center justify-between hover:border-rose-primary/30 transition-colors"
                           >
                             <div className="flex items-center gap-3">
-                              <span className="font-mono text-xs font-bold text-rose-primary px-2 py-1 rounded-lg bg-rose-primary/10">
+                              <span className="font-mono text-xs font-bold text-rose-primary px-2.5 py-1 rounded-xl bg-rose-primary/10">
                                 {c.code}
                               </span>
                               <span className="text-xs font-bold text-charcoal-900 dark:text-ivory-100 truncate max-w-xs">
                                 {c.title}
                               </span>
                             </div>
-                            <span className="text-[10px] text-charcoal-500 font-semibold">
+                            <span className="text-[10px] text-charcoal-500 font-semibold px-2 py-0.5 rounded-lg bg-ivory-100 dark:bg-charcoal-800">
                               {c.credits} Credits • {c.status}
                             </span>
                           </div>
@@ -770,23 +849,23 @@ export default function ProfileHubPage() {
                         profileData.assignedCourses.slice(0, 4).map((c: any) => (
                           <div
                             key={c.id}
-                            className="p-3 rounded-2xl bg-ivory-50 dark:bg-charcoal-900 border border-border dark:border-charcoal-800 flex items-center justify-between"
+                            className="p-3.5 rounded-2xl bg-ivory-50 dark:bg-charcoal-900 border border-border dark:border-charcoal-800 flex items-center justify-between hover:border-rose-primary/30 transition-colors"
                           >
                             <div className="flex items-center gap-3">
-                              <span className="font-mono text-xs font-bold text-rose-primary px-2 py-1 rounded-lg bg-rose-primary/10">
+                              <span className="font-mono text-xs font-bold text-rose-primary px-2.5 py-1 rounded-xl bg-rose-primary/10">
                                 {c.code}
                               </span>
                               <span className="text-xs font-bold text-charcoal-900 dark:text-ivory-100">
                                 {c.title}
                               </span>
                             </div>
-                            <span className="text-[10px] text-charcoal-500 font-semibold">
+                            <span className="text-[10px] text-charcoal-500 font-semibold px-2 py-0.5 rounded-lg bg-ivory-100 dark:bg-charcoal-800">
                               {c.credits} Credits
                             </span>
                           </div>
                         ))
                       ) : (
-                        <div className="p-4 rounded-2xl bg-ivory-50 dark:bg-charcoal-900 border border-border dark:border-charcoal-800 text-xs text-charcoal-500 text-center">
+                        <div className="p-5 rounded-2xl bg-ivory-50 dark:bg-charcoal-900 border border-border dark:border-charcoal-800 text-xs text-charcoal-500 text-center">
                           {role === "PARENT"
                             ? `${profileData?.linkedWards?.length || 0} Connected Wards actively monitored.`
                             : "Enterprise governance clearance active across institution."}
@@ -794,16 +873,18 @@ export default function ProfileHubPage() {
                       )}
                     </div>
 
-                    {/* Social / Portfolios Mini Row */}
+                    {/* Portfolios Row */}
                     {(linkedin || github || website) && (
-                      <div className="pt-2 flex items-center gap-3 border-t border-border dark:border-charcoal-800 text-xs">
-                        <span className="text-[11px] text-charcoal-400 font-bold uppercase">Portfolios:</span>
+                      <div className="pt-3 flex flex-wrap items-center gap-3 border-t border-border dark:border-charcoal-800 text-xs">
+                        <span className="text-[11px] text-charcoal-400 font-bold uppercase tracking-wider">
+                          Portfolios:
+                        </span>
                         {linkedin && (
                           <a
                             href={linkedin}
                             target="_blank"
                             rel="noreferrer"
-                            className="inline-flex items-center gap-1 text-rose-primary hover:underline font-medium"
+                            className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-rose-primary/10 text-rose-primary hover:bg-rose-primary hover:text-white transition-all font-semibold"
                           >
                             <Globe className="h-3 w-3" />
                             <span>LinkedIn</span>
@@ -814,7 +895,7 @@ export default function ProfileHubPage() {
                             href={github}
                             target="_blank"
                             rel="noreferrer"
-                            className="inline-flex items-center gap-1 text-rose-primary hover:underline font-medium"
+                            className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-rose-primary/10 text-rose-primary hover:bg-rose-primary hover:text-white transition-all font-semibold"
                           >
                             <Globe className="h-3 w-3" />
                             <span>GitHub</span>
@@ -825,7 +906,7 @@ export default function ProfileHubPage() {
                             href={website}
                             target="_blank"
                             rel="noreferrer"
-                            className="inline-flex items-center gap-1 text-rose-primary hover:underline font-medium"
+                            className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-rose-primary/10 text-rose-primary hover:bg-rose-primary hover:text-white transition-all font-semibold"
                           >
                             <Globe className="h-3 w-3" />
                             <span>Website</span>
@@ -842,15 +923,15 @@ export default function ProfileHubPage() {
             {/* VIEW MODE 2: MACRO 360 INSTITUTIONAL DOSSIER                            */}
             {/* ========================================================================= */}
             {profileViewMode === "macro" && (
-              <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
+              <div className="space-y-6 animate-in fade-in slide-in-from-bottom-3 duration-300">
                 {/* Navigation Tabs */}
-                <div className="flex rounded-2xl bg-ivory-100 dark:bg-charcoal-900 p-1.5 border border-border dark:border-charcoal-700 max-w-md">
+                <div className="flex rounded-2xl bg-white dark:bg-charcoal-900 p-1.5 border border-border dark:border-charcoal-800 shadow-soft max-w-md">
                   <button
                     type="button"
                     onClick={() => setActiveTab("personal")}
-                    className={`flex-1 py-2 text-xs font-bold rounded-xl transition-all cursor-pointer flex items-center justify-center gap-2 ${
+                    className={`flex-1 py-2.5 text-xs font-bold rounded-xl transition-all cursor-pointer flex items-center justify-center gap-2 ${
                       activeTab === "personal"
-                        ? "bg-rose-primary text-white shadow-xs"
+                        ? "bg-rose-primary text-white shadow-md shadow-rose-primary/25"
                         : "text-charcoal-600 dark:text-charcoal-400 hover:text-charcoal-900 dark:hover:text-ivory-100"
                     }`}
                   >
@@ -861,9 +942,9 @@ export default function ProfileHubPage() {
                   <button
                     type="button"
                     onClick={() => setActiveTab("academic")}
-                    className={`flex-1 py-2 text-xs font-bold rounded-xl transition-all cursor-pointer flex items-center justify-center gap-2 ${
+                    className={`flex-1 py-2.5 text-xs font-bold rounded-xl transition-all cursor-pointer flex items-center justify-center gap-2 ${
                       activeTab === "academic"
-                        ? "bg-rose-primary text-white shadow-xs"
+                        ? "bg-rose-primary text-white shadow-md shadow-rose-primary/25"
                         : "text-charcoal-600 dark:text-charcoal-400 hover:text-charcoal-900 dark:hover:text-ivory-100"
                     }`}
                   >
@@ -874,9 +955,9 @@ export default function ProfileHubPage() {
                   <button
                     type="button"
                     onClick={() => setActiveTab("security")}
-                    className={`flex-1 py-2 text-xs font-bold rounded-xl transition-all cursor-pointer flex items-center justify-center gap-2 ${
+                    className={`flex-1 py-2.5 text-xs font-bold rounded-xl transition-all cursor-pointer flex items-center justify-center gap-2 ${
                       activeTab === "security"
-                        ? "bg-rose-primary text-white shadow-xs"
+                        ? "bg-rose-primary text-white shadow-md shadow-rose-primary/25"
                         : "text-charcoal-600 dark:text-charcoal-400 hover:text-charcoal-900 dark:hover:text-ivory-100"
                     }`}
                   >
@@ -1877,7 +1958,7 @@ export default function ProfileHubPage() {
 
             {/* AVATAR PICKER / UPLOAD MODAL */}
             {showAvatarModal && (
-              <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-charcoal-950/60 backdrop-blur-sm animate-in fade-in">
+              <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-charcoal-950/70 backdrop-blur-md animate-in fade-in">
                 <div className="glass-panel w-full max-w-md p-6 rounded-3xl border border-border dark:border-charcoal-800 shadow-elevated space-y-5 bg-white dark:bg-charcoal-900">
                   <div className="flex items-center justify-between">
                     <h3 className="text-base font-bold font-display text-charcoal-900 dark:text-ivory-100 flex items-center gap-2">
@@ -1905,10 +1986,10 @@ export default function ProfileHubPage() {
                     <button
                       type="button"
                       onClick={() => fileInputRef.current?.click()}
-                      className="w-full py-3 px-4 rounded-2xl border-2 border-dashed border-rose-primary/40 hover:border-rose-primary bg-rose-primary/5 hover:bg-rose-primary/10 transition-all text-rose-primary text-xs font-bold flex items-center justify-center gap-2 cursor-pointer"
+                      className="w-full py-3 px-4 rounded-2xl border-2 border-dashed border-rose-primary/40 hover:border-rose-primary bg-rose-primary/5 hover:bg-rose-primary/10 transition-all text-rose-primary text-xs font-bold flex items-center justify-center gap-2 cursor-pointer shadow-xs"
                     >
                       <Upload className="h-4 w-4" />
-                      <span>Upload Local Photo from Device (Max 2MB)</span>
+                      <span>Upload Photo from Device (Max 2MB)</span>
                     </button>
                   </div>
 
@@ -1950,132 +2031,208 @@ export default function ProfileHubPage() {
               </div>
             )}
 
-            {/* DIGITAL INSTITUTIONAL ID CARD MODAL */}
+            {/* FLIPPABLE DIGITAL INSTITUTIONAL ID CARD MODAL */}
             {showIdCardModal && (
-              <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-charcoal-950/70 backdrop-blur-md animate-in fade-in">
+              <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-charcoal-950/80 backdrop-blur-md animate-in fade-in">
                 <div className="w-full max-w-md space-y-4">
+                  {/* Modal Header */}
                   <div className="flex items-center justify-between text-white px-2">
-                    <span className="text-xs font-bold uppercase tracking-wider flex items-center gap-1.5">
-                      <QrCode className="h-4 w-4 text-rose-primary" />
-                      Official Institutional Digital Credential
+                    <span className="text-xs font-bold uppercase tracking-wider flex items-center gap-2">
+                      <QrCode className="h-4 w-4 text-rose-accent" />
+                      Digital Collegiate Smartcard
                     </span>
-                    <button
-                      type="button"
-                      onClick={() => setShowIdCardModal(false)}
-                      className="p-1 rounded-lg hover:bg-white/10 transition-all cursor-pointer text-white"
-                    >
-                      <X className="h-5 w-5" />
-                    </button>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setIdCardFlipped(!idCardFlipped)}
+                        className="px-3 py-1 rounded-xl bg-white/10 hover:bg-white/20 text-white text-[11px] font-bold flex items-center gap-1.5 transition-all cursor-pointer border border-white/15"
+                      >
+                        <RotateCcw className="h-3 w-3" />
+                        <span>Flip ({idCardFlipped ? "Front" : "Back"})</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowIdCardModal(false);
+                          setIdCardFlipped(false);
+                        }}
+                        className="p-1 rounded-xl hover:bg-white/10 transition-all cursor-pointer text-white"
+                      >
+                        <X className="h-5 w-5" />
+                      </button>
+                    </div>
                   </div>
 
-                  {/* ID CARD VISUAL CANVAS */}
-                  <div
-                    id="institutional-id-card"
-                    className="w-full rounded-3xl bg-gradient-to-br from-charcoal-900 via-charcoal-950 to-charcoal-900 text-white p-6 shadow-2xl border border-charcoal-700 relative overflow-hidden space-y-5"
-                  >
-                    {/* Security Holographic Background Glow */}
-                    <div className="absolute top-0 right-0 w-48 h-48 bg-rose-primary/20 rounded-full blur-2xl pointer-events-none -mr-10 -mt-10" />
-                    <div className="absolute bottom-0 left-0 w-40 h-40 bg-emerald-500/10 rounded-full blur-2xl pointer-events-none -ml-10 -mb-10" />
+                  {/* ID CARD VISUAL CANVAS (FRONT / BACK) */}
+                  {!idCardFlipped ? (
+                    /* FRONT OF SMART CARD */
+                    <div
+                      id="institutional-id-card-front"
+                      className="w-full rounded-3xl bg-gradient-to-br from-[#1C161D] via-[#2D1C26] to-[#171219] text-white p-6 shadow-2xl border border-charcoal-700 relative overflow-hidden space-y-5 animate-in fade-in zoom-in-95 duration-200"
+                    >
+                      {/* Security Holographic Radial Accents */}
+                      <div className="absolute top-0 right-0 w-52 h-52 bg-rose-primary/30 rounded-full blur-3xl pointer-events-none -mr-16 -mt-16" />
+                      <div className="absolute bottom-0 left-0 w-44 h-44 bg-emerald-500/15 rounded-full blur-2xl pointer-events-none -ml-16 -mb-16" />
 
-                    {/* Card Header */}
-                    <div className="flex items-start justify-between relative z-10 border-b border-charcoal-800 pb-3">
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <div className="h-6 w-6 rounded-lg bg-rose-primary flex items-center justify-center text-[10px] font-bold">
+                      {/* Card Header with Smart Chip & Logo */}
+                      <div className="flex items-start justify-between relative z-10 border-b border-charcoal-800/80 pb-3">
+                        <div className="flex items-center gap-3">
+                          <div className="h-8 w-8 rounded-xl bg-gradient-to-tr from-rose-primary to-rose-accent flex items-center justify-center text-xs font-bold text-white shadow-md border border-white/20">
                             AU
                           </div>
-                          <span className="font-display font-bold text-sm tracking-wide">
-                            {institutionName || "APEX UNIVERSITY"}
+                          <div>
+                            <span className="font-display font-bold text-sm tracking-wide block">
+                              {institutionName || "APEX UNIVERSITY"}
+                            </span>
+                            <span className="text-[10px] text-charcoal-400 block">
+                              Autonomous Academic Senate
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Gold Security Smart Chip Graphic */}
+                        <div className="h-7 w-10 rounded-md bg-gradient-to-tr from-amber-400 via-amber-200 to-amber-500 border border-amber-300 shadow-inner flex items-center justify-center p-1">
+                          <div className="w-full h-full border border-amber-600/50 rounded-xs flex items-center justify-center">
+                            <span className="text-[8px] font-mono text-amber-900 font-bold">RFID</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Member Photo & Vitals */}
+                      <div className="flex items-center gap-4 relative z-10">
+                        <div className="h-20 w-20 rounded-2xl bg-rose-primary/20 text-rose-primary border-2 border-rose-primary/50 flex items-center justify-center text-2xl font-bold overflow-hidden shrink-0 shadow-lg">
+                          {avatarUrl ? (
+                            <img
+                              src={avatarUrl}
+                              alt={`${firstName} ${lastName}`}
+                              className="h-full w-full object-cover"
+                            />
+                          ) : (
+                            <span>{firstName && lastName ? `${firstName[0]}${lastName[0]}` : "U"}</span>
+                          )}
+                        </div>
+
+                        <div className="space-y-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <h4 className="font-display font-bold text-base text-white truncate">
+                              {firstName} {lastName}
+                            </h4>
+                            <span className="px-2 py-0.5 rounded-full text-[9px] font-bold bg-rose-primary text-white">
+                              {role}
+                            </span>
+                          </div>
+                          <p className="text-[11px] text-rose-300 font-mono font-semibold">
+                            {profileData?.rollNumber
+                              ? `ROLL: ${profileData.rollNumber}`
+                              : profileData?.employeeCode
+                              ? `EMP ID: ${profileData.employeeCode}`
+                              : `ID: ${currentUser?.id?.slice(-8).toUpperCase() || "ADM-2026"}`}
+                          </p>
+                          <p className="text-[10px] text-charcoal-300 truncate">
+                            {profileData?.programName || profileData?.departmentName || "Academic Officer"}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Attributes Bar */}
+                      <div className="grid grid-cols-3 gap-2 p-2.5 rounded-2xl bg-charcoal-900/80 border border-charcoal-800 text-[10px] relative z-10 backdrop-blur-sm">
+                        <div>
+                          <span className="text-charcoal-400 block">Blood Group:</span>
+                          <strong className="text-white font-bold">{bloodGroup || "O+"}</strong>
+                        </div>
+                        <div>
+                          <span className="text-charcoal-400 block">Issued:</span>
+                          <strong className="text-white font-bold">{createdAt || "2026"}</strong>
+                        </div>
+                        <div>
+                          <span className="text-charcoal-400 block">Valid Thru:</span>
+                          <strong className="text-emerald-400 font-bold">2030-06</strong>
+                        </div>
+                      </div>
+
+                      {/* Barcode & Security Hologram */}
+                      <div className="flex items-center justify-between pt-2 border-t border-charcoal-800/80 relative z-10">
+                        <div className="font-mono text-[9px] text-charcoal-400 tracking-widest">
+                          ||||| ||| ||||||| |||| |||||
+                          <span className="block text-[8px] text-charcoal-500">
+                            {email}
                           </span>
                         </div>
-                        <span className="text-[10px] text-charcoal-400 block mt-0.5">
-                          Autonomous Academic Senate • ISO 9001:2026
-                        </span>
-                      </div>
 
-                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-primary text-white shadow-xs">
-                        {role}
-                      </span>
+                        <div className="flex items-center gap-1.5 text-[9px] text-emerald-400 font-mono font-semibold">
+                          <ShieldCheck className="h-3.5 w-3.5" />
+                          <span>CRYPTOGRAPHIC CHIP</span>
+                        </div>
+                      </div>
                     </div>
-
-                    {/* Member Details */}
-                    <div className="flex items-center gap-4 relative z-10">
-                      <div className="h-20 w-20 rounded-2xl bg-rose-primary/20 text-rose-primary border border-rose-primary/40 flex items-center justify-center text-2xl font-bold overflow-hidden shrink-0">
-                        {avatarUrl ? (
-                          <img
-                            src={avatarUrl}
-                            alt={`${firstName} ${lastName}`}
-                            className="h-full w-full object-cover"
-                          />
-                        ) : (
-                          <span>{firstName && lastName ? `${firstName[0]}${lastName[0]}` : "U"}</span>
-                        )}
+                  ) : (
+                    /* BACK OF SMART CARD */
+                    <div
+                      id="institutional-id-card-back"
+                      className="w-full rounded-3xl bg-gradient-to-br from-[#171219] via-[#241720] to-[#1C161D] text-white p-6 shadow-2xl border border-charcoal-700 relative overflow-hidden space-y-4 animate-in fade-in zoom-in-95 duration-200"
+                    >
+                      {/* Magnetic Stripe Graphic */}
+                      <div className="-mx-6 -mt-2 h-10 bg-charcoal-950 border-y border-charcoal-800 flex items-center px-4">
+                        <div className="w-full h-2 bg-charcoal-800/50 rounded-full" />
                       </div>
 
-                      <div className="space-y-1 min-w-0">
-                        <h4 className="font-display font-bold text-base text-white truncate">
-                          {firstName} {lastName}
-                        </h4>
-                        <p className="text-[11px] text-charcoal-300 font-mono">
-                          {profileData?.rollNumber
-                            ? `ROLL: ${profileData.rollNumber}`
-                            : profileData?.employeeCode
-                            ? `EMP ID: ${profileData.employeeCode}`
-                            : `ID: ${currentUser?.id?.slice(-8).toUpperCase() || "ADM-2026"}`}
+                      <div className="space-y-2 pt-2 text-[10px] text-charcoal-300">
+                        <div className="flex items-center justify-between border-b border-charcoal-800/80 pb-2">
+                          <span className="font-bold text-white uppercase tracking-wider">
+                            Emergency Response Hotline
+                          </span>
+                          <span className="font-mono text-rose-300 font-bold">
+                            {emergencyContactPhone || "+91 99887 76655"}
+                          </span>
+                        </div>
+
+                        <p className="leading-relaxed text-charcoal-400">
+                          1. This card is official property of Apex University and must be surrendered upon departure.
                         </p>
-                        <p className="text-[10px] text-rose-300 truncate">
-                          {profileData?.programName || profileData?.departmentName || "Academic Member"}
+                        <p className="leading-relaxed text-charcoal-400">
+                          2. Turnstile biometric authentication is tied to embedded RFID credentials.
+                        </p>
+                        <p className="leading-relaxed text-charcoal-400">
+                          3. If found, please return to: Security Directorate, Academic Square, Main Campus.
                         </p>
                       </div>
-                    </div>
 
-                    {/* Attributes Bar */}
-                    <div className="grid grid-cols-3 gap-2 p-2.5 rounded-xl bg-charcoal-800/60 border border-charcoal-700/60 text-[10px] relative z-10">
-                      <div>
-                        <span className="text-charcoal-400 block">Blood Group:</span>
-                        <strong className="text-white font-bold">{bloodGroup || "O+"}</strong>
-                      </div>
-                      <div>
-                        <span className="text-charcoal-400 block">Issued:</span>
-                        <strong className="text-white font-bold">{createdAt || "2026"}</strong>
-                      </div>
-                      <div>
-                        <span className="text-charcoal-400 block">Valid Thru:</span>
-                        <strong className="text-emerald-400 font-bold">2030-06</strong>
-                      </div>
-                    </div>
+                      {/* Official Signature Block & QR Code */}
+                      <div className="flex items-end justify-between pt-3 border-t border-charcoal-800/80">
+                        <div className="p-2 rounded-xl bg-white text-charcoal-900">
+                          <QrCode className="h-10 w-10 text-charcoal-900" />
+                        </div>
 
-                    {/* Barcode & Security Hologram */}
-                    <div className="flex items-center justify-between pt-2 border-t border-charcoal-800/80 relative z-10">
-                      <div className="font-mono text-[9px] text-charcoal-400 tracking-widest">
-                        ||||| ||| ||||||| |||| |||||
-                        <span className="block text-[8px] text-charcoal-500">
-                          {email}
-                        </span>
-                      </div>
-
-                      <div className="flex items-center gap-1.5 text-[9px] text-emerald-400 font-mono">
-                        <ShieldCheck className="h-3.5 w-3.5" />
-                        <span>CRYPTOGRAPHIC SEAL</span>
+                        <div className="text-right space-y-1">
+                          <span className="text-[10px] font-script font-bold italic text-rose-accent block text-sm">
+                            Dr. A. K. Sen
+                          </span>
+                          <span className="text-[9px] text-charcoal-400 uppercase tracking-widest block">
+                            Dean of Academic Senate
+                          </span>
+                        </div>
                       </div>
                     </div>
-                  </div>
+                  )}
 
                   {/* Actions */}
                   <div className="flex items-center gap-3">
                     <button
                       type="button"
                       onClick={() => window.print()}
-                      className="flex-1 py-2.5 rounded-xl bg-rose-primary hover:bg-rose-dark active:scale-[0.98] text-white text-xs font-bold flex items-center justify-center gap-2 cursor-pointer shadow-lg"
+                      className="flex-1 py-2.5 rounded-2xl bg-rose-primary hover:bg-rose-dark active:scale-[0.98] text-white text-xs font-bold flex items-center justify-center gap-2 cursor-pointer shadow-lg transition-all"
                     >
                       <Printer className="h-4 w-4" />
-                      <span>Print / Save ID Card</span>
+                      <span>Print / Save ID Card (PDF)</span>
                     </button>
 
                     <button
                       type="button"
-                      onClick={() => setShowIdCardModal(false)}
-                      className="px-4 py-2.5 rounded-xl bg-charcoal-800 text-white text-xs font-bold hover:bg-charcoal-700 cursor-pointer"
+                      onClick={() => {
+                        setShowIdCardModal(false);
+                        setIdCardFlipped(false);
+                      }}
+                      className="px-5 py-2.5 rounded-2xl bg-charcoal-800 text-white text-xs font-bold hover:bg-charcoal-700 cursor-pointer transition-all"
                     >
                       Close
                     </button>
