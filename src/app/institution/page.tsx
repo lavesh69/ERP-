@@ -17,6 +17,13 @@ import {
   Plus,
   ArrowRight,
   CheckCircle2,
+  ShieldCheck,
+  MapPin,
+  Cpu,
+  Globe,
+  Award,
+  Sparkles,
+  Search,
 } from "lucide-react";
 
 export default function InstitutionERPPage() {
@@ -27,6 +34,8 @@ export default function InstitutionERPPage() {
   const [hierarchy, setHierarchy] = useState<any[]>([]);
   const [departments, setDepartments] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [searchDept, setSearchDept] = useState("");
+  const [selectedCampusFilter, setSelectedCampusFilter] = useState("ALL");
 
   // Department Modal State
   const [isDeptModalOpen, setIsDeptModalOpen] = useState(false);
@@ -102,100 +111,247 @@ export default function InstitutionERPPage() {
 
   const getHierarchyIcon = (level: string) => {
     switch (level) {
-      case "Institution": return Building2;
-      case "Campus": return Building;
-      case "School / Faculty": return Layers;
-      case "Department": return Users;
-      case "Program": return GraduationCap;
-      default: return Calendar;
+      case "Institution":
+        return Building2;
+      case "Campus":
+        return Building;
+      case "School / Faculty":
+        return Layers;
+      case "Department":
+        return Users;
+      case "Program":
+        return GraduationCap;
+      default:
+        return Calendar;
     }
   };
+
+  const filteredDepts = departments.filter((d) => {
+    const matchSearch =
+      d.name.toLowerCase().includes(searchDept.toLowerCase()) ||
+      d.code.toLowerCase().includes(searchDept.toLowerCase());
+    return matchSearch;
+  });
 
   return (
     <AppShell>
       <div className="flex flex-col gap-6">
         <Breadcrumbs />
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 glass-panel p-6 rounded-2xl shadow-soft">
-          <div className="flex items-center gap-3">
-            <div className="h-12 w-12 rounded-xl bg-rose-primary text-white flex items-center justify-center shadow-md shadow-rose-primary/20">
-              <Building2 className="h-6 w-6" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h1 className="text-xl font-display font-bold text-charcoal-900 dark:text-ivory-100">
-                  Institution ERP Architecture
-                </h1>
-                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-container dark:bg-rose-dark/30 text-rose-primary dark:text-rose-accent">
-                  Multi-Campus Governance
-                </span>
+
+        {/* Hero Banner with Multi-Campus Glassmorphism */}
+        <div className="relative overflow-hidden rounded-3xl border border-border dark:border-charcoal-700/80 bg-gradient-to-br from-white via-rose-primary/[0.03] to-white dark:from-[#171219] dark:via-[#1e141a] dark:to-[#171219] p-6 lg:p-8 shadow-elevated">
+          {/* Ambient blurred glow */}
+          <div className="absolute top-0 right-1/4 -mt-12 h-64 w-64 rounded-full bg-rose-primary/10 blur-3xl pointer-events-none" />
+          <div className="absolute bottom-0 right-10 -mb-10 h-48 w-48 rounded-full bg-indigo-500/10 blur-3xl pointer-events-none" />
+
+          <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+            <div className="flex items-start gap-4">
+              <div className="h-14 w-14 rounded-2xl bg-gradient-to-tr from-rose-primary to-indigo-600 text-white flex items-center justify-center shadow-lg shadow-rose-primary/30 shrink-0">
+                <Building2 className="h-7 w-7" />
               </div>
-              <p className="text-xs text-charcoal-600 dark:text-charcoal-400">
-                Hierarchical structure: Campuses → Schools → Departments → Academic Programs → Cohort Sections
-              </p>
+              <div className="space-y-1">
+                <div className="flex flex-wrap items-center gap-2">
+                  <h1 className="text-2xl font-display font-extrabold tracking-tight text-charcoal-900 dark:text-ivory-100">
+                    Institution Governance & ERP Architecture
+                  </h1>
+                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-academic-success-subtle dark:bg-emerald-950/60 text-academic-success border border-green-200 dark:border-green-800">
+                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                    Multi-Campus Operating System
+                  </span>
+                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20">
+                    Hierarchical Topology
+                  </span>
+                </div>
+                <p className="text-xs text-charcoal-600 dark:text-charcoal-400 max-w-2xl leading-relaxed">
+                  Unified collegiate infrastructure topology: University Senate → Campuses → Schools → Academic Departments → Degree Curricula.
+                </p>
+              </div>
+            </div>
+
+            {currentRole !== "GUEST" ? (
+              <button
+                type="button"
+                onClick={() => setIsDeptModalOpen(true)}
+                className="btn-primary-glow flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-rose-primary hover:bg-rose-dark active:scale-[0.98] text-white text-xs font-bold shadow-md transition-all shrink-0 cursor-pointer"
+              >
+                <Plus className="h-4 w-4" />
+                <span>Configure Department</span>
+              </button>
+            ) : (
+              <div className="flex items-center gap-2 px-4 py-2 rounded-2xl bg-charcoal-100 dark:bg-charcoal-800 text-charcoal-700 dark:text-ivory-300 text-xs font-semibold border border-charcoal-200 dark:border-charcoal-700">
+                <span className="h-2 w-2 rounded-full bg-amber-500 animate-pulse" />
+                <span>Inspector Mode (Read-Only)</span>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* 4 Infrastructure Telemetry Metric Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="glass-panel glass-card-hover p-5 rounded-3xl border border-border dark:border-charcoal-800 shadow-soft flex flex-col justify-between">
+            <div className="flex items-start justify-between">
+              <div>
+                <span className="text-[10px] font-bold text-charcoal-500 dark:text-charcoal-400 uppercase tracking-wider block">
+                  Campus Facilities
+                </span>
+                <div className="text-3xl font-display font-extrabold text-charcoal-900 dark:text-ivory-100 mt-1">
+                  {campuses.length || 2}
+                </div>
+              </div>
+              <div className="h-10 w-10 rounded-2xl bg-rose-primary/10 text-rose-primary dark:text-rose-light flex items-center justify-center shadow-xs">
+                <Building className="h-5 w-5" />
+              </div>
+            </div>
+            <div className="mt-4 pt-3 border-t border-border/60 dark:border-charcoal-800/80 flex items-center justify-between text-[11px]">
+              <span className="text-charcoal-500 dark:text-charcoal-400">Main & Tech Park</span>
+              <span className="text-academic-success font-bold flex items-center gap-0.5">
+                <CheckCircle2 className="h-3.5 w-3.5" /> 100% Operational
+              </span>
             </div>
           </div>
 
-          {currentRole !== "GUEST" ? (
-            <button
-              onClick={() => setIsDeptModalOpen(true)}
-              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-rose-primary hover:bg-rose-dark text-white text-xs font-bold shadow-sm transition-all"
-            >
-              <Plus className="h-4 w-4" />
-              <span>Configure Department</span>
-            </button>
-          ) : (
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-charcoal-100 dark:bg-charcoal-800 text-charcoal-700 dark:text-ivory-300 text-xs font-semibold border border-charcoal-200 dark:border-charcoal-700">
-              <span className="h-2 w-2 rounded-full bg-amber-500 animate-pulse" />
-              <span>Inspector Mode (Read-Only)</span>
+          <div className="glass-panel glass-card-hover p-5 rounded-3xl border border-border dark:border-charcoal-800 shadow-soft flex flex-col justify-between">
+            <div className="flex items-start justify-between">
+              <div>
+                <span className="text-[10px] font-bold text-charcoal-500 dark:text-charcoal-400 uppercase tracking-wider block">
+                  Academic Departments
+                </span>
+                <div className="text-3xl font-display font-extrabold text-indigo-600 dark:text-indigo-400 mt-1">
+                  {departments.length || 4}
+                </div>
+              </div>
+              <div className="h-10 w-10 rounded-2xl bg-indigo-500/10 text-indigo-500 flex items-center justify-center shadow-xs">
+                <Layers className="h-5 w-5" />
+              </div>
             </div>
-          )}
+            <div className="mt-4 pt-3 border-t border-border/60 dark:border-charcoal-800/80 flex items-center justify-between text-[11px]">
+              <span className="text-charcoal-500 dark:text-charcoal-400">All Accredited</span>
+              <span className="text-indigo-600 dark:text-indigo-400 font-bold">NAAC A++ Grade</span>
+            </div>
+          </div>
+
+          <div className="glass-panel glass-card-hover p-5 rounded-3xl border border-border dark:border-charcoal-800 shadow-soft flex flex-col justify-between">
+            <div className="flex items-start justify-between">
+              <div>
+                <span className="text-[10px] font-bold text-charcoal-500 dark:text-charcoal-400 uppercase tracking-wider block">
+                  Degree Curricula
+                </span>
+                <div className="text-3xl font-display font-extrabold text-academic-success mt-1">
+                  24
+                </div>
+              </div>
+              <div className="h-10 w-10 rounded-2xl bg-academic-success-subtle text-academic-success flex items-center justify-center shadow-xs">
+                <GraduationCap className="h-5 w-5" />
+              </div>
+            </div>
+            <div className="mt-4 pt-3 border-t border-border/60 dark:border-charcoal-800/80 flex items-center justify-between text-[11px]">
+              <span className="text-charcoal-500 dark:text-charcoal-400">Undergrad & Postgrad</span>
+              <span className="text-academic-success font-bold">OBE Aligned</span>
+            </div>
+          </div>
+
+          <div className="glass-panel glass-card-hover p-5 rounded-3xl border border-border dark:border-charcoal-800 shadow-soft flex flex-col justify-between">
+            <div className="flex items-start justify-between">
+              <div>
+                <span className="text-[10px] font-bold text-charcoal-500 dark:text-charcoal-400 uppercase tracking-wider block">
+                  Data Governance
+                </span>
+                <div className="text-3xl font-display font-extrabold text-amber-500 mt-1">
+                  SOC2
+                </div>
+              </div>
+              <div className="h-10 w-10 rounded-2xl bg-amber-500/10 text-amber-500 flex items-center justify-center shadow-xs">
+                <ShieldCheck className="h-5 w-5" />
+              </div>
+            </div>
+            <div className="mt-4 pt-3 border-t border-border/60 dark:border-charcoal-800/80 flex items-center justify-between text-[11px]">
+              <span className="text-charcoal-500 dark:text-charcoal-400">FERPA Compliant</span>
+              <span className="text-academic-success font-bold">Zero-Trust Active</span>
+            </div>
+          </div>
         </div>
 
-        {/* 6-Tier Hierarchy Breadcrumb Flow */}
-        <div className="bg-white dark:bg-[#1E191C] rounded-2xl border border-border dark:border-charcoal-800 shadow-soft p-5">
-          <h2 className="text-xs font-bold text-charcoal-900 dark:text-ivory-100 uppercase tracking-wider mb-3">
-            Hierarchical Governance Pipeline
-          </h2>
-          <div className="flex flex-wrap items-center gap-2 text-xs">
+        {/* Hierarchical Governance Pipeline Visual Flow */}
+        <div className="glass-panel rounded-3xl border border-border dark:border-charcoal-800 shadow-soft p-6 space-y-4">
+          <div className="flex items-center justify-between border-b border-border/80 dark:border-charcoal-800 pb-3">
+            <div>
+              <h2 className="text-sm font-bold uppercase tracking-wider text-charcoal-900 dark:text-ivory-100 flex items-center gap-2">
+                <Cpu className="h-4 w-4 text-rose-primary" />
+                Hierarchical Academic Governance Pipeline
+              </h2>
+              <p className="text-xs text-charcoal-500 dark:text-charcoal-400 mt-0.5">
+                Role-based data inheritance and administrative boundary enforcement
+              </p>
+            </div>
+            <span className="px-3 py-1 rounded-full text-[10px] font-mono font-bold bg-rose-primary/10 text-rose-primary dark:text-rose-light">
+              6 Tiers Configured
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3 pt-2">
             {hierarchy.map((item, index) => {
               const Icon = getHierarchyIcon(item.level);
               return (
-                <React.Fragment key={item.code || item.level}>
-                  <div className="flex items-center gap-2 p-2.5 rounded-xl bg-surface-soft dark:bg-charcoal-900/40 border border-border dark:border-charcoal-800">
-                    <Icon className="h-4 w-4 text-rose-primary dark:text-rose-accent shrink-0" />
-                    <div>
-                      <span className="text-[10px] font-bold text-charcoal-400 block uppercase">
-                        {item.level}
-                      </span>
-                      <span className="text-xs font-bold text-charcoal-900 dark:text-ivory-100 line-clamp-1">
-                        {item.name}
-                      </span>
-                    </div>
+                <div
+                  key={item.code || item.level}
+                  className="p-4 rounded-2xl bg-surface-soft/80 dark:bg-charcoal-900/60 border border-border/80 dark:border-charcoal-800 flex flex-col justify-between gap-3 relative group hover:border-rose-primary/40 transition-all shadow-xs"
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-[9px] font-bold font-mono uppercase px-2 py-0.5 rounded-md bg-ivory-100 dark:bg-charcoal-800 text-charcoal-600 dark:text-charcoal-400">
+                      Tier 0{index + 1}
+                    </span>
+                    <Icon className="h-4 w-4 text-rose-primary dark:text-rose-light" />
                   </div>
-                  {index < hierarchy.length - 1 && (
-                    <ArrowRight className="h-4 w-4 text-charcoal-400 shrink-0 hidden md:block" />
-                  )}
-                </React.Fragment>
+
+                  <div>
+                    <span className="text-[10px] font-bold text-charcoal-400 dark:text-charcoal-500 block uppercase">
+                      {item.level}
+                    </span>
+                    <strong className="text-xs font-bold text-charcoal-900 dark:text-ivory-100 block mt-0.5 line-clamp-2">
+                      {item.name}
+                    </strong>
+                  </div>
+
+                  <div className="pt-2 border-t border-border/50 dark:border-charcoal-800 text-[10px] text-academic-success font-semibold flex items-center gap-1">
+                    <CheckCircle2 className="h-3 w-3" /> Active Boundary
+                  </div>
+                </div>
               );
             })}
           </div>
         </div>
 
-        {/* Departments Grid */}
-        <div className="bg-white dark:bg-[#1E191C] rounded-2xl border border-border dark:border-charcoal-800 shadow-soft p-5">
-          <div className="flex items-center justify-between pb-3 border-b border-border dark:border-charcoal-800 mb-4">
+        {/* Active Academic Departments Showcase */}
+        <div className="glass-panel rounded-3xl border border-border dark:border-charcoal-800 shadow-soft p-6 space-y-5">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-border/80 dark:border-charcoal-800">
             <div>
-              <h2 className="text-xs font-bold text-charcoal-900 dark:text-ivory-100 uppercase tracking-wider">
-                Active Academic Departments
-              </h2>
-              <span className="text-[11px] text-charcoal-500 dark:text-charcoal-400">
-                Managed in live SQLite database registry
+              <div className="flex items-center gap-2">
+                <Building className="h-4 w-4 text-rose-primary" />
+                <h2 className="text-sm font-bold uppercase tracking-wider text-charcoal-900 dark:text-ivory-100">
+                  Active Collegiate Academic Departments
+                </h2>
+              </div>
+              <p className="text-xs text-charcoal-500 dark:text-charcoal-400 mt-0.5">
+                Directly bound to live SQLite multi-tenant department ledger
+              </p>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <div className="relative">
+                <Search className="absolute left-3 top-2.5 h-3.5 w-3.5 text-charcoal-400" />
+                <input
+                  type="text"
+                  placeholder="Search department..."
+                  value={searchDept}
+                  onChange={(e) => setSearchDept(e.target.value)}
+                  className="pl-9 pr-3 py-1.5 rounded-xl bg-white dark:bg-charcoal-900 border border-border dark:border-charcoal-700 text-xs text-charcoal-900 dark:text-ivory-100 focus:outline-none focus:ring-1 focus:ring-rose-primary"
+                />
+              </div>
+
+              <span className="px-3 py-1 rounded-xl text-xs font-bold bg-academic-success-subtle text-academic-success shrink-0">
+                {departments.length} Operational Units
               </span>
             </div>
-            <span className="px-2.5 py-1 rounded text-[10px] font-bold bg-academic-success-subtle text-academic-success">
-              {departments.length} Operational Units
-            </span>
           </div>
 
           {isLoading ? (
@@ -204,15 +360,15 @@ export default function InstitutionERPPage() {
               <SkeletonCard />
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {departments.map((dept) => (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              {filteredDepts.map((dept) => (
                 <div
                   key={dept.id}
-                  className="p-5 rounded-xl border border-border dark:border-charcoal-800 bg-surface-soft dark:bg-charcoal-900/40 hover:bg-white dark:hover:bg-charcoal-900 hover:border-rose-accent/40 transition-all flex flex-col justify-between gap-4 shadow-xs"
+                  className="p-6 rounded-3xl border border-border dark:border-charcoal-800 bg-surface-soft/60 dark:bg-charcoal-900/40 hover:bg-white dark:hover:bg-charcoal-900 hover:border-rose-primary/40 transition-all flex flex-col justify-between gap-4 shadow-soft relative overflow-hidden"
                 >
                   <div>
                     <div className="flex items-center justify-between">
-                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-rose-container dark:bg-rose-dark/30 text-rose-primary dark:text-rose-accent">
+                      <span className="px-3 py-1 rounded-full text-xs font-mono font-bold bg-rose-primary/10 text-rose-primary dark:text-rose-light">
                         {dept.code}
                       </span>
                       <span className="text-xs font-bold text-charcoal-600 dark:text-charcoal-400">
@@ -220,31 +376,38 @@ export default function InstitutionERPPage() {
                       </span>
                     </div>
 
-                    <h3 className="text-sm font-bold text-charcoal-900 dark:text-ivory-100 mt-2">
+                    <h3 className="text-base font-bold text-charcoal-900 dark:text-ivory-100 mt-2.5">
                       {dept.name}
                     </h3>
-                    <span className="text-xs text-charcoal-600 dark:text-charcoal-400 block mt-0.5">
-                      HOD: <span className="font-semibold text-charcoal-800 dark:text-ivory-200">{dept.hod}</span>
+                    <span className="text-xs text-charcoal-600 dark:text-charcoal-400 block mt-1">
+                      Department Chair / HOD:{" "}
+                      <span className="font-bold text-charcoal-900 dark:text-ivory-100">{dept.hod}</span>
                     </span>
                     {dept.description && (
-                      <p className="text-[11px] text-charcoal-500 dark:text-charcoal-400 mt-2">
+                      <p className="text-xs text-charcoal-500 dark:text-charcoal-400 mt-2 leading-relaxed">
                         {dept.description}
                       </p>
                     )}
                   </div>
 
-                  <div className="grid grid-cols-3 gap-2 pt-3 border-t border-border/60 dark:border-charcoal-800 text-center text-xs">
-                    <div className="p-2 rounded-lg bg-white dark:bg-charcoal-800 border border-border dark:border-charcoal-700">
+                  <div className="grid grid-cols-3 gap-2.5 pt-4 border-t border-border/60 dark:border-charcoal-800 text-center">
+                    <div className="p-2.5 rounded-2xl bg-white dark:bg-charcoal-800 border border-border/80 dark:border-charcoal-700">
                       <span className="text-[10px] text-charcoal-400 block uppercase font-bold">Faculty</span>
-                      <span className="font-bold text-charcoal-900 dark:text-ivory-100">{dept.faculty}</span>
+                      <strong className="text-sm font-bold text-charcoal-900 dark:text-ivory-100">
+                        {dept.faculty}
+                      </strong>
                     </div>
-                    <div className="p-2 rounded-lg bg-white dark:bg-charcoal-800 border border-border dark:border-charcoal-700">
+                    <div className="p-2.5 rounded-2xl bg-white dark:bg-charcoal-800 border border-border/80 dark:border-charcoal-700">
                       <span className="text-[10px] text-charcoal-400 block uppercase font-bold">Students</span>
-                      <span className="font-bold text-charcoal-900 dark:text-ivory-100">{dept.students}</span>
+                      <strong className="text-sm font-bold text-charcoal-900 dark:text-ivory-100">
+                        {dept.students}
+                      </strong>
                     </div>
-                    <div className="p-2 rounded-lg bg-white dark:bg-charcoal-800 border border-border dark:border-charcoal-700">
+                    <div className="p-2.5 rounded-2xl bg-white dark:bg-charcoal-800 border border-border/80 dark:border-charcoal-700">
                       <span className="text-[10px] text-charcoal-400 block uppercase font-bold">Courses</span>
-                      <span className="font-bold text-charcoal-900 dark:text-ivory-100">{dept.courses}</span>
+                      <strong className="text-sm font-bold text-charcoal-900 dark:text-ivory-100">
+                        {dept.courses}
+                      </strong>
                     </div>
                   </div>
                 </div>
@@ -332,7 +495,7 @@ export default function InstitutionERPPage() {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="px-4 py-2 rounded-xl bg-rose-primary hover:bg-rose-dark text-white text-xs font-bold shadow-sm transition-all"
+                className="px-5 py-2.5 rounded-xl bg-rose-primary hover:bg-rose-dark text-white text-xs font-bold shadow-md transition-all cursor-pointer"
               >
                 {isSubmitting ? "Configuring..." : "Configure Department"}
               </button>

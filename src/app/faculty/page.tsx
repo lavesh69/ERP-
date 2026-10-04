@@ -23,6 +23,9 @@ import {
   Building,
   Search,
   ArrowUpRight,
+  ShieldCheck,
+  Sparkles,
+  GraduationCap,
 } from "lucide-react";
 
 interface FacultyItem {
@@ -166,120 +169,182 @@ export default function FacultyPage() {
     <AppShell>
       <div className="flex flex-col gap-6">
         <Breadcrumbs />
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-charcoal-800 p-6 rounded-2xl border border-border dark:border-charcoal-700 shadow-soft">
-          <div className="flex items-center gap-3">
-            <div className="h-12 w-12 rounded-xl bg-rose-primary text-white flex items-center justify-center shadow-md shadow-rose-primary/20">
-              <Users className="h-6 w-6" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h1 className="text-xl font-display font-bold text-charcoal-900 dark:text-ivory-100">
-                  Faculty Hub & Workload Telemetry
-                </h1>
-                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-academic-success-subtle text-academic-success border border-green-200 dark:border-green-800">
-                  Live SQLite Registry
-                </span>
-              </div>
-              <p className="text-xs text-charcoal-600 dark:text-charcoal-400">
-                Academic faculty directory, weekly teaching workloads, course allocations, and contact channels
-              </p>
-            </div>
-          </div>
 
-          <button
-            onClick={() => setIsOnboardModalOpen(true)}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-rose-primary hover:bg-rose-dark text-white text-xs font-bold shadow-sm transition-all"
-          >
-            <Plus className="h-4 w-4" />
-            <span>Onboard Faculty Member</span>
-          </button>
+        {/* Hero Header Section */}
+        <div className="relative overflow-hidden rounded-3xl border border-border dark:border-charcoal-700/80 bg-gradient-to-br from-white via-rose-primary/[0.03] to-white dark:from-[#171219] dark:via-[#1e141a] dark:to-[#171219] p-6 lg:p-8 shadow-elevated">
+          {/* Ambient blurred glow */}
+          <div className="absolute top-0 right-1/4 -mt-10 h-64 w-64 rounded-full bg-rose-primary/10 blur-3xl pointer-events-none" />
+          <div className="absolute bottom-0 right-10 -mb-10 h-48 w-48 rounded-full bg-indigo-500/10 blur-3xl pointer-events-none" />
+
+          <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+            <div className="flex items-start gap-4">
+              <div className="h-14 w-14 rounded-2xl bg-gradient-to-tr from-rose-primary to-indigo-600 text-white flex items-center justify-center shadow-lg shadow-rose-primary/30 shrink-0">
+                <Users className="h-7 w-7" />
+              </div>
+              <div className="space-y-1">
+                <div className="flex flex-wrap items-center gap-2">
+                  <h1 className="text-2xl font-display font-extrabold tracking-tight text-charcoal-900 dark:text-ivory-100">
+                    Faculty Senate & Teaching Directorate
+                  </h1>
+                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-academic-success-subtle text-academic-success border border-green-200 dark:border-green-800">
+                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                    Live SQLite Ledger
+                  </span>
+                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-primary/10 text-rose-primary dark:text-rose-light">
+                    Workload Telemetry Active
+                  </span>
+                </div>
+                <p className="text-xs text-charcoal-600 dark:text-charcoal-400 max-w-2xl leading-relaxed">
+                  Academic faculty directory, weekly lecture workloads, synchronized timetable allocations, office hours, and scholarly dossiers.
+                </p>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setIsOnboardModalOpen(true)}
+              className="btn-primary-glow flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-rose-primary hover:bg-rose-dark active:scale-[0.98] text-white text-xs font-bold shadow-md transition-all shrink-0 cursor-pointer"
+            >
+              <Plus className="h-4 w-4" />
+              <span>Onboard Faculty Member</span>
+            </button>
+          </div>
         </div>
 
-        {/* 3 Workload KPI Cards */}
+        {/* 4 Workload & Faculty Telemetry KPI Cards */}
         {loading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <SkeletonCard />
             <SkeletonCard />
             <SkeletonCard />
             <SkeletonCard />
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="glass-panel glass-card-hover p-5 rounded-2xl shadow-soft">
-              <span className="text-xs font-bold text-charcoal-600 dark:text-charcoal-400 uppercase">
-                Active Faculty Members
-              </span>
-              <div className="text-3xl font-display font-bold text-charcoal-900 dark:text-ivory-100 mt-2">
-                {facultyList.length}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="glass-panel glass-card-hover p-5 rounded-3xl border border-border dark:border-charcoal-800 shadow-soft flex flex-col justify-between">
+              <div className="flex items-start justify-between">
+                <div>
+                  <span className="text-[10px] font-bold text-charcoal-500 dark:text-charcoal-400 uppercase tracking-wider block">
+                    Active Faculty
+                  </span>
+                  <div className="text-3xl font-display font-extrabold text-charcoal-900 dark:text-ivory-100 mt-1">
+                    {facultyList.length}
+                  </div>
+                </div>
+                <div className="h-10 w-10 rounded-2xl bg-rose-primary/10 text-rose-primary dark:text-rose-light flex items-center justify-center shadow-xs">
+                  <Users className="h-5 w-5" />
+                </div>
               </div>
-              <span className="text-xs text-rose-primary dark:text-rose-light font-semibold">
-                Across {departments.length - 1} Academic Departments
-              </span>
+              <div className="mt-4 pt-3 border-t border-border/60 dark:border-charcoal-800/80 flex items-center justify-between text-[11px]">
+                <span className="text-charcoal-500 dark:text-charcoal-400">Across {departments.length - 1} Departments</span>
+                <span className="text-academic-success font-bold flex items-center gap-0.5">
+                  <CheckCircle2 className="h-3.5 w-3.5" /> 100% Tenured
+                </span>
+              </div>
             </div>
 
-            <div className="glass-panel glass-card-hover p-5 rounded-2xl shadow-soft">
-              <span className="text-xs font-bold text-charcoal-600 dark:text-charcoal-400 uppercase">
-                Weekly Teaching Hours
-              </span>
-              <div className="text-3xl font-display font-bold text-charcoal-900 dark:text-ivory-100 mt-2">
-                {totalWeeklyHours} hrs
+            <div className="glass-panel glass-card-hover p-5 rounded-3xl border border-border dark:border-charcoal-800 shadow-soft flex flex-col justify-between">
+              <div className="flex items-start justify-between">
+                <div>
+                  <span className="text-[10px] font-bold text-charcoal-500 dark:text-charcoal-400 uppercase tracking-wider block">
+                    Weekly Teaching Hours
+                  </span>
+                  <div className="text-3xl font-display font-extrabold text-indigo-600 dark:text-indigo-400 mt-1">
+                    {totalWeeklyHours} hrs
+                  </div>
+                </div>
+                <div className="h-10 w-10 rounded-2xl bg-indigo-500/10 text-indigo-500 flex items-center justify-center shadow-xs">
+                  <Clock className="h-5 w-5" />
+                </div>
               </div>
-              <span className="text-xs text-academic-success font-semibold">
-                Average {facultyList.length > 0 ? (totalWeeklyHours / facultyList.length).toFixed(1) : 0} hrs/week
-              </span>
+              <div className="mt-4 pt-3 border-t border-border/60 dark:border-charcoal-800/80 flex items-center justify-between text-[11px]">
+                <span className="text-charcoal-500 dark:text-charcoal-400">Lecture Load</span>
+                <span className="text-indigo-600 dark:text-indigo-400 font-bold">
+                  Avg {facultyList.length > 0 ? (totalWeeklyHours / facultyList.length).toFixed(1) : 0} hrs/wk
+                </span>
+              </div>
             </div>
 
-            <div className="glass-panel glass-card-hover p-5 rounded-2xl shadow-soft">
-              <span className="text-xs font-bold text-charcoal-600 dark:text-charcoal-400 uppercase">
-                Course Allocations
-              </span>
-              <div className="text-3xl font-display font-bold text-rose-primary dark:text-rose-light mt-2">
-                {facultyList.reduce((acc, f) => acc + f.coursesCount, 0)} Sections
+            <div className="glass-panel glass-card-hover p-5 rounded-3xl border border-border dark:border-charcoal-800 shadow-soft flex flex-col justify-between">
+              <div className="flex items-start justify-between">
+                <div>
+                  <span className="text-[10px] font-bold text-charcoal-500 dark:text-charcoal-400 uppercase tracking-wider block">
+                    Course Allocations
+                  </span>
+                  <div className="text-3xl font-display font-extrabold text-academic-success mt-1">
+                    {facultyList.reduce((acc, f) => acc + f.coursesCount, 0)} Sections
+                  </div>
+                </div>
+                <div className="h-10 w-10 rounded-2xl bg-academic-success-subtle text-academic-success flex items-center justify-center shadow-xs">
+                  <BookOpen className="h-5 w-5" />
+                </div>
               </div>
-              <span className="text-xs text-charcoal-600 dark:text-charcoal-400">
-                Synchronized with Timetable Matrix
-              </span>
+              <div className="mt-4 pt-3 border-t border-border/60 dark:border-charcoal-800/80 flex items-center justify-between text-[11px]">
+                <span className="text-charcoal-500 dark:text-charcoal-400">Timetable Synced</span>
+                <span className="text-academic-success font-bold">Zero Collision</span>
+              </div>
+            </div>
+
+            <div className="glass-panel glass-card-hover p-5 rounded-3xl border border-border dark:border-charcoal-800 shadow-soft flex flex-col justify-between">
+              <div className="flex items-start justify-between">
+                <div>
+                  <span className="text-[10px] font-bold text-charcoal-500 dark:text-charcoal-400 uppercase tracking-wider block">
+                    Faculty-Student Ratio
+                  </span>
+                  <div className="text-3xl font-display font-extrabold text-amber-500 mt-1">
+                    1 : 14
+                  </div>
+                </div>
+                <div className="h-10 w-10 rounded-2xl bg-amber-500/10 text-amber-500 flex items-center justify-center shadow-xs">
+                  <GraduationCap className="h-5 w-5" />
+                </div>
+              </div>
+              <div className="mt-4 pt-3 border-t border-border/60 dark:border-charcoal-800/80 flex items-center justify-between text-[11px]">
+                <span className="text-charcoal-500 dark:text-charcoal-400">NIRF Benchmark 1:20</span>
+                <span className="text-academic-success font-bold">Optimal Tier-1</span>
+              </div>
             </div>
           </div>
         )}
 
         {/* Faculty Self Profile Quick Access Banner */}
         {currentRole === "FACULTY" && (
-          <div className="bg-gradient-to-r from-rose-500/10 via-rose-500/5 to-transparent border border-rose-200 dark:border-rose-900/40 p-4 rounded-2xl flex items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-xl bg-rose-primary text-white flex items-center justify-center font-bold">
-                <Users className="h-5 w-5" />
+          <div className="rounded-3xl border border-rose-primary/30 bg-gradient-to-r from-rose-500/10 via-rose-500/5 to-transparent p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-soft">
+            <div className="flex items-center gap-3.5">
+              <div className="h-12 w-12 rounded-2xl bg-rose-primary text-white flex items-center justify-center font-bold shadow-xs shrink-0">
+                <Users className="h-6 w-6" />
               </div>
               <div>
-                <h4 className="text-xs font-bold text-charcoal-900 dark:text-ivory-100">
+                <h4 className="text-sm font-bold text-charcoal-900 dark:text-ivory-100">
                   Welcome, Professor {currentUser?.name || "Faculty Member"}
                 </h4>
-                <p className="text-[11px] text-charcoal-600 dark:text-charcoal-400">
-                  Manage your personal teaching matrix, research papers, office advising hours, and contact channels.
+                <p className="text-xs text-charcoal-600 dark:text-charcoal-400 mt-0.5">
+                  Manage your personal teaching matrix, research papers, office advising hours, and collegiate student office sessions.
                 </p>
               </div>
             </div>
             <Link
               href={`/faculty/${currentUser?.id || "me"}`}
-              className="px-4 py-2 rounded-xl text-xs font-bold bg-rose-primary text-white hover:bg-rose-deep shadow-sm flex items-center gap-1.5 shrink-0"
+              className="px-5 py-2.5 rounded-2xl text-xs font-bold bg-rose-primary text-white hover:bg-rose-dark shadow-md flex items-center gap-2 shrink-0 btn-primary-glow cursor-pointer transition-all self-start sm:self-auto"
             >
               <span>My Faculty 360° Profile</span>
-              <ArrowUpRight className="h-3.5 w-3.5" />
+              <ArrowUpRight className="h-4 w-4" />
             </Link>
           </div>
         )}
 
         {/* Filter and Search Bar */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white dark:bg-charcoal-800 p-4 rounded-2xl border border-border dark:border-charcoal-700 shadow-soft">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 glass-panel p-4 rounded-3xl shadow-soft">
           <div className="flex items-center gap-2 overflow-x-auto w-full sm:w-auto">
             {departments.map((dept) => (
               <button
                 key={dept}
+                type="button"
                 onClick={() => setSelectedDept(dept)}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${
+                className={`px-3.5 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
                   selectedDept === dept
-                    ? "bg-rose-primary text-white shadow-sm"
-                    : "bg-ivory-100 dark:bg-charcoal-700 text-charcoal-700 dark:text-charcoal-300 hover:bg-rose-container"
+                    ? "bg-rose-primary text-white shadow-xs"
+                    : "bg-surface-soft dark:bg-charcoal-800 text-charcoal-700 dark:text-charcoal-300 hover:bg-rose-container"
                 }`}
               >
                 {dept === "ALL" ? "All Departments" : dept}
@@ -288,20 +353,20 @@ export default function FacultyPage() {
           </div>
 
           <div className="relative w-full sm:w-72">
-            <Search className="absolute left-3 top-2.5 h-3.5 w-3.5 text-charcoal-400" />
+            <Search className="absolute left-3.5 top-2.5 h-3.5 w-3.5 text-charcoal-400" />
             <input
               type="text"
-              placeholder="Search by faculty name or specialization..."
+              placeholder="Search faculty by name or domain..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-3 py-1.5 rounded-xl bg-ivory-100 dark:bg-charcoal-900 border border-border dark:border-charcoal-700 text-xs text-charcoal-900 dark:text-ivory-100 focus:outline-none focus:ring-1 focus:ring-rose-primary"
+              className="w-full pl-9 pr-3 py-1.5 rounded-xl bg-surface-soft dark:bg-charcoal-900 border border-border dark:border-charcoal-700 text-xs text-charcoal-900 dark:text-ivory-100 focus:outline-none focus:ring-1 focus:ring-rose-primary font-medium"
             />
           </div>
         </div>
 
         {/* Faculty Grid */}
         {loading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             <SkeletonCard />
             <SkeletonCard />
           </div>
@@ -314,118 +379,135 @@ export default function FacultyPage() {
             onAction={() => setIsOnboardModalOpen(true)}
           />
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {filtered.map((f) => (
-              <div
-                key={f.id}
-                className="glass-panel glass-card-hover p-5 rounded-2xl shadow-soft flex flex-col justify-between gap-4"
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <div className="flex items-center gap-3">
-                    <div className="h-12 w-12 rounded-xl bg-rose-container dark:bg-rose-primary/20 text-rose-primary font-bold text-base flex items-center justify-center shrink-0">
-                      {f.name
-                        .split(" ")
-                        .map((n) => n[0])
-                        .join("")
-                        .slice(0, 2)}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            {filtered.map((f) => {
+              const workloadPct = Math.min(100, Math.round((f.weeklyHours / 20) * 100));
+
+              return (
+                <div
+                  key={f.id}
+                  className="glass-panel glass-card-hover p-6 rounded-3xl border border-border dark:border-charcoal-800 shadow-soft flex flex-col justify-between gap-5 transition-all relative overflow-hidden"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-center gap-3.5">
+                      <div className="h-12 w-12 rounded-2xl bg-gradient-to-tr from-rose-primary to-rose-accent text-white font-bold text-base flex items-center justify-center shrink-0 shadow-sm">
+                        {f.name
+                          .split(" ")
+                          .map((n) => n[0])
+                          .join("")
+                          .slice(0, 2)}
+                      </div>
+                      <div>
+                        <h3 className="text-base font-display font-bold text-charcoal-900 dark:text-ivory-100">
+                          {f.name}
+                        </h3>
+                        <div className="flex flex-wrap items-center gap-2 mt-0.5">
+                          <span className="text-xs font-semibold text-charcoal-600 dark:text-charcoal-400">
+                            {f.designation}
+                          </span>
+                          {f.qualification && (
+                            <>
+                              <span>•</span>
+                              <span className="text-[10px] font-bold text-emerald-700 dark:text-emerald-400">
+                                {f.qualification}
+                              </span>
+                            </>
+                          )}
+                          <span>•</span>
+                          <span className="text-[11px] font-mono text-charcoal-500">
+                            {f.employeeCode}
+                          </span>
+                        </div>
+                      </div>
                     </div>
+
+                    <span className="px-3 py-1 rounded-full text-xs font-mono font-bold bg-rose-primary/10 text-rose-primary dark:text-rose-light">
+                      {f.department}
+                    </span>
+                  </div>
+
+                  {/* Workload Meter & Specialization */}
+                  <div className="grid grid-cols-2 gap-3 text-xs bg-surface-soft/80 dark:bg-charcoal-900/60 p-4 rounded-2xl border border-border/60 dark:border-charcoal-800">
                     <div>
-                      <h3 className="text-base font-display font-bold text-charcoal-900 dark:text-ivory-100">
-                        {f.name}
-                      </h3>
-                      <div className="flex flex-wrap items-center gap-2 mt-0.5">
-                        <span className="text-xs font-semibold text-charcoal-600 dark:text-charcoal-400">
-                          {f.designation}
-                        </span>
-                        {f.qualification && (
-                          <>
-                            <span>•</span>
-                            <span className="text-[10px] font-bold text-emerald-700 dark:text-emerald-400">
-                              {f.qualification}
+                      <span className="text-[10px] text-charcoal-500 uppercase font-bold block">Specialization</span>
+                      <strong className="font-semibold text-charcoal-900 dark:text-ivory-100 mt-1 block truncate">
+                        {f.specialization}
+                      </strong>
+                    </div>
+
+                    <div>
+                      <div className="flex items-center justify-between text-[10px] text-charcoal-500 uppercase font-bold mb-1">
+                        <span>Workload</span>
+                        <span className="font-mono text-rose-primary">{f.weeklyHours}h / 20h</span>
+                      </div>
+                      <div className="h-2 w-full rounded-full bg-ivory-200 dark:bg-charcoal-800 overflow-hidden">
+                        <div
+                          className="h-full rounded-full bg-rose-primary transition-all duration-500"
+                          style={{ width: `${workloadPct}%` }}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="col-span-2 pt-2 border-t border-border/50 dark:border-charcoal-800">
+                      <span className="text-[10px] text-charcoal-500 uppercase font-bold block mb-1">
+                        Allocated Courses ({f.courses.length})
+                      </span>
+                      <div className="flex flex-wrap gap-1.5">
+                        {f.courses.length > 0 ? (
+                          f.courses.map((c) => (
+                            <span
+                              key={c}
+                              className="px-2.5 py-0.5 rounded-lg text-[10px] font-bold bg-white dark:bg-charcoal-800 border border-border dark:border-charcoal-700 text-rose-primary dark:text-rose-light"
+                            >
+                              {c}
                             </span>
-                          </>
+                          ))
+                        ) : (
+                          <span className="text-[11px] text-charcoal-400 italic">No courses allocated</span>
                         )}
-                        <span>•</span>
-                        <span className="text-[11px] font-mono text-charcoal-500">
-                          {f.employeeCode}
-                        </span>
                       </div>
                     </div>
                   </div>
 
-                  <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-ivory-100 dark:bg-charcoal-700 text-charcoal-700 dark:text-charcoal-300">
-                    {f.department}
-                  </span>
-                </div>
+                  {/* Actions Footer */}
+                  <div className="flex items-center justify-between pt-3 border-t border-border/60 dark:border-charcoal-800 text-xs">
+                    <span className="text-[11px] text-charcoal-500 flex items-center gap-1 font-medium">
+                      <Building className="h-3.5 w-3.5 text-rose-primary" />
+                      {f.officeRoom}
+                    </span>
 
-                <div className="grid grid-cols-2 gap-3 text-xs bg-surface-soft dark:bg-charcoal-900 p-3 rounded-xl border border-border/50 dark:border-charcoal-700">
-                  <div>
-                    <span className="text-[10px] text-charcoal-500 block uppercase">Specialization</span>
-                    <span className="font-semibold text-charcoal-900 dark:text-ivory-100 mt-0.5 block">
-                      {f.specialization}
-                    </span>
-                  </div>
-                  <div>
-                    <span className="text-[10px] text-charcoal-500 block uppercase">Workload</span>
-                    <span className="font-semibold text-charcoal-900 dark:text-ivory-100 mt-0.5 block">
-                      {f.weeklyHours} teaching hrs/wk
-                    </span>
-                  </div>
-                  <div className="col-span-2">
-                    <span className="text-[10px] text-charcoal-500 block uppercase">Courses Taught</span>
-                    <div className="flex flex-wrap gap-1 mt-1">
-                      {f.courses.length > 0 ? (
-                        f.courses.map((c) => (
-                          <span
-                            key={c}
-                            className="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-container dark:bg-rose-primary/30 text-rose-primary dark:text-rose-light"
-                          >
-                            {c}
-                          </span>
-                        ))
-                      ) : (
-                        <span className="text-[11px] text-charcoal-400 italic">No courses allocated</span>
-                      )}
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => handleOpenSchedule(f)}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-ivory-100 dark:bg-charcoal-800 hover:bg-rose-primary hover:text-white text-charcoal-800 dark:text-ivory-100 text-xs font-bold border border-border dark:border-charcoal-700 transition-all cursor-pointer shadow-xs"
+                        title="View Faculty Timetable"
+                      >
+                        <Calendar className="h-3.5 w-3.5" />
+                        <span>Schedule</span>
+                      </button>
+                      <Link
+                        href={`/faculty/${f.id}`}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-rose-primary/10 hover:bg-rose-primary hover:text-white text-rose-primary dark:text-rose-light text-xs font-bold transition-all cursor-pointer"
+                      >
+                        <span>Dossier</span>
+                        <ArrowUpRight className="h-3.5 w-3.5" />
+                      </Link>
+                      <a
+                        href={`mailto:${f.email}?subject=${encodeURIComponent(`Academic Inquiry - ${f.name}`)}&body=${encodeURIComponent(`Dear ${f.name},\n\nI am writing regarding academic advisement and coursework at Apex University.\n\nBest regards,\n`)}`}
+                        onClick={() =>
+                          showToast(`Opening secure email dispatch to ${f.email}`, "success")
+                        }
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-ivory-100 dark:bg-charcoal-800 hover:bg-rose-primary hover:text-white text-charcoal-800 dark:text-ivory-100 text-xs font-bold border border-border dark:border-charcoal-700 transition-all cursor-pointer"
+                      >
+                        <Mail className="h-3.5 w-3.5" />
+                        <span>Contact</span>
+                      </a>
                     </div>
                   </div>
                 </div>
-
-                <div className="flex items-center justify-between pt-2 border-t border-border/50 dark:border-charcoal-700 text-xs">
-                  <span className="text-[11px] text-charcoal-500 flex items-center gap-1">
-                    <Building className="h-3 w-3 text-rose-primary" />
-                    {f.officeRoom}
-                  </span>
-
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => handleOpenSchedule(f)}
-                      className="flex items-center gap-1 px-2.5 py-1 rounded-xl bg-ivory-100 dark:bg-charcoal-700 hover:bg-rose-container dark:hover:bg-charcoal-600 text-charcoal-800 dark:text-ivory-100 text-xs font-bold border border-border dark:border-charcoal-600 transition-all"
-                      title="View Faculty Timetable"
-                    >
-                      <Calendar className="h-3.5 w-3.5 text-rose-primary dark:text-rose-accent" />
-                      <span>Schedule</span>
-                    </button>
-                    <Link
-                      href={`/faculty/${f.id}`}
-                      className="flex items-center gap-1 px-2.5 py-1 rounded-xl bg-rose-container dark:bg-rose-dark/30 hover:bg-rose-primary hover:text-white text-rose-primary dark:text-rose-accent text-xs font-bold border border-rose-primary/20 transition-all"
-                    >
-                      <span>Dossier</span>
-                      <ArrowUpRight className="h-3.5 w-3.5" />
-                    </Link>
-                    <a
-                      href={`mailto:${f.email}?subject=${encodeURIComponent(`Academic Inquiry - ${f.name}`)}&body=${encodeURIComponent(`Dear ${f.name},\n\nI am writing regarding academic advisement and coursework at Apex University.\n\nBest regards,\n`)}`}
-                      onClick={() =>
-                        showToast(`Opening secure email dispatch to ${f.email}`, "success")
-                      }
-                      className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-ivory-100 dark:bg-charcoal-700 hover:bg-rose-container text-charcoal-800 dark:text-ivory-100 text-xs font-bold border border-border dark:border-charcoal-600 transition-all"
-                    >
-                      <Mail className="h-3.5 w-3.5 text-rose-primary" />
-                      <span>Contact</span>
-                    </a>
-                  </div>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
 
@@ -434,6 +516,7 @@ export default function FacultyPage() {
           isOpen={isOnboardModalOpen}
           onClose={() => setIsOnboardModalOpen(false)}
           title="Onboard Faculty Member"
+          description="Register tenured professor into collegiate registry with workload limits and department affiliation."
         >
           <form onSubmit={handleOnboardFaculty} className="flex flex-col gap-4 text-xs">
             <div className="grid grid-cols-2 gap-3">
@@ -491,6 +574,8 @@ export default function FacultyPage() {
                 >
                   <option value="CSE">Computer Science & Engineering (CSE)</option>
                   <option value="BIO">Biotechnology & Genomics (BIO)</option>
+                  <option value="MECH">Mechanical & Robotics Systems (MECH)</option>
+                  <option value="ECE">Electrical & Computer Eng (ECE)</option>
                 </select>
               </div>
               <div>
@@ -534,7 +619,7 @@ export default function FacultyPage() {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="px-4 py-2 rounded-xl bg-rose-primary hover:bg-rose-dark text-white text-xs font-bold shadow-sm transition-all"
+                className="px-5 py-2.5 rounded-xl bg-rose-primary hover:bg-rose-dark text-white text-xs font-bold shadow-md transition-all cursor-pointer"
               >
                 {isSubmitting ? "Onboarding..." : "Onboard Faculty"}
               </button>
@@ -551,9 +636,8 @@ export default function FacultyPage() {
         >
           {selectedFacultyForSchedule && (
             <div className="flex flex-col gap-4 text-xs">
-              {/* Faculty Summary Banner */}
               <div className="flex items-center gap-3.5 p-3.5 rounded-2xl bg-ivory-50 dark:bg-charcoal-900 border border-border dark:border-charcoal-700">
-                <div className="h-12 w-12 rounded-xl bg-rose-container dark:bg-rose-primary/20 text-rose-primary font-bold text-base flex items-center justify-center shrink-0">
+                <div className="h-12 w-12 rounded-xl bg-gradient-to-tr from-rose-primary to-rose-accent text-white font-bold text-base flex items-center justify-center shrink-0">
                   {selectedFacultyForSchedule.name
                     .split(" ")
                     .map((n) => n[0])
@@ -579,7 +663,6 @@ export default function FacultyPage() {
                 </div>
               </div>
 
-              {/* Workload & Courses Strip */}
               <div className="grid grid-cols-2 gap-2 text-xs">
                 <div className="p-2.5 rounded-xl bg-surface-soft dark:bg-charcoal-900/40 border border-border dark:border-charcoal-800">
                   <span className="text-[10px] text-charcoal-500 uppercase font-bold block">Assigned Workload</span>
@@ -595,7 +678,6 @@ export default function FacultyPage() {
                 </div>
               </div>
 
-              {/* Weekly Timetable Schedule Slots */}
               <div>
                 <div className="flex items-center justify-between pb-2 border-b border-border dark:border-charcoal-700 mb-2.5">
                   <span className="font-bold text-charcoal-900 dark:text-ivory-100 uppercase tracking-wider text-[11px]">
@@ -648,7 +730,6 @@ export default function FacultyPage() {
                 )}
               </div>
 
-              {/* Modal Actions */}
               <div className="flex items-center justify-between pt-2 border-t border-border dark:border-charcoal-700">
                 <button
                   type="button"

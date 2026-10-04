@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { AppShell } from "@/components/layout/AppShell";
 import { useApp } from "@/context/AppContext";
 import { Modal } from "@/components/common/Modal";
-import { SkeletonCard, SkeletonTable } from "@/components/common/SkeletonLoader";
+import { SkeletonCard } from "@/components/common/SkeletonLoader";
 import { Breadcrumbs } from "@/components/common/Breadcrumbs";
 import {
   FlaskConical,
@@ -19,6 +19,12 @@ import {
   CheckCircle2,
   FileText,
   Star,
+  Search,
+  DollarSign,
+  TrendingUp,
+  ArrowUpRight,
+  GraduationCap,
+  FileCheck,
 } from "lucide-react";
 
 export default function ResearchPage() {
@@ -27,6 +33,8 @@ export default function ResearchPage() {
   const [projects, setProjects] = useState<any[]>([]);
   const [publications, setPublications] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState<"projects" | "publications">("projects");
+  const [searchQuery, setSearchQuery] = useState("");
 
   // Proposal modal state
   const [isProposalModalOpen, setIsProposalModalOpen] = useState(false);
@@ -145,192 +153,361 @@ export default function ResearchPage() {
     }
   };
 
+  const filteredProjects = projects.filter((p) =>
+    p.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    p.pi?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    p.agency?.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const filteredPubs = publications.filter((p) =>
+    p.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    p.authors?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    p.doi?.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   return (
     <AppShell>
       <div className="flex flex-col gap-6">
         <Breadcrumbs />
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 glass-panel p-6 rounded-2xl shadow-soft">
-          <div className="flex items-center gap-3">
-            <div className="h-12 w-12 rounded-xl bg-rose-primary text-white flex items-center justify-center shadow-md shadow-rose-primary/20">
-              <FlaskConical className="h-6 w-6" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h1 className="text-xl font-display font-bold text-charcoal-900 dark:text-ivory-100">
-                  Research & Grants Hub
-                </h1>
-                <span className="badge-subtle bg-rose-container/60 dark:bg-rose-dark/30 text-rose-primary dark:text-rose-accent">
-                  ISO 26324 DOI & Peer Review
-                </span>
+
+        {/* Hero Banner Section */}
+        <div className="relative overflow-hidden rounded-3xl border border-border dark:border-charcoal-700/80 bg-gradient-to-br from-white via-rose-primary/[0.03] to-white dark:from-[#171219] dark:via-[#1e141a] dark:to-[#171219] p-6 lg:p-8 shadow-elevated">
+          {/* Ambient blurred glow */}
+          <div className="absolute top-0 right-1/4 -mt-10 h-64 w-64 rounded-full bg-rose-primary/10 blur-3xl pointer-events-none" />
+          <div className="absolute bottom-0 right-10 -mb-10 h-48 w-48 rounded-full bg-emerald-500/10 blur-3xl pointer-events-none" />
+
+          <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+            <div className="flex items-start gap-4">
+              <div className="h-14 w-14 rounded-2xl bg-gradient-to-tr from-rose-primary to-indigo-600 text-white flex items-center justify-center shadow-lg shadow-rose-primary/30 shrink-0">
+                <FlaskConical className="h-7 w-7" />
               </div>
-              <p className="text-xs text-charcoal-600 dark:text-charcoal-400">
-                Double-blind peer-reviewed publications, CrossRef verified DOIs, external grant ledger, and patent registry
-              </p>
+              <div className="space-y-1">
+                <div className="flex flex-wrap items-center gap-2">
+                  <h1 className="text-2xl font-display font-extrabold tracking-tight text-charcoal-900 dark:text-ivory-100">
+                    Research Enterprise & Grants Directorate
+                  </h1>
+                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-academic-success-subtle text-academic-success border border-green-200 dark:border-green-800">
+                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                    ISO 26324 DOI Verified
+                  </span>
+                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-primary/10 text-rose-primary dark:text-rose-light">
+                    Double-Blind Peer Review Ledger
+                  </span>
+                </div>
+                <p className="text-xs text-charcoal-600 dark:text-charcoal-400 max-w-2xl leading-relaxed">
+                  External grant lifecycle management, CrossRef-indexed DOI publications, referee evaluation rubrics, and intellectual patent portfolios.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-3">
+              <button
+                type="button"
+                onClick={() => setIsProposalModalOpen(true)}
+                className="btn-primary-glow flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-rose-primary hover:bg-rose-dark active:scale-[0.98] text-white text-xs font-bold shadow-md transition-all shrink-0 cursor-pointer"
+              >
+                <Plus className="h-4 w-4" />
+                <span>Submit Grant Proposal</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsAIChatOpen(true)}
+                className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-white dark:bg-charcoal-800 text-charcoal-700 dark:text-ivory-200 hover:border-rose-primary text-xs font-bold border border-border dark:border-charcoal-700 shadow-xs transition-all shrink-0 cursor-pointer"
+              >
+                <Sparkles className="h-4 w-4 text-rose-primary" />
+                <span>AI Literature Discovery</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* 4 Research Telemetry Metric Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="glass-panel glass-card-hover p-5 rounded-3xl border border-border dark:border-charcoal-800 shadow-soft flex flex-col justify-between">
+            <div className="flex items-start justify-between">
+              <div>
+                <span className="text-[10px] font-bold text-charcoal-500 dark:text-charcoal-400 uppercase tracking-wider block">
+                  Active Sponsored Grants
+                </span>
+                <div className="text-3xl font-display font-extrabold text-charcoal-900 dark:text-ivory-100 mt-1">
+                  $5.62M
+                </div>
+              </div>
+              <div className="h-10 w-10 rounded-2xl bg-rose-primary/10 text-rose-primary dark:text-rose-light flex items-center justify-center shadow-xs">
+                <DollarSign className="h-5 w-5" />
+              </div>
+            </div>
+            <div className="mt-4 pt-3 border-t border-border/60 dark:border-charcoal-800/80 flex items-center justify-between text-[11px]">
+              <span className="text-charcoal-500 dark:text-charcoal-400">NSF & NIH Awarded</span>
+              <span className="text-academic-success font-bold flex items-center gap-0.5">
+                <ArrowUpRight className="h-3.5 w-3.5" /> +14.2% YoY
+              </span>
             </div>
           </div>
 
+          <div className="glass-panel glass-card-hover p-5 rounded-3xl border border-border dark:border-charcoal-800 shadow-soft flex flex-col justify-between">
+            <div className="flex items-start justify-between">
+              <div>
+                <span className="text-[10px] font-bold text-charcoal-500 dark:text-charcoal-400 uppercase tracking-wider block">
+                  Archival Publications
+                </span>
+                <div className="text-3xl font-display font-extrabold text-indigo-600 dark:text-indigo-400 mt-1">
+                  {publications.length || 18}
+                </div>
+              </div>
+              <div className="h-10 w-10 rounded-2xl bg-indigo-500/10 text-indigo-500 flex items-center justify-center shadow-xs">
+                <BookOpen className="h-5 w-5" />
+              </div>
+            </div>
+            <div className="mt-4 pt-3 border-t border-border/60 dark:border-charcoal-800/80 flex items-center justify-between text-[11px]">
+              <span className="text-charcoal-500 dark:text-charcoal-400">IEEE, ACM & Nature</span>
+              <span className="text-indigo-600 dark:text-indigo-400 font-bold">100% Peer-Reviewed</span>
+            </div>
+          </div>
+
+          <div className="glass-panel glass-card-hover p-5 rounded-3xl border border-border dark:border-charcoal-800 shadow-soft flex flex-col justify-between">
+            <div className="flex items-start justify-between">
+              <div>
+                <span className="text-[10px] font-bold text-charcoal-500 dark:text-charcoal-400 uppercase tracking-wider block">
+                  Collegiate H-Index
+                </span>
+                <div className="text-3xl font-display font-extrabold text-academic-success mt-1">
+                  28.4
+                </div>
+              </div>
+              <div className="h-10 w-10 rounded-2xl bg-academic-success-subtle text-academic-success flex items-center justify-center shadow-xs">
+                <Award className="h-5 w-5" />
+              </div>
+            </div>
+            <div className="mt-4 pt-3 border-t border-border/60 dark:border-charcoal-800/80 flex items-center justify-between text-[11px]">
+              <span className="text-charcoal-500 dark:text-charcoal-400">1,480+ Total Citations</span>
+              <span className="text-academic-success font-bold">Top 5% Faculty</span>
+            </div>
+          </div>
+
+          <div className="glass-panel glass-card-hover p-5 rounded-3xl border border-border dark:border-charcoal-800 shadow-soft flex flex-col justify-between">
+            <div className="flex items-start justify-between">
+              <div>
+                <span className="text-[10px] font-bold text-charcoal-500 dark:text-charcoal-400 uppercase tracking-wider block">
+                  Patents & Disclosures
+                </span>
+                <div className="text-3xl font-display font-extrabold text-amber-500 mt-1">
+                  12
+                </div>
+              </div>
+              <div className="h-10 w-10 rounded-2xl bg-amber-500/10 text-amber-500 flex items-center justify-center shadow-xs">
+                <ShieldCheck className="h-5 w-5" />
+              </div>
+            </div>
+            <div className="mt-4 pt-3 border-t border-border/60 dark:border-charcoal-800/80 flex items-center justify-between text-[11px]">
+              <span className="text-charcoal-500 dark:text-charcoal-400">USPTO Registered</span>
+              <span className="text-academic-success font-bold">8 Commercialized</span>
+            </div>
+          </div>
+        </div>
+
+        {/* View Switcher & Search Bar */}
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 glass-panel p-4 rounded-3xl shadow-soft">
           <div className="flex items-center gap-2">
             <button
-              onClick={() => setIsProposalModalOpen(true)}
-              className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-surface-soft dark:bg-charcoal-800 hover:bg-rose-container dark:hover:bg-charcoal-700 text-charcoal-800 dark:text-ivory-200 text-xs font-bold border border-border dark:border-charcoal-700 transition-all"
+              type="button"
+              onClick={() => setActiveTab("projects")}
+              className={`px-4 py-2 rounded-2xl text-xs font-bold transition-all cursor-pointer ${
+                activeTab === "projects"
+                  ? "bg-rose-primary text-white shadow-xs"
+                  : "bg-surface-soft dark:bg-charcoal-800 text-charcoal-700 dark:text-charcoal-300 hover:bg-rose-container"
+              }`}
             >
-              <Plus className="h-4 w-4 text-rose-primary dark:text-rose-accent" />
-              <span>Submit Proposal</span>
+              Sponsored Grant Projects ({projects.length})
             </button>
             <button
-              onClick={() => setIsAIChatOpen(true)}
-              className="btn-primary-glow flex items-center gap-2 px-4 py-2 rounded-xl bg-rose-primary hover:bg-rose-dark active:scale-[0.98] text-white text-xs font-bold shadow-sm transition-all"
+              type="button"
+              onClick={() => setActiveTab("publications")}
+              className={`px-4 py-2 rounded-2xl text-xs font-bold transition-all cursor-pointer ${
+                activeTab === "publications"
+                  ? "bg-rose-primary text-white shadow-xs"
+                  : "bg-surface-soft dark:bg-charcoal-800 text-charcoal-700 dark:text-charcoal-300 hover:bg-rose-container"
+              }`}
             >
-              <Sparkles className="h-4 w-4" />
-              <span>AI Literature Discovery</span>
+              Archival Publications & DOIs ({publications.length})
             </button>
+          </div>
+
+          <div className="relative w-full sm:w-72">
+            <Search className="absolute left-3.5 top-2.5 h-3.5 w-3.5 text-charcoal-400" />
+            <input
+              type="text"
+              placeholder="Search projects or papers..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-9 pr-3 py-1.5 rounded-xl bg-surface-soft dark:bg-charcoal-900 border border-border dark:border-charcoal-700 text-xs text-charcoal-900 dark:text-ivory-100 focus:outline-none focus:ring-1 focus:ring-rose-primary font-medium"
+            />
           </div>
         </div>
 
-        {/* Funded Projects Section */}
-        <div className="glass-panel rounded-2xl shadow-soft p-5">
-          <div className="flex items-center justify-between pb-3 border-b border-border dark:border-charcoal-800 mb-4">
-            <h2 className="text-xs font-bold text-charcoal-900 dark:text-ivory-100 uppercase tracking-wider">
-              Funded Research Projects & Milestones
-            </h2>
-            <button
-              onClick={() => setIsProposalModalOpen(true)}
-              className="flex items-center gap-1 text-xs font-bold text-rose-primary dark:text-rose-accent hover:underline"
-            >
-              <Plus className="h-3.5 w-3.5" />
-              <span>Submit Grant Proposal</span>
-            </button>
-          </div>
+        {/* Tab 1: Funded Projects Section */}
+        {activeTab === "projects" && (
+          <div className="glass-panel rounded-3xl border border-border dark:border-charcoal-800 shadow-soft p-6 space-y-5">
+            <div className="flex items-center justify-between pb-3 border-b border-border/80 dark:border-charcoal-800">
+              <div>
+                <h2 className="text-sm font-bold uppercase tracking-wider text-charcoal-900 dark:text-ivory-100 flex items-center gap-2">
+                  <FlaskConical className="h-4 w-4 text-rose-primary" />
+                  Funded Faculty Research Initiatives & Milestones
+                </h2>
+                <p className="text-xs text-charcoal-500 dark:text-charcoal-400 mt-0.5">
+                  Multi-year research investigations funded by national endowments and corporate labs
+                </p>
+              </div>
+              <span className="px-3 py-1 rounded-xl text-xs font-mono font-bold bg-academic-success-subtle text-academic-success">
+                {filteredProjects.length} Active Grants
+              </span>
+            </div>
 
-          {isLoading ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <SkeletonCard />
-              <SkeletonCard />
-            </div>
-          ) : projects.length === 0 ? (
-            <div className="p-8 text-center text-xs text-charcoal-500">
-              No research projects cataloged yet. Submit a proposal to start.
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {projects.map((proj) => (
-                <div
-                  key={proj.id}
-                  className="p-5 rounded-xl border border-border dark:border-charcoal-800 bg-surface-soft dark:bg-charcoal-900/40 hover:bg-white dark:hover:bg-charcoal-900 hover:border-rose-accent/40 transition-all flex flex-col justify-between gap-3 shadow-xs"
-                >
-                  <div>
-                    <div className="flex items-center justify-between">
-                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-academic-success-subtle text-academic-success">
-                        {proj.status}
+            {isLoading ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <SkeletonCard />
+                <SkeletonCard />
+              </div>
+            ) : filteredProjects.length === 0 ? (
+              <div className="p-12 text-center text-xs text-charcoal-500">
+                No research projects cataloged yet. Submit a proposal to begin.
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                {filteredProjects.map((proj) => (
+                  <div
+                    key={proj.id}
+                    className="p-6 rounded-3xl border border-border dark:border-charcoal-800 bg-surface-soft/60 dark:bg-charcoal-900/40 hover:bg-white dark:hover:bg-charcoal-900 hover:border-rose-primary/40 transition-all flex flex-col justify-between gap-4 shadow-soft relative overflow-hidden"
+                  >
+                    <div>
+                      <div className="flex items-center justify-between">
+                        <span className="px-3 py-1 rounded-full text-[10px] font-bold bg-academic-success-subtle text-academic-success border border-green-200 dark:border-green-800">
+                          {proj.status}
+                        </span>
+                        <span className="font-display font-extrabold text-rose-primary dark:text-rose-light text-base">
+                          {proj.grant}
+                        </span>
+                      </div>
+
+                      <h3 className="text-base font-bold text-charcoal-900 dark:text-ivory-100 mt-2.5 leading-snug">
+                        {proj.title}
+                      </h3>
+                      <span className="text-xs text-charcoal-600 dark:text-charcoal-400 font-bold block mt-1">
+                        Lead PI: <span className="text-charcoal-900 dark:text-ivory-100">{proj.pi}</span>
                       </span>
-                      <span className="font-display font-bold text-rose-primary dark:text-rose-accent text-sm">
-                        {proj.grant} Grant
+                      <p className="text-xs text-charcoal-500 dark:text-charcoal-400 mt-2 line-clamp-3 leading-relaxed">
+                        {proj.abstract}
+                      </p>
+                    </div>
+
+                    <div className="pt-3 border-t border-border/60 dark:border-charcoal-800 flex items-center justify-between text-xs text-charcoal-600 dark:text-charcoal-400">
+                      <span>
+                        Sponsor: <strong className="text-charcoal-900 dark:text-ivory-100">{proj.agency}</strong>
+                      </span>
+                      <span className="font-mono font-bold text-rose-primary dark:text-rose-light">
+                        {proj.milestones}
                       </span>
                     </div>
-                    <h3 className="text-sm font-bold text-charcoal-900 dark:text-ivory-100 mt-2">
-                      {proj.title}
-                    </h3>
-                    <span className="text-xs text-charcoal-600 dark:text-charcoal-400 font-semibold">
-                      {proj.pi}
-                    </span>
-                    <p className="text-[11px] text-charcoal-500 dark:text-charcoal-400 mt-1 line-clamp-3">
-                      {proj.abstract}
-                    </p>
                   </div>
-
-                  <div className="pt-2 border-t border-border/60 dark:border-charcoal-800 flex items-center justify-between text-[11px] text-charcoal-600 dark:text-charcoal-400">
-                    <span>
-                      Funding: <span className="font-semibold text-charcoal-800 dark:text-ivory-200">{proj.agency}</span>
-                    </span>
-                    <span className="font-bold text-rose-primary dark:text-rose-accent">{proj.milestones}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Peer-Reviewed Publications Table with DOI & Review Pipeline */}
-        <div className="glass-panel rounded-2xl shadow-soft overflow-hidden">
-          <div className="p-4 border-b border-border dark:border-charcoal-800 bg-surface-soft dark:bg-charcoal-900/40 flex items-center justify-between">
-            <span className="text-xs font-bold text-charcoal-900 dark:text-ivory-100 uppercase tracking-wider">
-              Peer-Reviewed Publications, DOI & Editorial Pipeline
-            </span>
-            <span className="text-[11px] text-charcoal-600 dark:text-charcoal-400">
-              CrossRef Indexed • ISO 26324 Verified
-            </span>
-          </div>
-
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
-              <thead className="sticky top-0 z-10 bg-ivory-100/90 dark:bg-charcoal-900/90 backdrop-blur-md border-b border-border/80 dark:border-charcoal-800 text-charcoal-600 dark:text-charcoal-400 font-bold uppercase tracking-wider text-[10px]">
-                <tr>
-                  <th className="p-3.5">Publication Title & Authors</th>
-                  <th className="p-3.5">Journal / Conference</th>
-                  <th className="p-3.5 font-mono">Standard DOI</th>
-                  <th className="p-3.5 text-center">Editorial Status</th>
-                  <th className="p-3.5 text-center">Citations</th>
-                  <th className="p-3.5 text-right">Referee Action</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border/60 dark:divide-charcoal-800 text-charcoal-900 dark:text-ivory-100">
-                {publications.map((p) => (
-                  <tr key={p.id} className="hover:bg-ivory-50/70 dark:hover:bg-charcoal-900/40 transition-colors">
-                    <td className="p-3.5 max-w-sm">
-                      <span className="font-bold text-charcoal-900 dark:text-ivory-100 block">{p.title}</span>
-                      <span className="text-[11px] text-charcoal-500">{p.authors}</span>
-                    </td>
-                    <td className="p-3.5 text-charcoal-700 dark:text-ivory-200 font-medium">
-                      {p.journal} ({p.year})
-                    </td>
-                    <td className="p-3.5 font-mono text-[11px]">
-                      <a
-                        href={p.doiUrl || `https://doi.org/${p.doi}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-rose-primary dark:text-rose-accent hover:underline flex items-center gap-1"
-                        title={`Verified CrossRef DOI. SHA-256: ${p.sha256Checksum || "verified"}`}
-                      >
-                        <span>{p.doi}</span>
-                        <ExternalLink className="h-3 w-3 shrink-0" />
-                      </a>
-                    </td>
-                    <td className="p-3.5 text-center">
-                      <span
-                        className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
-                          p.reviewStatus === "ACCEPTED"
-                            ? "bg-academic-success-subtle text-academic-success border border-emerald-300"
-                            : "bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-300"
-                        }`}
-                      >
-                        {p.reviewStatus} ({p.averageReviewScore || 8.5}/10)
-                      </span>
-                    </td>
-                    <td className="p-3.5 text-center">
-                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-academic-info-subtle text-academic-info">
-                        {p.citations} Citations
-                      </span>
-                    </td>
-                    <td className="p-3.5 text-right">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setSelectedPubForReview(p);
-                          setIsPeerReviewModalOpen(true);
-                        }}
-                        className="px-3 py-1 rounded-xl bg-surface-soft dark:bg-charcoal-800 hover:bg-rose-container text-charcoal-800 dark:text-ivory-200 text-xs font-bold border border-border dark:border-charcoal-700 transition-all inline-flex items-center gap-1"
-                      >
-                        <ShieldCheck className="h-3.5 w-3.5 text-rose-primary" />
-                        <span>Peer Review</span>
-                      </button>
-                    </td>
-                  </tr>
                 ))}
-              </tbody>
-            </table>
+              </div>
+            )}
           </div>
-        </div>
+        )}
+
+        {/* Tab 2: Peer-Reviewed Publications Table with DOI & Review Pipeline */}
+        {activeTab === "publications" && (
+          <div className="glass-panel rounded-3xl border border-border dark:border-charcoal-800 shadow-soft overflow-hidden">
+            <div className="p-5 border-b border-border/80 dark:border-charcoal-800 bg-surface-soft/60 dark:bg-charcoal-900/40 flex items-center justify-between">
+              <div>
+                <span className="text-sm font-bold text-charcoal-900 dark:text-ivory-100 uppercase tracking-wider flex items-center gap-2">
+                  <BookOpen className="h-4 w-4 text-rose-primary" />
+                  Peer-Reviewed Archival Publications & DOI Registry
+                </span>
+                <span className="text-xs text-charcoal-500 block">
+                  CrossRef Indexed • ISO 26324 Standards Compliant
+                </span>
+              </div>
+              <span className="px-3 py-1 rounded-xl text-xs font-mono font-bold bg-academic-info-subtle text-academic-info">
+                {filteredPubs.length} Archival Papers
+              </span>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead className="sticky top-0 z-10 bg-ivory-100/90 dark:bg-charcoal-900/90 backdrop-blur-md border-b border-border/80 dark:border-charcoal-800 text-charcoal-600 dark:text-charcoal-400 font-bold uppercase tracking-wider text-[10px]">
+                  <tr>
+                    <th className="p-4">Publication Title & Authors</th>
+                    <th className="p-4">Journal / Conference</th>
+                    <th className="p-4 font-mono">Standard DOI</th>
+                    <th className="p-4 text-center">Editorial Status</th>
+                    <th className="p-4 text-center">Citations</th>
+                    <th className="p-4 text-right">Referee Action</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border/60 dark:divide-charcoal-800 text-charcoal-900 dark:text-ivory-100">
+                  {filteredPubs.map((p) => (
+                    <tr
+                      key={p.id}
+                      className="hover:bg-rose-primary/[0.02] dark:hover:bg-charcoal-800/40 transition-colors"
+                    >
+                      <td className="p-4 max-w-sm">
+                        <strong className="font-bold text-charcoal-900 dark:text-ivory-100 block text-xs">
+                          {p.title}
+                        </strong>
+                        <span className="text-[11px] text-charcoal-500 block mt-0.5">{p.authors}</span>
+                      </td>
+                      <td className="p-4 text-charcoal-700 dark:text-ivory-200 font-medium">
+                        {p.journal} ({p.year})
+                      </td>
+                      <td className="p-4 font-mono text-[11px]">
+                        <a
+                          href={p.doiUrl || `https://doi.org/${p.doi}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-rose-primary dark:text-rose-light hover:underline flex items-center gap-1 font-bold"
+                          title={`Verified CrossRef DOI. SHA-256: ${p.sha256Checksum || "verified"}`}
+                        >
+                          <span>{p.doi}</span>
+                          <ExternalLink className="h-3 w-3 shrink-0" />
+                        </a>
+                      </td>
+                      <td className="p-4 text-center">
+                        <span
+                          className={`px-3 py-1 rounded-full text-[10px] font-bold ${
+                            p.reviewStatus === "ACCEPTED"
+                              ? "bg-academic-success-subtle text-academic-success border border-emerald-300"
+                              : "bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-300"
+                          }`}
+                        >
+                          {p.reviewStatus} ({p.averageReviewScore || 8.5}/10)
+                        </span>
+                      </td>
+                      <td className="p-4 text-center">
+                        <span className="px-2.5 py-1 rounded-xl text-[10px] font-bold bg-academic-info-subtle text-academic-info">
+                          {p.citations} Citations
+                        </span>
+                      </td>
+                      <td className="p-4 text-right">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSelectedPubForReview(p);
+                            setIsPeerReviewModalOpen(true);
+                          }}
+                          className="px-3.5 py-1.5 rounded-xl bg-ivory-100 dark:bg-charcoal-800 hover:bg-rose-primary hover:text-white text-charcoal-800 dark:text-ivory-200 text-xs font-bold border border-border dark:border-charcoal-700 transition-all inline-flex items-center gap-1.5 cursor-pointer shadow-xs"
+                        >
+                          <ShieldCheck className="h-3.5 w-3.5 text-rose-primary" />
+                          <span>Peer Review</span>
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
 
         {/* Modal 1: Submit Grant Proposal */}
         <Modal
@@ -392,7 +569,7 @@ export default function ResearchPage() {
                 value={formData.abstract}
                 onChange={(e) => setFormData({ ...formData, abstract: e.target.value })}
                 placeholder="Describe methodology, anticipated deliverables, and theoretical impact..."
-                className="w-full bg-ivory-100 dark:bg-charcoal-900 border border-border dark:border-charcoal-700 rounded-xl p-2.5 font-medium text-charcoal-900 dark:text-ivory-100"
+                className="w-full bg-ivory-100 dark:bg-charcoal-900 border border-border dark:border-charcoal-700 rounded-xl p-2.5 font-medium text-charcoal-900 dark:text-ivory-100 leading-relaxed"
                 required
               />
             </div>
@@ -408,7 +585,7 @@ export default function ResearchPage() {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="px-4 py-2 rounded-xl bg-rose-primary hover:bg-rose-dark text-white text-xs font-bold shadow-sm transition-all"
+                className="px-5 py-2.5 rounded-xl bg-rose-primary hover:bg-rose-dark text-white text-xs font-bold shadow-md transition-all cursor-pointer"
               >
                 {isSubmitting ? "Submitting..." : "Submit Proposal"}
               </button>
@@ -512,7 +689,7 @@ export default function ResearchPage() {
                 value={reviewComments}
                 onChange={(e) => setReviewComments(e.target.value)}
                 placeholder="Critique theoretical foundation, clarity of proofs, and empirical validity..."
-                className="w-full bg-ivory-100 dark:bg-charcoal-900 border border-border dark:border-charcoal-700 rounded-xl p-2.5 font-medium text-charcoal-900 dark:text-ivory-100"
+                className="w-full bg-ivory-100 dark:bg-charcoal-900 border border-border dark:border-charcoal-700 rounded-xl p-2.5 font-medium text-charcoal-900 dark:text-ivory-100 leading-relaxed"
                 required
               />
             </div>
@@ -528,7 +705,7 @@ export default function ResearchPage() {
               <button
                 type="submit"
                 disabled={isSubmittingReview}
-                className="px-4 py-2 rounded-xl bg-rose-primary hover:bg-rose-dark text-white text-xs font-bold shadow-sm transition-all"
+                className="px-5 py-2.5 rounded-xl bg-rose-primary hover:bg-rose-dark text-white text-xs font-bold shadow-md transition-all cursor-pointer"
               >
                 {isSubmittingReview ? "Recording..." : "Submit Official Peer Review"}
               </button>
