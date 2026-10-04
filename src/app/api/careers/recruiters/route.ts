@@ -6,7 +6,7 @@ import { logger } from "@/lib/logging/logger";
 
 const PLACEMENT_ROLES: UserRole[] = ["SUPER_ADMIN", "INSTITUTION_ADMIN", "PLACEMENT_OFFICER", "PRINCIPAL"];
 
-export interface RecruiterPartner {
+interface RecruiterPartner {
   id: string;
   companyName: string;
   industry: string;

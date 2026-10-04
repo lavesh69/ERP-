@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { logger } from "@/lib/logging/logger";
 
-export interface ProgramEligibilityRule {
+interface ProgramEligibilityRule {
   programCode: string;
   programTitle: string;
   minTwelfthPercentage: number;
@@ -11,7 +11,7 @@ export interface ProgramEligibilityRule {
   annualTuitionUsd: number;
 }
 
-export const PROGRAM_CUTOFFS: ProgramEligibilityRule[] = [
+const PROGRAM_CUTOFFS: ProgramEligibilityRule[] = [
   {
     programCode: "BTECH-CSE",
     programTitle: "B.Tech in Computer Science & Engineering",

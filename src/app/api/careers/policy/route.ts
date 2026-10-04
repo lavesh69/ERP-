@@ -2,14 +2,14 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireRoleAuth } from "@/lib/auth/admin-guard";
 import { logger } from "@/lib/logging/logger";
 
-export interface PlacementCheckRequest {
+interface PlacementCheckRequest {
   studentId: string;
   currentOffers: Array<{ companyName: string; ctcLpa: number; isAccepted: boolean }>;
   targetJobCtcLpa: number;
   targetJobTier: "MASS" | "CORE" | "DREAM" | "SUPER_DREAM";
 }
 
-export function evaluateOneJobPolicy(req: PlacementCheckRequest) {
+function evaluateOneJobPolicy(req: PlacementCheckRequest) {
   const { currentOffers, targetJobCtcLpa, targetJobTier } = req;
 
   if (!currentOffers || currentOffers.length === 0) {

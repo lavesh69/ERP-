@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getOptionalSession } from "@/lib/auth/admin-guard";
 import { logger } from "@/lib/logging/logger";
 
-export interface AlumniProfile {
+interface AlumniProfile {
   id: string;
   fullName: string;
   graduationBatch: number;

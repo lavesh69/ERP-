@@ -5,14 +5,14 @@ import { logger } from "@/lib/logging/logger";
 
 const FACULTY_ROLES: UserRole[] = ["SUPER_ADMIN", "INSTITUTION_ADMIN", "PRINCIPAL", "HOD", "FACULTY", "CLASS_TEACHER"];
 
-export interface CiaComponents {
+interface CiaComponents {
   assignmentMarks: number;
   midTermMarks: number;
   quizOrPresentation: number;
   attendanceRate: number;
 }
 
-export function computeCiaBreakdown(components: CiaComponents) {
+function computeCiaBreakdown(components: CiaComponents) {
   const { assignmentMarks, midTermMarks, quizOrPresentation, attendanceRate } = components;
 
   let attendanceMarks = 0;

@@ -4,7 +4,7 @@ import { getOptionalSession } from "@/lib/auth/admin-guard";
 import { logAuditEvent } from "@/lib/audit/logger";
 import { logger } from "@/lib/logging/logger";
 
-export interface AdmissionLead {
+interface AdmissionLead {
   id: string;
   applicantName: string;
   email: string;

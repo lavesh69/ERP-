@@ -6,7 +6,7 @@ import { logger } from "@/lib/logging/logger";
 
 const HR_ROLES: UserRole[] = ["SUPER_ADMIN", "INSTITUTION_ADMIN", "HR_STAFF", "PRINCIPAL", "HOD", "FACULTY"];
 
-export interface StaffLeaveApplication {
+interface StaffLeaveApplication {
   id: string;
   staffEmail: string;
   leaveType: "CASUAL_LEAVE" | "MEDICAL_LEAVE" | "EARNED_LEAVE" | "DUTY_LEAVE";

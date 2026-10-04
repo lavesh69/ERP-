@@ -6,7 +6,7 @@ import { logger } from "@/lib/logging/logger";
 
 const HR_ROLES: UserRole[] = ["SUPER_ADMIN", "INSTITUTION_ADMIN", "HR_STAFF", "ACCOUNTANT", "PRINCIPAL", "FACULTY"];
 
-export interface SalaryBreakdown {
+interface SalaryBreakdown {
   staffEmail: string;
   payPeriod: string; // e.g. "October 2026"
   basicPay: number;
@@ -22,7 +22,7 @@ export interface SalaryBreakdown {
   verificationHash: string;
 }
 
-export function computeSalarySlip(staffEmail: string, basicPay: number, payPeriod: string): SalaryBreakdown {
+function computeSalarySlip(staffEmail: string, basicPay: number, payPeriod: string): SalaryBreakdown {
   const basic = Math.max(0, basicPay);
   const hra = Math.round(basic * 0.20);
   const da = Math.round(basic * 0.14);

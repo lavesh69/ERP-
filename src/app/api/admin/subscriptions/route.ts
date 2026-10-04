@@ -5,14 +5,14 @@ import { UserRole } from "@/types/auth";
 import { logAuditEvent } from "@/lib/audit/logger";
 import { logger } from "@/lib/logging/logger";
 
-export interface SubscriptionPlan {
+interface SubscriptionPlan {
   tier: "TRIAL" | "STARTER" | "GROWTH" | "ENTERPRISE";
   maxStudents: number;
   pricePerMonthUsd: number;
   features: string[];
 }
 
-export const PLAN_TIERS: Record<string, SubscriptionPlan> = {
+const PLAN_TIERS: Record<string, SubscriptionPlan> = {
   TRIAL: {
     tier: "TRIAL",
     maxStudents: 500,

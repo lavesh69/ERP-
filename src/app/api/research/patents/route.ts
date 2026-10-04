@@ -6,7 +6,7 @@ import { logger } from "@/lib/logging/logger";
 
 const RESEARCH_ROLES: UserRole[] = ["SUPER_ADMIN", "INSTITUTION_ADMIN", "RESEARCH_COORDINATOR", "PRINCIPAL", "FACULTY"];
 
-export interface PatentRecord {
+interface PatentRecord {
   id: string;
   title: string;
   inventors: string[];
