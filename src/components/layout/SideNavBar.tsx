@@ -319,6 +319,7 @@ export function SideNavBar() {
                   {section.title}
                 </span>
                 {visibleItems.map((item) => {
+                  const Icon = item.icon;
                   const itemHref =
                     item.href === "/students" && currentRole === "STUDENT"
                       ? "/students/profile"
