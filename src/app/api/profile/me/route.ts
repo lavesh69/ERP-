@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db/prisma";
 import { getOptionalSession } from "@/lib/auth/admin-guard";
 import { logAuditEvent } from "@/lib/audit/logger";
 import { logger } from "@/lib/logging/logger";
+import { getUserDemographics, saveUserDemographics } from "@/lib/profile/extensions";
 
 export async function GET(req: NextRequest) {
   try {
@@ -18,18 +19,47 @@ export async function GET(req: NextRequest) {
       where: session.userId ? { id: session.userId } : { email: session.email },
       include: {
         institution: true,
+        roles: { include: { role: true } },
         studentProfile: {
           include: {
             program: { include: { department: true } },
             section: true,
+            enrollments: {
+              include: {
+                course: true,
+              },
+            },
+            fees: true,
           },
         },
         facultyProfile: {
           include: {
             department: true,
+            courses: {
+              include: {
+                course: true,
+              },
+            },
+            publications: true,
+            researchProjects: true,
           },
         },
-        parentProfile: true,
+        parentProfile: {
+          include: {
+            students: {
+              include: {
+                student: {
+                  include: {
+                    user: true,
+                    program: true,
+                    section: true,
+                    fees: true,
+                  },
+                },
+              },
+            },
+          },
+        },
       },
     });
 
@@ -43,7 +73,6 @@ export async function GET(req: NextRequest) {
     if (user.role === "FACULTY" || user.role === "PROFESSOR" || user.role === "HOD") {
       let faculty = user.facultyProfile;
       if (!faculty) {
-        // Auto-initialize faculty profile if missing
         let dept = await prisma.department.findFirst();
         if (!dept) {
           const campus = (await prisma.campus.findFirst()) || (await prisma.campus.create({
@@ -76,20 +105,34 @@ export async function GET(req: NextRequest) {
             joiningDate: new Date(),
             weeklyHours: 18,
           },
-          include: { department: true },
+          include: {
+            department: true,
+            courses: { include: { course: true } },
+            publications: true,
+            researchProjects: true,
+          },
         });
       }
 
       profileData = {
         employeeCode: faculty.employeeCode,
-        departmentCode: faculty.department.code,
-        departmentName: faculty.department.name,
+        departmentCode: faculty.department?.code || "CSE",
+        departmentName: faculty.department?.name || "Computer Science & Engineering",
         designation: faculty.designation,
         qualification: faculty.qualification,
         specialization: faculty.specialization,
         officeRoom: faculty.officeRoom,
         weeklyHours: faculty.weeklyHours,
         joiningDate: faculty.joiningDate.toISOString().split("T")[0],
+        assignedCourses: faculty.courses?.map((c) => ({
+          id: c.course.id,
+          code: c.course.code,
+          title: c.course.title,
+          credits: c.course.credits,
+          role: c.role,
+        })) || [],
+        publicationsCount: faculty.publications?.length || 0,
+        researchProjectsCount: faculty.researchProjects?.length || 0,
       };
     } else if (user.role === "STUDENT") {
       let student = user.studentProfile;
@@ -132,21 +175,43 @@ export async function GET(req: NextRequest) {
           include: {
             program: { include: { department: true } },
             section: true,
+            enrollments: { include: { course: true } },
+            fees: true,
           },
         });
       }
 
+      // Calculate fees
+      const totalFees = student.fees?.reduce((acc, f) => acc + f.totalAmount, 0) || 0;
+      const paidFees = student.fees?.reduce((acc, f) => acc + f.paidAmount, 0) || 0;
+      const pendingDues = Math.max(0, totalFees - paidFees);
+
       profileData = {
         rollNumber: student.rollNumber,
         admissionNumber: student.admissionNumber,
-        programCode: student.program.code,
-        programName: student.program.name,
-        departmentName: student.program.department.name,
+        admissionDate: student.admissionDate.toISOString().split("T")[0],
+        programCode: student.program?.code || "BTECH-CS",
+        programName: student.program?.name || "B.Tech Computer Science",
+        departmentName: student.program?.department?.name || "Computer Science",
         currentSemester: student.currentSemester,
         sectionName: student.section?.name || "Section A",
         cgpa: student.cgpa,
         attendanceRate: student.attendanceRate,
         status: student.status,
+        enrolledCourses: student.enrollments?.map((e) => ({
+          id: e.course.id,
+          code: e.course.code,
+          title: e.course.title,
+          credits: e.course.credits,
+          status: e.status,
+          grade: e.grade,
+        })) || [],
+        feeSummary: {
+          totalFees,
+          paidFees,
+          pendingDues,
+          isCleared: pendingDues === 0,
+        },
       };
     } else if (user.role === "PARENT") {
       let parent = user.parentProfile;
@@ -157,13 +222,71 @@ export async function GET(req: NextRequest) {
             relation: "GUARDIAN",
             occupation: "Registered Parent",
           },
+          include: {
+            students: {
+              include: {
+                student: {
+                  include: {
+                    user: true,
+                    program: true,
+                    section: true,
+                    fees: true,
+                  },
+                },
+              },
+            },
+          },
         });
       }
+
+      const linkedWards = parent.students?.map((s) => {
+        const total = s.student.fees?.reduce((acc, f) => acc + f.totalAmount, 0) || 0;
+        const paid = s.student.fees?.reduce((acc, f) => acc + f.paidAmount, 0) || 0;
+        return {
+          studentId: s.student.id,
+          rollNumber: s.student.rollNumber,
+          fullName: `${s.student.user.firstName} ${s.student.user.lastName}`,
+          programName: s.student.program?.name || "Undergraduate Program",
+          semester: s.student.currentSemester,
+          attendanceRate: s.student.attendanceRate,
+          cgpa: s.student.cgpa,
+          pendingDues: Math.max(0, total - paid),
+          isPrimary: s.isPrimary,
+        };
+      }) || [];
+
       profileData = {
         relation: parent.relation,
         occupation: parent.occupation,
+        linkedWards,
+      };
+    } else {
+      // Administrative, Operations, Staff & Governance Roles
+      const roleModulesMap: Record<string, string[]> = {
+        SUPER_ADMIN: ["System Architecture", "Multi-Campus Governance", "Global Security Audits", "Tenant Management"],
+        INSTITUTION_ADMIN: ["Institution Governance", "User Provisioning", "Policy Enforcement", "Campus Configuration"],
+        PRINCIPAL: ["Academic Senate", "Faculty Performance", "Executive Approvals", "Institutional KPI"],
+        HOD: ["Curriculum Planning", "Faculty Workload Allocation", "Department Electives", "CIA Review"],
+        ACCOUNTANT: ["Bursar Ledger", "Fee Structures & Invoices", "Reconciliation & Concessions", "Daily Cashier Operations"],
+        LIBRARIAN: ["Koha/RFID Circulation", "Repository Acquisitions", "OPAC Catalog", "Student Book Borrowing"],
+        HR_STAFF: ["Employee Lifecycle", "Payroll & Compensation", "Faculty Leave Authorizations", "Staff Appraisal"],
+        PLACEMENT_OFFICER: ["Corporate Recruiters Liaison", "ATS Matching Engine", "Interview Coordination", "Alumni Networking"],
+        EXAMINATION_CONTROLLER: ["Admit Card Sealing", "Dummy Number Masking", "Hall Seating Optimization", "Official Transcripts"],
+        RESEARCH_COORDINATOR: ["Grant Disbursements", "Patent Filings", "Peer Review DOI", "Ethics Clearances"],
+        ALUMNI: ["Mentorship Program", "Alumni Directory", "Campus Homecoming", "Endowment Contribution"],
+      };
+
+      profileData = {
+        jurisdiction: user.institution?.name || "Apex University Headquarters",
+        administrativeTier: "Enterprise Staff & Governance Clearance",
+        assignedModules: roleModulesMap[user.role] || ["Institutional Core Operations", "Compliance & Reporting"],
+        accessClearance: user.role === "SUPER_ADMIN" ? "Level 5 - Sovereign Root" : "Level 4 - Institutional Officer",
+        employeeCode: `ADM-${user.id.slice(-4).toUpperCase()}`,
       };
     }
+
+    // Retrieve rich demographics from persistent storage
+    const demographics = getUserDemographics(user.id);
 
     return NextResponse.json({
       success: true,
@@ -180,6 +303,26 @@ export async function GET(req: NextRequest) {
         institutionName: user.institution?.name || "Apex Institute of Science & Technology",
         twoFactorEnabled: user.twoFactorEnabled,
         createdAt: user.createdAt.toISOString().split("T")[0],
+      },
+      demographics: {
+        bio: demographics.bio || "",
+        bloodGroup: demographics.bloodGroup || "",
+        dob: demographics.dob || "",
+        gender: demographics.gender || "",
+        emergencyContactName: demographics.emergencyContactName || "",
+        emergencyContactPhone: demographics.emergencyContactPhone || "",
+        address: demographics.address || {
+          street: "",
+          city: "",
+          state: "",
+          zipCode: "",
+          country: "India",
+        },
+        socialLinks: demographics.socialLinks || {
+          linkedin: "",
+          github: "",
+          website: "",
+        },
       },
       profile: profileData,
     });
@@ -208,6 +351,15 @@ export async function PATCH(req: NextRequest) {
       lastName,
       phone,
       avatarUrl,
+      // Demographics & Extensions
+      bio,
+      bloodGroup,
+      dob,
+      gender,
+      emergencyContactName,
+      emergencyContactPhone,
+      address,
+      socialLinks,
       // Faculty attributes
       officeRoom,
       specialization,
@@ -216,11 +368,10 @@ export async function PATCH(req: NextRequest) {
       weeklyHours,
       // Student attributes
       currentSemester,
-      residence,
-      emergencyContact,
       // Parent attributes
       occupation,
       relation,
+      linkWardRollNumber,
     } = body;
 
     const user = await prisma.user.findFirst({
@@ -247,7 +398,19 @@ export async function PATCH(req: NextRequest) {
       },
     });
 
-    // 2. Role-specific profile updates
+    // 2. Persist Demographics & Extensions
+    saveUserDemographics(user.id, {
+      bio: bio !== undefined ? bio : undefined,
+      bloodGroup: bloodGroup !== undefined ? bloodGroup : undefined,
+      dob: dob !== undefined ? dob : undefined,
+      gender: gender !== undefined ? gender : undefined,
+      emergencyContactName: emergencyContactName !== undefined ? emergencyContactName : undefined,
+      emergencyContactPhone: emergencyContactPhone !== undefined ? emergencyContactPhone : undefined,
+      address: address !== undefined ? address : undefined,
+      socialLinks: socialLinks !== undefined ? socialLinks : undefined,
+    });
+
+    // 3. Role-specific profile updates
     if (user.role === "FACULTY" || user.role === "PROFESSOR" || user.role === "HOD") {
       if (user.facultyProfile) {
         await prisma.faculty.update({
@@ -279,6 +442,32 @@ export async function PATCH(req: NextRequest) {
             ...(relation ? { relation: relation.trim() } : {}),
           },
         });
+
+        // Link a new ward if requested by roll number
+        if (linkWardRollNumber && typeof linkWardRollNumber === "string") {
+          const ward = await prisma.student.findUnique({
+            where: { rollNumber: linkWardRollNumber.trim() },
+          });
+          if (ward) {
+            const existingRelation = await prisma.studentParentRelation.findUnique({
+              where: {
+                studentId_parentId: {
+                  studentId: ward.id,
+                  parentId: user.parentProfile.id,
+                },
+              },
+            });
+            if (!existingRelation) {
+              await prisma.studentParentRelation.create({
+                data: {
+                  studentId: ward.id,
+                  parentId: user.parentProfile.id,
+                  isPrimary: true,
+                },
+              });
+            }
+          }
+        }
       }
     }
 
@@ -296,7 +485,7 @@ export async function PATCH(req: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      message: "Profile dossier updated successfully!",
+      message: "Profile dossier and demographics updated successfully!",
       user: {
         id: updatedUser.id,
         email: updatedUser.email,
