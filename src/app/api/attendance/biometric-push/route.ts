@@ -1,7 +1,30 @@
 import { NextRequest, NextResponse } from "next/server";
+import crypto from "crypto";
 import { prisma } from "@/lib/db/prisma";
 import { eventBus } from "@/lib/realtime/event-bus";
 import { logger } from "@/lib/logging/logger";
+
+// In-memory sliding window cache for biometric turnstile deduplication (5-minute TTL)
+const processedNonces = new Map<string, number>();
+
+function isReplayRequest(nonceKey: string): boolean {
+  const now = Date.now();
+  // Sweep stale entries periodically
+  if (processedNonces.size > 1000) {
+    for (const [key, timestamp] of processedNonces.entries()) {
+      if (now - timestamp > 300000) {
+        processedNonces.delete(key);
+      }
+    }
+  }
+
+  const existing = processedNonces.get(nonceKey);
+  if (existing && now - existing < 300000) {
+    return true;
+  }
+  processedNonces.set(nonceKey, now);
+  return false;
+}
 
 export async function POST(req: NextRequest) {
   try {
@@ -14,10 +37,32 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { deviceSerialNumber, courseCode, punches } = body;
+    const { deviceSerialNumber, courseCode, punches, nonce, batchId } = body;
 
     if (!punches || !Array.isArray(punches) || punches.length === 0) {
       return NextResponse.json({ error: "punches array cannot be empty" }, { status: 400 });
+    }
+
+    // Deduplication / Replay Defense
+    const headerNonce = req.headers.get("x-nonce") || req.headers.get("x-device-nonce");
+    const batchKey =
+      nonce ||
+      batchId ||
+      headerNonce ||
+      crypto
+        .createHash("sha256")
+        .update(
+          `${deviceSerialNumber || "turnstile"}:${courseCode || "default"}:${punches
+            .map((p: any) => `${p.studentId}:${p.status || "PRESENT"}`)
+            .join(",")}`
+        )
+        .digest("hex");
+
+    if (isReplayRequest(batchKey)) {
+      return NextResponse.json(
+        { error: "Duplicate turnstile batch or replay attack detected", batchKey },
+        { status: 409 }
+      );
     }
 
     // Resolve course or default

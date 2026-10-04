@@ -377,13 +377,17 @@ export default function TimetablePage() {
               <CalendarIcon className="h-6 w-6" />
             </div>
             <div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
                 <h1 className="text-xl font-display font-bold text-charcoal-900 dark:text-ivory-100">
                   Academic Scheduling & Space Conflict Engine
                 </h1>
                 <span className="hidden sm:inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20">
                   <ShieldCheck className="h-3 w-3" />
                   Deterministic Solvers Active
+                </span>
+                <span className="hidden md:inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-medium bg-ivory-200 dark:bg-charcoal-800 text-charcoal-700 dark:text-charcoal-300 border border-border dark:border-charcoal-700">
+                  <Clock className="h-3 w-3 text-rose-primary" />
+                  Apex Campus Time (UTC+05:30)
                 </span>
               </div>
               <p className="text-xs text-charcoal-600 dark:text-charcoal-400 mt-0.5">

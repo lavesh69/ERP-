@@ -86,6 +86,7 @@ export default function LibraryPage() {
 
   // Camera Barcode Scanner State
   const [isBarcodeScannerOpen, setIsBarcodeScannerOpen] = useState(false);
+  const [cameraError, setCameraError] = useState(false);
   const [scannedBarcode, setScannedBarcode] = useState("");
   const [isScanning, setIsScanning] = useState(false);
   const [scannedBookResult, setScannedBookResult] = useState<any>(null);
@@ -154,6 +155,7 @@ export default function LibraryPage() {
   useEffect(() => {
     let stream: MediaStream | null = null;
     if (isBarcodeScannerOpen && typeof navigator !== "undefined" && navigator.mediaDevices) {
+      setCameraError(false);
       navigator.mediaDevices
         .getUserMedia({ video: true })
         .then((s) => {
@@ -164,7 +166,7 @@ export default function LibraryPage() {
           }
         })
         .catch(() => {
-          // Camera permission fallback
+          setCameraError(true);
         });
     }
     return () => {
@@ -839,14 +841,24 @@ export default function LibraryPage() {
                 muted
                 className="w-full h-full object-cover"
               />
-              <div className="absolute inset-0 pointer-events-none flex flex-col items-center justify-center">
-                <div className="w-48 h-32 border-2 border-dashed border-rose-primary rounded-xl relative shadow-lg">
-                  <div className="absolute inset-x-0 top-1/2 h-0.5 bg-rose-primary shadow-sm animate-pulse" />
+              {cameraError ? (
+                <div className="absolute inset-0 bg-charcoal-950/90 flex flex-col items-center justify-center p-4 text-center z-10">
+                  <AlertCircle className="h-8 w-8 text-amber-400 mb-2" />
+                  <span className="font-bold text-white text-xs mb-1">Camera Permission Blocked or Device Missing</span>
+                  <span className="text-[11px] text-charcoal-400 max-w-xs leading-relaxed">
+                    Please allow camera access in browser permissions or use the quick barcode / ISBN manual entry field below.
+                  </span>
                 </div>
-                <span className="text-[10px] text-white/80 bg-black/60 px-2 py-0.5 rounded mt-2">
-                  Align book barcode or ISBN within red reticle
-                </span>
-              </div>
+              ) : (
+                <div className="absolute inset-0 pointer-events-none flex flex-col items-center justify-center">
+                  <div className="w-48 h-32 border-2 border-dashed border-rose-primary rounded-xl relative shadow-lg">
+                    <div className="absolute inset-x-0 top-1/2 h-0.5 bg-rose-primary shadow-sm animate-pulse" />
+                  </div>
+                  <span className="text-[10px] text-white/80 bg-black/60 px-2 py-0.5 rounded mt-2">
+                    Align book barcode or ISBN within red reticle
+                  </span>
+                </div>
+              )}
             </div>
 
             {/* Quick barcode / ISBN input & simulated scanner triggers */}

@@ -98,7 +98,11 @@ export async function createPaymentOrder(params: CreateOrderParams): Promise<Pay
     }
   }
 
-  // 3. Cryptographically sealed Sandbox Order
+  // 3. Cryptographically sealed Sandbox Order (Disallowed in production without explicit credentials)
+  if (process.env.NODE_ENV === "production" && !rzpKeyId && !stripeSecretKey) {
+    throw new Error("Payment gateway is unconfigured: RAZORPAY_KEY_ID or STRIPE_SECRET_KEY required in production");
+  }
+
   const hash = crypto.createHash("sha256").update(`${params.feeId}:${Date.now()}:${params.amount}`).digest("hex");
   const orderId = `order_sb_${hash.slice(0, 16)}`;
 

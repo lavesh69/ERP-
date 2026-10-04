@@ -50,7 +50,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [isAIChatOpen, setIsAIChatOpen] = useState(false);
   const [toasts, setToasts] = useState<Toast[]>([]);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
-  const [unreadNotificationsCount, setUnreadNotificationsCount] = useState(3);
+  const [unreadNotificationsCount, setUnreadNotificationsCount] = useState(0);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   // Restore authenticated session from verified JWT cookie on mount
@@ -89,6 +89,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       } else {
         document.documentElement.classList.remove("dark");
       }
+    } else if (typeof window !== "undefined" && window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) {
+      setTheme("dark");
+      document.documentElement.classList.add("dark");
     }
   }, []);
 

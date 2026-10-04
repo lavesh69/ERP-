@@ -16,10 +16,21 @@ export function Pagination({
   limit,
   onPageChange,
 }: PaginationProps) {
+  const [jumpInput, setJumpInput] = React.useState("");
+
   if (totalCount === 0) return null;
 
   const startIdx = (page - 1) * limit + 1;
   const endIdx = Math.min(page * limit, totalCount);
+
+  const handleJumpSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const target = parseInt(jumpInput, 10);
+    if (!isNaN(target) && target >= 1 && target <= totalPages) {
+      onPageChange(target);
+      setJumpInput("");
+    }
+  };
 
   return (
     <div className="p-4 border-t border-border dark:border-charcoal-700 bg-surface-soft dark:bg-charcoal-800/60 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
@@ -29,7 +40,7 @@ export function Pagination({
         <span className="font-bold text-charcoal-800 dark:text-ivory-200">{totalCount}</span> records
       </div>
 
-      <div className="flex items-center gap-1.5 self-end sm:self-auto">
+      <div className="flex items-center gap-1.5 self-end sm:self-auto flex-wrap">
         <button
           onClick={() => onPageChange(page - 1)}
           disabled={page <= 1}
@@ -59,6 +70,21 @@ export function Pagination({
           <span>Next</span>
           <ChevronRight className="h-3.5 w-3.5" />
         </button>
+
+        {totalPages > 2 && (
+          <form onSubmit={handleJumpSubmit} className="flex items-center gap-1 pl-2 border-l border-border dark:border-charcoal-700">
+            <span className="text-charcoal-500 text-[11px]">Go to:</span>
+            <input
+              type="number"
+              min={1}
+              max={totalPages}
+              value={jumpInput}
+              onChange={(e) => setJumpInput(e.target.value)}
+              placeholder="#"
+              className="w-12 px-1.5 py-1 text-center bg-white dark:bg-charcoal-700 border border-border dark:border-charcoal-600 rounded-lg text-xs font-mono font-bold text-charcoal-800 dark:text-ivory-100 focus:outline-none focus:ring-1 focus:ring-rose-primary"
+            />
+          </form>
+        )}
       </div>
     </div>
   );

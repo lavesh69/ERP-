@@ -22,15 +22,15 @@ export async function GET(req: NextRequest) {
         }
       });
 
-      // Keep connection alive with periodic heartbeats every 25s
+      // Keep connection alive with periodic heartbeats every 15s (prevents cloud proxy / edge drops)
       const heartbeat = setInterval(() => {
         try {
-          controller.enqueue(encoder.encode(`: heartbeat\n\n`));
+          controller.enqueue(encoder.encode(`: ping\n\n`));
         } catch {
           clearInterval(heartbeat);
           unsubscribe();
         }
-      }, 25000);
+      }, 15000);
 
       req.signal.addEventListener("abort", () => {
         clearInterval(heartbeat);

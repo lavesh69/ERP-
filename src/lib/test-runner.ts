@@ -3999,6 +3999,24 @@ BIO-599,Synthetic Biology Principles,Syn Bio,3,BIO,BSC-BIO,CORE,THEORY,3`;
     const biometricData = await biometricPushRes.json();
     assert(biometricData.success === true && biometricData.punchedCount === 1, "Biometric attendance session created with recorded punches");
 
+    // Test replay attack mitigation: repeating the exact same batch payload is rejected with 409
+    const replayBiometricPushReq = new NextRequest("http://localhost:3000/api/attendance/biometric-push", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-device-key": "apex-biometric-secret-2026",
+      },
+      body: JSON.stringify({
+        deviceSerialNumber: "ZKTECO-TURNSTILE-GATE-NORTH-01",
+        courseCode: "CS-402",
+        punches: [
+          { studentId: biometricStudent?.id || "std-test-01", status: "PRESENT" },
+        ],
+      }),
+    });
+    const replayBiometricRes = await handleBiometricPush(replayBiometricPushReq);
+    assert(replayBiometricRes.status === 409, "POST /api/attendance/biometric-push rejects replayed turnstile batch with 409 Conflict");
+
     // Test rejection of unauthorized hardware key
     const unauthorizedPushReq = new NextRequest("http://localhost:3000/api/attendance/biometric-push", {
       method: "POST",
@@ -4421,6 +4439,31 @@ By breaking down large monolithic systems into decoupled microservices, systems 
     });
     const replayResetRes = await handleResetPasswordPost(replayResetReq);
     assert(replayResetRes.status === 400, "POST /api/auth/reset-password rejects replayed/revoked reset token with 400 Bad Request");
+
+    // 4. Production Payment Gateway Lockdown (No sandbox orders or verifications allowed in live prod)
+    const prevNodeEnv = process.env.NODE_ENV;
+    (process.env as any).NODE_ENV = "production";
+    let prodOrderBlocked = false;
+    try {
+      await createPaymentOrder({
+        feeId: "fee-prod-guard",
+        amount: 500,
+        currency: "USD",
+        studentId: "std-prod-guard",
+        feeTitle: "Semester Tuition",
+      });
+    } catch {
+      prodOrderBlocked = true;
+    }
+    assert(prodOrderBlocked === true, "createPaymentOrder strictly rejects mock sandbox order generation in production mode");
+
+    const prodSigValid = verifyPaymentSignature({
+      orderId: "order_sb_production_leak",
+      paymentId: "pay_sb_test_2026",
+      signature: "sig_sb_verified_signature",
+    });
+    assert(prodSigValid === false, "verifyPaymentSignature strictly disallows sandbox token verification in production mode");
+    (process.env as any).NODE_ENV = prevNodeEnv;
   }
 
   console.log("\n=================================================");
