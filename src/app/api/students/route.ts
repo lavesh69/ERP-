@@ -45,6 +45,13 @@ export async function GET(req: NextRequest) {
             },
           ],
         };
+      } else if (session?.role !== "SUPER_ADMIN" && session?.institutionId) {
+        lookupCondition = {
+          AND: [
+            lookupCondition,
+            { user: { institutionId: session.institutionId } },
+          ],
+        };
       }
 
       const student = await prisma.student.findFirst({
@@ -384,6 +391,10 @@ export async function GET(req: NextRequest) {
     }
 
     const studentsWhere: any = {};
+    if (session.role !== "SUPER_ADMIN" && session.institutionId) {
+      studentsWhere.user = { institutionId: session.institutionId };
+    }
+
     if (isFaculty && facultyCourseIds.length > 0) {
       studentsWhere.enrollments = {
         some: {

@@ -153,7 +153,13 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    let program = await prisma.program.findFirst();
+    let program = department
+      ? await prisma.program.findFirst({
+          where: { departmentId: department.id },
+        })
+      : await prisma.program.findFirst({
+          where: { department: { institutionId: effectiveInstitutionId } },
+        });
 
     // Role profile creation suffix
     const suffix = Math.floor(1000 + Math.random() * 9000);
@@ -178,9 +184,19 @@ export async function POST(req: NextRequest) {
       if (targetRole === "STUDENT") {
         let actualProgram = program;
         if (!actualProgram) {
-          actualProgram = await tx.program.findFirst();
+          actualProgram =
+            (await tx.program.findFirst({
+              where: { department: { institutionId: effectiveInstitutionId } },
+            })) || (await tx.program.findFirst());
         }
-        const actualSection = await tx.section.findFirst();
+        const actualSection =
+          (await tx.section.findFirst({
+            where: {
+              semester: {
+                program: { department: { institutionId: effectiveInstitutionId } },
+              },
+            },
+          })) || (await tx.section.findFirst());
 
         const createdStudent = await tx.student.create({
           data: {

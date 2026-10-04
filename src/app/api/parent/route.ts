@@ -87,8 +87,37 @@ export async function GET(req: NextRequest) {
       }
     }
 
-    // 2. Staff / Admin preview mode or fallback for initial demo state
-    if (!student) {
+    // If authenticated as PARENT and no verified wards are linked, strictly prevent FERPA student leakage
+    if (isParentRole && !student) {
+      return NextResponse.json(
+        {
+          error: "No verified wards associated with your parent account. Please submit an enrollment verification request or contact the registrar.",
+          student: null,
+          availableWards: [],
+          attendanceOverview: {
+            overallRate: 0,
+            totalHeld: 0,
+            totalAttended: 0,
+            status: "UNVERIFIED",
+            statusColor: "badge-neutral",
+          },
+          recentAttendance: [],
+          recentResults: [],
+          feeSummary: {
+            totalFee: 0,
+            totalPaid: 0,
+            pendingBalance: 0,
+            nextDueDate: "N/A",
+            status: "PENDING",
+          },
+          timetableSchedule: [],
+        },
+        { status: 200 }
+      );
+    }
+
+    // 2. Staff / Admin preview mode (strictly scoped to institutional tenancy)
+    if (!student && isLeadershipStaff) {
       const studentInclude = {
         user: true,
         program: { include: { department: true } },
@@ -107,9 +136,14 @@ export async function GET(req: NextRequest) {
         parents: { include: { parent: { include: { user: true } } } },
       };
 
+      const tenantFilter =
+        session?.role === "SUPER_ADMIN"
+          ? {}
+          : { user: { institutionId: session?.institutionId } };
+
       if (studentIdParam) {
-        student = await prisma.student.findUnique({
-          where: { id: studentIdParam },
+        student = await prisma.student.findFirst({
+          where: { id: studentIdParam, ...tenantFilter },
           include: studentInclude,
         });
       }
@@ -117,10 +151,14 @@ export async function GET(req: NextRequest) {
       if (!student) {
         student = await prisma.student.findFirst({
           where: {
-            user: { firstName: { contains: "Alex" } },
+            user: {
+              firstName: { contains: "Alex" },
+              ...(session?.role !== "SUPER_ADMIN" ? { institutionId: session?.institutionId } : {}),
+            },
           },
           include: studentInclude,
         }) || await prisma.student.findFirst({
+          where: tenantFilter,
           include: studentInclude,
         });
       }

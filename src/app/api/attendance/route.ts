@@ -881,6 +881,25 @@ export async function POST(req: NextRequest) {
       }
     } else {
       // Leadership / HOD / Admin
+      if (callerRole === "HOD") {
+        const hodRecord = await prisma.faculty.findFirst({
+          where: {
+            OR: [
+              { userId: auth.payload.userId },
+              { user: { email: auth.payload.email } },
+            ],
+          },
+        });
+        if (hodRecord && hodRecord.departmentId !== course.departmentId) {
+          return NextResponse.json(
+            {
+              error:
+                "Forbidden: Head of Department can only manage attendance within their own academic department.",
+            },
+            { status: 403 }
+          );
+        }
+      }
       facultyId = course.faculty[0]?.facultyId || null;
       if (!facultyId) {
         const deptFaculty = await prisma.faculty.findFirst({

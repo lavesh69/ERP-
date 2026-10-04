@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db/prisma";
 import { getOptionalSession, requireFacultyOrAdminAuth } from "@/lib/auth/admin-guard";
 import { logger } from "@/lib/logging/logger";
+import { logAuditEvent } from "@/lib/audit/logger";
 
 export async function GET(req: NextRequest) {
   try {
@@ -100,26 +101,76 @@ export async function POST(req: NextRequest) {
 
     const course = await prisma.course.findFirst({
       where: { code: courseCode },
-      include: { faculty: true },
+      include: {
+        faculty: { include: { faculty: true } },
+        department: true,
+      },
     });
 
     if (!course) {
       return NextResponse.json({ error: "Course not found" }, { status: 404 });
     }
 
-    const facultyId = course.faculty[0]?.facultyId;
-    if (!facultyId) {
-      return NextResponse.json({ error: "No faculty assigned" }, { status: 400 });
+    const callerRole = auth.payload.role;
+    let assignedFacultyId: string | null = null;
+
+    if (["FACULTY", "PROFESSOR", "CLASS_TEACHER"].includes(callerRole)) {
+      const facultyProfile = await prisma.faculty.findFirst({
+        where: {
+          OR: [
+            { userId: auth.payload.userId },
+            { user: { email: auth.payload.email } },
+          ],
+        },
+      });
+
+      if (!facultyProfile) {
+        return NextResponse.json(
+          { error: "Faculty profile not found for authenticated instructor" },
+          { status: 403 }
+        );
+      }
+
+      const isAssigned = course.faculty.some((cf) => cf.facultyId === facultyProfile.id);
+      if (!isAssigned) {
+        return NextResponse.json(
+          {
+            error: `Forbidden: You are not assigned to instruct or create coursework for ${course.code}: ${course.title}.`,
+          },
+          { status: 403 }
+        );
+      }
+      assignedFacultyId = facultyProfile.id;
+    } else {
+      assignedFacultyId = course.faculty[0]?.facultyId || null;
+    }
+
+    if (!assignedFacultyId) {
+      return NextResponse.json({ error: "No faculty assigned to this course" }, { status: 400 });
     }
 
     const assignment = await prisma.assignment.create({
       data: {
         courseId: course.id,
-        facultyId,
+        facultyId: assignedFacultyId,
         title,
         description,
         maxPoints: Number(maxPoints) || 100,
         dueDate: dueDate ? new Date(dueDate) : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+      },
+    });
+
+    await logAuditEvent({
+      institutionId: auth.payload.institutionId || "inst-apex-01",
+      actorUserId: auth.payload.userId || "faculty",
+      action: "ASSIGNMENT_CREATED",
+      targetEntity: "Assignment",
+      targetId: assignment.id,
+      details: {
+        courseCode,
+        title,
+        maxPoints: Number(maxPoints) || 100,
+        creator: auth.payload.email,
       },
     });
 

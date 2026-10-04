@@ -4,6 +4,8 @@ export interface DocumentChunk {
   title: string;
   category: string;
   courseCode?: string;
+  institutionId?: string;
+  allowedRoles?: string[];
   content: string;
   chunkIndex: number;
   embedding?: number[];
@@ -19,6 +21,8 @@ export interface GroundedCitation {
 export interface VectorSearchOptions {
   topK?: number;
   courseFilter?: string;
+  institutionId?: string;
+  userRole?: string;
   minScore?: number;
 }
 
@@ -206,6 +210,8 @@ export function addDocumentToCorpus(doc: {
   content: string;
   courseCode?: string;
   documentId?: string;
+  institutionId?: string;
+  allowedRoles?: string[];
 }): DocumentChunk[] {
   const chunks = chunkText(doc.content);
   const docId = doc.documentId || `doc-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
@@ -218,6 +224,8 @@ export function addDocumentToCorpus(doc: {
       title: doc.title,
       category: doc.category,
       courseCode: doc.courseCode,
+      institutionId: doc.institutionId,
+      allowedRoles: doc.allowedRoles,
       content: chunkContent,
       chunkIndex: idx,
       embedding: generateTextEmbedding(`${doc.title} ${chunkContent}`),
@@ -231,13 +239,23 @@ export function addDocumentToCorpus(doc: {
 
 // Semantic Vector & Hybrid Search across academic knowledge base
 export function semanticVectorSearch(query: string, options: VectorSearchOptions = {}): GroundedCitation[] {
-  const { topK = 3, courseFilter, minScore = 0.15 } = options;
+  const { topK = 3, courseFilter, institutionId, userRole, minScore = 0.15 } = options;
   if (!query || query.trim().length === 0) return [];
 
   const queryEmbedding = generateTextEmbedding(query);
   const queryTokens = query.toLowerCase().split(/\W+/).filter((t) => t.length > 2);
 
   const scored = dynamicCorpus.map((doc) => {
+    // Multi-tenant isolation: exclude documents belonging to other institutions
+    if (institutionId && doc.institutionId && doc.institutionId !== institutionId) {
+      return { doc, score: 0 };
+    }
+
+    // Role-based document sensitivity isolation
+    if (userRole && doc.allowedRoles && doc.allowedRoles.length > 0 && !doc.allowedRoles.includes(userRole)) {
+      return { doc, score: 0 };
+    }
+
     if (courseFilter && doc.courseCode && doc.courseCode !== courseFilter) {
       return { doc, score: 0 };
     }
@@ -276,9 +294,15 @@ export function semanticVectorSearch(query: string, options: VectorSearchOptions
 }
 
 // Backwards-compatible retrieval function used across chat and assessment modules
-export function retrieveRelevantKnowledge(query: string, courseFilter?: string): GroundedCitation[] {
+export function retrieveRelevantKnowledge(
+  query: string,
+  courseFilter?: string,
+  options?: { institutionId?: string; userRole?: string }
+): GroundedCitation[] {
   return semanticVectorSearch(query, {
     courseFilter,
+    institutionId: options?.institutionId,
+    userRole: options?.userRole,
     topK: 3,
     minScore: 0.15,
   });

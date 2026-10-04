@@ -10,6 +10,14 @@ export async function POST(req: NextRequest) {
   const auth = await requireAdminAuth(req);
   if (auth instanceof NextResponse) return auth;
 
+  // Multi-Tenant Isolation Gate: Strictly restrict tenant switching to SUPER_ADMIN
+  if (auth.payload.role !== "SUPER_ADMIN") {
+    return NextResponse.json(
+      { error: "Forbidden: Only Super Administrators can switch institutional tenant contexts." },
+      { status: 403 }
+    );
+  }
+
   try {
     const body = await req.json();
     const { institutionId } = body;

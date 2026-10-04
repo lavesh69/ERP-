@@ -70,6 +70,18 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Privilege Escalation Guard: PRINCIPAL cannot escalate perspective to INSTITUTION_ADMIN
+    if (
+      targetRole === "INSTITUTION_ADMIN" &&
+      originalRole !== "SUPER_ADMIN" &&
+      originalRole !== "INSTITUTION_ADMIN"
+    ) {
+      return NextResponse.json(
+        { error: "Forbidden: Cannot escalate perspective to INSTITUTION_ADMIN." },
+        { status: 403 }
+      );
+    }
+
     // Mint new JWT with switched perspective role
     const updatedPayload = {
       ...payload,

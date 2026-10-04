@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db/prisma";
 import { processPaymentSchema } from "@/lib/validation/schemas";
 import { logger } from "@/lib/logging/logger";
 import { getOptionalSession } from "@/lib/auth/admin-guard";
+import { logAuditEvent } from "@/lib/audit/logger";
 
 export async function GET(req: NextRequest) {
   try {
@@ -297,6 +298,18 @@ export async function POST(req: NextRequest) {
       });
     }
 
+    // Direct payment settlement requires authorized Bursar / Finance staff
+    const financeStaffRoles = ["SUPER_ADMIN", "INSTITUTION_ADMIN", "ACCOUNTANT"];
+    if (!session || !financeStaffRoles.includes(session.role)) {
+      return NextResponse.json(
+        {
+          error:
+            "Forbidden: Direct fee settlement is restricted to Bursars and Accountants. Students and parents must complete transactions via the payment gateway or bank challan.",
+        },
+        { status: 403 }
+      );
+    }
+
     // C2: Zod validation
     const parsed = processPaymentSchema.safeParse(body);
     if (!parsed.success) {
@@ -310,26 +323,35 @@ export async function POST(req: NextRequest) {
 
     const fee = await prisma.studentFee.findUnique({
       where: { id: studentFeeId },
+      include: { student: { include: { user: true } } },
     });
 
     if (!fee) {
       return NextResponse.json({ error: "Student fee record not found" }, { status: 404 });
     }
 
+    // Tenant boundary enforcement
+    if (session.role !== "SUPER_ADMIN" && fee.student.user.institutionId !== session.institutionId) {
+      return NextResponse.json(
+        { error: "Forbidden: You cannot modify fee ledgers for another institution." },
+        { status: 403 }
+      );
+    }
+
     const payAmount = Number(amount);
     const newPaidAmount = fee.paidAmount + payAmount;
     const newStatus = newPaidAmount >= fee.totalAmount ? "PAID" : "PARTIAL";
 
-    const referenceNumber = `TXN-DEV-${Date.now()}-${Math.floor(100 + Math.random() * 900)}`;
+    const referenceNumber = `TXN-REC-${Date.now()}-${Math.floor(100 + Math.random() * 900)}`;
 
     const transaction = await prisma.paymentTransaction.create({
       data: {
         studentFeeId,
         amount: payAmount,
-        paymentMethod: paymentMethod || "DEVELOPMENT_SIMULATION",
+        paymentMethod: paymentMethod || "DIRECT_DEPOSIT",
         referenceNumber,
         status: "SUCCESS",
-        gatewayResponse: "PROCESSED_IN_DEV_SANDBOX",
+        gatewayResponse: "RECORDED_BY_BURSAR",
       },
     });
 
@@ -342,6 +364,21 @@ export async function POST(req: NextRequest) {
     });
 
     // C4: Audit log
+    await logAuditEvent({
+      institutionId: fee.student.user.institutionId,
+      actorUserId: session.userId || "bursar",
+      action: "FEE_PAYMENT_RECORDED",
+      targetEntity: "StudentFee",
+      targetId: studentFeeId,
+      details: {
+        amount: payAmount,
+        referenceNumber,
+        newStatus,
+        paymentMethod: paymentMethod || "DIRECT_DEPOSIT",
+        bursar: session.email,
+      },
+    });
+
     logger.info("Payment recorded", { studentFeeId, amount: payAmount, referenceNumber, newStatus });
 
     return NextResponse.json({

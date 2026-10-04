@@ -24,6 +24,7 @@ export async function POST(req: NextRequest) {
       agentId,
       userId,
       userRole,
+      institutionId: session?.institutionId,
       prompt: prompt.trim(),
     });
 

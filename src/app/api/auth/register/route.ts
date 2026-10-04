@@ -79,7 +79,8 @@ export async function POST(req: NextRequest) {
         },
       });
 
-      // Link to student ward if roll number specified (pending verification; not set as primary guardian)
+      // Security & FERPA: Ward linkage requires formal verification.
+      // Submit a verification request to the registrar instead of immediate unverified linkage.
       if (wardRollNumber && parentUser.parentProfile) {
         const ward = await prisma.student.findFirst({
           where: {
@@ -90,11 +91,13 @@ export async function POST(req: NextRequest) {
           },
         });
         if (ward) {
-          await prisma.studentParentRelation.create({
+          await prisma.studentRequest.create({
             data: {
               studentId: ward.id,
-              parentId: parentUser.parentProfile.id,
-              isPrimary: false,
+              type: "GUARDIAN_LINK_REQUEST",
+              title: "Parent / Guardian Association Request",
+              reason: `Parent ${parentUser.email} (${firstName} ${lastName}) registered and requested guardian link. Verification pending.`,
+              status: "UNDER_REVIEW",
             },
           }).catch(() => {});
         }

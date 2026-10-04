@@ -8,6 +8,7 @@ import {
 } from "@/lib/grading/gpa-engine";
 import { getOptionalSession, requireRoleAuth } from "@/lib/auth/admin-guard";
 import { logger } from "@/lib/logging/logger";
+import { logAuditEvent } from "@/lib/audit/logger";
 
 import { UserRole } from "@/types/auth";
 
@@ -18,7 +19,6 @@ const EXAM_EDIT_ROLES: UserRole[] = [
   "FACULTY",
   "HOD",
   "PRINCIPAL",
-  "CLASS_TEACHER",
 ];
 
 const COE_ROLES: UserRole[] = [
@@ -444,9 +444,56 @@ export async function PUT(req: NextRequest) {
       return NextResponse.json({ error: "examId is required" }, { status: 400 });
     }
 
-    const exam = await prisma.exam.findUnique({ where: { id: examId } });
+    const exam = await prisma.exam.findUnique({
+      where: { id: examId },
+      include: {
+        course: {
+          include: {
+            faculty: { include: { faculty: { include: { user: true } } } },
+            department: true,
+          },
+        },
+      },
+    });
+
     if (!exam) {
       return NextResponse.json({ error: "Exam not found" }, { status: 404 });
+    }
+
+    // Role Scoping & Course Assignment Verification
+    const callerRole = auth.payload.role;
+    if (callerRole === "FACULTY") {
+      const isCourseInstructor = exam.course.faculty.some(
+        (cf) =>
+          cf.faculty.userId === auth.payload.userId ||
+          cf.faculty.user?.email === auth.payload.email
+      );
+      if (!isCourseInstructor) {
+        return NextResponse.json(
+          {
+            error: `Forbidden: You are not assigned to instruct or grade ${exam.course.code}: ${exam.course.title}.`,
+          },
+          { status: 403 }
+        );
+      }
+    } else if (callerRole === "HOD") {
+      const hodRecord = await prisma.faculty.findFirst({
+        where: {
+          OR: [
+            { userId: auth.payload.userId },
+            { user: { email: auth.payload.email } },
+          ],
+        },
+      });
+      if (hodRecord && hodRecord.departmentId !== exam.course.departmentId) {
+        return NextResponse.json(
+          {
+            error:
+              "Forbidden: Head of Department can only grade courses within their own academic department.",
+          },
+          { status: 403 }
+        );
+      }
     }
 
     // 1. Batch Marks Submission (Roster Grading)
@@ -501,6 +548,20 @@ export async function PUT(req: NextRequest) {
         });
       }
 
+      await logAuditEvent({
+        institutionId: auth.payload.institutionId || "inst-apex-01",
+        actorUserId: auth.payload.userId || auth.payload.sub,
+        action: publish ? "EXAM_RESULTS_PUBLISHED" : "GRADE_MODIFIED",
+        targetEntity: "Exam",
+        targetId: examId,
+        details: {
+          examId,
+          studentCount: updatedResults.length,
+          grader: auth.payload.email,
+          published: publish === true,
+        },
+      });
+
       return NextResponse.json({
         success: true,
         message: publish
@@ -551,6 +612,22 @@ export async function PUT(req: NextRequest) {
         gradeLetter: ugcGrade.letter,
         isVerified: publish === true,
         publishedAt: publish === true ? new Date() : null,
+      },
+    });
+
+    await logAuditEvent({
+      institutionId: auth.payload.institutionId || "inst-apex-01",
+      actorUserId: auth.payload.userId || auth.payload.sub,
+      action: publish ? "EXAM_RESULTS_PUBLISHED" : "GRADE_MODIFIED",
+      targetEntity: "ExamResult",
+      targetId: result.id,
+      details: {
+        examId,
+        studentId,
+        marksObtained: Number(marksObtained),
+        gradeLetter: ugcGrade.letter,
+        grader: auth.payload.email,
+        published: publish === true,
       },
     });
 

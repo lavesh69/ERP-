@@ -294,6 +294,39 @@ export async function POST(req: NextRequest) {
 
     const cleanCode = code.trim().toUpperCase();
 
+    // Multi-tenant & Department Scoping Verification
+    if (auth.payload.role !== "SUPER_ADMIN") {
+      const dept = await prisma.department.findUnique({
+        where: { id: departmentId },
+      });
+      if (!dept || dept.institutionId !== auth.payload.institutionId) {
+        return NextResponse.json(
+          { error: "Forbidden: Department does not belong to your authorized institution." },
+          { status: 403 }
+        );
+      }
+    }
+
+    if (auth.payload.role === "HOD") {
+      const hodRecord = await prisma.faculty.findFirst({
+        where: {
+          OR: [
+            { userId: auth.payload.userId },
+            { user: { email: auth.payload.email } },
+          ],
+        },
+      });
+      if (hodRecord && hodRecord.departmentId !== departmentId) {
+        return NextResponse.json(
+          {
+            error:
+              "Forbidden: Head of Department can only create or manage courses in their own academic department.",
+          },
+          { status: 403 }
+        );
+      }
+    }
+
     // Check duplicate within department
     const existing = await prisma.course.findFirst({
       where: { departmentId, code: cleanCode },

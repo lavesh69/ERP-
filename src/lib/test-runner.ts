@@ -116,6 +116,10 @@ import { GET as handleAdminSettingsGet, POST as handleAdminSettingsPost } from "
 import { GET as handleEmailsGet } from "@/app/api/emails/route";
 import { GET as handleDocumentDownloadGet } from "@/app/api/documents/download/route";
 import { POST as handleResetPasswordPost } from "@/app/api/auth/reset-password/route";
+import { POST as handleSwitchTenant } from "@/app/api/admin/switch-tenant/route";
+import { POST as handleFinancePost } from "@/app/api/finance/route";
+import { POST as handleAttendanceExceptionsPost } from "@/app/api/attendance/exceptions/route";
+import { POST as handleRegisterPost } from "@/app/api/auth/register/route";
 
 async function runTestSuite() {
   console.log("=================================================");
@@ -4464,6 +4468,110 @@ By breaking down large monolithic systems into decoupled microservices, systems 
     });
     assert(prodSigValid === false, "verifyPaymentSignature strictly disallows sandbox token verification in production mode");
     (process.env as any).NODE_ENV = prevNodeEnv;
+
+    // =========================================================================
+    // Group 50: Enterprise Multi-Tenant & RBAC Hardening Verification
+    // =========================================================================
+    console.log("\n📦 Running Group 50: Enterprise Multi-Tenant & RBAC Hardening Verification");
+
+    // 1. Multi-Tenant Escape Prevention: INSTITUTION_ADMIN cannot switch tenant context
+    const instAdminToken = await signJwt({
+      userId: "usr-inst-admin",
+      email: "admin@college-a.edu",
+      role: "INSTITUTION_ADMIN",
+      institutionId: "inst_college_a",
+    });
+
+    const tenantEscapeReq = new NextRequest("http://localhost:3000/api/admin/switch-tenant", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: `classroom_session=${instAdminToken}`,
+      },
+      body: JSON.stringify({ institutionId: "inst_apex_01" }),
+    });
+    const tenantEscapeRes = await handleSwitchTenant(tenantEscapeReq);
+    assert(tenantEscapeRes.status === 403, "POST /api/admin/switch-tenant strictly blocks INSTITUTION_ADMIN with 403 Forbidden");
+
+    // 2. Financial Integrity: Student/Parent cannot directly record payments marking status PAID
+    const studentToken = await signJwt({
+      userId: "usr-student-attacker",
+      email: "student@apex.edu",
+      role: "STUDENT",
+      institutionId: "inst_apex_01",
+    });
+    const feeToTest = await prisma.studentFee.findFirst();
+    const financeSpoofReq = new NextRequest("http://localhost:3000/api/finance", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: `classroom_session=${studentToken}`,
+      },
+      body: JSON.stringify({
+        studentFeeId: feeToTest ? feeToTest.id : "fee-mock-sec-01",
+        amount: 2500,
+        paymentMethod: "CASH_SIMULATION",
+      }),
+    });
+    const financeSpoofRes = await handleFinancePost(financeSpoofReq);
+    assert(financeSpoofRes.status === 403, "POST /api/finance strictly forbids non-finance roles from manual fee settlement with 403 Forbidden");
+
+    // 3. Document Download Authorization: Student cannot download unauthorized private key via session fallback
+    const docBOLAreq = new NextRequest("http://localhost:3000/api/documents/download?key=confidential_payroll_q4.csv", {
+      method: "GET",
+      headers: {
+        Cookie: `classroom_session=${studentToken}`,
+      },
+    });
+    const docBOLAres = await handleDocumentDownloadGet(docBOLAreq);
+    assert(docBOLAres.status === 403, "GET /api/documents/download strictly denies session fallback for unowned files with 403 Forbidden");
+
+    // 4. Role Escalation Prevention: PRINCIPAL cannot switch to INSTITUTION_ADMIN
+    const principalToken = await signJwt({
+      userId: "usr-principal-01",
+      email: "principal@apex.edu",
+      role: "PRINCIPAL",
+      institutionId: "inst_apex_01",
+    });
+    const principalEscalateReq = new NextRequest("http://localhost:3000/api/auth/switch-role", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: `classroom_session=${principalToken}`,
+      },
+      body: JSON.stringify({ role: "INSTITUTION_ADMIN" }),
+    });
+    const principalEscalateRes = await handleSwitchRole(principalEscalateReq);
+    assert(principalEscalateRes.status === 403, "POST /api/auth/switch-role strictly prevents PRINCIPAL from escalating to INSTITUTION_ADMIN with 403 Forbidden");
+
+    // 5. Attendance Exceptions Authentication Gate: Anonymous cannot submit exception
+    const anonExceptionReq = new NextRequest("http://localhost:3000/api/attendance/exceptions", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        category: "QR_FAILED",
+        reason: "Fake unauthenticated punch",
+      }),
+    });
+    const anonExceptionRes = await handleAttendanceExceptionsPost(anonExceptionReq);
+    assert(anonExceptionRes.status === 401, "POST /api/attendance/exceptions strictly rejects unauthenticated callers with 401 Unauthorized");
+
+    // 6. Parent FERPA Isolation: Unlinked parent portal does NOT leak arbitrary student dossiers
+    const unlinkedParentToken = await signJwt({
+      userId: "usr-parent-unlinked-01",
+      email: "unlinked.parent@example.com",
+      role: "PARENT",
+      institutionId: "inst_apex_01",
+    });
+    const unlinkedParentReq = new NextRequest("http://localhost:3000/api/parent", {
+      method: "GET",
+      headers: {
+        Cookie: `classroom_session=${unlinkedParentToken}`,
+      },
+    });
+    const unlinkedParentRes = await handleParentGet(unlinkedParentReq);
+    const unlinkedParentData = await unlinkedParentRes.json();
+    assert(unlinkedParentData.student === null, "GET /api/parent safely returns null student for unlinked parents without FERPA record leakage");
   }
 
   console.log("\n=================================================");

@@ -93,6 +93,23 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Security Gate: Ensure scholar is actively enrolled in the course for this assignment
+    if (session?.role === "STUDENT") {
+      const enrollment = await prisma.enrollment.findFirst({
+        where: {
+          studentId: student.id,
+          courseId: assignment.courseId,
+        },
+      });
+
+      if (!enrollment) {
+        return NextResponse.json(
+          { error: "Access Denied: You are not enrolled in the course for this assignment." },
+          { status: 403 }
+        );
+      }
+    }
+
     const isLate = new Date() > new Date(assignment.dueDate);
 
     const submission = await prisma.submission.upsert({

@@ -5,6 +5,8 @@ import crypto from "crypto";
 import { getOptionalSession } from "@/lib/auth/admin-guard";
 import { logger } from "@/lib/logging/logger";
 
+import { prisma } from "@/lib/db/prisma";
+
 function sanitizeFilename(filename: string): string {
   const base = path.basename(filename);
   return base.replace(/[^a-zA-Z0-9._-]/g, "_");
@@ -43,12 +45,47 @@ export async function GET(req: NextRequest) {
       }
     }
 
-    // 2. Session-based fallback verification
+    // 2. Session-based fallback verification (Strict Ownership & Multi-Tenant Scoping)
     if (!isAuthorized) {
       const session = await getOptionalSession(req);
       if (session) {
-        // Authenticated users with valid session can download
-        isAuthorized = true;
+        const doc = await prisma.academicDocument.findFirst({
+          where: {
+            OR: [
+              { fileUrl: { contains: cleanKey } },
+              { id: cleanKey },
+            ],
+          },
+          include: { user: true },
+        });
+
+        if (doc) {
+          const isPublic = [
+            "SYLLABUS",
+            "INSTITUTIONAL",
+            "HANDBOOK",
+            "POLICY",
+            "CALENDAR",
+            "TEMPLATE",
+          ].includes(doc.category);
+          const isSameTenant =
+            session.role === "SUPER_ADMIN" ||
+            doc.user.institutionId === session.institutionId;
+          const isOwner =
+            doc.userId === session.userId || doc.user.email === session.email;
+          const isStaff = [
+            "SUPER_ADMIN",
+            "INSTITUTION_ADMIN",
+            "PRINCIPAL",
+            "HOD",
+            "FACULTY",
+            "HR_STAFF",
+          ].includes(session.role);
+
+          if (isSameTenant && (isPublic || isOwner || isStaff)) {
+            isAuthorized = true;
+          }
+        }
       }
     }
 

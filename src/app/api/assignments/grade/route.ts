@@ -31,7 +31,16 @@ export async function POST(req: NextRequest) {
     const existing = await prisma.submission.findUnique({
       where: { id: submissionId },
       include: {
-        assignment: true,
+        assignment: {
+          include: {
+            course: {
+              include: {
+                faculty: true,
+                department: true,
+              },
+            },
+          },
+        },
         student: { include: { user: true } },
       },
     });
@@ -41,6 +50,56 @@ export async function POST(req: NextRequest) {
         { error: "Submission record not found" },
         { status: 404 }
       );
+    }
+
+    const callerRole = auth.payload.role;
+    if (callerRole === "FACULTY" || callerRole === "CLASS_TEACHER") {
+      const facultyRecord = await prisma.faculty.findFirst({
+        where: {
+          OR: [
+            { userId: auth.payload.userId },
+            { user: { email: auth.payload.email } },
+          ],
+        },
+      });
+
+      if (!facultyRecord) {
+        return NextResponse.json(
+          { error: "Faculty profile not found for authenticated instructor" },
+          { status: 403 }
+        );
+      }
+
+      const isInstructor =
+        existing.assignment.facultyId === facultyRecord.id ||
+        existing.assignment.course.faculty.some((cf) => cf.facultyId === facultyRecord.id);
+
+      if (!isInstructor) {
+        return NextResponse.json(
+          {
+            error: `Forbidden: You are not assigned to instruct or grade coursework for ${existing.assignment.course.code}.`,
+          },
+          { status: 403 }
+        );
+      }
+    } else if (callerRole === "HOD") {
+      const hodRecord = await prisma.faculty.findFirst({
+        where: {
+          OR: [
+            { userId: auth.payload.userId },
+            { user: { email: auth.payload.email } },
+          ],
+        },
+      });
+      if (hodRecord && hodRecord.departmentId !== existing.assignment.course.departmentId) {
+        return NextResponse.json(
+          {
+            error:
+              "Forbidden: Head of Department can only grade assignments within their own department.",
+          },
+          { status: 403 }
+        );
+      }
     }
 
     // Check if existing grade is locked

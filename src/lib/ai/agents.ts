@@ -129,6 +129,7 @@ export interface AgentExecutionRequest {
   userId: string;
   userRole: string;
   prompt: string;
+  institutionId?: string;
   contextData?: Record<string, any>;
   actionRequested?: string;
 }
@@ -292,8 +293,11 @@ export async function executeAutonomousAgent(
     };
   }
 
-  // 4. Retrieve RAG Grounding Citations
-  const citations = retrieveRelevantKnowledge(request.prompt);
+  // 4. Retrieve RAG Grounding Citations (Multi-Tenant & Role Filtered)
+  const citations = retrieveRelevantKnowledge(request.prompt, undefined, {
+    institutionId: request.institutionId,
+    userRole: request.userRole,
+  });
 
   // 5. Query live database context
   let dbContext = "";

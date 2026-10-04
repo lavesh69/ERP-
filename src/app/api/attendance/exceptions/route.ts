@@ -38,11 +38,17 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const session = await getOptionalSession(req);
+    if (!session) {
+      return NextResponse.json(
+        { error: "Authentication required to log attendance exceptions." },
+        { status: 401 }
+      );
+    }
 
     const recorded = recordAttendanceException({
-      institutionId: body.institutionId || session?.institutionId || "inst-apex-01",
-      actor: session?.email || body.actor || "anonymous",
-      actorRole: session?.role || body.actorRole || "GUEST",
+      institutionId: session.institutionId || "inst-apex-01",
+      actor: session.email,
+      actorRole: session.role,
       category: body.category || "QR_FAILED",
       severity: body.severity || "P2_MEDIUM",
       sessionId: body.sessionId,
