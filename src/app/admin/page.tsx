@@ -73,6 +73,7 @@ export default function SuperAdminPage() {
     aiQuestionGeneration: true,
     rfidAttendanceSync: true,
     strictGradeVerification: true,
+    emergencyMaintenanceMode: false,
   });
 
   // Tenants State
@@ -968,6 +969,34 @@ export default function SuperAdminPage() {
                 >
                   {flags.strictGradeVerification ? (
                     <ToggleRight className="h-7 w-7" />
+                  ) : (
+                    <ToggleLeft className="h-7 w-7 text-charcoal-400" />
+                  )}
+                </button>
+              </div>
+
+              <div className="flex items-center justify-between pt-3">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h4 className="text-xs font-bold text-charcoal-900 dark:text-ivory-100">
+                      Emergency Campus Maintenance Mode (Read-Only Lock)
+                    </h4>
+                    {flags.emergencyMaintenanceMode && (
+                      <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-500 text-white animate-pulse">
+                        LOCKDOWN ACTIVE
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-[11px] text-charcoal-600 dark:text-charcoal-400">
+                    Immediately freeze student/faculty mutations and put campus database in protected read-only inspection mode
+                  </p>
+                </div>
+                <button
+                  onClick={() => handleToggleFlag("emergencyMaintenanceMode")}
+                  className={flags.emergencyMaintenanceMode ? "text-amber-500" : "text-rose-primary dark:text-rose-accent"}
+                >
+                  {flags.emergencyMaintenanceMode ? (
+                    <ToggleRight className="h-7 w-7 text-amber-500" />
                   ) : (
                     <ToggleLeft className="h-7 w-7 text-charcoal-400" />
                   )}

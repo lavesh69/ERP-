@@ -319,13 +319,16 @@ export function SideNavBar() {
                   {section.title}
                 </span>
                 {visibleItems.map((item) => {
-                  const Icon = item.icon;
-                  const isActive = pathname === item.href;
+                  const itemHref =
+                    item.href === "/students" && currentRole === "STUDENT"
+                      ? "/students/profile"
+                      : item.href;
+                  const isActive = pathname === itemHref || pathname === item.href;
 
                   return (
                     <Link
                       key={item.href}
-                      href={item.href}
+                      href={itemHref}
                       onClick={() => setIsMobileMenuOpen(false)}
                       className={`flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold min-h-[44px] transition-all duration-150 ${
                         isActive

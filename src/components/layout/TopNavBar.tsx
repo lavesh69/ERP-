@@ -114,7 +114,7 @@ export function TopNavBar() {
         <div className="hidden lg:flex items-center gap-2 border-r border-border dark:border-charcoal-800 pr-3">
           <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-surface-soft dark:bg-charcoal-900 border border-border dark:border-charcoal-700 text-[11px] font-semibold text-charcoal-800 dark:text-ivory-200">
             <Building className="h-3.5 w-3.5 text-rose-accent" />
-            <span>Main Campus</span>
+            <span className="truncate max-w-[150px]">{currentUser.institutionName || "Main Campus"}</span>
           </div>
           <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-surface-soft dark:bg-charcoal-900 border border-border dark:border-charcoal-700 text-[11px] font-semibold text-charcoal-800 dark:text-ivory-200">
             <Calendar className="h-3.5 w-3.5 text-rose-primary dark:text-rose-accent" />

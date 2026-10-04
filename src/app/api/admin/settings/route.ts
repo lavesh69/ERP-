@@ -8,6 +8,7 @@ const DEFAULT_SETTINGS = {
   aiQuestionGeneration: true,
   rfidAttendanceSync: true,
   strictGradeVerification: true,
+  emergencyMaintenanceMode: false,
 };
 
 function readSettings() {

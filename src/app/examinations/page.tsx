@@ -52,6 +52,7 @@ export default function ExaminationsPage() {
     "FACULTY",
     "HOD",
     "PRINCIPAL",
+    "CLASS_TEACHER",
   ].includes(currentRole);
 
   // 1. Modals & Forms State

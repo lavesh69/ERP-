@@ -58,7 +58,7 @@ interface PaymentTxn {
 }
 
 export default function FinancePage() {
-  const { showToast, refreshTrigger, triggerRefresh } = useApp();
+  const { showToast, refreshTrigger, triggerRefresh, currentRole } = useApp();
 
   const [loading, setLoading] = useState(true);
   const [summary, setSummary] = useState<FinanceSummary>({
@@ -341,6 +341,38 @@ export default function FinancePage() {
     showToast(`Printable Official Receipt for ${studentName} generated!`, "success");
   };
 
+  const handleExportDefaultersCsv = () => {
+    const defaulters = studentFees.filter((f) => f.pendingAmount > 0);
+    if (defaulters.length === 0) {
+      showToast("No fee defaulters currently registered in system", "info");
+      return;
+    }
+
+    const headers = ["Student Name", "Roll Number", "Fee Title", "Total Amount ($)", "Paid Amount ($)", "Pending Balance ($)", "Status", "Due Date"];
+    const rows = defaulters.map((f) => [
+      `"${f.studentName}"`,
+      `"${f.rollNo}"`,
+      `"${f.title}"`,
+      f.totalAmount,
+      f.paidAmount,
+      f.pendingAmount,
+      `"${f.status}"`,
+      `"${f.dueDate}"`,
+    ]);
+
+    const csvContent = [headers.join(","), ...rows.map((r) => r.join(","))].join("\n");
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", `Fee_Defaulters_Report_${new Date().toISOString().split("T")[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    showToast(`Exported ${defaulters.length} fee defaulter records to CSV!`, "success");
+  };
+
   const filteredFees = studentFees;
 
   return (
@@ -369,6 +401,16 @@ export default function FinancePage() {
           </div>
 
           <div className="flex items-center gap-2">
+            {["SUPER_ADMIN", "INSTITUTION_ADMIN", "PRINCIPAL", "ACCOUNTANT"].includes(currentRole) && (
+              <button
+                onClick={handleExportDefaultersCsv}
+                className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-ivory-100 dark:bg-charcoal-800 hover:bg-rose-container text-charcoal-800 dark:text-ivory-100 text-xs font-bold border border-border dark:border-charcoal-700 transition-all cursor-pointer"
+                title="Export list of students with outstanding dues to CSV"
+              >
+                <Download className="h-4 w-4 text-rose-primary" />
+                <span>Export Defaulters</span>
+              </button>
+            )}
             <button
               onClick={() => setIsPayModalOpen(true)}
               className="flex items-center gap-2 px-4 py-2 rounded-xl bg-rose-primary hover:bg-rose-dark text-white text-xs font-bold shadow-sm transition-all"
