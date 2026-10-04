@@ -34,6 +34,7 @@ import {
   Radio,
   FileCode2,
   X,
+  UserCheck,
 } from "lucide-react";
 
 interface NavSection {
@@ -52,6 +53,7 @@ const NAV_SECTIONS: NavSection[] = [
     title: "OVERVIEW",
     items: [
       { name: "Executive Dashboard", href: "/", icon: LayoutDashboard },
+      { name: "My Profile", href: "/profile", icon: UserCheck },
     ],
   },
   {
@@ -375,23 +377,33 @@ export function SideNavBar() {
           <span>Ask CLASSROOM AI</span>
         </button>
 
-        <div className="flex items-center gap-2.5 px-2 py-1 rounded-lg">
-          <div className="h-8 w-8 rounded-full bg-rose-container dark:bg-charcoal-800 border border-border dark:border-charcoal-700 flex items-center justify-center text-xs font-bold text-rose-primary dark:text-rose-accent shrink-0">
+        <Link
+          href="/profile"
+          onClick={() => setIsMobileMenuOpen(false)}
+          className="flex items-center gap-2.5 px-2 py-1.5 rounded-xl hover:bg-ivory-100 dark:hover:bg-charcoal-900 border border-transparent hover:border-border dark:hover:border-charcoal-700 transition-all cursor-pointer group"
+          title="Click to view & edit My Profile"
+        >
+          <div className="h-8 w-8 rounded-full bg-rose-container dark:bg-charcoal-800 border border-border dark:border-charcoal-700 flex items-center justify-center text-xs font-bold text-rose-primary dark:text-rose-accent shrink-0 group-hover:scale-105 transition-transform">
             {(currentUser.fullName || currentUser.firstName || "Admin")
               .split(" ")
               .map((n) => n[0])
               .join("")
               .substring(0, 2)}
           </div>
-          <div className="flex flex-col min-w-0">
-            <span className="text-xs font-bold text-charcoal-900 dark:text-ivory-100 truncate">
-              {currentUser.fullName || `${currentUser.firstName} ${currentUser.lastName}`}
-            </span>
-            <span className="text-[10px] font-medium text-charcoal-600 dark:text-charcoal-400 truncate">
+          <div className="flex flex-col min-w-0 flex-1">
+            <div className="flex items-center justify-between gap-1">
+              <span className="text-xs font-bold text-charcoal-900 dark:text-ivory-100 truncate group-hover:text-rose-primary transition-colors">
+                {currentUser.fullName || `${currentUser.firstName} ${currentUser.lastName}`}
+              </span>
+              <span className="text-[9px] font-bold px-1.5 py-0.2 rounded bg-rose-container/50 text-rose-primary dark:text-rose-accent shrink-0">
+                {currentRole}
+              </span>
+            </div>
+            <span className="text-[10px] font-medium text-charcoal-500 dark:text-charcoal-400 truncate">
               {currentUser.email}
             </span>
           </div>
-        </div>
+        </Link>
       </div>
     </aside>
     </>

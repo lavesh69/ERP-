@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Link from "next/link";
 import { useApp } from "@/context/AppContext";
 import {
   Search,
@@ -16,6 +17,7 @@ import {
   FileText,
   LogOut,
   Menu,
+  User,
 } from "lucide-react";
 
 export function TopNavBar() {
@@ -35,6 +37,7 @@ export function TopNavBar() {
   } = useApp();
 
   const [showNotifications, setShowNotifications] = useState(false);
+  const [showUserMenu, setShowUserMenu] = useState(false);
   const [notificationsList, setNotificationsList] = useState<any[]>([]);
   const [isMac, setIsMac] = useState(false);
 
@@ -209,22 +212,75 @@ export function TopNavBar() {
           )}
         </div>
 
-        {/* User Avatar & Logout */}
-        <div className="flex items-center gap-2 pl-1">
-          <div
+        {/* User Avatar & Profile Dropdown */}
+        <div className="relative flex items-center gap-2 pl-1">
+          <button
+            onClick={() => setShowUserMenu(!showUserMenu)}
             title={`Signed in as ${currentUser.fullName || currentUser.firstName} (${currentRole})`}
-            className="h-9 w-9 rounded-xl bg-gradient-to-tr from-rose-primary to-rose-accent text-white flex items-center justify-center font-bold text-xs shadow-sm cursor-pointer"
+            className="h-9 w-9 rounded-xl bg-gradient-to-tr from-rose-primary to-rose-accent text-white flex items-center justify-center font-bold text-xs shadow-sm cursor-pointer hover:opacity-90 active:scale-95 transition-all"
           >
             {(currentUser.fullName || currentUser.firstName || "Admin")
               .split(" ")
               .map((n) => n[0])
               .join("")
               .substring(0, 2)}
-          </div>
+          </button>
+
+          {showUserMenu && (
+            <div className="absolute right-0 top-12 w-64 bg-white dark:bg-[#231E21] rounded-2xl shadow-elevated border border-border dark:border-charcoal-800 p-3 z-50 animate-in fade-in slide-in-from-top-2 space-y-2">
+              <div className="pb-2 border-b border-border dark:border-charcoal-800">
+                <p className="text-xs font-bold text-charcoal-900 dark:text-ivory-100 truncate">
+                  {currentUser.fullName || `${currentUser.firstName} ${currentUser.lastName}`}
+                </p>
+                <p className="text-[11px] text-charcoal-500 font-mono truncate">
+                  {currentUser.email}
+                </p>
+                <div className="mt-1">
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-container text-rose-primary dark:text-rose-accent">
+                    {currentRole}
+                  </span>
+                </div>
+              </div>
+
+              <div className="space-y-1">
+                <Link
+                  href="/profile"
+                  onClick={() => setShowUserMenu(false)}
+                  className="flex items-center gap-2 px-2.5 py-2 rounded-xl text-xs font-semibold text-charcoal-700 dark:text-charcoal-200 hover:bg-ivory-100 dark:hover:bg-charcoal-800 transition-colors cursor-pointer"
+                >
+                  <User className="h-4 w-4 text-rose-primary" />
+                  <span>My Profile & Identity Hub</span>
+                </Link>
+
+                <Link
+                  href="/dashboard"
+                  onClick={() => setShowUserMenu(false)}
+                  className="flex items-center gap-2 px-2.5 py-2 rounded-xl text-xs font-semibold text-charcoal-700 dark:text-charcoal-200 hover:bg-ivory-100 dark:hover:bg-charcoal-800 transition-colors cursor-pointer"
+                >
+                  <Building className="h-4 w-4 text-rose-primary" />
+                  <span>Institutional Dashboard</span>
+                </Link>
+              </div>
+
+              <div className="pt-2 border-t border-border dark:border-charcoal-800">
+                <button
+                  onClick={() => {
+                    setShowUserMenu(false);
+                    logout();
+                  }}
+                  className="w-full flex items-center gap-2 px-2.5 py-2 rounded-xl text-xs font-semibold text-academic-danger hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors cursor-pointer"
+                >
+                  <LogOut className="h-4 w-4 text-academic-danger" />
+                  <span>Sign Out</span>
+                </button>
+              </div>
+            </div>
+          )}
+
           <button
             onClick={() => logout()}
             title="Sign Out"
-            className="min-h-[40px] min-w-[40px] flex items-center justify-center p-2 rounded-xl text-charcoal-600 dark:text-charcoal-400 hover:text-academic-danger hover:bg-rose-50 dark:hover:bg-charcoal-800 transition-colors"
+            className="min-h-[40px] min-w-[40px] flex items-center justify-center p-2 rounded-xl text-charcoal-600 dark:text-charcoal-400 hover:text-academic-danger hover:bg-rose-50 dark:hover:bg-charcoal-800 transition-colors cursor-pointer"
           >
             <LogOut className="h-4 w-4" />
           </button>
