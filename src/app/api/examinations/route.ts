@@ -18,6 +18,7 @@ const EXAM_EDIT_ROLES: UserRole[] = [
   "FACULTY",
   "HOD",
   "PRINCIPAL",
+  "CLASS_TEACHER",
 ];
 
 const COE_ROLES: UserRole[] = [

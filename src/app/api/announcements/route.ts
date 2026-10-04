@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db/prisma";
-import { requireFacultyOrAdminAuth, getOptionalSession } from "@/lib/auth/admin-guard";
+import { requireStaffAuth, requireFacultyOrAdminAuth, getOptionalSession } from "@/lib/auth/admin-guard";
 import { logger } from "@/lib/logging/logger";
 
 export async function GET(req: NextRequest) {
@@ -31,8 +31,8 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  // Faculty, Leadership, or Admin only
-  const auth = await requireFacultyOrAdminAuth(req);
+  // Authorized Staff, Faculty, Leadership, or Admin
+  const auth = await requireStaffAuth(req);
   if (auth instanceof NextResponse) return auth;
 
   try {

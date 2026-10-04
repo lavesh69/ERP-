@@ -94,6 +94,12 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const session = await getOptionalSession(req);
+    if (session && session.role === "GUEST") {
+      return NextResponse.json(
+        { error: "Forbidden: Guest accounts have read-only audit inspection privileges." },
+        { status: 403 }
+      );
+    }
     // Allow admin or fallback for dev
     const body = await req.json();
     const { code, name, description, campusId } = body;

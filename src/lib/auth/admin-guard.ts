@@ -178,4 +178,13 @@ export async function requireFacultyOrAdminAuth(
   return requireRoleAuth(req, FACULTY_LEADERSHIP_ROLES);
 }
 
+/**
+ * Restricts access to all staff roles (Admin, Leadership, Faculty, Accountant, Librarian, CoE, TPO, HR, Research).
+ */
+export async function requireStaffAuth(
+  req: NextRequest
+): Promise<{ payload: Record<string, any> } | NextResponse> {
+  return requireRoleAuth(req, STAFF_ROLES);
+}
+
 

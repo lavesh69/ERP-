@@ -20,7 +20,7 @@ import {
 } from "lucide-react";
 
 export default function InstitutionERPPage() {
-  const { showToast, refreshTrigger, triggerRefresh } = useApp();
+  const { showToast, refreshTrigger, triggerRefresh, currentRole } = useApp();
 
   const [institution, setInstitution] = useState<any>(null);
   const [campuses, setCampuses] = useState<any[]>([]);
@@ -136,13 +136,20 @@ export default function InstitutionERPPage() {
             </div>
           </div>
 
-          <button
-            onClick={() => setIsDeptModalOpen(true)}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-rose-primary hover:bg-rose-dark text-white text-xs font-bold shadow-sm transition-all"
-          >
-            <Plus className="h-4 w-4" />
-            <span>Configure Department</span>
-          </button>
+          {currentRole !== "GUEST" ? (
+            <button
+              onClick={() => setIsDeptModalOpen(true)}
+              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-rose-primary hover:bg-rose-dark text-white text-xs font-bold shadow-sm transition-all"
+            >
+              <Plus className="h-4 w-4" />
+              <span>Configure Department</span>
+            </button>
+          ) : (
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-charcoal-100 dark:bg-charcoal-800 text-charcoal-700 dark:text-ivory-300 text-xs font-semibold border border-charcoal-200 dark:border-charcoal-700">
+              <span className="h-2 w-2 rounded-full bg-amber-500 animate-pulse" />
+              <span>Inspector Mode (Read-Only)</span>
+            </div>
+          )}
         </div>
 
         {/* 6-Tier Hierarchy Breadcrumb Flow */}

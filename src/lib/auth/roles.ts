@@ -15,7 +15,7 @@ export const ROLE_CONFIGS: Record<UserRole, RoleConfig> = {
     description: "Campus operations, department governance, and academic administration",
     badgeColor: "bg-rose-primary text-white",
     dashboardPath: "/institution",
-    allowedNav: ["institution", "students", "faculty", "lms", "attendance", "timetable", "examinations", "finance", "library", "communication", "analytics", "ai-assistant", "documents"],
+    allowedNav: ["institution", "students", "faculty", "lms", "attendance", "timetable", "assignments", "examinations", "finance", "library", "research", "careers", "scholarships", "communication", "analytics", "ai-assistant", "documents"],
   },
   PRINCIPAL: {
     role: "PRINCIPAL",
@@ -23,7 +23,7 @@ export const ROLE_CONFIGS: Record<UserRole, RoleConfig> = {
     description: "Executive oversight, accreditation evidence, and faculty governance",
     badgeColor: "bg-rose-accent text-white",
     dashboardPath: "/analytics",
-    allowedNav: ["analytics", "institution", "students", "faculty", "attendance", "examinations", "research", "communication", "ai-assistant"],
+    allowedNav: ["analytics", "institution", "students", "faculty", "attendance", "timetable", "examinations", "finance", "research", "scholarships", "communication", "ai-assistant", "documents"],
   },
   HOD: {
     role: "HOD",
@@ -31,7 +31,7 @@ export const ROLE_CONFIGS: Record<UserRole, RoleConfig> = {
     description: "Department course scheduling, faculty workload, and cohort monitoring",
     badgeColor: "bg-rose-accent text-white",
     dashboardPath: "/institution",
-    allowedNav: ["institution", "faculty", "students", "timetable", "attendance", "examinations", "research", "ai-assistant"],
+    allowedNav: ["institution", "faculty", "students", "lms", "timetable", "attendance", "assignments", "examinations", "research", "scholarships", "communication", "analytics", "ai-assistant", "documents"],
   },
   FACULTY: {
     role: "FACULTY",
@@ -39,7 +39,7 @@ export const ROLE_CONFIGS: Record<UserRole, RoleConfig> = {
     description: "Course delivery, attendance taking, assignment grading, and research",
     badgeColor: "bg-academic-info text-white",
     dashboardPath: "/faculty",
-    allowedNav: ["faculty", "attendance", "lms", "assignments", "timetable", "examinations", "research", "ai-assistant", "communication"],
+    allowedNav: ["faculty", "attendance", "lms", "assignments", "timetable", "examinations", "library", "research", "communication", "ai-assistant", "documents"],
   },
   CLASS_TEACHER: {
     role: "CLASS_TEACHER",
@@ -47,7 +47,7 @@ export const ROLE_CONFIGS: Record<UserRole, RoleConfig> = {
     description: "Section mentoring, daily attendance audits, and parent coordination",
     badgeColor: "bg-academic-info text-white",
     dashboardPath: "/students",
-    allowedNav: ["students", "attendance", "timetable", "communication", "ai-assistant"],
+    allowedNav: ["students", "attendance", "timetable", "lms", "assignments", "examinations", "communication", "ai-assistant"],
   },
   STUDENT: {
     role: "STUDENT",
@@ -55,7 +55,7 @@ export const ROLE_CONFIGS: Record<UserRole, RoleConfig> = {
     description: "Enrolled courses, assignments, exams, grades, attendance, and career hub",
     badgeColor: "bg-academic-success text-white",
     dashboardPath: "/students/profile",
-    allowedNav: ["students/profile", "lms", "attendance", "timetable", "assignments", "examinations", "finance", "library", "careers", "scholarships", "ai-assistant", "documents"],
+    allowedNav: ["students/profile", "lms", "attendance", "timetable", "assignments", "examinations", "finance", "library", "careers", "scholarships", "communication", "ai-assistant", "documents"],
   },
   PARENT: {
     role: "PARENT",
@@ -63,7 +63,7 @@ export const ROLE_CONFIGS: Record<UserRole, RoleConfig> = {
     description: "Child attendance, grades, fee installments, and teacher communication",
     badgeColor: "bg-academic-warning text-white",
     dashboardPath: "/parent",
-    allowedNav: ["parent", "communication", "ai-assistant"],
+    allowedNav: ["parent", "attendance", "finance", "communication", "ai-assistant"],
   },
   ACCOUNTANT: {
     role: "ACCOUNTANT",
@@ -71,7 +71,7 @@ export const ROLE_CONFIGS: Record<UserRole, RoleConfig> = {
     description: "Tuition structures, fee receipts, payment reconciliation, and refunds",
     badgeColor: "bg-academic-warning text-white",
     dashboardPath: "/finance",
-    allowedNav: ["finance", "scholarships", "analytics", "documents"],
+    allowedNav: ["finance", "scholarships", "students", "communication", "analytics", "ai-assistant", "documents"],
   },
   LIBRARIAN: {
     role: "LIBRARIAN",
@@ -79,7 +79,7 @@ export const ROLE_CONFIGS: Record<UserRole, RoleConfig> = {
     description: "Book cataloging, ISBN loans, fine tracking, and digital archives",
     badgeColor: "bg-rose-accent text-white",
     dashboardPath: "/library",
-    allowedNav: ["library", "students", "analytics"],
+    allowedNav: ["library", "students", "communication", "analytics", "ai-assistant", "documents"],
   },
   EXAMINATION_CONTROLLER: {
     role: "EXAMINATION_CONTROLLER",
@@ -87,7 +87,7 @@ export const ROLE_CONFIGS: Record<UserRole, RoleConfig> = {
     description: "Question paper banking, exam schedules, grading curves, and GPA transcripts",
     badgeColor: "bg-rose-primary text-white",
     dashboardPath: "/examinations",
-    allowedNav: ["examinations", "courses", "analytics", "documents"],
+    allowedNav: ["examinations", "timetable", "students", "communication", "analytics", "ai-assistant", "documents"],
   },
   PLACEMENT_OFFICER: {
     role: "PLACEMENT_OFFICER",
@@ -95,7 +95,7 @@ export const ROLE_CONFIGS: Record<UserRole, RoleConfig> = {
     description: "Corporate recruitment drives, internship postings, and mock interview drills",
     badgeColor: "bg-academic-info text-white",
     dashboardPath: "/careers",
-    allowedNav: ["careers", "students", "analytics"],
+    allowedNav: ["careers", "students", "examinations", "communication", "analytics", "ai-assistant", "documents"],
   },
   RESEARCH_COORDINATOR: {
     role: "RESEARCH_COORDINATOR",
@@ -103,7 +103,7 @@ export const ROLE_CONFIGS: Record<UserRole, RoleConfig> = {
     description: "Funded research projects, peer-reviewed publications, and patents",
     badgeColor: "bg-rose-accent text-white",
     dashboardPath: "/research",
-    allowedNav: ["research", "faculty", "analytics"],
+    allowedNav: ["research", "faculty", "communication", "analytics", "ai-assistant", "documents"],
   },
   HR_STAFF: {
     role: "HR_STAFF",
@@ -111,7 +111,7 @@ export const ROLE_CONFIGS: Record<UserRole, RoleConfig> = {
     description: "Faculty leave management, service records, and personnel appraisals",
     badgeColor: "bg-charcoal-800 text-white",
     dashboardPath: "/faculty",
-    allowedNav: ["faculty", "communication", "documents"],
+    allowedNav: ["faculty", "attendance", "timetable", "communication", "ai-assistant", "documents"],
   },
   ALUMNI: {
     role: "ALUMNI",
@@ -119,7 +119,7 @@ export const ROLE_CONFIGS: Record<UserRole, RoleConfig> = {
     description: "Alumni network, career mentorship, events, and transcripts",
     badgeColor: "bg-academic-info text-white",
     dashboardPath: "/careers",
-    allowedNav: ["careers", "communication"],
+    allowedNav: ["careers", "library", "communication", "ai-assistant", "documents"],
   },
   GUEST: {
     role: "GUEST",
@@ -127,7 +127,7 @@ export const ROLE_CONFIGS: Record<UserRole, RoleConfig> = {
     description: "Read-only inspection of campus facilities and public course offerings",
     badgeColor: "bg-charcoal-600 text-white",
     dashboardPath: "/institution",
-    allowedNav: ["institution", "library"],
+    allowedNav: ["institution", "library", "ai-assistant"],
   },
 };
 

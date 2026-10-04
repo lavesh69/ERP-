@@ -163,6 +163,22 @@ async function runTestSuite() {
   assert(ROLE_CONFIGS.SUPER_ADMIN.allowedNav.includes("admin"), "SUPER_ADMIN has admin console clearance");
   assert(!ROLE_CONFIGS.STUDENT.allowedNav.includes("admin"), "STUDENT cannot access admin console");
   assert(ROLE_CONFIGS.PARENT.allowedNav.includes("parent"), "PARENT has dedicated parent portal access");
+  assert(ROLE_CONFIGS.PARENT.allowedNav.includes("finance"), "PARENT has fee payment clearance");
+  assert(ROLE_CONFIGS.INSTITUTION_ADMIN.allowedNav.includes("careers"), "INSTITUTION_ADMIN has campus placements oversight");
+  assert(ROLE_CONFIGS.PRINCIPAL.allowedNav.includes("timetable"), "PRINCIPAL has classroom timetable oversight");
+  assert(ROLE_CONFIGS.PRINCIPAL.allowedNav.includes("finance"), "PRINCIPAL has institutional finance oversight");
+  assert(ROLE_CONFIGS.HOD.allowedNav.includes("lms"), "HOD has department syllabus/LMS access");
+  assert(ROLE_CONFIGS.HOD.allowedNav.includes("communication"), "HOD has departmental circular broadcast clearance");
+  assert(ROLE_CONFIGS.CLASS_TEACHER.allowedNav.includes("examinations"), "CLASS_TEACHER has section exam marks audit clearance");
+  assert(ROLE_CONFIGS.ACCOUNTANT.allowedNav.includes("students"), "ACCOUNTANT has student ledger directory lookup access");
+  assert(ROLE_CONFIGS.ACCOUNTANT.allowedNav.includes("communication"), "ACCOUNTANT has fee reminder broadcast clearance");
+  assert(ROLE_CONFIGS.LIBRARIAN.allowedNav.includes("communication"), "LIBRARIAN has book amnesty circular broadcast clearance");
+  assert(ROLE_CONFIGS.EXAMINATION_CONTROLLER.allowedNav.includes("timetable"), "EXAMINATION_CONTROLLER has timetable clash prevention access");
+  assert(ROLE_CONFIGS.PLACEMENT_OFFICER.allowedNav.includes("examinations"), "PLACEMENT_OFFICER has candidate CGPA verification access");
+  assert(ROLE_CONFIGS.RESEARCH_COORDINATOR.allowedNav.includes("documents"), "RESEARCH_COORDINATOR has grant agreement vault clearance");
+  assert(ROLE_CONFIGS.HR_STAFF.allowedNav.includes("timetable"), "HR_STAFF has faculty workload audit clearance");
+  assert(ROLE_CONFIGS.ALUMNI.allowedNav.includes("library"), "ALUMNI has digital repository access");
+  assert(ROLE_CONFIGS.GUEST.allowedNav.includes("institution"), "GUEST has campus audit view clearance");
 
   // TEST 3: Timetable Conflict Engine
   console.log("\n📌 Group 3: Intelligent Timetable Conflict Detection");
