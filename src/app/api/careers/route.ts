@@ -268,7 +268,11 @@ export async function POST(req: NextRequest) {
     }
 
     // 4. Student Application Submission
-    if (session?.role && !["STUDENT", "SUPER_ADMIN", "INSTITUTION_ADMIN"].includes(session.role)) {
+    if (!session) {
+      return NextResponse.json({ error: "Authentication required to apply for recruitment opportunities" }, { status: 401 });
+    }
+
+    if (!["STUDENT", "SUPER_ADMIN", "INSTITUTION_ADMIN"].includes(session.role)) {
       return NextResponse.json({ error: "Access denied. Only students can apply for job postings." }, { status: 403 });
     }
 
@@ -283,7 +287,7 @@ export async function POST(req: NextRequest) {
     }
 
     let student = null;
-    if (session?.userId) {
+    if (session.userId) {
       student = await prisma.student.findFirst({
         where: {
           OR: [{ userId: session.userId }, { user: { email: session.email } }],
@@ -292,7 +296,7 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    if (!student) {
+    if (!student && ["SUPER_ADMIN", "INSTITUTION_ADMIN"].includes(session.role)) {
       student = await prisma.student.findFirst({ include: { user: true } });
     }
 

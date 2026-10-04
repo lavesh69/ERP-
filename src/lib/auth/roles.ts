@@ -47,7 +47,7 @@ export const ROLE_CONFIGS: Record<UserRole, RoleConfig> = {
     description: "Section mentoring, daily attendance audits, and parent coordination",
     badgeColor: "bg-academic-info text-white",
     dashboardPath: "/students",
-    allowedNav: ["students", "attendance", "timetable", "lms", "assignments", "examinations", "communication", "ai-assistant"],
+    allowedNav: ["students", "attendance", "timetable", "lms", "assignments", "examinations", "communication", "ai-assistant", "documents"],
   },
   STUDENT: {
     role: "STUDENT",

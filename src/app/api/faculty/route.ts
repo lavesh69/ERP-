@@ -405,12 +405,26 @@ export async function POST(req: NextRequest) {
 
     // Faculty Self-Service: Apply for Leave with Substitute Faculty Allocation
     if (action === "APPLY_LEAVE") {
+      if (!session) {
+        return NextResponse.json(
+          { error: "Authentication required to submit faculty leave applications" },
+          { status: 401 }
+        );
+      }
+      const allowedRoles = ["SUPER_ADMIN", "INSTITUTION_ADMIN", "PRINCIPAL", "HOD", "FACULTY", "CLASS_TEACHER"];
+      if (!allowedRoles.includes(session.role)) {
+        return NextResponse.json(
+          { error: "Forbidden: Only faculty members and administrators can apply for leave" },
+          { status: 403 }
+        );
+      }
+
       const { facultyId, leaveType, startDate, endDate, substituteFacultyName, substituteName } = body;
       const proxyName = substituteName || substituteFacultyName || "Department Head";
       const leaveRef = `FAC-LV-${Date.now()}`;
       await logAuditEvent({
         institutionId: "inst-apex-01",
-        actorUserId: session?.userId || facultyId || "fac-system",
+        actorUserId: session.userId || facultyId || "fac-system",
         action: "FACULTY_LEAVE_APPLIED",
         targetEntity: "FacultyLeave",
         targetId: leaveRef,
@@ -434,6 +448,20 @@ export async function POST(req: NextRequest) {
 
     // Faculty Mentoring: Dispatch pastoral advice to assigned mentee
     if (action === "MENTOR_NOTE") {
+      if (!session) {
+        return NextResponse.json(
+          { error: "Authentication required to submit pastoral mentoring notes" },
+          { status: 401 }
+        );
+      }
+      const allowedRoles = ["SUPER_ADMIN", "INSTITUTION_ADMIN", "PRINCIPAL", "HOD", "FACULTY", "CLASS_TEACHER"];
+      if (!allowedRoles.includes(session.role)) {
+        return NextResponse.json(
+          { error: "Forbidden: Only faculty mentors and administrators can record pastoral guidance notes" },
+          { status: 403 }
+        );
+      }
+
       const { studentId, menteeId, note, notes } = body;
       const targetMentee = menteeId || studentId;
       const adviceContent = notes || note;
@@ -472,12 +500,30 @@ export async function POST(req: NextRequest) {
 
     // Office Hours Advising Slot Booking
     if (action === "BOOK_ADVISING_SLOT") {
+      if (!session) {
+        return NextResponse.json(
+          { error: "Authentication required to book faculty advising slots" },
+          { status: 401 }
+        );
+      }
+
       const { facultyId, studentId, slotTime, purpose, studentName } = body;
       if (!facultyId || !slotTime) {
         return NextResponse.json({ error: "facultyId and slotTime are required" }, { status: 400 });
       }
 
       let targetStudentId = studentId;
+      if (session.role === "STUDENT") {
+        const student = await prisma.student.findFirst({
+          where: {
+            OR: [{ userId: session.userId }, { user: { email: session.email } }],
+          },
+          select: { id: true },
+        });
+        if (student) {
+          targetStudentId = student.id;
+        }
+      }
       if (!targetStudentId) {
         const anyStudent = await prisma.student.findFirst({ select: { id: true } });
         targetStudentId = anyStudent?.id || "student-generic";

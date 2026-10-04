@@ -407,6 +407,13 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: "loanId is required" }, { status: 400 });
       }
 
+      if (!session) {
+        return NextResponse.json(
+          { error: "Authentication required to renew book loans" },
+          { status: 401 }
+        );
+      }
+
       const loan = await prisma.bookLoan.findUnique({
         where: { id: loanId },
         include: {
@@ -419,10 +426,12 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: "Loan record not found" }, { status: 404 });
       }
 
-      if (session?.role === "STUDENT") {
+      const isCirculationStaff = circulationStaff.includes(session.role);
+      if (!isCirculationStaff) {
         if (
-          loan.student.userId !== session.userId &&
-          loan.student.user.email !== session.email
+          session.role !== "STUDENT" ||
+          (loan.student.userId !== session.userId &&
+            loan.student.user.email !== session.email)
         ) {
           return NextResponse.json(
             { error: "Forbidden: You cannot renew another student's loan" },

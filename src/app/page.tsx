@@ -29,6 +29,7 @@ import {
   Bell,
   CheckSquare,
   FileCheck,
+  Building2,
 } from "lucide-react";
 
 export default function DashboardPage() {
@@ -689,17 +690,17 @@ export default function DashboardPage() {
                   </span>
                 </Link>
               </>
-            ) : currentRole === "FACULTY" ? (
+            ) : currentRole === "FACULTY" || currentRole === "CLASS_TEACHER" ? (
               <>
                 <Link
-                  href="/faculty"
+                  href={currentRole === "CLASS_TEACHER" ? "/students" : "/faculty"}
                   className="p-3 rounded-xl bg-ivory-100 dark:bg-charcoal-800 hover:bg-rose-container dark:hover:bg-charcoal-700 border border-border dark:border-charcoal-700 flex flex-col items-center text-center gap-2 transition-all group"
                 >
                   <div className="h-8 w-8 rounded-lg bg-white dark:bg-charcoal-900 text-rose-primary dark:text-rose-accent flex items-center justify-center shadow-xs">
                     <Users className="h-4 w-4" />
                   </div>
                   <span className="text-xs font-bold text-charcoal-900 dark:text-ivory-100 group-hover:text-rose-primary dark:group-hover:text-rose-accent">
-                    My Classes
+                    {currentRole === "CLASS_TEACHER" ? "My Section" : "My Classes"}
                   </span>
                 </Link>
 
@@ -751,7 +752,566 @@ export default function DashboardPage() {
                   </span>
                 </button>
               </>
+            ) : currentRole === "ACCOUNTANT" ? (
+              <>
+                <Link
+                  href="/finance"
+                  className="p-3 rounded-xl bg-ivory-100 dark:bg-charcoal-800 hover:bg-rose-container dark:hover:bg-charcoal-700 border border-border dark:border-charcoal-700 flex flex-col items-center text-center gap-2 transition-all group"
+                >
+                  <div className="h-8 w-8 rounded-lg bg-white dark:bg-charcoal-900 text-rose-primary dark:text-rose-accent flex items-center justify-center shadow-xs">
+                    <DollarSign className="h-4 w-4" />
+                  </div>
+                  <span className="text-xs font-bold text-charcoal-900 dark:text-ivory-100 group-hover:text-rose-primary dark:group-hover:text-rose-accent">
+                    Fee Ledgers
+                  </span>
+                </Link>
+
+                <Link
+                  href="/scholarships"
+                  className="p-3 rounded-xl bg-ivory-100 dark:bg-charcoal-800 hover:bg-rose-container dark:hover:bg-charcoal-700 border border-border dark:border-charcoal-700 flex flex-col items-center text-center gap-2 transition-all group"
+                >
+                  <div className="h-8 w-8 rounded-lg bg-white dark:bg-charcoal-900 text-rose-primary dark:text-rose-accent flex items-center justify-center shadow-xs">
+                    <Award className="h-4 w-4" />
+                  </div>
+                  <span className="text-xs font-bold text-charcoal-900 dark:text-ivory-100 group-hover:text-rose-primary dark:group-hover:text-rose-accent">
+                    Scholarships
+                  </span>
+                </Link>
+
+                <Link
+                  href="/documents"
+                  className="p-3 rounded-xl bg-ivory-100 dark:bg-charcoal-800 hover:bg-rose-container dark:hover:bg-charcoal-700 border border-border dark:border-charcoal-700 flex flex-col items-center text-center gap-2 transition-all group"
+                >
+                  <div className="h-8 w-8 rounded-lg bg-white dark:bg-charcoal-900 text-rose-primary dark:text-rose-accent flex items-center justify-center shadow-xs">
+                    <FileCheck className="h-4 w-4" />
+                  </div>
+                  <span className="text-xs font-bold text-charcoal-900 dark:text-ivory-100 group-hover:text-rose-primary dark:group-hover:text-rose-accent">
+                    Fee Certificates
+                  </span>
+                </Link>
+
+                <Link
+                  href="/students"
+                  className="p-3 rounded-xl bg-ivory-100 dark:bg-charcoal-800 hover:bg-rose-container dark:hover:bg-charcoal-700 border border-border dark:border-charcoal-700 flex flex-col items-center text-center gap-2 transition-all group"
+                >
+                  <div className="h-8 w-8 rounded-lg bg-white dark:bg-charcoal-900 text-rose-primary dark:text-rose-accent flex items-center justify-center shadow-xs">
+                    <Users className="h-4 w-4" />
+                  </div>
+                  <span className="text-xs font-bold text-charcoal-900 dark:text-ivory-100 group-hover:text-rose-primary dark:group-hover:text-rose-accent">
+                    Student Roster
+                  </span>
+                </Link>
+
+                <button
+                  onClick={() => setIsCreateAnnouncementOpen(true)}
+                  className="p-3 rounded-xl bg-ivory-100 dark:bg-charcoal-800 hover:bg-rose-container dark:hover:bg-charcoal-700 border border-border dark:border-charcoal-700 flex flex-col items-center text-center gap-2 transition-all group"
+                >
+                  <div className="h-8 w-8 rounded-lg bg-white dark:bg-charcoal-900 text-rose-primary dark:text-rose-accent flex items-center justify-center shadow-xs">
+                    <Bell className="h-4 w-4" />
+                  </div>
+                  <span className="text-xs font-bold text-charcoal-900 dark:text-ivory-100 group-hover:text-rose-primary dark:group-hover:text-rose-accent">
+                    Notice Broadcast
+                  </span>
+                </button>
+              </>
+            ) : currentRole === "LIBRARIAN" ? (
+              <>
+                <Link
+                  href="/library"
+                  className="p-3 rounded-xl bg-ivory-100 dark:bg-charcoal-800 hover:bg-rose-container dark:hover:bg-charcoal-700 border border-border dark:border-charcoal-700 flex flex-col items-center text-center gap-2 transition-all group"
+                >
+                  <div className="h-8 w-8 rounded-lg bg-white dark:bg-charcoal-900 text-rose-primary dark:text-rose-accent flex items-center justify-center shadow-xs">
+                    <BookOpen className="h-4 w-4" />
+                  </div>
+                  <span className="text-xs font-bold text-charcoal-900 dark:text-ivory-100 group-hover:text-rose-primary dark:group-hover:text-rose-accent">
+                    Book Catalog
+                  </span>
+                </Link>
+
+                <Link
+                  href="/library?tab=circulation"
+                  className="p-3 rounded-xl bg-ivory-100 dark:bg-charcoal-800 hover:bg-rose-container dark:hover:bg-charcoal-700 border border-border dark:border-charcoal-700 flex flex-col items-center text-center gap-2 transition-all group"
+                >
+                  <div className="h-8 w-8 rounded-lg bg-white dark:bg-charcoal-900 text-rose-primary dark:text-rose-accent flex items-center justify-center shadow-xs">
+                    <FileCheck className="h-4 w-4" />
+                  </div>
+                  <span className="text-xs font-bold text-charcoal-900 dark:text-ivory-100 group-hover:text-rose-primary dark:group-hover:text-rose-accent">
+                    Circulation Desk
+                  </span>
+                </Link>
+
+                <Link
+                  href="/documents"
+                  className="p-3 rounded-xl bg-ivory-100 dark:bg-charcoal-800 hover:bg-rose-container dark:hover:bg-charcoal-700 border border-border dark:border-charcoal-700 flex flex-col items-center text-center gap-2 transition-all group"
+                >
+                  <div className="h-8 w-8 rounded-lg bg-white dark:bg-charcoal-900 text-rose-primary dark:text-rose-accent flex items-center justify-center shadow-xs">
+                    <FileText className="h-4 w-4" />
+                  </div>
+                  <span className="text-xs font-bold text-charcoal-900 dark:text-ivory-100 group-hover:text-rose-primary dark:group-hover:text-rose-accent">
+                    Digital Archives
+                  </span>
+                </Link>
+
+                <Link
+                  href="/students"
+                  className="p-3 rounded-xl bg-ivory-100 dark:bg-charcoal-800 hover:bg-rose-container dark:hover:bg-charcoal-700 border border-border dark:border-charcoal-700 flex flex-col items-center text-center gap-2 transition-all group"
+                >
+                  <div className="h-8 w-8 rounded-lg bg-white dark:bg-charcoal-900 text-rose-primary dark:text-rose-accent flex items-center justify-center shadow-xs">
+                    <Users className="h-4 w-4" />
+                  </div>
+                  <span className="text-xs font-bold text-charcoal-900 dark:text-ivory-100 group-hover:text-rose-primary dark:group-hover:text-rose-accent">
+                    Borrowers
+                  </span>
+                </Link>
+
+                <button
+                  onClick={() => setIsCreateAnnouncementOpen(true)}
+                  className="p-3 rounded-xl bg-ivory-100 dark:bg-charcoal-800 hover:bg-rose-container dark:hover:bg-charcoal-700 border border-border dark:border-charcoal-700 flex flex-col items-center text-center gap-2 transition-all group"
+                >
+                  <div className="h-8 w-8 rounded-lg bg-white dark:bg-charcoal-900 text-rose-primary dark:text-rose-accent flex items-center justify-center shadow-xs">
+                    <Bell className="h-4 w-4" />
+                  </div>
+                  <span className="text-xs font-bold text-charcoal-900 dark:text-ivory-100 group-hover:text-rose-primary dark:group-hover:text-rose-accent">
+                    Notice Broadcast
+                  </span>
+                </button>
+              </>
+            ) : currentRole === "PARENT" ? (
+              <>
+                <Link
+                  href="/parent"
+                  className="p-3 rounded-xl bg-ivory-100 dark:bg-charcoal-800 hover:bg-rose-container dark:hover:bg-charcoal-700 border border-border dark:border-charcoal-700 flex flex-col items-center text-center gap-2 transition-all group"
+                >
+                  <div className="h-8 w-8 rounded-lg bg-white dark:bg-charcoal-900 text-rose-primary dark:text-rose-accent flex items-center justify-center shadow-xs">
+                    <Users className="h-4 w-4" />
+                  </div>
+                  <span className="text-xs font-bold text-charcoal-900 dark:text-ivory-100 group-hover:text-rose-primary dark:group-hover:text-rose-accent">
+                    Ward Portal
+                  </span>
+                </Link>
+
+                <Link
+                  href="/parent?tab=attendance"
+                  className="p-3 rounded-xl bg-ivory-100 dark:bg-charcoal-800 hover:bg-rose-container dark:hover:bg-charcoal-700 border border-border dark:border-charcoal-700 flex flex-col items-center text-center gap-2 transition-all group"
+                >
+                  <div className="h-8 w-8 rounded-lg bg-white dark:bg-charcoal-900 text-rose-primary dark:text-rose-accent flex items-center justify-center shadow-xs">
+                    <CheckSquare className="h-4 w-4" />
+                  </div>
+                  <span className="text-xs font-bold text-charcoal-900 dark:text-ivory-100 group-hover:text-rose-primary dark:group-hover:text-rose-accent">
+                    Attendance Log
+                  </span>
+                </Link>
+
+                <Link
+                  href="/parent?tab=fees"
+                  className="p-3 rounded-xl bg-ivory-100 dark:bg-charcoal-800 hover:bg-rose-container dark:hover:bg-charcoal-700 border border-border dark:border-charcoal-700 flex flex-col items-center text-center gap-2 transition-all group"
+                >
+                  <div className="h-8 w-8 rounded-lg bg-white dark:bg-charcoal-900 text-rose-primary dark:text-rose-accent flex items-center justify-center shadow-xs">
+                    <DollarSign className="h-4 w-4" />
+                  </div>
+                  <span className="text-xs font-bold text-charcoal-900 dark:text-ivory-100 group-hover:text-rose-primary dark:group-hover:text-rose-accent">
+                    Pay Tuition
+                  </span>
+                </Link>
+
+                <Link
+                  href="/communication"
+                  className="p-3 rounded-xl bg-ivory-100 dark:bg-charcoal-800 hover:bg-rose-container dark:hover:bg-charcoal-700 border border-border dark:border-charcoal-700 flex flex-col items-center text-center gap-2 transition-all group"
+                >
+                  <div className="h-8 w-8 rounded-lg bg-white dark:bg-charcoal-900 text-rose-primary dark:text-rose-accent flex items-center justify-center shadow-xs">
+                    <Send className="h-4 w-4" />
+                  </div>
+                  <span className="text-xs font-bold text-charcoal-900 dark:text-ivory-100 group-hover:text-rose-primary dark:group-hover:text-rose-accent">
+                    Teacher Comms
+                  </span>
+                </Link>
+
+                <Link
+                  href="/parent?tab=performance"
+                  className="p-3 rounded-xl bg-ivory-100 dark:bg-charcoal-800 hover:bg-rose-container dark:hover:bg-charcoal-700 border border-border dark:border-charcoal-700 flex flex-col items-center text-center gap-2 transition-all group"
+                >
+                  <div className="h-8 w-8 rounded-lg bg-white dark:bg-charcoal-900 text-rose-primary dark:text-rose-accent flex items-center justify-center shadow-xs">
+                    <Award className="h-4 w-4" />
+                  </div>
+                  <span className="text-xs font-bold text-charcoal-900 dark:text-ivory-100 group-hover:text-rose-primary dark:group-hover:text-rose-accent">
+                    Report Cards
+                  </span>
+                </Link>
+              </>
+            ) : currentRole === "EXAMINATION_CONTROLLER" ? (
+              <>
+                <Link
+                  href="/examinations"
+                  className="p-3 rounded-xl bg-ivory-100 dark:bg-charcoal-800 hover:bg-rose-container dark:hover:bg-charcoal-700 border border-border dark:border-charcoal-700 flex flex-col items-center text-center gap-2 transition-all group"
+                >
+                  <div className="h-8 w-8 rounded-lg bg-white dark:bg-charcoal-900 text-rose-primary dark:text-rose-accent flex items-center justify-center shadow-xs">
+                    <Award className="h-4 w-4" />
+                  </div>
+                  <span className="text-xs font-bold text-charcoal-900 dark:text-ivory-100 group-hover:text-rose-primary dark:group-hover:text-rose-accent">
+                    Exam Console
+                  </span>
+                </Link>
+
+                <Link
+                  href="/timetable"
+                  className="p-3 rounded-xl bg-ivory-100 dark:bg-charcoal-800 hover:bg-rose-container dark:hover:bg-charcoal-700 border border-border dark:border-charcoal-700 flex flex-col items-center text-center gap-2 transition-all group"
+                >
+                  <div className="h-8 w-8 rounded-lg bg-white dark:bg-charcoal-900 text-rose-primary dark:text-rose-accent flex items-center justify-center shadow-xs">
+                    <Calendar className="h-4 w-4" />
+                  </div>
+                  <span className="text-xs font-bold text-charcoal-900 dark:text-ivory-100 group-hover:text-rose-primary dark:group-hover:text-rose-accent">
+                    Exam Schedule
+                  </span>
+                </Link>
+
+                <button
+                  onClick={() => setIsCreateExamOpen(true)}
+                  className="p-3 rounded-xl bg-ivory-100 dark:bg-charcoal-800 hover:bg-rose-container dark:hover:bg-charcoal-700 border border-border dark:border-charcoal-700 flex flex-col items-center text-center gap-2 transition-all group"
+                >
+                  <div className="h-8 w-8 rounded-lg bg-white dark:bg-charcoal-900 text-rose-primary dark:text-rose-accent flex items-center justify-center shadow-xs">
+                    <Plus className="h-4 w-4" />
+                  </div>
+                  <span className="text-xs font-bold text-charcoal-900 dark:text-ivory-100 group-hover:text-rose-primary dark:group-hover:text-rose-accent">
+                    Create Exam
+                  </span>
+                </button>
+
+                <Link
+                  href="/documents"
+                  className="p-3 rounded-xl bg-ivory-100 dark:bg-charcoal-800 hover:bg-rose-container dark:hover:bg-charcoal-700 border border-border dark:border-charcoal-700 flex flex-col items-center text-center gap-2 transition-all group"
+                >
+                  <div className="h-8 w-8 rounded-lg bg-white dark:bg-charcoal-900 text-rose-primary dark:text-rose-accent flex items-center justify-center shadow-xs">
+                    <FileCheck className="h-4 w-4" />
+                  </div>
+                  <span className="text-xs font-bold text-charcoal-900 dark:text-ivory-100 group-hover:text-rose-primary dark:group-hover:text-rose-accent">
+                    Transcripts
+                  </span>
+                </Link>
+
+                <button
+                  onClick={() => setIsCreateAnnouncementOpen(true)}
+                  className="p-3 rounded-xl bg-ivory-100 dark:bg-charcoal-800 hover:bg-rose-container dark:hover:bg-charcoal-700 border border-border dark:border-charcoal-700 flex flex-col items-center text-center gap-2 transition-all group"
+                >
+                  <div className="h-8 w-8 rounded-lg bg-white dark:bg-charcoal-900 text-rose-primary dark:text-rose-accent flex items-center justify-center shadow-xs">
+                    <Bell className="h-4 w-4" />
+                  </div>
+                  <span className="text-xs font-bold text-charcoal-900 dark:text-ivory-100 group-hover:text-rose-primary dark:group-hover:text-rose-accent">
+                    Notice Broadcast
+                  </span>
+                </button>
+              </>
+            ) : currentRole === "PLACEMENT_OFFICER" ? (
+              <>
+                <Link
+                  href="/careers"
+                  className="p-3 rounded-xl bg-ivory-100 dark:bg-charcoal-800 hover:bg-rose-container dark:hover:bg-charcoal-700 border border-border dark:border-charcoal-700 flex flex-col items-center text-center gap-2 transition-all group"
+                >
+                  <div className="h-8 w-8 rounded-lg bg-white dark:bg-charcoal-900 text-rose-primary dark:text-rose-accent flex items-center justify-center shadow-xs">
+                    <FileSpreadsheet className="h-4 w-4" />
+                  </div>
+                  <span className="text-xs font-bold text-charcoal-900 dark:text-ivory-100 group-hover:text-rose-primary dark:group-hover:text-rose-accent">
+                    Campus Drives
+                  </span>
+                </Link>
+
+                <Link
+                  href="/careers?tab=postings"
+                  className="p-3 rounded-xl bg-ivory-100 dark:bg-charcoal-800 hover:bg-rose-container dark:hover:bg-charcoal-700 border border-border dark:border-charcoal-700 flex flex-col items-center text-center gap-2 transition-all group"
+                >
+                  <div className="h-8 w-8 rounded-lg bg-white dark:bg-charcoal-900 text-rose-primary dark:text-rose-accent flex items-center justify-center shadow-xs">
+                    <Plus className="h-4 w-4" />
+                  </div>
+                  <span className="text-xs font-bold text-charcoal-900 dark:text-ivory-100 group-hover:text-rose-primary dark:group-hover:text-rose-accent">
+                    Post Job
+                  </span>
+                </Link>
+
+                <Link
+                  href="/careers?tab=interviews"
+                  className="p-3 rounded-xl bg-ivory-100 dark:bg-charcoal-800 hover:bg-rose-container dark:hover:bg-charcoal-700 border border-border dark:border-charcoal-700 flex flex-col items-center text-center gap-2 transition-all group"
+                >
+                  <div className="h-8 w-8 rounded-lg bg-white dark:bg-charcoal-900 text-rose-primary dark:text-rose-accent flex items-center justify-center shadow-xs">
+                    <Calendar className="h-4 w-4" />
+                  </div>
+                  <span className="text-xs font-bold text-charcoal-900 dark:text-ivory-100 group-hover:text-rose-primary dark:group-hover:text-rose-accent">
+                    Interviews
+                  </span>
+                </Link>
+
+                <Link
+                  href="/students"
+                  className="p-3 rounded-xl bg-ivory-100 dark:bg-charcoal-800 hover:bg-rose-container dark:hover:bg-charcoal-700 border border-border dark:border-charcoal-700 flex flex-col items-center text-center gap-2 transition-all group"
+                >
+                  <div className="h-8 w-8 rounded-lg bg-white dark:bg-charcoal-900 text-rose-primary dark:text-rose-accent flex items-center justify-center shadow-xs">
+                    <Users className="h-4 w-4" />
+                  </div>
+                  <span className="text-xs font-bold text-charcoal-900 dark:text-ivory-100 group-hover:text-rose-primary dark:group-hover:text-rose-accent">
+                    Candidates
+                  </span>
+                </Link>
+
+                <button
+                  onClick={() => setIsCreateAnnouncementOpen(true)}
+                  className="p-3 rounded-xl bg-ivory-100 dark:bg-charcoal-800 hover:bg-rose-container dark:hover:bg-charcoal-700 border border-border dark:border-charcoal-700 flex flex-col items-center text-center gap-2 transition-all group"
+                >
+                  <div className="h-8 w-8 rounded-lg bg-white dark:bg-charcoal-900 text-rose-primary dark:text-rose-accent flex items-center justify-center shadow-xs">
+                    <Bell className="h-4 w-4" />
+                  </div>
+                  <span className="text-xs font-bold text-charcoal-900 dark:text-ivory-100 group-hover:text-rose-primary dark:group-hover:text-rose-accent">
+                    Notice Broadcast
+                  </span>
+                </button>
+              </>
+            ) : currentRole === "RESEARCH_COORDINATOR" ? (
+              <>
+                <Link
+                  href="/research"
+                  className="p-3 rounded-xl bg-ivory-100 dark:bg-charcoal-800 hover:bg-rose-container dark:hover:bg-charcoal-700 border border-border dark:border-charcoal-700 flex flex-col items-center text-center gap-2 transition-all group"
+                >
+                  <div className="h-8 w-8 rounded-lg bg-white dark:bg-charcoal-900 text-rose-primary dark:text-rose-accent flex items-center justify-center shadow-xs">
+                    <FileText className="h-4 w-4" />
+                  </div>
+                  <span className="text-xs font-bold text-charcoal-900 dark:text-ivory-100 group-hover:text-rose-primary dark:group-hover:text-rose-accent">
+                    Research Grants
+                  </span>
+                </Link>
+
+                <Link
+                  href="/research?tab=publications"
+                  className="p-3 rounded-xl bg-ivory-100 dark:bg-charcoal-800 hover:bg-rose-container dark:hover:bg-charcoal-700 border border-border dark:border-charcoal-700 flex flex-col items-center text-center gap-2 transition-all group"
+                >
+                  <div className="h-8 w-8 rounded-lg bg-white dark:bg-charcoal-900 text-rose-primary dark:text-rose-accent flex items-center justify-center shadow-xs">
+                    <Award className="h-4 w-4" />
+                  </div>
+                  <span className="text-xs font-bold text-charcoal-900 dark:text-ivory-100 group-hover:text-rose-primary dark:group-hover:text-rose-accent">
+                    Publications
+                  </span>
+                </Link>
+
+                <Link
+                  href="/research?tab=peer-review"
+                  className="p-3 rounded-xl bg-ivory-100 dark:bg-charcoal-800 hover:bg-rose-container dark:hover:bg-charcoal-700 border border-border dark:border-charcoal-700 flex flex-col items-center text-center gap-2 transition-all group"
+                >
+                  <div className="h-8 w-8 rounded-lg bg-white dark:bg-charcoal-900 text-rose-primary dark:text-rose-accent flex items-center justify-center shadow-xs">
+                    <FileCheck className="h-4 w-4" />
+                  </div>
+                  <span className="text-xs font-bold text-charcoal-900 dark:text-ivory-100 group-hover:text-rose-primary dark:group-hover:text-rose-accent">
+                    Peer Reviews
+                  </span>
+                </Link>
+
+                <Link
+                  href="/faculty"
+                  className="p-3 rounded-xl bg-ivory-100 dark:bg-charcoal-800 hover:bg-rose-container dark:hover:bg-charcoal-700 border border-border dark:border-charcoal-700 flex flex-col items-center text-center gap-2 transition-all group"
+                >
+                  <div className="h-8 w-8 rounded-lg bg-white dark:bg-charcoal-900 text-rose-primary dark:text-rose-accent flex items-center justify-center shadow-xs">
+                    <Users className="h-4 w-4" />
+                  </div>
+                  <span className="text-xs font-bold text-charcoal-900 dark:text-ivory-100 group-hover:text-rose-primary dark:group-hover:text-rose-accent">
+                    Investigators
+                  </span>
+                </Link>
+
+                <button
+                  onClick={() => setIsCreateAnnouncementOpen(true)}
+                  className="p-3 rounded-xl bg-ivory-100 dark:bg-charcoal-800 hover:bg-rose-container dark:hover:bg-charcoal-700 border border-border dark:border-charcoal-700 flex flex-col items-center text-center gap-2 transition-all group"
+                >
+                  <div className="h-8 w-8 rounded-lg bg-white dark:bg-charcoal-900 text-rose-primary dark:text-rose-accent flex items-center justify-center shadow-xs">
+                    <Bell className="h-4 w-4" />
+                  </div>
+                  <span className="text-xs font-bold text-charcoal-900 dark:text-ivory-100 group-hover:text-rose-primary dark:group-hover:text-rose-accent">
+                    Notice Broadcast
+                  </span>
+                </button>
+              </>
+            ) : currentRole === "HR_STAFF" ? (
+              <>
+                <Link
+                  href="/faculty"
+                  className="p-3 rounded-xl bg-ivory-100 dark:bg-charcoal-800 hover:bg-rose-container dark:hover:bg-charcoal-700 border border-border dark:border-charcoal-700 flex flex-col items-center text-center gap-2 transition-all group"
+                >
+                  <div className="h-8 w-8 rounded-lg bg-white dark:bg-charcoal-900 text-rose-primary dark:text-rose-accent flex items-center justify-center shadow-xs">
+                    <Users className="h-4 w-4" />
+                  </div>
+                  <span className="text-xs font-bold text-charcoal-900 dark:text-ivory-100 group-hover:text-rose-primary dark:group-hover:text-rose-accent">
+                    Faculty Roster
+                  </span>
+                </Link>
+
+                <Link
+                  href="/faculty?tab=leaves"
+                  className="p-3 rounded-xl bg-ivory-100 dark:bg-charcoal-800 hover:bg-rose-container dark:hover:bg-charcoal-700 border border-border dark:border-charcoal-700 flex flex-col items-center text-center gap-2 transition-all group"
+                >
+                  <div className="h-8 w-8 rounded-lg bg-white dark:bg-charcoal-900 text-rose-primary dark:text-rose-accent flex items-center justify-center shadow-xs">
+                    <Calendar className="h-4 w-4" />
+                  </div>
+                  <span className="text-xs font-bold text-charcoal-900 dark:text-ivory-100 group-hover:text-rose-primary dark:group-hover:text-rose-accent">
+                    Staff Leaves
+                  </span>
+                </Link>
+
+                <Link
+                  href="/attendance"
+                  className="p-3 rounded-xl bg-ivory-100 dark:bg-charcoal-800 hover:bg-rose-container dark:hover:bg-charcoal-700 border border-border dark:border-charcoal-700 flex flex-col items-center text-center gap-2 transition-all group"
+                >
+                  <div className="h-8 w-8 rounded-lg bg-white dark:bg-charcoal-900 text-rose-primary dark:text-rose-accent flex items-center justify-center shadow-xs">
+                    <CheckSquare className="h-4 w-4" />
+                  </div>
+                  <span className="text-xs font-bold text-charcoal-900 dark:text-ivory-100 group-hover:text-rose-primary dark:group-hover:text-rose-accent">
+                    Attendance Log
+                  </span>
+                </Link>
+
+                <Link
+                  href="/documents"
+                  className="p-3 rounded-xl bg-ivory-100 dark:bg-charcoal-800 hover:bg-rose-container dark:hover:bg-charcoal-700 border border-border dark:border-charcoal-700 flex flex-col items-center text-center gap-2 transition-all group"
+                >
+                  <div className="h-8 w-8 rounded-lg bg-white dark:bg-charcoal-900 text-rose-primary dark:text-rose-accent flex items-center justify-center shadow-xs">
+                    <FileCheck className="h-4 w-4" />
+                  </div>
+                  <span className="text-xs font-bold text-charcoal-900 dark:text-ivory-100 group-hover:text-rose-primary dark:group-hover:text-rose-accent">
+                    Service Dossiers
+                  </span>
+                </Link>
+
+                <button
+                  onClick={() => setIsCreateAnnouncementOpen(true)}
+                  className="p-3 rounded-xl bg-ivory-100 dark:bg-charcoal-800 hover:bg-rose-container dark:hover:bg-charcoal-700 border border-border dark:border-charcoal-700 flex flex-col items-center text-center gap-2 transition-all group"
+                >
+                  <div className="h-8 w-8 rounded-lg bg-white dark:bg-charcoal-900 text-rose-primary dark:text-rose-accent flex items-center justify-center shadow-xs">
+                    <Bell className="h-4 w-4" />
+                  </div>
+                  <span className="text-xs font-bold text-charcoal-900 dark:text-ivory-100 group-hover:text-rose-primary dark:group-hover:text-rose-accent">
+                    Notice Broadcast
+                  </span>
+                </button>
+              </>
+            ) : currentRole === "ALUMNI" ? (
+              <>
+                <Link
+                  href="/careers"
+                  className="p-3 rounded-xl bg-ivory-100 dark:bg-charcoal-800 hover:bg-rose-container dark:hover:bg-charcoal-700 border border-border dark:border-charcoal-700 flex flex-col items-center text-center gap-2 transition-all group"
+                >
+                  <div className="h-8 w-8 rounded-lg bg-white dark:bg-charcoal-900 text-rose-primary dark:text-rose-accent flex items-center justify-center shadow-xs">
+                    <FileSpreadsheet className="h-4 w-4" />
+                  </div>
+                  <span className="text-xs font-bold text-charcoal-900 dark:text-ivory-100 group-hover:text-rose-primary dark:group-hover:text-rose-accent">
+                    Alumni Placements
+                  </span>
+                </Link>
+
+                <Link
+                  href="/library"
+                  className="p-3 rounded-xl bg-ivory-100 dark:bg-charcoal-800 hover:bg-rose-container dark:hover:bg-charcoal-700 border border-border dark:border-charcoal-700 flex flex-col items-center text-center gap-2 transition-all group"
+                >
+                  <div className="h-8 w-8 rounded-lg bg-white dark:bg-charcoal-900 text-rose-primary dark:text-rose-accent flex items-center justify-center shadow-xs">
+                    <BookOpen className="h-4 w-4" />
+                  </div>
+                  <span className="text-xs font-bold text-charcoal-900 dark:text-ivory-100 group-hover:text-rose-primary dark:group-hover:text-rose-accent">
+                    Digital Library
+                  </span>
+                </Link>
+
+                <Link
+                  href="/documents"
+                  className="p-3 rounded-xl bg-ivory-100 dark:bg-charcoal-800 hover:bg-rose-container dark:hover:bg-charcoal-700 border border-border dark:border-charcoal-700 flex flex-col items-center text-center gap-2 transition-all group"
+                >
+                  <div className="h-8 w-8 rounded-lg bg-white dark:bg-charcoal-900 text-rose-primary dark:text-rose-accent flex items-center justify-center shadow-xs">
+                    <FileText className="h-4 w-4" />
+                  </div>
+                  <span className="text-xs font-bold text-charcoal-900 dark:text-ivory-100 group-hover:text-rose-primary dark:group-hover:text-rose-accent">
+                    My Transcripts
+                  </span>
+                </Link>
+
+                <Link
+                  href="/communication"
+                  className="p-3 rounded-xl bg-ivory-100 dark:bg-charcoal-800 hover:bg-rose-container dark:hover:bg-charcoal-700 border border-border dark:border-charcoal-700 flex flex-col items-center text-center gap-2 transition-all group"
+                >
+                  <div className="h-8 w-8 rounded-lg bg-white dark:bg-charcoal-900 text-rose-primary dark:text-rose-accent flex items-center justify-center shadow-xs">
+                    <Send className="h-4 w-4" />
+                  </div>
+                  <span className="text-xs font-bold text-charcoal-900 dark:text-ivory-100 group-hover:text-rose-primary dark:group-hover:text-rose-accent">
+                    Alumni Network
+                  </span>
+                </Link>
+
+                <Link
+                  href="/careers?tab=mentorship"
+                  className="p-3 rounded-xl bg-ivory-100 dark:bg-charcoal-800 hover:bg-rose-container dark:hover:bg-charcoal-700 border border-border dark:border-charcoal-700 flex flex-col items-center text-center gap-2 transition-all group"
+                >
+                  <div className="h-8 w-8 rounded-lg bg-white dark:bg-charcoal-900 text-rose-primary dark:text-rose-accent flex items-center justify-center shadow-xs">
+                    <Users className="h-4 w-4" />
+                  </div>
+                  <span className="text-xs font-bold text-charcoal-900 dark:text-ivory-100 group-hover:text-rose-primary dark:group-hover:text-rose-accent">
+                    Mentorship
+                  </span>
+                </Link>
+              </>
+            ) : currentRole === "GUEST" ? (
+              <>
+                <Link
+                  href="/institution"
+                  className="p-3 rounded-xl bg-ivory-100 dark:bg-charcoal-800 hover:bg-rose-container dark:hover:bg-charcoal-700 border border-border dark:border-charcoal-700 flex flex-col items-center text-center gap-2 transition-all group"
+                >
+                  <div className="h-8 w-8 rounded-lg bg-white dark:bg-charcoal-900 text-rose-primary dark:text-rose-accent flex items-center justify-center shadow-xs">
+                    <Building2 className="h-4 w-4" />
+                  </div>
+                  <span className="text-xs font-bold text-charcoal-900 dark:text-ivory-100 group-hover:text-rose-primary dark:group-hover:text-rose-accent">
+                    Campus Profile
+                  </span>
+                </Link>
+
+                <Link
+                  href="/library"
+                  className="p-3 rounded-xl bg-ivory-100 dark:bg-charcoal-800 hover:bg-rose-container dark:hover:bg-charcoal-700 border border-border dark:border-charcoal-700 flex flex-col items-center text-center gap-2 transition-all group"
+                >
+                  <div className="h-8 w-8 rounded-lg bg-white dark:bg-charcoal-900 text-rose-primary dark:text-rose-accent flex items-center justify-center shadow-xs">
+                    <BookOpen className="h-4 w-4" />
+                  </div>
+                  <span className="text-xs font-bold text-charcoal-900 dark:text-ivory-100 group-hover:text-rose-primary dark:group-hover:text-rose-accent">
+                    Open Library
+                  </span>
+                </Link>
+
+                <Link
+                  href="/institution?tab=programs"
+                  className="p-3 rounded-xl bg-ivory-100 dark:bg-charcoal-800 hover:bg-rose-container dark:hover:bg-charcoal-700 border border-border dark:border-charcoal-700 flex flex-col items-center text-center gap-2 transition-all group"
+                >
+                  <div className="h-8 w-8 rounded-lg bg-white dark:bg-charcoal-900 text-rose-primary dark:text-rose-accent flex items-center justify-center shadow-xs">
+                    <Award className="h-4 w-4" />
+                  </div>
+                  <span className="text-xs font-bold text-charcoal-900 dark:text-ivory-100 group-hover:text-rose-primary dark:group-hover:text-rose-accent">
+                    Degrees
+                  </span>
+                </Link>
+
+                <Link
+                  href="/institution?tab=departments"
+                  className="p-3 rounded-xl bg-ivory-100 dark:bg-charcoal-800 hover:bg-rose-container dark:hover:bg-charcoal-700 border border-border dark:border-charcoal-700 flex flex-col items-center text-center gap-2 transition-all group"
+                >
+                  <div className="h-8 w-8 rounded-lg bg-white dark:bg-charcoal-900 text-rose-primary dark:text-rose-accent flex items-center justify-center shadow-xs">
+                    <Users className="h-4 w-4" />
+                  </div>
+                  <span className="text-xs font-bold text-charcoal-900 dark:text-ivory-100 group-hover:text-rose-primary dark:group-hover:text-rose-accent">
+                    Departments
+                  </span>
+                </Link>
+
+                <Link
+                  href="/institution?tab=infrastructure"
+                  className="p-3 rounded-xl bg-ivory-100 dark:bg-charcoal-800 hover:bg-rose-container dark:hover:bg-charcoal-700 border border-border dark:border-charcoal-700 flex flex-col items-center text-center gap-2 transition-all group"
+                >
+                  <div className="h-8 w-8 rounded-lg bg-white dark:bg-charcoal-900 text-rose-primary dark:text-rose-accent flex items-center justify-center shadow-xs">
+                    <MapPin className="h-4 w-4" />
+                  </div>
+                  <span className="text-xs font-bold text-charcoal-900 dark:text-ivory-100 group-hover:text-rose-primary dark:group-hover:text-rose-accent">
+                    Infrastructure
+                  </span>
+                </Link>
+              </>
             ) : (
+              /* Administrative Leadership: SUPER_ADMIN, INSTITUTION_ADMIN, PRINCIPAL, HOD */
               <>
                 <button
                   onClick={() => setIsAddStudentOpen(true)}

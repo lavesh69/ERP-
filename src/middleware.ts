@@ -57,13 +57,42 @@ export async function middleware(req: NextRequest) {
     "/finance": ["SUPER_ADMIN", "INSTITUTION_ADMIN", "PRINCIPAL", "ACCOUNTANT", "STUDENT", "PARENT"],
     "/library": ["SUPER_ADMIN", "INSTITUTION_ADMIN", "LIBRARIAN", "FACULTY", "STUDENT", "ALUMNI", "GUEST"],
     "/careers": ["SUPER_ADMIN", "INSTITUTION_ADMIN", "PLACEMENT_OFFICER", "STUDENT", "ALUMNI"],
+    "/documents": ["SUPER_ADMIN", "INSTITUTION_ADMIN", "PRINCIPAL", "HOD", "FACULTY", "CLASS_TEACHER", "STUDENT", "ACCOUNTANT", "LIBRARIAN", "EXAMINATION_CONTROLLER", "PLACEMENT_OFFICER", "RESEARCH_COORDINATOR", "HR_STAFF", "ALUMNI"],
+    "/scholarships": ["SUPER_ADMIN", "INSTITUTION_ADMIN", "PRINCIPAL", "HOD", "ACCOUNTANT", "STUDENT"],
+    "/lms": ["SUPER_ADMIN", "INSTITUTION_ADMIN", "PRINCIPAL", "HOD", "FACULTY", "CLASS_TEACHER", "STUDENT"],
+    "/assignments": ["SUPER_ADMIN", "INSTITUTION_ADMIN", "PRINCIPAL", "HOD", "FACULTY", "CLASS_TEACHER", "STUDENT"],
+    "/attendance": ["SUPER_ADMIN", "INSTITUTION_ADMIN", "PRINCIPAL", "HOD", "FACULTY", "CLASS_TEACHER", "HR_STAFF", "STUDENT", "PARENT"],
+  };
+
+  const getRoleDefaultHome = (role: string): string => {
+    switch (role) {
+      case "STUDENT":
+        return "/students/profile";
+      case "PARENT":
+        return "/parent";
+      case "GUEST":
+        return "/institution";
+      case "ALUMNI":
+        return "/careers";
+      case "ACCOUNTANT":
+        return "/finance";
+      case "LIBRARIAN":
+        return "/library";
+      case "EXAMINATION_CONTROLLER":
+        return "/examinations";
+      case "PLACEMENT_OFFICER":
+        return "/careers";
+      case "RESEARCH_COORDINATOR":
+        return "/research";
+      default:
+        return "/";
+    }
   };
 
   // If visiting /login or /register while already authenticated, redirect to role home
   if (pathname === "/login" || pathname === "/register") {
     if (userSession) {
-      const home = userSession.role === "STUDENT" ? "/students/profile" : "/";
-      return NextResponse.redirect(new URL(home, req.url));
+      return NextResponse.redirect(new URL(getRoleDefaultHome(userSession.role), req.url));
     }
     return NextResponse.next();
   }
@@ -86,18 +115,26 @@ export async function middleware(req: NextRequest) {
       return res;
     }
 
-    // Restrict /students (directory list) from students — scholars must use /students/profile
+    // Restrict /students (directory list) to staff — scholars, parents, alumni, and guests cannot view full directory
     if (pathname === "/students" || pathname === "/students/") {
-      if (userSession.role === "STUDENT" || userSession.role === "PARENT") {
+      if (userSession.role === "STUDENT") {
         return NextResponse.redirect(new URL("/students/profile", req.url));
+      }
+      if (userSession.role === "PARENT") {
+        return NextResponse.redirect(new URL("/parent", req.url));
+      }
+      if (userSession.role === "GUEST") {
+        return NextResponse.redirect(new URL("/institution", req.url));
+      }
+      if (userSession.role === "ALUMNI") {
+        return NextResponse.redirect(new URL("/careers", req.url));
       }
     }
 
     for (const [routePrefix, allowedRoles] of Object.entries(ROUTE_PERMISSIONS)) {
       if (pathname === routePrefix || pathname.startsWith(`${routePrefix}/`)) {
         if (!allowedRoles.includes(userSession.role)) {
-          const fallback = userSession.role === "STUDENT" ? "/students/profile" : "/";
-          return NextResponse.redirect(new URL(fallback, req.url));
+          return NextResponse.redirect(new URL(getRoleDefaultHome(userSession.role), req.url));
         }
       }
     }

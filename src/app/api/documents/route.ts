@@ -28,8 +28,37 @@ export async function GET(req: NextRequest) {
     const search = searchParams.get("search");
 
     if (action === "TRANSCRIPT") {
+      if (!session) {
+        return NextResponse.json(
+          { error: "Authentication required to access academic transcripts" },
+          { status: 401 }
+        );
+      }
+
+      const isStaffOrAdmin = [
+        "SUPER_ADMIN",
+        "INSTITUTION_ADMIN",
+        "PRINCIPAL",
+        "EXAMINATION_CONTROLLER",
+        "HOD",
+        "CLASS_TEACHER",
+      ].includes(session.role);
+
       let student = null;
       if (targetStudentId) {
+        if (!isStaffOrAdmin) {
+          const callerStudent = await prisma.student.findFirst({
+            where: {
+              OR: [{ userId: session.userId }, { user: { email: session.email } }],
+            },
+          });
+          if (!callerStudent || callerStudent.id !== targetStudentId) {
+            return NextResponse.json(
+              { error: "Forbidden: You are only authorized to access your own academic transcript (FERPA Protection)." },
+              { status: 403 }
+            );
+          }
+        }
         student = await prisma.student.findUnique({
           where: { id: targetStudentId },
           include: {
@@ -39,8 +68,7 @@ export async function GET(req: NextRequest) {
             examResults: { include: { exam: { include: { course: true } } } },
           },
         });
-      }
-      if (!student && session?.userId) {
+      } else if (session.userId) {
         student = await prisma.student.findFirst({
           where: {
             OR: [
@@ -48,16 +76,6 @@ export async function GET(req: NextRequest) {
               { user: { email: session.email } },
             ],
           },
-          include: {
-            user: true,
-            program: { include: { department: true } },
-            enrollments: { include: { course: true } },
-            examResults: { include: { exam: { include: { course: true } } } },
-          },
-        });
-      }
-      if (!student) {
-        student = await prisma.student.findFirst({
           include: {
             user: true,
             program: { include: { department: true } },
@@ -219,14 +237,40 @@ export async function GET(req: NextRequest) {
     }
 
     if (action === "FEE_CERTIFICATE") {
+      if (!session) {
+        return NextResponse.json(
+          { error: "Authentication required to generate tax fee certificates" },
+          { status: 401 }
+        );
+      }
+
+      const isFinanceStaff = [
+        "SUPER_ADMIN",
+        "INSTITUTION_ADMIN",
+        "PRINCIPAL",
+        "ACCOUNTANT",
+      ].includes(session.role);
+
       let student = null;
       if (targetStudentId) {
+        if (!isFinanceStaff) {
+          const callerStudent = await prisma.student.findFirst({
+            where: {
+              OR: [{ userId: session.userId }, { user: { email: session.email } }],
+            },
+          });
+          if (!callerStudent || callerStudent.id !== targetStudentId) {
+            return NextResponse.json(
+              { error: "Forbidden: You are only authorized to generate your own tax fee certificates." },
+              { status: 403 }
+            );
+          }
+        }
         student = await prisma.student.findUnique({
           where: { id: targetStudentId },
           include: { user: true, program: true, fees: { include: { feeStructure: true } } },
         });
-      }
-      if (!student && session?.userId) {
+      } else if (session.userId) {
         student = await prisma.student.findFirst({
           where: {
             OR: [
@@ -237,11 +281,7 @@ export async function GET(req: NextRequest) {
           include: { user: true, program: true, fees: { include: { feeStructure: true } } },
         });
       }
-      if (!student) {
-        student = await prisma.student.findFirst({
-          include: { user: true, program: true, fees: { include: { feeStructure: true } } },
-        });
-      }
+
       if (!student) {
         return NextResponse.json({ error: "Student not found" }, { status: 404 });
       }
@@ -333,18 +373,30 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
+    const session = await getOptionalSession(req);
+    if (!session) {
+      return NextResponse.json(
+        { error: "Authentication required to upload documents" },
+        { status: 401 }
+      );
+    }
+
     const formData = await req.formData();
     const file = formData.get("file") as File | null;
     const title = formData.get("title") as string;
     const category = (formData.get("category") as string) || "OFFICIAL_TRANSCRIPT";
-    const userId = (formData.get("userId") as string) || "usr-alex-01";
 
     if (!title) {
       return NextResponse.json({ error: "Document title is required" }, { status: 400 });
     }
 
-    // Default user fallback
-    let authorUser = await prisma.user.findFirst();
+    // Resolve authenticated author
+    let authorUser = session.userId
+      ? await prisma.user.findUnique({ where: { id: session.userId } })
+      : null;
+    if (!authorUser) {
+      authorUser = await prisma.user.findFirst();
+    }
     if (!authorUser) {
       return NextResponse.json({ error: "Institution user not found" }, { status: 400 });
     }

@@ -71,7 +71,6 @@ export async function GET(req: NextRequest) {
       "ACCOUNTANT",
       "HOD",
       "PRINCIPAL",
-      "FACULTY",
     ].includes(session.role);
 
     const allApplications = canViewApplications
@@ -117,6 +116,25 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const session = await getOptionalSession(req);
+    if (!session) {
+      return NextResponse.json(
+        { error: "Authentication required to apply for scholarships" },
+        { status: 401 }
+      );
+    }
+
+    const isStudentOrAdmin = [
+      "STUDENT",
+      "SUPER_ADMIN",
+      "INSTITUTION_ADMIN",
+    ].includes(session.role);
+    if (!isStudentOrAdmin) {
+      return NextResponse.json(
+        { error: "Forbidden: Only enrolled students can submit scholarship applications" },
+        { status: 403 }
+      );
+    }
+
     const body = await req.json();
     const { scholarshipId, statement, documentsUrl } = body;
 
@@ -140,7 +158,7 @@ export async function POST(req: NextRequest) {
 
     // Resolve student record
     let student = null;
-    if (session?.userId) {
+    if (session.userId) {
       student = await prisma.student.findFirst({
         where: {
           OR: [
@@ -153,15 +171,9 @@ export async function POST(req: NextRequest) {
     }
 
     if (!student) {
-      student = await prisma.student.findFirst({
-        include: { user: true },
-      });
-    }
-
-    if (!student) {
       return NextResponse.json(
         { error: "No student profile found for scholarship application" },
-        { status: 403 }
+        { status: 404 }
       );
     }
 
@@ -217,7 +229,7 @@ export async function POST(req: NextRequest) {
 export async function PATCH(req: NextRequest) {
   try {
     const session = await getOptionalSession(req);
-    const allowedRoles = ["SUPER_ADMIN", "INSTITUTION_ADMIN", "FACULTY", "HOD", "ACCOUNTANT", "PRINCIPAL"];
+    const allowedRoles = ["SUPER_ADMIN", "INSTITUTION_ADMIN", "ACCOUNTANT", "PRINCIPAL", "HOD"];
     if (!session || !allowedRoles.includes(session.role)) {
       return NextResponse.json({ error: "Access denied. Administrative role required." }, { status: 403 });
     }
