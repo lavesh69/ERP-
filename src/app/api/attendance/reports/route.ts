@@ -51,6 +51,9 @@ export async function GET(req: NextRequest) {
           date: { gte: startOfDay, lte: endOfDay },
           ...(courseId ? { courseId } : {}),
           ...(sectionId ? { sectionId } : {}),
+          ...(auth.payload.role !== "SUPER_ADMIN" && auth.payload.institutionId ? {
+            course: { department: { campus: { institutionId: auth.payload.institutionId } } },
+          } : {}),
         },
         include: {
           course: { include: { department: true } },
@@ -140,6 +143,9 @@ export async function GET(req: NextRequest) {
       const students = await prisma.student.findMany({
         where: {
           ...(sectionId ? { sectionId } : {}),
+          ...(auth.payload.role !== "SUPER_ADMIN" && auth.payload.institutionId ? {
+            user: { institutionId: auth.payload.institutionId },
+          } : {}),
         },
         include: {
           user: true,
@@ -230,8 +236,13 @@ export async function GET(req: NextRequest) {
     if (reportType === "SUBJECT_REGISTER") {
       let targetCourse = null;
       if (courseId) {
-        targetCourse = await prisma.course.findUnique({
-          where: { id: courseId },
+        targetCourse = await prisma.course.findFirst({
+          where: {
+            id: courseId,
+            ...(auth.payload.role !== "SUPER_ADMIN" && auth.payload.institutionId ? {
+              department: { campus: { institutionId: auth.payload.institutionId } },
+            } : {}),
+          },
           include: {
             enrollments: {
               include: {
@@ -247,6 +258,9 @@ export async function GET(req: NextRequest) {
 
       if (!targetCourse) {
         targetCourse = await prisma.course.findFirst({
+          where: auth.payload.role !== "SUPER_ADMIN" && auth.payload.institutionId ? {
+            department: { campus: { institutionId: auth.payload.institutionId } },
+          } : undefined,
           include: {
             enrollments: {
               include: {

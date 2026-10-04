@@ -44,9 +44,15 @@ const DEFAULT_EXAM_HALLS: ExamHallConfig[] = [
 export async function GET(req: NextRequest) {
   try {
     const session = await getOptionalSession(req);
+    if (session && (session.role === "STUDENT" || session.role === "PARENT" || session.role === "GUEST")) {
+      return NextResponse.json({ error: "Forbidden: Seating allocation restricted to examination proctors and staff" }, { status: 403 });
+    }
 
-    // Fetch courses with enrollments and student details
+    // Fetch courses with enrollments and student details scoped to institution
     const courses = await prisma.course.findMany({
+      where: session && session.role !== "SUPER_ADMIN" && session.institutionId ? {
+        department: { campus: { institutionId: session.institutionId } },
+      } : undefined,
       include: {
         department: true,
         enrollments: {
@@ -170,6 +176,9 @@ export async function POST(req: NextRequest) {
     const whereClause: any = {};
     if (Array.isArray(courseCodes) && courseCodes.length > 0) {
       whereClause.code = { in: courseCodes };
+    }
+    if (auth.payload.role !== "SUPER_ADMIN" && auth.payload.institutionId) {
+      whereClause.department = { campus: { institutionId: auth.payload.institutionId } };
     }
 
     const courses = await prisma.course.findMany({

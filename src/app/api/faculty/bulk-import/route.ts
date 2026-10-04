@@ -41,11 +41,13 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "No faculty records found in upload." }, { status: 400 });
     }
 
-    const institutionId = session.institutionId || "inst-apex-01";
+    const institutionId = session.institutionId || (await prisma.institution.findFirst())?.id || "inst-apex-01";
     let department = await prisma.department.findFirst({
       where: { campus: { institutionId } },
     });
-    if (!department) department = await prisma.department.findFirst();
+    if (!department && session.role === "SUPER_ADMIN") {
+      department = await prisma.department.findFirst();
+    }
     if (!department) {
       return NextResponse.json({ error: "No academic department exists in institution." }, { status: 400 });
     }

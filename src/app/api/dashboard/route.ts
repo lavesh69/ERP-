@@ -525,6 +525,8 @@ export async function GET(req: NextRequest) {
     const daysOfWeek = ["SUNDAY", "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY"];
     const todayDayOfWeek = daysOfWeek[new Date().getDay()];
 
+    const tenantFilter = role !== "SUPER_ADMIN" && session?.institutionId ? session.institutionId : undefined;
+
     const [
       studentCount,
       facultyCount,
@@ -534,11 +536,20 @@ export async function GET(req: NextRequest) {
       feeAggregates,
       attendanceRecords,
     ] = await Promise.all([
-      prisma.student.count(),
-      prisma.faculty.count(),
-      prisma.course.count(),
+      prisma.student.count({
+        where: tenantFilter ? { user: { institutionId: tenantFilter } } : undefined,
+      }),
+      prisma.faculty.count({
+        where: tenantFilter ? { user: { institutionId: tenantFilter } } : undefined,
+      }),
+      prisma.course.count({
+        where: tenantFilter ? { department: { campus: { institutionId: tenantFilter } } } : undefined,
+      }),
       prisma.timetableSlot.findMany({
-        where: { dayOfWeek: todayDayOfWeek },
+        where: {
+          dayOfWeek: todayDayOfWeek,
+          ...(tenantFilter ? { course: { department: { campus: { institutionId: tenantFilter } } } } : {}),
+        },
         take: 8,
         include: {
           course: true,
@@ -548,16 +559,19 @@ export async function GET(req: NextRequest) {
         orderBy: { startTime: "asc" },
       }),
       prisma.announcement.findMany({
+        where: tenantFilter ? { institutionId: tenantFilter } : undefined,
         take: 4,
         orderBy: { createdAt: "desc" },
       }),
       prisma.studentFee.aggregate({
+        where: tenantFilter ? { student: { user: { institutionId: tenantFilter } } } : undefined,
         _sum: {
           totalAmount: true,
           paidAmount: true,
         },
       }),
       prisma.attendanceRecord.findMany({
+        where: tenantFilter ? { student: { user: { institutionId: tenantFilter } } } : undefined,
         select: { status: true },
       }),
     ]);

@@ -14,6 +14,9 @@ export async function GET(req: NextRequest) {
     const limit = Math.min(500, Number(searchParams.get("limit")) || 100);
 
     const logs = await prisma.auditLog.findMany({
+      where: session.role !== "SUPER_ADMIN" && session.institutionId ? {
+        institutionId: session.institutionId,
+      } : undefined,
       take: limit,
       orderBy: { timestamp: "asc" },
       include: {

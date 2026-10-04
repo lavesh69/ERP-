@@ -75,21 +75,23 @@ export async function GET(req: NextRequest) {
 
     const allApplications = canViewApplications
       ? scholarships.flatMap((s) =>
-          s.applications.map((app) => ({
-            id: app.id,
-            scholarshipId: s.id,
-            scholarshipTitle: s.title,
-            provider: s.provider,
-            amount: `$${s.amount.toLocaleString()} / semester`,
-            studentId: app.student.id,
-            studentName: `${app.student.user.firstName} ${app.student.user.lastName}`,
-            rollNumber: app.student.rollNumber,
-            cgpa: app.student.cgpa,
-            statement: app.statement,
-            documentsUrl: app.documentsUrl,
-            status: app.status,
-            appliedAt: app.appliedAt.toISOString().split("T")[0],
-          }))
+          s.applications
+            .filter((app) => session.role === "SUPER_ADMIN" || !session.institutionId || app.student.user.institutionId === session.institutionId)
+            .map((app) => ({
+              id: app.id,
+              scholarshipId: s.id,
+              scholarshipTitle: s.title,
+              provider: s.provider,
+              amount: `$${s.amount.toLocaleString()} / semester`,
+              studentId: app.student.id,
+              studentName: `${app.student.user.firstName} ${app.student.user.lastName}`,
+              rollNumber: app.student.rollNumber,
+              cgpa: app.student.cgpa,
+              statement: app.statement,
+              documentsUrl: app.documentsUrl,
+              status: app.status,
+              appliedAt: app.appliedAt.toISOString().split("T")[0],
+            }))
         )
       : [];
 
@@ -254,6 +256,13 @@ export async function PATCH(req: NextRequest) {
 
     if (!application) {
       return NextResponse.json({ error: "Scholarship application not found" }, { status: 404 });
+    }
+
+    if (session.role !== "SUPER_ADMIN" && session.institutionId && application.student.user.institutionId !== session.institutionId) {
+      return NextResponse.json(
+        { error: "Forbidden: Cannot review scholarships outside your institution" },
+        { status: 403 }
+      );
     }
 
     const updated = await prisma.scholarshipApplication.update({

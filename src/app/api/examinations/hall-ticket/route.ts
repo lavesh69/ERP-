@@ -43,7 +43,7 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "Examination record not found" }, { status: 404 });
     }
 
-    // Resolve student with IDOR protection
+    // Resolve student with IDOR and tenant protection
     let student = null;
     if (session?.role === "STUDENT") {
       student = await prisma.student.findFirst({
@@ -67,9 +67,14 @@ export async function GET(req: NextRequest) {
         where: { id: studentId },
         include: { user: true, program: true },
       });
-    }
 
-    if (!student && session?.userId) {
+      if (student && session && session.role !== "SUPER_ADMIN" && session.institutionId && student.user.institutionId !== session.institutionId) {
+        return NextResponse.json(
+          { error: "Forbidden: Cross-institution student record access denied" },
+          { status: 403 }
+        );
+      }
+    } else if (session?.userId) {
       student = await prisma.student.findFirst({
         where: {
           OR: [
@@ -81,9 +86,12 @@ export async function GET(req: NextRequest) {
       });
     }
 
-    if (!student) {
-      // Default to first student in cohort for administrative demonstration
+    // Administrative preview fallback within the caller's institution
+    if (!student && (!session || ["SUPER_ADMIN", "INSTITUTION_ADMIN", "EXAMINATION_CONTROLLER", "PRINCIPAL", "HOD", "FACULTY"].includes(session.role))) {
       student = await prisma.student.findFirst({
+        where: session && session.role !== "SUPER_ADMIN" && session.institutionId ? {
+          user: { institutionId: session.institutionId },
+        } : undefined,
         include: { user: true, program: true },
       });
     }

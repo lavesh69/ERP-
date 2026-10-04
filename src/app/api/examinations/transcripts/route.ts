@@ -37,9 +37,11 @@ export async function GET(req: NextRequest) {
         where: { id: studentId },
         include: { user: true, program: { include: { department: true } } },
       });
-    }
 
-    if (!student && session?.userId) {
+      if (student && session && session.role !== "SUPER_ADMIN" && session.institutionId && student.user.institutionId !== session.institutionId) {
+        return NextResponse.json({ error: "Forbidden: Cross-institution transcript access denied" }, { status: 403 });
+      }
+    } else if (session?.userId) {
       student = await prisma.student.findFirst({
         where: {
           OR: [{ userId: session.userId }, { user: { email: session.email } }],
@@ -48,9 +50,12 @@ export async function GET(req: NextRequest) {
       });
     }
 
-    if (!student) {
-      // Default to first student for administrative preview
+    if (!student && (!session || ["SUPER_ADMIN", "INSTITUTION_ADMIN", "EXAMINATION_CONTROLLER", "PRINCIPAL", "HOD"].includes(session.role))) {
+      // Administrative / preview scoped to caller's institution
       student = await prisma.student.findFirst({
+        where: session && session.role !== "SUPER_ADMIN" && session.institutionId ? {
+          user: { institutionId: session.institutionId },
+        } : undefined,
         include: { user: true, program: { include: { department: true } } },
       });
     }

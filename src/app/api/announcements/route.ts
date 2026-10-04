@@ -16,7 +16,10 @@ export async function GET(req: NextRequest) {
     }
 
     const announcements = await prisma.announcement.findMany({
-      where: whereClause,
+      where: {
+        ...whereClause,
+        ...(session?.role !== "SUPER_ADMIN" && session?.institutionId ? { institutionId: session.institutionId } : {}),
+      },
       orderBy: { createdAt: "desc" },
     });
 
@@ -46,14 +49,17 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const institution = await prisma.institution.findFirst();
-    if (!institution) {
+    const effectiveInstId = (auth.payload.role === "SUPER_ADMIN" && body.institutionId)
+      ? body.institutionId
+      : (auth.payload.institutionId || (await prisma.institution.findFirst())?.id);
+
+    if (!effectiveInstId) {
       return NextResponse.json({ error: "Institution not found" }, { status: 400 });
     }
 
     const announcement = await prisma.announcement.create({
       data: {
-        institutionId: institution.id,
+        institutionId: effectiveInstId,
         title,
         content,
         targetAudience: targetAudience || "ALL",
@@ -71,7 +77,11 @@ export async function POST(req: NextRequest) {
       else roleFilter = ["STUDENT", "FACULTY", "PARENT", "SUPER_ADMIN"];
 
       const targetUsers = await prisma.user.findMany({
-        where: { role: { in: roleFilter }, isActive: true },
+        where: {
+          role: { in: roleFilter },
+          isActive: true,
+          institutionId: effectiveInstId,
+        },
         select: { id: true },
         take: 300,
       });
@@ -99,7 +109,7 @@ export async function POST(req: NextRequest) {
       if (actorId) {
         await prisma.auditLog.create({
           data: {
-            institutionId: institution.id,
+            institutionId: effectiveInstId,
             actorUserId: actorId,
             action: priority === "URGENT" ? "EMERGENCY_BROADCAST_TRIGGERED" : "CIRCULAR_PUBLISHED",
             targetEntity: "Announcement",

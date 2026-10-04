@@ -32,6 +32,7 @@ export async function GET(req: NextRequest) {
             { userId: targetFacultyId },
             { user: { email: targetFacultyId } },
           ],
+          ...(session?.role !== "SUPER_ADMIN" && session?.institutionId ? { user: { institutionId: session.institutionId } } : {}),
         },
         include: {
           user: true,
@@ -274,6 +275,9 @@ export async function GET(req: NextRequest) {
 
     // 2. Directory Listing Mode
     const faculty = await prisma.faculty.findMany({
+      where: session?.role !== "SUPER_ADMIN" && session?.institutionId ? {
+        user: { institutionId: session.institutionId },
+      } : undefined,
       include: {
         user: true,
         department: true,
@@ -338,6 +342,13 @@ export async function PATCH(req: NextRequest) {
     if (!session || (!isOwner && !isAdmin)) {
       return NextResponse.json(
         { error: "Unauthorized: You may only update your own faculty profile or require administrative privileges." },
+        { status: 403 }
+      );
+    }
+
+    if (isAdmin && session.role !== "SUPER_ADMIN" && session.institutionId && faculty.user.institutionId !== session.institutionId) {
+      return NextResponse.json(
+        { error: "Forbidden: Cannot update faculty belonging to another institution." },
         { status: 403 }
       );
     }
@@ -577,12 +588,20 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const institution = await prisma.institution.findFirst();
+    const effectiveInstId = (auth.payload.role === "SUPER_ADMIN" && body.institutionId)
+      ? body.institutionId
+      : (auth.payload.institutionId || (await prisma.institution.findFirst())?.id);
+
     const department = await prisma.department.findFirst({
-      where: { code: departmentCode || "CSE" },
+      where: {
+        code: departmentCode || "CSE",
+        ...(auth.payload.role !== "SUPER_ADMIN" && auth.payload.institutionId ? {
+          campus: { institutionId: auth.payload.institutionId }
+        } : {}),
+      },
     });
 
-    if (!institution || !department) {
+    if (!effectiveInstId || !department) {
       return NextResponse.json({ error: "Institution or department not found" }, { status: 400 });
     }
 
@@ -592,7 +611,7 @@ export async function POST(req: NextRequest) {
 
     const facultyUser = await prisma.user.create({
       data: {
-        institutionId: institution.id,
+        institutionId: effectiveInstId,
         email: email.toLowerCase(),
         passwordHash,
         firstName,

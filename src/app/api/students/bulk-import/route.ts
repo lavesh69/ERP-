@@ -43,11 +43,11 @@ export async function POST(req: NextRequest) {
     }
 
     // Resolve Institution and default Program
-    const institutionId = session.institutionId || "inst-apex-01";
+    const institutionId = session.institutionId || (await prisma.institution.findFirst())?.id || "inst-apex-01";
     let program = await prisma.program.findFirst({
       where: { department: { campus: { institutionId } } },
     });
-    if (!program) {
+    if (!program && session.role === "SUPER_ADMIN") {
       program = await prisma.program.findFirst();
     }
     if (!program) {

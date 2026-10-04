@@ -42,6 +42,8 @@ export async function GET(req: NextRequest) {
         ],
       });
     }
+    const tenantFilter = session.role !== "SUPER_ADMIN" && session.institutionId ? session.institutionId : undefined;
+
     const [
       totalStudents,
       activeStudents,
@@ -51,11 +53,25 @@ export async function GET(req: NextRequest) {
       attendanceRecords,
       examResults,
     ] = await Promise.all([
-      db.student.count(),
-      db.student.count({ where: { status: "ACTIVE" } }),
-      db.student.findMany({ select: { cgpa: true, attendanceRate: true } }),
-      db.researchProject.findMany({ select: { grantAmount: true } }),
+      db.student.count({
+        where: tenantFilter ? { user: { institutionId: tenantFilter } } : undefined,
+      }),
+      db.student.count({
+        where: {
+          status: "ACTIVE",
+          ...(tenantFilter ? { user: { institutionId: tenantFilter } } : {}),
+        },
+      }),
+      db.student.findMany({
+        where: tenantFilter ? { user: { institutionId: tenantFilter } } : undefined,
+        select: { cgpa: true, attendanceRate: true },
+      }),
+      db.researchProject.findMany({
+        where: tenantFilter ? { leadFaculty: { user: { institutionId: tenantFilter } } } : undefined,
+        select: { grantAmount: true },
+      }),
       db.department.findMany({
+        where: tenantFilter ? { campus: { institutionId: tenantFilter } } : undefined,
         include: {
           programs: {
             include: {
@@ -64,8 +80,14 @@ export async function GET(req: NextRequest) {
           },
         },
       }),
-      db.attendanceRecord.findMany({ select: { status: true } }),
-      db.examResult.findMany({ select: { marksObtained: true } }),
+      db.attendanceRecord.findMany({
+        where: tenantFilter ? { student: { user: { institutionId: tenantFilter } } } : undefined,
+        select: { status: true },
+      }),
+      db.examResult.findMany({
+        where: tenantFilter ? { student: { user: { institutionId: tenantFilter } } } : undefined,
+        select: { marksObtained: true },
+      }),
     ]);
 
     // Retention rate

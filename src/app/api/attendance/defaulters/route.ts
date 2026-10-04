@@ -35,8 +35,8 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const session = await getOptionalSession(req);
-    // Only restrict if explicitly logged in with an unauthorized role (e.g. STUDENT)
-    if (session && session.role === "STUDENT") {
+    const allowedAlertRoles = ["SUPER_ADMIN", "INSTITUTION_ADMIN", "PRINCIPAL", "HOD", "FACULTY", "CLASS_TEACHER"];
+    if (session && !allowedAlertRoles.includes(session.role)) {
       return NextResponse.json(
         { error: "Access denied. Only faculty or administrative officers may dispatch pastoral guardian alerts." },
         { status: 403 }
@@ -60,16 +60,14 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Resolve or heal institutional root
-    let institution = await prisma.institution.findFirst();
+    // Resolve institutional root
+    const effectiveInstId = session && session.role !== "SUPER_ADMIN" && session.institutionId ? session.institutionId : "inst-apex-01";
+    let institution = await prisma.institution.findUnique({ where: { id: effectiveInstId } });
     if (!institution) {
-      institution = await prisma.institution.create({
-        data: {
-          name: "Apex Institute of Technology",
-          code: "AIT",
-        },
-      });
+      institution = await prisma.institution.findFirst();
     }
+    const instName = institution?.name || "Apex Institute of Technology";
+    const instId = institution?.id || effectiveInstId;
 
     const batchId = `ALERT-BATCH-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
     const timestamp = new Date().toISOString();
@@ -146,7 +144,7 @@ export async function POST(req: NextRequest) {
     <div class="header">
       <div class="badge">Pastoral Advisory Unit</div>
       <h1 style="margin: 0; font-size: 22px; font-weight: 800;">Academic Attendance Warning</h1>
-      <p style="margin: 6px 0 0 0; font-size: 13px; opacity: 0.9;">${institution.name} · Office of the Academic Dean</p>
+      <p style="margin: 6px 0 0 0; font-size: 13px; opacity: 0.9;">${instName} · Office of the Academic Dean</p>
     </div>
     <div class="content">
       <p style="font-size: 15px; margin-top: 0;">
@@ -274,7 +272,7 @@ export async function POST(req: NextRequest) {
     try {
       announcement = await prisma.announcement.create({
         data: {
-          institutionId: institution.id,
+          institutionId: instId,
           title: `Pastoral Attendance Warning: ${courseCode} Defaulters`,
           content: `Official pastoral warning issued for students below 75% threshold in ${courseCode}: ${defaulterSummaryItems.join(", ")}. Guardians are advised to monitor portal records.`,
           targetAudience: "PARENTS",

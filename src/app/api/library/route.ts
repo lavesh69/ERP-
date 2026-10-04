@@ -24,6 +24,9 @@ export async function GET(req: NextRequest) {
         orderBy: { title: "asc" },
       }),
       prisma.student.findMany({
+        where: session?.role !== "SUPER_ADMIN" && session?.institutionId ? {
+          user: { institutionId: session.institutionId },
+        } : undefined,
         include: { user: true },
         orderBy: { rollNumber: "asc" },
       }),
@@ -328,6 +331,17 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: "bookId and studentId are required" }, { status: 400 });
       }
 
+      const targetStudent = await prisma.student.findUnique({
+        where: { id: studentId },
+        include: { user: true },
+      });
+      if (!targetStudent) {
+        return NextResponse.json({ error: "Student not found" }, { status: 404 });
+      }
+      if (session?.role !== "SUPER_ADMIN" && session?.institutionId && targetStudent.user.institutionId !== session.institutionId) {
+        return NextResponse.json({ error: "Forbidden: Cannot issue books to students of another institution" }, { status: 403 });
+      }
+
       const book = await prisma.libraryBook.findUnique({ where: { id: bookId } });
       if (!book || book.availableCopies <= 0) {
         return NextResponse.json({ error: "Book not available for loan" }, { status: 400 });
@@ -357,9 +371,15 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: "loanId is required" }, { status: 400 });
       }
 
-      const loan = await prisma.bookLoan.findUnique({ where: { id: loanId } });
+      const loan = await prisma.bookLoan.findUnique({
+        where: { id: loanId },
+        include: { student: { include: { user: true } } },
+      });
       if (!loan) {
         return NextResponse.json({ error: "Loan record not found" }, { status: 404 });
+      }
+      if (session?.role !== "SUPER_ADMIN" && session?.institutionId && loan.student.user.institutionId !== session.institutionId) {
+        return NextResponse.json({ error: "Forbidden: Cannot return loans belonging to another institution" }, { status: 403 });
       }
 
       const now = new Date();

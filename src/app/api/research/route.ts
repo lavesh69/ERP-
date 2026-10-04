@@ -40,8 +40,18 @@ const PEER_REVIEWS_REGISTRY: Record<string, PeerReviewEvaluation[]> = {
 
 export async function GET(req: NextRequest) {
   try {
+    const session = await getOptionalSession(req);
+    const tenantFacultyFilter = session?.role !== "SUPER_ADMIN" && session?.institutionId ? {
+      leadFaculty: { user: { institutionId: session.institutionId } },
+    } : undefined;
+
+    const tenantPubFilter = session?.role !== "SUPER_ADMIN" && session?.institutionId ? {
+      faculty: { user: { institutionId: session.institutionId } },
+    } : undefined;
+
     const [projects, publications] = await Promise.all([
       prisma.researchProject.findMany({
+        where: tenantFacultyFilter,
         include: {
           leadFaculty: {
             include: {
@@ -54,6 +64,7 @@ export async function GET(req: NextRequest) {
         orderBy: { createdAt: "desc" },
       }),
       prisma.publication.findMany({
+        where: tenantPubFilter,
         include: {
           faculty: {
             include: {
@@ -205,9 +216,21 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Title and Abstract are required" }, { status: 400 });
     }
 
-    const faculty = await prisma.faculty.findFirst({
-      include: { user: true },
-    });
+    let faculty = null;
+    if (authResult.payload.userId) {
+      faculty = await prisma.faculty.findUnique({
+        where: { userId: authResult.payload.userId },
+        include: { user: true },
+      });
+    }
+    if (!faculty) {
+      faculty = await prisma.faculty.findFirst({
+        where: authResult.payload.role !== "SUPER_ADMIN" && authResult.payload.institutionId ? {
+          user: { institutionId: authResult.payload.institutionId },
+        } : undefined,
+        include: { user: true },
+      });
+    }
 
     if (!faculty) {
       return NextResponse.json({ error: "No faculty profile found to assign as PI" }, { status: 400 });

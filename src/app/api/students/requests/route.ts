@@ -51,6 +51,9 @@ export async function GET(req: NextRequest) {
     } else {
       // Faculty / Admin: view all institutional requests
       requests = await prisma.studentRequest.findMany({
+        where: session.role !== "SUPER_ADMIN" && session.institutionId ? {
+          student: { user: { institutionId: session.institutionId } },
+        } : undefined,
         include: {
           student: {
             include: { user: true, program: true },
@@ -100,7 +103,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Resolve student
-    let student = await prisma.student.findFirst({
+    const student = await prisma.student.findFirst({
       where: {
         OR: [
           { userId: session.userId },
@@ -109,13 +112,8 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    // Sandbox fallback
     if (!student) {
-      student = await prisma.student.findFirst();
-    }
-
-    if (!student) {
-      return NextResponse.json({ error: "Student profile not found" }, { status: 404 });
+      return NextResponse.json({ error: "Student profile not found for this account" }, { status: 404 });
     }
 
     const newRequest = await prisma.studentRequest.create({
@@ -157,11 +155,18 @@ export async function PATCH(req: NextRequest) {
 
     const existingRequest = await prisma.studentRequest.findUnique({
       where: { id: requestId },
-      include: { student: true },
+      include: { student: { include: { user: true } } },
     });
 
     if (!existingRequest) {
       return NextResponse.json({ error: "Request not found" }, { status: 404 });
+    }
+
+    if (auth.payload.role !== "SUPER_ADMIN" && auth.payload.institutionId && existingRequest.student.user.institutionId !== auth.payload.institutionId) {
+      return NextResponse.json(
+        { error: "Forbidden: Cannot review requests outside your institution" },
+        { status: 403 }
+      );
     }
 
     const reviewerId = auth.payload.userId || auth.payload.sub || "admin";

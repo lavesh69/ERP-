@@ -44,16 +44,31 @@ export async function POST(req: NextRequest) {
       errors: [] as string[],
     };
 
+    const tenantDeptFilter = auth.payload.role !== "SUPER_ADMIN" && auth.payload.institutionId ? {
+      campus: { institutionId: auth.payload.institutionId }
+    } : undefined;
+
+    const tenantFacFilter = auth.payload.role !== "SUPER_ADMIN" && auth.payload.institutionId ? {
+      user: { institutionId: auth.payload.institutionId }
+    } : undefined;
+
     // Preload departments, programs, and faculty for fast batch lookup
-    const departments = await prisma.department.findMany({ select: { id: true, code: true } });
+    const departments = await prisma.department.findMany({
+      where: tenantDeptFilter,
+      select: { id: true, code: true }
+    });
     const departmentMap = new Map(departments.map((d) => [d.code.toUpperCase(), d.id]));
 
     const programs = await prisma.program.findMany({
+      where: tenantDeptFilter ? { department: tenantDeptFilter } : undefined,
       include: { semesters: true },
     });
     const programMap = new Map(programs.map((p) => [p.code.toUpperCase(), p]));
 
-    const faculty = await prisma.faculty.findMany({ select: { id: true, employeeCode: true } });
+    const faculty = await prisma.faculty.findMany({
+      where: tenantFacFilter,
+      select: { id: true, employeeCode: true }
+    });
     const facultyMap = new Map(faculty.map((f) => [f.employeeCode.toUpperCase(), f.id]));
 
     // Transactional Batch Import

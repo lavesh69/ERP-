@@ -51,6 +51,9 @@ export async function GET(req: NextRequest) {
     }
 
     const logs = await prisma.auditLog.findMany({
+      where: auth.payload.role !== "SUPER_ADMIN" && auth.payload.institutionId ? {
+        institutionId: auth.payload.institutionId,
+      } : undefined,
       include: {
         actor: {
           select: {

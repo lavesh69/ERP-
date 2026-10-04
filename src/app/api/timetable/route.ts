@@ -14,17 +14,33 @@ export async function GET(req: NextRequest) {
 
     const session = await getOptionalSession(req);
 
+    const tenantFilter = session?.role !== "SUPER_ADMIN" && session?.institutionId ? session.institutionId : undefined;
+
     // 1. Fetch Metadata (Rooms, Courses, Faculty, Sections)
     const [rooms, courses, facultyList, sectionsList] = await Promise.all([
-      prisma.room.findMany({ orderBy: { code: "asc" } }),
-      prisma.course.findMany({ orderBy: { code: "asc" } }),
-      prisma.faculty.findMany({ include: { user: true }, orderBy: { designation: "asc" } }),
-      prisma.section.findMany({ orderBy: { name: "asc" } }),
+      prisma.room.findMany({
+        where: tenantFilter ? { campus: { institutionId: tenantFilter } } : undefined,
+        orderBy: { code: "asc" }
+      }),
+      prisma.course.findMany({
+        where: tenantFilter ? { department: { campus: { institutionId: tenantFilter } } } : undefined,
+        orderBy: { code: "asc" }
+      }),
+      prisma.faculty.findMany({
+        where: tenantFilter ? { user: { institutionId: tenantFilter } } : undefined,
+        include: { user: true },
+        orderBy: { designation: "asc" }
+      }),
+      prisma.section.findMany({
+        where: tenantFilter ? { semester: { program: { department: { campus: { institutionId: tenantFilter } } } } } : undefined,
+        orderBy: { name: "asc" }
+      }),
     ]);
 
     // 2. EXAM MODE: Fetch and format examination schedules
     if (mode === "EXAM") {
       const dbExams = await prisma.exam.findMany({
+        where: tenantFilter ? { course: { department: { campus: { institutionId: tenantFilter } } } } : undefined,
         include: {
           course: {
             include: { department: true },
@@ -124,7 +140,10 @@ export async function GET(req: NextRequest) {
     }
 
     const slots = await prisma.timetableSlot.findMany({
-      where: whereClause,
+      where: {
+        ...whereClause,
+        ...(tenantFilter ? { course: { department: { campus: { institutionId: tenantFilter } } } } : {}),
+      },
       include: {
         course: true,
         faculty: { include: { user: true } },
@@ -259,12 +278,40 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    const postTenantFilter = auth.payload.role !== "SUPER_ADMIN" && auth.payload.institutionId ? auth.payload.institutionId : undefined;
+
     const [course, faculty, room, section, existingSlots] = await Promise.all([
-      prisma.course.findFirst({ where: { code: courseCode } }),
-      prisma.faculty.findUnique({ where: { id: facultyId }, include: { user: true } }),
-      prisma.room.findUnique({ where: { id: roomId } }),
-      reqSectionId ? prisma.section.findUnique({ where: { id: reqSectionId } }) : prisma.section.findFirst(),
+      prisma.course.findFirst({
+        where: {
+          code: courseCode,
+          ...(postTenantFilter ? { department: { campus: { institutionId: postTenantFilter } } } : {}),
+        },
+      }),
+      prisma.faculty.findFirst({
+        where: {
+          id: facultyId,
+          ...(postTenantFilter ? { user: { institutionId: postTenantFilter } } : {}),
+        },
+        include: { user: true },
+      }),
+      prisma.room.findFirst({
+        where: {
+          id: roomId,
+          ...(postTenantFilter ? { campus: { institutionId: postTenantFilter } } : {}),
+        },
+      }),
+      reqSectionId
+        ? prisma.section.findFirst({
+            where: {
+              id: reqSectionId,
+              ...(postTenantFilter ? { semester: { program: { department: { campus: { institutionId: postTenantFilter } } } } } : {}),
+            },
+          })
+        : prisma.section.findFirst({
+            where: postTenantFilter ? { semester: { program: { department: { campus: { institutionId: postTenantFilter } } } } } : undefined,
+          }),
       prisma.timetableSlot.findMany({
+        where: postTenantFilter ? { course: { department: { campus: { institutionId: postTenantFilter } } } } : undefined,
         include: {
           course: true,
           faculty: { include: { user: true } },
