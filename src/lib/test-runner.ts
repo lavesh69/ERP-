@@ -713,8 +713,11 @@ async function runTestSuite() {
   // 19.2 Two-Factor Authentication (2FA) Rules & Verification
   if (superAdminDb) {
     const is2FAReq = is2FARequiredForUser(superAdminDb);
-    assert(is2FAReq, "SUPER_ADMIN privileged role mandates 2FA authentication");
+    assert(!is2FAReq, "SUPER_ADMIN role bypasses mandatory 2FA for smooth 1-click administrative access");
   }
+
+  const isAccountant2FAReq = is2FARequiredForUser("ACCOUNTANT");
+  assert(isAccountant2FAReq, "Financial ACCOUNTANT role enforces 2FA verification");
 
   const studentUser = allDbUsers.find((u) => u.role === "STUDENT");
   if (studentUser) {

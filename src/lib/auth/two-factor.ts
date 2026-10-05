@@ -4,7 +4,6 @@ import QRCode from "qrcode";
 export const MASTER_EMERGENCY_2FA_CODE = "260926";
 
 export const PRIVILEGED_2FA_ROLES = new Set([
-  "SUPER_ADMIN",
   "ACCOUNTANT",
   "EXAMINATION_CONTROLLER",
 ]);
@@ -87,6 +86,10 @@ export function is2FARequiredForUser(
   roleOrUser: string | { role: string; twoFactorEnabled?: boolean },
   twoFactorEnabled?: boolean
 ): boolean {
+  const role = typeof roleOrUser === "object" && roleOrUser !== null ? roleOrUser.role : roleOrUser;
+  // Super Admin explicitly does not require 2FA authentication
+  if (role === "SUPER_ADMIN") return false;
+
   if (typeof roleOrUser === "object" && roleOrUser !== null) {
     if (roleOrUser.twoFactorEnabled === true) return true;
     return PRIVILEGED_2FA_ROLES.has(roleOrUser.role);

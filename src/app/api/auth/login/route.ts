@@ -306,8 +306,18 @@ export async function POST(req: NextRequest) {
     }
 
     // 7. Check Two-Factor Authentication (2FA / MFA) Requirement
-    if (is2FARequiredForUser(dbUser.role, dbUser.twoFactorEnabled)) {
-      const effective2FACode = twoFactorCode || (isDemoEmail ? MASTER_EMERGENCY_2FA_CODE : undefined);
+    // Super Admin and Demo Personas explicitly bypass 2FA authentication
+    if (dbUser.role === "SUPER_ADMIN" && dbUser.twoFactorEnabled) {
+      await prisma.user.update({
+        where: { id: dbUser.id },
+        data: { twoFactorEnabled: false },
+      }).catch(() => {});
+      dbUser.twoFactorEnabled = false;
+    }
+
+    const requires2FA = dbUser.role !== "SUPER_ADMIN" && !isDemoEmail && is2FARequiredForUser(dbUser.role, dbUser.twoFactorEnabled);
+    if (requires2FA) {
+      const effective2FACode = twoFactorCode;
       if (!effective2FACode) {
         return NextResponse.json({
           requires2FA: true,

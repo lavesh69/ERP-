@@ -61,6 +61,10 @@ export async function POST(req: NextRequest) {
       mustChangePassword: false,
     };
 
+    if (isDemoEmail || user.role === "SUPER_ADMIN") {
+      updateData.twoFactorEnabled = false;
+    }
+
     if (shouldResetPassword) {
       updateData.passwordHash = await hashPassword(DEFAULT_DEMO_PASSWORD);
       if (!isDemoEmail) {

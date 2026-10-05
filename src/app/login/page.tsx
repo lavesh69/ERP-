@@ -303,9 +303,16 @@ export default function LoginPage() {
           setCurrentRole(role);
         }
         showToast(`Authenticated as ${data.user.fullName}!`, "success");
-        const targetPath = fromRedirect || ROLE_CONFIGS[data.user.role as UserRole]?.dashboardPath || "/";
-        router.push(targetPath);
-        router.refresh();
+        const targetPath = (fromRedirect && fromRedirect !== "/login" && fromRedirect !== "/")
+          ? fromRedirect
+          : (ROLE_CONFIGS[data.user.role as UserRole]?.dashboardPath || "/admin");
+        if (typeof window !== "undefined") {
+          window.location.href = targetPath;
+        } else {
+          router.push(targetPath);
+          router.refresh();
+        }
+        return;
       } else {
         // If login failed on a demo account or was locked, automatically unlock & retry once!
         const cleanEmail = loginEmail.trim().toLowerCase();
@@ -331,7 +338,7 @@ export default function LoginPage() {
                   password: "Classroom@2026",
                   role,
                   rememberMe,
-                  twoFactorCode: codeToSubmit || "260926",
+                  twoFactorCode: undefined,
                 }),
               });
               const retryData = await retryRes.json();
@@ -340,9 +347,15 @@ export default function LoginPage() {
                 setTwoFactorCode("");
                 setAuthSession(retryData.user);
                 showToast(`Authenticated as ${retryData.user.fullName}!`, "success");
-                const targetPath = fromRedirect || ROLE_CONFIGS[retryData.user.role as UserRole]?.dashboardPath || "/";
-                router.push(targetPath);
-                router.refresh();
+                const targetPath = (fromRedirect && fromRedirect !== "/login" && fromRedirect !== "/")
+                  ? fromRedirect
+                  : (ROLE_CONFIGS[retryData.user.role as UserRole]?.dashboardPath || "/admin");
+                if (typeof window !== "undefined") {
+                  window.location.href = targetPath;
+                } else {
+                  router.push(targetPath);
+                  router.refresh();
+                }
                 return;
               }
             }
@@ -375,10 +388,11 @@ export default function LoginPage() {
       if (res.ok) {
         setEmail(targetEmail);
         setPassword("Classroom@2026");
-        setTwoFactorCode("260926");
+        setTwoFactorCode("");
+        setPending2FA(null);
         setErrorMessage(null);
         showToast("Account unlocked! Signing in...", "success");
-        await handleLogin(targetEmail, "Classroom@2026", undefined, "260926");
+        await handleLogin(targetEmail, "Classroom@2026", "SUPER_ADMIN");
       } else {
         showToast(data.error || "Failed to unlock account", "error");
       }
