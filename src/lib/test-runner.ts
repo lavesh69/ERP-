@@ -120,6 +120,8 @@ import { POST as handleSwitchTenant } from "@/app/api/admin/switch-tenant/route"
 import { POST as handleFinancePost } from "@/app/api/finance/route";
 import { POST as handleAttendanceExceptionsPost } from "@/app/api/attendance/exceptions/route";
 import { POST as handleRegisterPost } from "@/app/api/auth/register/route";
+import { GET as handleProfileMeGet, PATCH as handleProfileMePatch } from "@/app/api/profile/me/route";
+import { POST as handleChangePasswordPost } from "@/app/api/auth/change-password/route";
 
 async function runTestSuite() {
   console.log("=================================================");
@@ -4572,6 +4574,156 @@ By breaking down large monolithic systems into decoupled microservices, systems 
     const unlinkedParentRes = await handleParentGet(unlinkedParentReq);
     const unlinkedParentData = await unlinkedParentRes.json();
     assert(unlinkedParentData.student === null, "GET /api/parent safely returns null student for unlinked parents without FERPA record leakage");
+  }
+
+  // ==========================================
+  // Group 51: User Profile 360, Input Validation, RBAC Standing & Cryptographic Dossier Portability
+  // ==========================================
+  console.log("\n📦 Running Group 51: User Profile 360, Input Validation, RBAC Standing & Cryptographic Dossier Portability");
+
+  // 1. Unauthenticated Profile Access Gate
+  const unauthProfileReq = new NextRequest("http://localhost:3000/api/profile/me", {
+    method: "GET",
+  });
+  const unauthProfileRes = await handleProfileMeGet(unauthProfileReq);
+  assert(unauthProfileRes.status === 401, "GET /api/profile/me strictly denies unauthenticated requests with 401 Unauthorized");
+
+  // Locate a real student user for profile testing
+  const testStudentUser = await prisma.user.findFirst({
+    where: { role: "STUDENT" },
+    include: { studentProfile: true },
+  });
+  assert(Boolean(testStudentUser), "Located seeded student user account for profile verification");
+
+  if (testStudentUser) {
+    const studentSessionToken = await signJwt({
+      userId: testStudentUser.id,
+      email: testStudentUser.email,
+      role: "STUDENT",
+      institutionId: testStudentUser.institutionId,
+    });
+
+    // 2. Verified Student Profile Retrieval
+    const studentProfileReq = new NextRequest("http://localhost:3000/api/profile/me", {
+      method: "GET",
+      headers: {
+        Cookie: `classroom_session=${studentSessionToken}`,
+      },
+    });
+    const studentProfileRes = await handleProfileMeGet(studentProfileReq);
+    assert(studentProfileRes.status === 200, "GET /api/profile/me retrieves verified profile dossier with 200 OK");
+    const studentProfileData = await studentProfileRes.json();
+    assert(studentProfileData.user.email === testStudentUser.email, "Profile dossier matches authenticated user email");
+    assert(Boolean(studentProfileData.demographics), "Profile dossier returns structured demographics payload");
+    assert(studentProfileData.demographics.privacySettings !== undefined, "Profile dossier provides directory privacy settings");
+
+    // 3. Cryptographic Academic Dossier Portability (GDPR Art. 20 / FERPA)
+    const exportDossierReq = new NextRequest("http://localhost:3000/api/profile/me?export=dossier", {
+      method: "GET",
+      headers: {
+        Cookie: `classroom_session=${studentSessionToken}`,
+      },
+    });
+    const exportDossierRes = await handleProfileMeGet(exportDossierReq);
+    assert(exportDossierRes.status === 200, "GET /api/profile/me?export=dossier generates portable academic dossier with 200 OK");
+    const exportDossierData = await exportDossierRes.json();
+    assert(exportDossierData.meta?.dossierType === "OFFICIAL_CRYPTOGRAPHIC_ACADEMIC_DOSSIER", "Dossier adheres to OFFICIAL_CRYPTOGRAPHIC_ACADEMIC_DOSSIER type");
+    assert(Boolean(exportDossierData.meta?.cryptographicFingerprint), "Dossier includes cryptographic SHA-256 integrity fingerprint");
+    assert(Array.isArray(exportDossierData.meta?.complianceStandards), "Dossier cites FERPA and GDPR Art. 20 compliance standards");
+
+    // 4. Input Validation: Whitelist Blood Group Check
+    const invalidBloodReq = new NextRequest("http://localhost:3000/api/profile/me", {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: `classroom_session=${studentSessionToken}`,
+      },
+      body: JSON.stringify({ bloodGroup: "INVALID_GROUP" }),
+    });
+    const invalidBloodRes = await handleProfileMePatch(invalidBloodReq);
+    assert(invalidBloodRes.status === 400, "PATCH /api/profile/me rejects unapproved blood group with 400 Bad Request");
+
+    // 5. Input Validation: Phone Format Check
+    const invalidPhoneReq = new NextRequest("http://localhost:3000/api/profile/me", {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: `classroom_session=${studentSessionToken}`,
+      },
+      body: JSON.stringify({ phone: "letters-not-a-phone-number-xyz" }),
+    });
+    const invalidPhoneRes = await handleProfileMePatch(invalidPhoneReq);
+    assert(invalidPhoneRes.status === 400, "PATCH /api/profile/me rejects malformed phone format with 400 Bad Request");
+
+    // 6. Input Validation: Future DOB Check
+    const futureDobReq = new NextRequest("http://localhost:3000/api/profile/me", {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: `classroom_session=${studentSessionToken}`,
+      },
+      body: JSON.stringify({ dob: "2099-01-01" }),
+    });
+    const futureDobRes = await handleProfileMePatch(futureDobReq);
+    assert(futureDobRes.status === 400, "PATCH /api/profile/me rejects future date of birth with 400 Bad Request");
+
+    // 7. RBAC Boundary: Student Cannot Self-Advance Current Semester
+    const currentSem = testStudentUser.studentProfile?.currentSemester || 1;
+    const illicitSemesterReq = new NextRequest("http://localhost:3000/api/profile/me", {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: `classroom_session=${studentSessionToken}`,
+      },
+      body: JSON.stringify({ currentSemester: currentSem === 8 ? 1 : 8 }),
+    });
+    const illicitSemesterRes = await handleProfileMePatch(illicitSemesterReq);
+    assert(illicitSemesterRes.status === 403, "PATCH /api/profile/me strictly denies student self-advancing current semester with 403 Forbidden");
+
+    // 8. Legitimate Demographics & Privacy Sync
+    const validDemographicsReq = new NextRequest("http://localhost:3000/api/profile/me", {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: `classroom_session=${studentSessionToken}`,
+      },
+      body: JSON.stringify({
+        bio: "Passionate computer science scholar researching distributed fault-tolerant systems.",
+        bloodGroup: "B+",
+        privacySettings: {
+          showPhoneInDirectory: false,
+          showEmailInDirectory: true,
+          allowPushNotifications: true,
+        },
+      }),
+    });
+    const validDemographicsRes = await handleProfileMePatch(validDemographicsReq);
+    assert(validDemographicsRes.status === 200, "PATCH /api/profile/me persists verified demographics and directory privacy settings with 200 OK");
+  }
+
+  // 9. RBAC Boundary: Faculty Cannot Self-Promote Designation
+  const testFacultyUser = await prisma.user.findFirst({
+    where: { role: "FACULTY" },
+    include: { facultyProfile: true },
+  });
+  if (testFacultyUser) {
+    const facultySessionToken = await signJwt({
+      userId: testFacultyUser.id,
+      email: testFacultyUser.email,
+      role: "FACULTY",
+      institutionId: testFacultyUser.institutionId,
+    });
+
+    const illicitDesignationReq = new NextRequest("http://localhost:3000/api/profile/me", {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: `classroom_session=${facultySessionToken}`,
+      },
+      body: JSON.stringify({ designation: "Dean of Academic Faculty" }),
+    });
+    const illicitDesignationRes = await handleProfileMePatch(illicitDesignationReq);
+    assert(illicitDesignationRes.status === 403, "PATCH /api/profile/me strictly denies faculty self-promoting designation with 403 Forbidden");
   }
 
   console.log("\n=================================================");

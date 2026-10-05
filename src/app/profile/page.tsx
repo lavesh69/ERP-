@@ -53,6 +53,8 @@ import {
   Fingerprint,
   Palette,
   Eye,
+  Download,
+  ShieldAlert,
 } from "lucide-react";
 
 interface UserProfileResponse {
@@ -89,6 +91,11 @@ interface UserProfileResponse {
       github: string;
       website: string;
     };
+    privacySettings?: {
+      showPhoneInDirectory?: boolean;
+      showEmailInDirectory?: boolean;
+      allowPushNotifications?: boolean;
+    };
   };
   profile: any;
 }
@@ -109,13 +116,27 @@ export default function ProfileHubPage() {
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [profileViewMode, setProfileViewMode] = useState<"macro" | "micro">("micro");
+  const [profileViewMode, setProfileViewMode] = useState<"macro" | "micro">(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("apex_profile_view_mode");
+      if (saved === "macro" || saved === "micro") return saved;
+    }
+    return "micro";
+  });
   const [activeTab, setActiveTab] = useState<"personal" | "academic" | "security">("personal");
   const [showIdCardModal, setShowIdCardModal] = useState(false);
   const [idCardFlipped, setIdCardFlipped] = useState(false);
   const [embeddedCardFlipped, setEmbeddedCardFlipped] = useState(false);
   const [showAvatarModal, setShowAvatarModal] = useState(false);
-  const [themePalette, setThemePalette] = useState<ThemePalette>("rose");
+  const [themePalette, setThemePalette] = useState<ThemePalette>(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("apex_profile_theme_palette");
+      if (saved === "rose" || saved === "emerald" || saved === "amber" || saved === "violet") {
+        return saved;
+      }
+    }
+    return "rose";
+  });
 
   // Base profile state
   const [firstName, setFirstName] = useState("");
@@ -143,6 +164,12 @@ export default function ProfileHubPage() {
   const [github, setGithub] = useState("");
   const [website, setWebsite] = useState("");
 
+  // Directory & Communication Privacy
+  const [showPhoneInDirectory, setShowPhoneInDirectory] = useState(false);
+  const [showEmailInDirectory, setShowEmailInDirectory] = useState(true);
+  const [allowPushNotifications, setAllowPushNotifications] = useState(true);
+  const [exportingDossier, setExportingDossier] = useState(false);
+
   // Role specifics
   const [profileData, setProfileData] = useState<any>(null);
 
@@ -168,6 +195,20 @@ export default function ProfileHubPage() {
   const [changingPassword, setChangingPassword] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleThemePaletteChange = (palette: ThemePalette) => {
+    setThemePalette(palette);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("apex_profile_theme_palette", palette);
+    }
+  };
+
+  const handleViewModeChange = (mode: "macro" | "micro") => {
+    setProfileViewMode(mode);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("apex_profile_view_mode", mode);
+    }
+  };
 
   const fetchProfile = async () => {
     try {
@@ -203,6 +244,11 @@ export default function ProfileHubPage() {
         setLinkedin(d?.socialLinks?.linkedin || "");
         setGithub(d?.socialLinks?.github || "");
         setWebsite(d?.socialLinks?.website || "");
+
+        // Privacy Settings
+        setShowPhoneInDirectory(d?.privacySettings?.showPhoneInDirectory ?? false);
+        setShowEmailInDirectory(d?.privacySettings?.showEmailInDirectory ?? true);
+        setAllowPushNotifications(d?.privacySettings?.allowPushNotifications ?? true);
 
         // Role Profile
         setProfileData(p);
@@ -240,8 +286,7 @@ export default function ProfileHubPage() {
   }, []);
 
   const calculateCompleteness = () => {
-    let score = 0;
-    const items = [
+    const baseItems = [
       Boolean(firstName && lastName),
       Boolean(email),
       Boolean(phone),
@@ -251,8 +296,57 @@ export default function ProfileHubPage() {
       Boolean(emergencyContactPhone),
       Boolean(street || city),
     ];
-    score = items.filter(Boolean).length;
-    return Math.round((score / items.length) * 100);
+
+    let roleItems: boolean[] = [];
+    if (role === "STUDENT") {
+      roleItems = [
+        Boolean(dob),
+        Boolean(profileData?.rollNumber),
+        Boolean(profileData?.programName),
+      ];
+    } else if (role === "FACULTY" || role === "PROFESSOR" || role === "HOD") {
+      roleItems = [
+        Boolean(officeRoom),
+        Boolean(specialization),
+        Boolean(qualification),
+        Boolean(linkedin || website),
+      ];
+    } else if (role === "PARENT") {
+      roleItems = [
+        Boolean(relation),
+        Boolean(occupation),
+        Boolean(profileData?.linkedWards?.length),
+      ];
+    }
+
+    const allItems = [...baseItems, ...roleItems];
+    const score = allItems.filter(Boolean).length;
+    return Math.round((score / allItems.length) * 100);
+  };
+
+  const handleExportDossier = async () => {
+    try {
+      setExportingDossier(true);
+      const res = await fetch("/api/profile/me?export=dossier");
+      if (!res.ok) {
+        showToast("Failed to generate academic dossier", "danger");
+        return;
+      }
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `academic-dossier-${currentUser?.id?.slice(0, 8) || "record"}.json`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+      showToast("Official Academic Dossier downloaded successfully!", "success");
+    } catch {
+      showToast("Error exporting academic dossier", "danger");
+    } finally {
+      setExportingDossier(false);
+    }
   };
 
   const handleCopy = (text: string, label: string) => {
@@ -306,6 +400,11 @@ export default function ProfileHubPage() {
           linkedin,
           github,
           website,
+        },
+        privacySettings: {
+          showPhoneInDirectory,
+          showEmailInDirectory,
+          allowPushNotifications,
         },
       };
 
@@ -365,6 +464,7 @@ export default function ProfileHubPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          email: email || currentUser?.email,
           currentPassword: oldPassword,
           newPassword,
         }),
@@ -418,7 +518,7 @@ export default function ProfileHubPage() {
               </span>
               <button
                 type="button"
-                onClick={() => setThemePalette("rose")}
+                onClick={() => handleThemePaletteChange("rose")}
                 className={`h-4 w-4 rounded-full bg-rose-primary transition-all ${
                   themePalette === "rose" ? "ring-2 ring-rose-primary/50 scale-110" : "opacity-60"
                 }`}
@@ -426,7 +526,7 @@ export default function ProfileHubPage() {
               />
               <button
                 type="button"
-                onClick={() => setThemePalette("emerald")}
+                onClick={() => handleThemePaletteChange("emerald")}
                 className={`h-4 w-4 rounded-full bg-emerald-600 transition-all ${
                   themePalette === "emerald" ? "ring-2 ring-emerald-500/50 scale-110" : "opacity-60"
                 }`}
@@ -434,7 +534,7 @@ export default function ProfileHubPage() {
               />
               <button
                 type="button"
-                onClick={() => setThemePalette("amber")}
+                onClick={() => handleThemePaletteChange("amber")}
                 className={`h-4 w-4 rounded-full bg-amber-500 transition-all ${
                   themePalette === "amber" ? "ring-2 ring-amber-500/50 scale-110" : "opacity-60"
                 }`}
@@ -442,7 +542,7 @@ export default function ProfileHubPage() {
               />
               <button
                 type="button"
-                onClick={() => setThemePalette("violet")}
+                onClick={() => handleThemePaletteChange("violet")}
                 className={`h-4 w-4 rounded-full bg-purple-600 transition-all ${
                   themePalette === "violet" ? "ring-2 ring-purple-500/50 scale-110" : "opacity-60"
                 }`}
@@ -454,7 +554,7 @@ export default function ProfileHubPage() {
             <div className="inline-flex items-center p-1 rounded-2xl bg-white dark:bg-charcoal-900 border border-border dark:border-charcoal-800 shadow-soft self-start sm:self-auto backdrop-blur-md">
               <button
                 type="button"
-                onClick={() => setProfileViewMode("micro")}
+                onClick={() => handleViewModeChange("micro")}
                 className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                   profileViewMode === "micro"
                     ? "bg-gradient-to-r from-rose-primary to-rose-hover text-white shadow-md shadow-rose-primary/25 scale-[1.02]"
@@ -467,7 +567,7 @@ export default function ProfileHubPage() {
 
               <button
                 type="button"
-                onClick={() => setProfileViewMode("macro")}
+                onClick={() => handleViewModeChange("macro")}
                 className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                   profileViewMode === "macro"
                     ? "bg-gradient-to-r from-rose-primary to-rose-hover text-white shadow-md shadow-rose-primary/25 scale-[1.02]"
@@ -1432,11 +1532,89 @@ export default function ProfileHubPage() {
                         </div>
                       </div>
 
-                      <div className="pt-4 flex justify-end">
+                      {/* Directory & Communication Privacy */}
+                      <div className="border-t border-border dark:border-charcoal-800 pt-5 space-y-4">
+                        <div className="flex items-center gap-2">
+                          <ShieldCheck className="h-4 w-4 text-rose-primary" />
+                          <div>
+                            <h4 className="text-xs font-bold font-display text-charcoal-900 dark:text-ivory-100">
+                              Directory & Communication Privacy
+                            </h4>
+                            <p className="text-[11px] text-charcoal-500">
+                              Manage contact visibility across student and faculty searches in compliance with DPDP & FERPA standards.
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                          <label className="flex items-center justify-between p-3.5 rounded-2xl bg-ivory-50 dark:bg-charcoal-900 border border-border dark:border-charcoal-800 cursor-pointer hover:border-rose-primary/30 transition-all">
+                            <div>
+                              <span className="text-xs font-bold text-charcoal-900 dark:text-ivory-100 block">
+                                Directory Phone
+                              </span>
+                              <span className="text-[10px] text-charcoal-500">
+                                Visible in searches
+                              </span>
+                            </div>
+                            <input
+                              type="checkbox"
+                              checked={showPhoneInDirectory}
+                              onChange={(e) => setShowPhoneInDirectory(e.target.checked)}
+                              className="h-4 w-4 rounded text-rose-primary focus:ring-rose-primary cursor-pointer accent-rose-primary"
+                            />
+                          </label>
+
+                          <label className="flex items-center justify-between p-3.5 rounded-2xl bg-ivory-50 dark:bg-charcoal-900 border border-border dark:border-charcoal-800 cursor-pointer hover:border-rose-primary/30 transition-all">
+                            <div>
+                              <span className="text-xs font-bold text-charcoal-900 dark:text-ivory-100 block">
+                                Directory Email
+                              </span>
+                              <span className="text-[10px] text-charcoal-500">
+                                Visible to campus
+                              </span>
+                            </div>
+                            <input
+                              type="checkbox"
+                              checked={showEmailInDirectory}
+                              onChange={(e) => setShowEmailInDirectory(e.target.checked)}
+                              className="h-4 w-4 rounded text-rose-primary focus:ring-rose-primary cursor-pointer accent-rose-primary"
+                            />
+                          </label>
+
+                          <label className="flex items-center justify-between p-3.5 rounded-2xl bg-ivory-50 dark:bg-charcoal-900 border border-border dark:border-charcoal-800 cursor-pointer hover:border-rose-primary/30 transition-all">
+                            <div>
+                              <span className="text-xs font-bold text-charcoal-900 dark:text-ivory-100 block">
+                                Emergency Push
+                              </span>
+                              <span className="text-[10px] text-charcoal-500">
+                                Urgent campus alerts
+                              </span>
+                            </div>
+                            <input
+                              type="checkbox"
+                              checked={allowPushNotifications}
+                              onChange={(e) => setAllowPushNotifications(e.target.checked)}
+                              className="h-4 w-4 rounded text-rose-primary focus:ring-rose-primary cursor-pointer accent-rose-primary"
+                            />
+                          </label>
+                        </div>
+                      </div>
+
+                      <div className="pt-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+                        <button
+                          type="button"
+                          onClick={handleExportDossier}
+                          disabled={exportingDossier}
+                          className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-ivory-100 dark:bg-charcoal-800 hover:bg-ivory-200 dark:hover:bg-charcoal-700 text-charcoal-800 dark:text-ivory-100 text-xs font-bold transition-all border border-border dark:border-charcoal-700 cursor-pointer disabled:opacity-50"
+                        >
+                          <Download className="h-4 w-4 text-rose-primary" />
+                          <span>{exportingDossier ? "Generating Dossier..." : "Download Academic Dossier (FERPA/GDPR)"}</span>
+                        </button>
+
                         <button
                           type="submit"
                           disabled={saving}
-                          className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-rose-primary hover:bg-rose-dark active:scale-[0.98] text-white text-xs font-bold shadow-md shadow-rose-primary/20 transition-all cursor-pointer disabled:opacity-50"
+                          className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-rose-primary hover:bg-rose-dark active:scale-[0.98] text-white text-xs font-bold shadow-md shadow-rose-primary/20 transition-all cursor-pointer disabled:opacity-50"
                         >
                           <Save className="h-4 w-4" />
                           <span>{saving ? "Saving Changes..." : "Save Personal Profile & Bio"}</span>
@@ -1560,17 +1738,32 @@ export default function ProfileHubPage() {
                             <label className="block text-xs font-bold text-charcoal-700 dark:text-charcoal-300">
                               Current Semester
                             </label>
-                            <select
-                              value={currentSemester}
-                              onChange={(e) => setCurrentSemester(Number(e.target.value))}
-                              className="mt-1 block w-full px-3.5 py-2.5 rounded-xl border border-border dark:border-charcoal-700 bg-ivory-50 dark:bg-charcoal-900 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-rose-primary"
-                            >
-                              {[1, 2, 3, 4, 5, 6, 7, 8].map((s) => (
-                                <option key={s} value={s}>
-                                  Semester {s}
-                                </option>
-                              ))}
-                            </select>
+                            {["SUPER_ADMIN", "INSTITUTION_ADMIN", "PRINCIPAL", "EXAMINATION_CONTROLLER"].includes(currentUser?.role || role) ? (
+                              <select
+                                value={currentSemester}
+                                onChange={(e) => setCurrentSemester(Number(e.target.value))}
+                                className="mt-1 block w-full px-3.5 py-2.5 rounded-xl border border-border dark:border-charcoal-700 bg-ivory-50 dark:bg-charcoal-900 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-rose-primary"
+                              >
+                                {[1, 2, 3, 4, 5, 6, 7, 8].map((s) => (
+                                  <option key={s} value={s}>
+                                    Semester {s}
+                                  </option>
+                                ))}
+                              </select>
+                            ) : (
+                              <div className="relative mt-1">
+                                <input
+                                  type="text"
+                                  value={`Semester ${currentSemester}`}
+                                  disabled
+                                  className="block w-full px-3.5 py-2.5 rounded-xl border border-border dark:border-charcoal-700 bg-ivory-200/50 dark:bg-charcoal-800/50 text-xs font-semibold opacity-80 cursor-not-allowed"
+                                />
+                                <div className="absolute right-2.5 top-1/2 -translate-y-1/2 flex items-center gap-1 text-[10px] text-charcoal-500 font-semibold bg-white dark:bg-charcoal-900 px-2 py-0.5 rounded-md border border-border dark:border-charcoal-700">
+                                  <Lock className="h-3 w-3 text-amber-500" />
+                                  <span>Registrar Locked</span>
+                                </div>
+                              </div>
+                            )}
                           </div>
                         </div>
 
@@ -1701,18 +1894,33 @@ export default function ProfileHubPage() {
                             <label className="block text-xs font-bold text-charcoal-700 dark:text-charcoal-300">
                               Academic Designation
                             </label>
-                            <select
-                              value={designation}
-                              onChange={(e) => setDesignation(e.target.value)}
-                              className="mt-1 block w-full px-3.5 py-2.5 rounded-xl border border-border dark:border-charcoal-700 bg-ivory-50 dark:bg-charcoal-900 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-rose-primary"
-                            >
-                              <option value="Assistant Professor">Assistant Professor</option>
-                              <option value="Associate Professor">Associate Professor</option>
-                              <option value="Professor">Professor</option>
-                              <option value="Head of Department">Head of Department (HOD)</option>
-                              <option value="Dean of Faculty">Dean of Faculty</option>
-                              <option value="Senior Lecturer">Senior Lecturer</option>
-                            </select>
+                            {["SUPER_ADMIN", "INSTITUTION_ADMIN", "PRINCIPAL", "HR_STAFF", "HOD"].includes(currentUser?.role || role) ? (
+                              <select
+                                value={designation}
+                                onChange={(e) => setDesignation(e.target.value)}
+                                className="mt-1 block w-full px-3.5 py-2.5 rounded-xl border border-border dark:border-charcoal-700 bg-ivory-50 dark:bg-charcoal-900 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-rose-primary"
+                              >
+                                <option value="Assistant Professor">Assistant Professor</option>
+                                <option value="Associate Professor">Associate Professor</option>
+                                <option value="Professor">Professor</option>
+                                <option value="Head of Department">Head of Department (HOD)</option>
+                                <option value="Dean of Faculty">Dean of Faculty</option>
+                                <option value="Senior Lecturer">Senior Lecturer</option>
+                              </select>
+                            ) : (
+                              <div className="relative mt-1">
+                                <input
+                                  type="text"
+                                  value={designation}
+                                  disabled
+                                  className="block w-full px-3.5 py-2.5 rounded-xl border border-border dark:border-charcoal-700 bg-ivory-200/50 dark:bg-charcoal-800/50 text-xs font-semibold opacity-80 cursor-not-allowed"
+                                />
+                                <div className="absolute right-2.5 top-1/2 -translate-y-1/2 flex items-center gap-1 text-[10px] text-charcoal-500 font-semibold bg-white dark:bg-charcoal-900 px-2 py-0.5 rounded-md border border-border dark:border-charcoal-700">
+                                  <Lock className="h-3 w-3 text-amber-500" />
+                                  <span>Dean / HR Clearance</span>
+                                </div>
+                              </div>
+                            )}
                           </div>
 
                           <div>
@@ -1758,14 +1966,29 @@ export default function ProfileHubPage() {
                             <label className="block text-xs font-bold text-charcoal-700 dark:text-charcoal-300">
                               Weekly Teaching Load (Hours)
                             </label>
-                            <input
-                              type="number"
-                              value={weeklyHours}
-                              onChange={(e) => setWeeklyHours(Number(e.target.value))}
-                              min={6}
-                              max={36}
-                              className="mt-1 block w-full px-3.5 py-2.5 rounded-xl border border-border dark:border-charcoal-700 bg-ivory-50 dark:bg-charcoal-900 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-rose-primary"
-                            />
+                            {["SUPER_ADMIN", "INSTITUTION_ADMIN", "PRINCIPAL", "HR_STAFF", "HOD"].includes(currentUser?.role || role) ? (
+                              <input
+                                type="number"
+                                value={weeklyHours}
+                                onChange={(e) => setWeeklyHours(Number(e.target.value))}
+                                min={6}
+                                max={36}
+                                className="mt-1 block w-full px-3.5 py-2.5 rounded-xl border border-border dark:border-charcoal-700 bg-ivory-50 dark:bg-charcoal-900 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-rose-primary"
+                              />
+                            ) : (
+                              <div className="relative mt-1">
+                                <input
+                                  type="text"
+                                  value={`${weeklyHours} Hours / Week`}
+                                  disabled
+                                  className="block w-full px-3.5 py-2.5 rounded-xl border border-border dark:border-charcoal-700 bg-ivory-200/50 dark:bg-charcoal-800/50 text-xs font-semibold opacity-80 cursor-not-allowed"
+                                />
+                                <div className="absolute right-2.5 top-1/2 -translate-y-1/2 flex items-center gap-1 text-[10px] text-charcoal-500 font-semibold bg-white dark:bg-charcoal-900 px-2 py-0.5 rounded-md border border-border dark:border-charcoal-700">
+                                  <Lock className="h-3 w-3 text-amber-500" />
+                                  <span>Senate Allocation</span>
+                                </div>
+                              </div>
+                            )}
                           </div>
 
                           <div>
@@ -2191,9 +2414,36 @@ export default function ProfileHubPage() {
             {/* FLIPPABLE DIGITAL INSTITUTIONAL ID CARD MODAL */}
             {showIdCardModal && (
               <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-charcoal-950/80 backdrop-blur-md animate-in fade-in">
+                <style>{`
+                  @media print {
+                    body * {
+                      visibility: hidden !important;
+                    }
+                    #institutional-id-print-zone,
+                    #institutional-id-print-zone * {
+                      visibility: visible !important;
+                    }
+                    #institutional-id-print-zone {
+                      position: fixed !important;
+                      left: 50% !important;
+                      top: 50% !important;
+                      transform: translate(-50%, -50%) !important;
+                      width: 400px !important;
+                      max-width: 100% !important;
+                      margin: 0 !important;
+                      padding: 0 !important;
+                      box-shadow: none !important;
+                      -webkit-print-color-adjust: exact !important;
+                      print-color-adjust: exact !important;
+                    }
+                    .no-print {
+                      display: none !important;
+                    }
+                  }
+                `}</style>
                 <div className="w-full max-w-md space-y-4">
                   {/* Modal Header */}
-                  <div className="flex items-center justify-between text-white px-2">
+                  <div className="flex items-center justify-between text-white px-2 no-print">
                     <span className="text-xs font-bold uppercase tracking-wider flex items-center gap-2">
                       <QrCode className="h-4 w-4 text-rose-accent" />
                       Digital Collegiate Smartcard
@@ -2221,6 +2471,7 @@ export default function ProfileHubPage() {
                   </div>
 
                   {/* ID CARD VISUAL CANVAS (FRONT / BACK) */}
+                  <div id="institutional-id-print-zone">
                   {!idCardFlipped ? (
                     /* FRONT OF SMART CARD */
                     <div
@@ -2371,9 +2622,10 @@ export default function ProfileHubPage() {
                       </div>
                     </div>
                   )}
+                  </div>
 
                   {/* Actions */}
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-3 no-print">
                     <button
                       type="button"
                       onClick={() => window.print()}

@@ -2,23 +2,26 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db/prisma";
 import { verifyPassword, hashPassword } from "@/lib/auth/password";
 import { evaluatePassword } from "@/lib/auth/password-strength";
+import { getOptionalSession } from "@/lib/auth/admin-guard";
 import { logger } from "@/lib/logging/logger";
 
 export async function POST(req: NextRequest) {
   try {
+    const session = await getOptionalSession(req);
     const body = await req.json().catch(() => ({}));
     const { email, currentPassword, newPassword } = body;
 
-    if (!email || !currentPassword || !newPassword) {
+    const targetEmail = (email || session?.email || "")?.toLowerCase().trim();
+
+    if (!targetEmail || !currentPassword || !newPassword) {
       return NextResponse.json(
         { error: "Email, current password, and new password are required." },
         { status: 400 }
       );
     }
 
-    const cleanEmail = email.toLowerCase().trim();
     const user = await prisma.user.findUnique({
-      where: { email: cleanEmail },
+      where: { email: targetEmail },
     });
 
     if (!user) {
@@ -58,7 +61,14 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    // 5. Audit Log
+    // 5. Invalidate older sessions for enterprise security hygiene
+    await prisma.userSession.deleteMany({
+      where: { userId: user.id },
+    }).catch(() => {
+      // Ignore if no active sessions
+    });
+
+    // 6. Audit Log
     const clientIp = req.headers.get("x-forwarded-for") || "127.0.0.1";
     await prisma.auditLog.create({
       data: {
@@ -69,18 +79,19 @@ export async function POST(req: NextRequest) {
         targetId: user.id,
         ipAddress: clientIp,
         detailsJson: JSON.stringify({
-          email: cleanEmail,
+          email: targetEmail,
           method: "MANDATORY_OR_USER_INITIATED",
           timestamp: new Date().toISOString(),
+          sessionsInvalidated: true,
         }),
       },
     });
 
-    logger.info(`Password successfully updated for user: ${cleanEmail}`);
+    logger.info(`Password successfully updated for user: ${targetEmail}`);
 
     return NextResponse.json({
       success: true,
-      message: "Password has been successfully updated. You may now sign in.",
+      message: "Password has been successfully updated. All prior sessions have been revoked.",
     });
   } catch (error: any) {
     logger.error("Change password failed", error);

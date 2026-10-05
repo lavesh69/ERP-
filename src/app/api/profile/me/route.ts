@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import crypto from "crypto";
 import { prisma } from "@/lib/db/prisma";
 import { getOptionalSession } from "@/lib/auth/admin-guard";
 import { logAuditEvent } from "@/lib/audit/logger";
@@ -288,6 +289,51 @@ export async function GET(req: NextRequest) {
     // Retrieve rich demographics from persistent storage
     const demographics = getUserDemographics(user.id);
 
+    // Support GDPR Article 20 / FERPA Data Portability Export
+    const isExport =
+      req.nextUrl.searchParams.get("export") === "true" ||
+      req.nextUrl.searchParams.get("export") === "dossier";
+
+    if (isExport) {
+      const exportDossier = {
+        meta: {
+          dossierType: "OFFICIAL_CRYPTOGRAPHIC_ACADEMIC_DOSSIER",
+          institution: user.institution?.name || "Apex Institute of Science & Technology",
+          institutionId: user.institutionId,
+          complianceStandards: [
+            "FERPA (Family Educational Rights and Privacy Act - 34 CFR Part 99)",
+            "GDPR Article 20 (Right to Data Portability)",
+            "Digital Personal Data Protection Act (DPDPA 2023)",
+          ],
+          generatedAt: new Date().toISOString(),
+          cryptographicFingerprint: crypto
+            .createHash("sha256")
+            .update(`${user.id}:${user.email}:${Date.now()}`)
+            .digest("hex"),
+        },
+        personalIdentity: {
+          id: user.id,
+          email: user.email,
+          fullName: `${user.firstName} ${user.lastName}`,
+          phone: user.phone || null,
+          role: user.role,
+          createdAt: user.createdAt.toISOString(),
+        },
+        demographics: {
+          ...demographics,
+        },
+        academicCredentials: profileData,
+      };
+
+      return new NextResponse(JSON.stringify(exportDossier, null, 2), {
+        status: 200,
+        headers: {
+          "Content-Type": "application/json",
+          "Content-Disposition": `attachment; filename="academic-dossier-${user.id.slice(0, 8)}.json"`,
+        },
+      });
+    }
+
     return NextResponse.json({
       success: true,
       user: {
@@ -322,6 +368,11 @@ export async function GET(req: NextRequest) {
           linkedin: "",
           github: "",
           website: "",
+        },
+        privacySettings: demographics.privacySettings || {
+          showPhoneInDirectory: false,
+          showEmailInDirectory: true,
+          allowPushNotifications: true,
         },
       },
       profile: profileData,
@@ -360,6 +411,7 @@ export async function PATCH(req: NextRequest) {
       emergencyContactPhone,
       address,
       socialLinks,
+      privacySettings,
       // Faculty attributes
       officeRoom,
       specialization,
@@ -387,6 +439,93 @@ export async function PATCH(req: NextRequest) {
       return NextResponse.json({ error: "User account not found" }, { status: 404 });
     }
 
+    // --- INPUT VALIDATIONS ---
+    // 1. Blood Group Whitelist
+    const ALLOWED_BLOOD_GROUPS = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-", ""];
+    if (bloodGroup !== undefined && !ALLOWED_BLOOD_GROUPS.includes(String(bloodGroup).trim())) {
+      return NextResponse.json(
+        { error: "Invalid blood group. Permitted values: A+, A-, B+, B-, AB+, AB-, O+, O-" },
+        { status: 400 }
+      );
+    }
+
+    // 2. Phone Numbers
+    const PHONE_REGEX = /^(\+?[0-9\s\-()]{7,20})?$/;
+    if (phone !== undefined && phone.trim() !== "" && !PHONE_REGEX.test(phone.trim())) {
+      return NextResponse.json(
+        { error: "Invalid phone number format. Please provide a valid 7 to 20 digit phone number." },
+        { status: 400 }
+      );
+    }
+    if (emergencyContactPhone !== undefined && emergencyContactPhone.trim() !== "" && !PHONE_REGEX.test(emergencyContactPhone.trim())) {
+      return NextResponse.json(
+        { error: "Invalid emergency phone number format. Please provide a valid 7 to 20 digit phone number." },
+        { status: 400 }
+      );
+    }
+
+    // 3. Date of Birth
+    if (dob !== undefined && dob.trim() !== "") {
+      const parsedDate = new Date(dob);
+      const now = new Date();
+      const minDate = new Date(now.getFullYear() - 120, 0, 1);
+      if (isNaN(parsedDate.getTime()) || parsedDate > now || parsedDate < minDate) {
+        return NextResponse.json(
+          { error: "Invalid date of birth. Must be a valid date in the past within 120 years." },
+          { status: 400 }
+        );
+      }
+    }
+
+    // 4. Bio character boundary
+    if (bio !== undefined && typeof bio === "string" && bio.length > 1000) {
+      return NextResponse.json(
+        { error: "Bio exceeds maximum allowed limit of 1000 characters." },
+        { status: 400 }
+      );
+    }
+
+    // 5. Social URLs protocol safety
+    if (socialLinks && typeof socialLinks === "object") {
+      const urlRegex = /^https?:\/\//i;
+      for (const [platform, linkUrl] of Object.entries(socialLinks)) {
+        if (linkUrl && typeof linkUrl === "string" && linkUrl.trim() !== "") {
+          if (!urlRegex.test(linkUrl.trim())) {
+            return NextResponse.json(
+              { error: `Invalid URL format for ${platform}. URL must begin with http:// or https://` },
+              { status: 400 }
+            );
+          }
+        }
+      }
+    }
+
+    // --- RBAC BOUNDARIES ---
+    // 6. Student Semester Promotion Lock (Registrar / Admin only)
+    if (currentSemester !== undefined && user.studentProfile && Number(currentSemester) !== user.studentProfile.currentSemester) {
+      const SEMESTER_ROLES = ["SUPER_ADMIN", "INSTITUTION_ADMIN", "PRINCIPAL", "EXAMINATION_CONTROLLER"];
+      if (!SEMESTER_ROLES.includes(user.role)) {
+        return NextResponse.json(
+          { error: "Unauthorized: Academic semester progression is strictly managed by the Registrar and Examination Controllers." },
+          { status: 403 }
+        );
+      }
+    }
+
+    // 7. Faculty Designation & Workload Hours Lock (Dean / HR / Admin only)
+    if (user.facultyProfile) {
+      const HR_DEAN_ROLES = ["SUPER_ADMIN", "INSTITUTION_ADMIN", "PRINCIPAL", "HR_STAFF", "HOD"];
+      const designationChanged = designation !== undefined && designation.trim() !== (user.facultyProfile.designation || "");
+      const hoursChanged = weeklyHours !== undefined && Number(weeklyHours) !== user.facultyProfile.weeklyHours;
+
+      if ((designationChanged || hoursChanged) && !HR_DEAN_ROLES.includes(user.role)) {
+        return NextResponse.json(
+          { error: "Unauthorized: Academic designation and teaching workload allocation require Dean or HR authorization." },
+          { status: 403 }
+        );
+      }
+    }
+
     // 1. Update Base User record
     const updatedUser = await prisma.user.update({
       where: { id: user.id },
@@ -408,6 +547,7 @@ export async function PATCH(req: NextRequest) {
       emergencyContactPhone: emergencyContactPhone !== undefined ? emergencyContactPhone : undefined,
       address: address !== undefined ? address : undefined,
       socialLinks: socialLinks !== undefined ? socialLinks : undefined,
+      privacySettings: privacySettings !== undefined ? privacySettings : undefined,
     });
 
     // 3. Role-specific profile updates
@@ -443,29 +583,36 @@ export async function PATCH(req: NextRequest) {
           },
         });
 
-        // Link a new ward if requested by roll number
-        if (linkWardRollNumber && typeof linkWardRollNumber === "string") {
-          const ward = await prisma.student.findUnique({
-            where: { rollNumber: linkWardRollNumber.trim() },
+        // Link a new ward if requested by roll number (IDOR protected to parent's institution)
+        if (linkWardRollNumber && typeof linkWardRollNumber === "string" && linkWardRollNumber.trim() !== "") {
+          const ward = await prisma.student.findFirst({
+            where: {
+              rollNumber: linkWardRollNumber.trim(),
+              user: { institutionId: user.institutionId },
+            },
           });
-          if (ward) {
-            const existingRelation = await prisma.studentParentRelation.findUnique({
-              where: {
-                studentId_parentId: {
-                  studentId: ward.id,
-                  parentId: user.parentProfile.id,
-                },
+          if (!ward) {
+            return NextResponse.json(
+              { error: "No active scholar found with this Roll Number in your institution." },
+              { status: 404 }
+            );
+          }
+          const existingRelation = await prisma.studentParentRelation.findUnique({
+            where: {
+              studentId_parentId: {
+                studentId: ward.id,
+                parentId: user.parentProfile.id,
+              },
+            },
+          });
+          if (!existingRelation) {
+            await prisma.studentParentRelation.create({
+              data: {
+                studentId: ward.id,
+                parentId: user.parentProfile.id,
+                isPrimary: true,
               },
             });
-            if (!existingRelation) {
-              await prisma.studentParentRelation.create({
-                data: {
-                  studentId: ward.id,
-                  parentId: user.parentProfile.id,
-                  isPrimary: true,
-                },
-              });
-            }
           }
         }
       }

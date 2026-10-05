@@ -15,6 +15,12 @@ export interface SocialLinks {
   website?: string;
 }
 
+export interface PrivacySettings {
+  showPhoneInDirectory?: boolean;
+  showEmailInDirectory?: boolean;
+  allowPushNotifications?: boolean;
+}
+
 export interface UserDemographics {
   bio?: string;
   bloodGroup?: string;
@@ -24,9 +30,13 @@ export interface UserDemographics {
   emergencyContactPhone?: string;
   address?: AddressInfo;
   socialLinks?: SocialLinks;
+  privacySettings?: PrivacySettings;
 }
 
 const EXTENSIONS_FILE = path.join(process.cwd(), "data", "profile_extensions.json");
+
+// In-memory cache fallback for serverless robustness
+let memoryCache: Record<string, UserDemographics> = {};
 
 function ensureFileExists(): void {
   try {
@@ -45,17 +55,25 @@ function ensureFileExists(): void {
 export function getUserDemographics(userId: string): UserDemographics {
   try {
     ensureFileExists();
-    if (!fs.existsSync(EXTENSIONS_FILE)) return {};
-    const raw = fs.readFileSync(EXTENSIONS_FILE, "utf8");
-    const data = JSON.parse(raw);
-    return data[userId] || {};
+    if (fs.existsSync(EXTENSIONS_FILE)) {
+      const raw = fs.readFileSync(EXTENSIONS_FILE, "utf8");
+      const data = JSON.parse(raw);
+      if (data[userId]) {
+        memoryCache[userId] = data[userId];
+        return data[userId];
+      }
+    }
+    return memoryCache[userId] || {};
   } catch (error) {
     console.error("Error reading demographics for user:", userId, error);
-    return {};
+    return memoryCache[userId] || {};
   }
 }
 
-export function saveUserDemographics(userId: string, demographics: Partial<UserDemographics>): UserDemographics {
+export function saveUserDemographics(
+  userId: string,
+  demographics: Partial<UserDemographics>
+): UserDemographics {
   try {
     ensureFileExists();
     let data: Record<string, UserDemographics> = {};
@@ -67,7 +85,7 @@ export function saveUserDemographics(userId: string, demographics: Partial<UserD
       }
     }
 
-    const current = data[userId] || {};
+    const current = data[userId] || memoryCache[userId] || {};
     const updated: UserDemographics = {
       ...current,
       ...demographics,
@@ -79,13 +97,33 @@ export function saveUserDemographics(userId: string, demographics: Partial<UserD
         ...(current.socialLinks || {}),
         ...(demographics.socialLinks || {}),
       },
+      privacySettings: {
+        ...(current.privacySettings || {
+          showPhoneInDirectory: true,
+          showEmailInDirectory: true,
+          allowPushNotifications: true,
+        }),
+        ...(demographics.privacySettings || {}),
+      },
     };
 
     data[userId] = updated;
-    fs.writeFileSync(EXTENSIONS_FILE, JSON.stringify(data, null, 2), "utf8");
+    memoryCache[userId] = updated;
+
+    // Atomic write via temporary file
+    const tmpFile = `${EXTENSIONS_FILE}.${Date.now()}.tmp`;
+    fs.writeFileSync(tmpFile, JSON.stringify(data, null, 2), "utf8");
+    fs.renameSync(tmpFile, EXTENSIONS_FILE);
+
     return updated;
   } catch (error) {
     console.error("Error saving demographics for user:", userId, error);
-    return {};
+    const current = memoryCache[userId] || {};
+    const updated: UserDemographics = {
+      ...current,
+      ...demographics,
+    };
+    memoryCache[userId] = updated;
+    return updated;
   }
 }
