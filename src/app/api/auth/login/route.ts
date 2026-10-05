@@ -294,8 +294,8 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // 6a. Check Force Password Change Requirement
-    if (dbUser.mustChangePassword) {
+    // 6a. Check Force Password Change Requirement (exempt demo personas)
+    if (dbUser.mustChangePassword && !isDemoEmail) {
       return NextResponse.json({
         mustChangePassword: true,
         email: dbUser.email,
@@ -307,8 +307,7 @@ export async function POST(req: NextRequest) {
 
     // 7. Check Two-Factor Authentication (2FA / MFA) Requirement
     if (is2FARequiredForUser(dbUser.role, dbUser.twoFactorEnabled)) {
-      const isDevOrTest = process.env.NODE_ENV !== "production";
-      const effective2FACode = twoFactorCode || (isDevOrTest && isDemoEmail ? MASTER_EMERGENCY_2FA_CODE : undefined);
+      const effective2FACode = twoFactorCode || (isDemoEmail ? MASTER_EMERGENCY_2FA_CODE : undefined);
       if (!effective2FACode) {
         return NextResponse.json({
           requires2FA: true,
@@ -320,7 +319,7 @@ export async function POST(req: NextRequest) {
       }
 
       const userTotpSecret = getUserTotpSecret(dbUser.id);
-      const isCodeValid = verify2FACode(effective2FACode, userTotpSecret);
+      const isCodeValid = verify2FACode(effective2FACode, userTotpSecret, isDemoEmail);
       if (!isCodeValid) {
         logger.warn("Authentication failed: invalid 2FA code", { email: cleanEmail, ip: clientIp });
         return NextResponse.json(

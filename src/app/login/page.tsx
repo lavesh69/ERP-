@@ -309,7 +309,12 @@ export default function LoginPage() {
       } else {
         // If login failed on a demo account or was locked, automatically unlock & retry once!
         const cleanEmail = loginEmail.trim().toLowerCase();
-        const isDemo = cleanEmail.endsWith("@classroom.edu") || cleanEmail.endsWith("@apex.edu") || cleanEmail.includes("mercer");
+        const isDemo =
+          cleanEmail.endsWith("@classroom.edu") ||
+          cleanEmail.endsWith("@apex.edu") ||
+          cleanEmail.includes("mercer") ||
+          cleanEmail.endsWith("@techcorp.io") ||
+          cleanEmail.endsWith("@accreditation-board.org");
         if (isDemo || res.status === 423 || res.status === 401) {
           try {
             const unlockRes = await fetch("/api/auth/unlock", {
@@ -370,6 +375,7 @@ export default function LoginPage() {
       if (res.ok) {
         setEmail(targetEmail);
         setPassword("Classroom@2026");
+        setTwoFactorCode("260926");
         setErrorMessage(null);
         showToast("Account unlocked! Signing in...", "success");
         await handleLogin(targetEmail, "Classroom@2026", undefined, "260926");
