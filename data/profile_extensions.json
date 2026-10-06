@@ -1,0 +1,13 @@
+{
+  "usr-stu-01": {
+    "bio": "Passionate computer science scholar researching distributed fault-tolerant systems.",
+    "bloodGroup": "B+",
+    "address": {},
+    "socialLinks": {},
+    "privacySettings": {
+      "showPhoneInDirectory": false,
+      "showEmailInDirectory": true,
+      "allowPushNotifications": true
+    }
+  }
+}

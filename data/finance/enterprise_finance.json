@@ -1,0 +1,376 @@
+{
+  "structures": [
+    {
+      "id": "mfs-btech-cse-gen",
+      "code": "BTECH-CSE-2026-REG",
+      "title": "B.Tech Computer Science (Regular Merit Quota) 2026-27",
+      "programCode": "BTECH-CSE",
+      "academicYear": "2026-2027",
+      "quotaType": "MERIT_GENERAL",
+      "studentType": "DAY_SCHOLAR",
+      "currency": "USD",
+      "heads": [
+        {
+          "id": "h1",
+          "name": "Academic Tuition & Instruction Fee",
+          "category": "TUITION",
+          "amount": 6500
+        },
+        {
+          "id": "h2",
+          "name": "High-Performance Computing & AI Labs",
+          "category": "LAB",
+          "amount": 1200
+        },
+        {
+          "id": "h3",
+          "name": "IEEE Digital Library & Textbook Access",
+          "category": "LIBRARY",
+          "amount": 450
+        },
+        {
+          "id": "h4",
+          "name": "Continuous Assessment & Semester Exams",
+          "category": "EXAM",
+          "amount": 350
+        },
+        {
+          "id": "h5",
+          "name": "Student Gymnasium & Sports Complex",
+          "category": "OTHER",
+          "amount": 200
+        },
+        {
+          "id": "h6",
+          "name": "Institutional Caution Deposit (Refundable)",
+          "category": "CAUTION_DEPOSIT",
+          "amount": 500,
+          "isRefundable": true
+        }
+      ],
+      "totalAmount": 9200,
+      "dueDate": "2026-11-15",
+      "createdAt": "2026-10-06T16:04:24.232Z"
+    },
+    {
+      "id": "mfs-btech-cse-hostel",
+      "code": "BTECH-CSE-2026-HST",
+      "title": "B.Tech Computer Science (Hosteller AC Residence) 2026-27",
+      "programCode": "BTECH-CSE",
+      "academicYear": "2026-2027",
+      "quotaType": "MERIT_GENERAL",
+      "studentType": "HOSTELLER_PREMIUM",
+      "currency": "USD",
+      "heads": [
+        {
+          "id": "h1",
+          "name": "Academic Tuition & Instruction Fee",
+          "category": "TUITION",
+          "amount": 6500
+        },
+        {
+          "id": "h2",
+          "name": "High-Performance Computing & AI Labs",
+          "category": "LAB",
+          "amount": 1200
+        },
+        {
+          "id": "h3",
+          "name": "IEEE Digital Library & Textbook Access",
+          "category": "LIBRARY",
+          "amount": 450
+        },
+        {
+          "id": "h4",
+          "name": "Continuous Assessment & Semester Exams",
+          "category": "EXAM",
+          "amount": 350
+        },
+        {
+          "id": "h5",
+          "name": "Air-Conditioned Single Residency & Mess Meals",
+          "category": "HOSTEL",
+          "amount": 3800
+        },
+        {
+          "id": "h6",
+          "name": "Institutional Caution Deposit (Refundable)",
+          "category": "CAUTION_DEPOSIT",
+          "amount": 800,
+          "isRefundable": true
+        }
+      ],
+      "totalAmount": 13100,
+      "dueDate": "2026-11-15",
+      "createdAt": "2026-10-06T16:04:24.232Z"
+    },
+    {
+      "id": "mfs-mba-exec",
+      "code": "MBA-EXEC-2026",
+      "title": "Executive Master of Business Administration (Global Cohort)",
+      "programCode": "MBA-EXEC",
+      "academicYear": "2026-2027",
+      "quotaType": "MANAGEMENT",
+      "studentType": "DAY_SCHOLAR",
+      "currency": "USD",
+      "heads": [
+        {
+          "id": "h1",
+          "name": "Executive Business Core Tuition",
+          "category": "TUITION",
+          "amount": 9500
+        },
+        {
+          "id": "h2",
+          "name": "Bloomberg Financial Terminal Access",
+          "category": "LAB",
+          "amount": 1800
+        },
+        {
+          "id": "h3",
+          "name": "Harvard Business School Case Studies",
+          "category": "LIBRARY",
+          "amount": 850
+        },
+        {
+          "id": "h4",
+          "name": "Leadership Colloquium & Capstone",
+          "category": "OTHER",
+          "amount": 1200
+        },
+        {
+          "id": "h5",
+          "name": "Executive Caution Deposit (Refundable)",
+          "category": "CAUTION_DEPOSIT",
+          "amount": 650,
+          "isRefundable": true
+        }
+      ],
+      "totalAmount": 14000,
+      "dueDate": "2026-10-31",
+      "createdAt": "2026-10-06T16:04:24.232Z"
+    },
+    {
+      "id": "mfs-muwvcvmi",
+      "code": "TEST-STR-6777",
+      "title": "Automated Suite Test Fee Structure",
+      "programCode": "BTECH-CSE",
+      "academicYear": "2026-2027",
+      "quotaType": "MERIT_GENERAL",
+      "studentType": "DAY_SCHOLAR",
+      "currency": "USD",
+      "heads": [
+        {
+          "id": "h1",
+          "name": "Tuition",
+          "category": "TUITION",
+          "amount": 7500
+        }
+      ],
+      "totalAmount": 7500,
+      "dueDate": "2026-12-01",
+      "createdAt": "2026-10-06T16:04:26.778Z"
+    },
+    {
+      "id": "mfs-muwvxmm3",
+      "code": "TEST-STR-4873",
+      "title": "Automated Suite Test Fee Structure",
+      "programCode": "BTECH-CSE",
+      "academicYear": "2026-2027",
+      "quotaType": "MERIT_GENERAL",
+      "studentType": "DAY_SCHOLAR",
+      "currency": "USD",
+      "heads": [
+        {
+          "id": "h1",
+          "name": "Tuition",
+          "category": "TUITION",
+          "amount": 7500
+        }
+      ],
+      "totalAmount": 7500,
+      "dueDate": "2026-12-01",
+      "createdAt": "2026-10-06T16:20:34.875Z"
+    }
+  ],
+  "installmentPlans": [
+    {
+      "id": "plan-sfee-mercer-01",
+      "studentFeeId": "sfee-mercer-01",
+      "studentId": "stu-mercer-01",
+      "studentName": "Alex Mercer",
+      "rollNo": "2024-CSE-042",
+      "totalFee": 4850,
+      "milestones": [
+        {
+          "milestoneNumber": 1,
+          "title": "Term 1: Admission & Registration",
+          "percentage": 50,
+          "amount": 2425,
+          "dueDate": "2026-10-21",
+          "status": "PAID",
+          "paidAmount": 2425
+        },
+        {
+          "milestoneNumber": 2,
+          "title": "Term 2: Mid-Semester Milestone",
+          "percentage": 25,
+          "amount": 1213,
+          "dueDate": "2026-12-05",
+          "status": "PAID",
+          "paidAmount": 1213
+        },
+        {
+          "milestoneNumber": 3,
+          "title": "Term 3: End-Semester Milestone",
+          "percentage": 25,
+          "amount": 1212,
+          "dueDate": "2027-02-03",
+          "status": "PAID",
+          "paidAmount": 1212
+        }
+      ],
+      "createdAt": "2026-10-06T16:04:26.790Z"
+    }
+  ],
+  "fineRule": {
+    "id": "lfr-standard-2026",
+    "name": "Standard Academic Term Late Fine Policy",
+    "gracePeriodDays": 7,
+    "model": "DAILY",
+    "flatAmount": 50,
+    "dailyRate": 10,
+    "percentageRate": 2,
+    "maxCap": 200,
+    "isActive": true
+  },
+  "bankEntries": [
+    {
+      "id": "bnk-001",
+      "txnDate": "2026-10-04",
+      "utrNumber": "CHL-2026-90412",
+      "remitterName": "David Mercer",
+      "amount": 1500,
+      "description": "NEFT/IB/CHL-2026-90412/Apex University Tuition",
+      "matchedStatus": "MATCHED",
+      "matchedChallanRef": "CHL-2026-90412"
+    },
+    {
+      "id": "bnk-002",
+      "txnDate": "2026-10-05",
+      "utrNumber": "CMS-NEFT-883921",
+      "remitterName": "Sanjay Patel",
+      "amount": 1200,
+      "description": "RTGS TRANSFER SANJAY PATEL FEES BTECH",
+      "matchedStatus": "UNMATCHED"
+    },
+    {
+      "id": "bnk-003",
+      "txnDate": "2026-10-06",
+      "utrNumber": "UPI-AXIS-0912443",
+      "remitterName": "Elena Rostova",
+      "amount": 2500,
+      "description": "UPI/294819230/Elena Rostova Fall Term Fee",
+      "matchedStatus": "UNMATCHED"
+    }
+  ],
+  "refundVouchers": [
+    {
+      "id": "rfnd-1791303634901",
+      "voucherNo": "RFND-2026-9335",
+      "studentId": "stu-general",
+      "studentName": "Alex Mercer",
+      "rollNo": "CS2026-001",
+      "program": "B.Tech Computer Science",
+      "type": "CAUTION_MONEY",
+      "amount": 500,
+      "bankDetails": {
+        "accountHolder": "Alex Mercer",
+        "accountNumber": "0000000000",
+        "ifscOrSwift": "INSTITUTION-SWIFT",
+        "bankName": "National Treasury Bank"
+      },
+      "clearanceStatus": {
+        "libraryCleared": true,
+        "hostelCleared": true,
+        "labCleared": true
+      },
+      "status": "PENDING_APPROVAL",
+      "requestedAt": "2026-10-06T16:20:34.901Z",
+      "remarks": "Refund application logged with Bursar Treasury"
+    },
+    {
+      "id": "rfnd-1791302666818",
+      "voucherNo": "RFND-2026-7796",
+      "studentId": "stu-general",
+      "studentName": "Alex Mercer",
+      "rollNo": "CS2026-001",
+      "program": "B.Tech Computer Science",
+      "type": "CAUTION_MONEY",
+      "amount": 500,
+      "bankDetails": {
+        "accountHolder": "Alex Mercer",
+        "accountNumber": "0000000000",
+        "ifscOrSwift": "INSTITUTION-SWIFT",
+        "bankName": "National Treasury Bank"
+      },
+      "clearanceStatus": {
+        "libraryCleared": true,
+        "hostelCleared": true,
+        "labCleared": true
+      },
+      "status": "PENDING_APPROVAL",
+      "requestedAt": "2026-10-06T16:04:26.818Z",
+      "remarks": "Refund application logged with Bursar Treasury"
+    },
+    {
+      "id": "rfnd-001",
+      "voucherNo": "RFND-2026-0018",
+      "studentId": "stu-alex-mercer",
+      "studentName": "Alex Mercer",
+      "rollNo": "CS2026-001",
+      "program": "B.Tech Computer Science & Engineering",
+      "type": "CAUTION_MONEY",
+      "amount": 500,
+      "bankDetails": {
+        "accountHolder": "Alex Mercer",
+        "accountNumber": "918237461928",
+        "ifscOrSwift": "CHASUS33XXX",
+        "bankName": "Chase Manhattan Bank"
+      },
+      "clearanceStatus": {
+        "libraryCleared": true,
+        "hostelCleared": true,
+        "labCleared": true
+      },
+      "status": "APPROVED",
+      "requestedAt": "2026-10-02T10:00:00.000Z",
+      "approvedBy": "Bursar Treasury Controller",
+      "remarks": "All departmental dues and library borrowings verified cleared."
+    },
+    {
+      "id": "rfnd-002",
+      "voucherNo": "RFND-2026-0024",
+      "studentId": "stu-priya-patel",
+      "studentName": "Priya Patel",
+      "rollNo": "CS2026-002",
+      "program": "B.Tech Computer Science & Engineering",
+      "type": "EXCESS_PAYMENT",
+      "amount": 350,
+      "bankDetails": {
+        "accountHolder": "Priya Patel",
+        "accountNumber": "482910492817",
+        "ifscOrSwift": "BOFAUS3NXXX",
+        "bankName": "Bank of America"
+      },
+      "clearanceStatus": {
+        "libraryCleared": true,
+        "hostelCleared": false,
+        "labCleared": true
+      },
+      "status": "PENDING_APPROVAL",
+      "requestedAt": "2026-10-05T14:30:00.000Z",
+      "remarks": "Double payment refund requested. Awaiting hostel warden room inspection sign-off."
+    }
+  ]
+}

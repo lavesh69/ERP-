@@ -1,0 +1,314 @@
+{
+  "blocks": [
+    {
+      "id": "blk-a",
+      "name": "Nelson Mandela Hall (Block A)",
+      "code": "BLK-A",
+      "genderAllowed": "MALE",
+      "totalFloors": 4,
+      "totalRooms": 60,
+      "totalBeds": 150,
+      "occupiedBeds": 138,
+      "wardenName": "Dr. Arthur Pendelton",
+      "wardenContact": "+1 (555) 321-7788",
+      "wardenEmail": "arthur.pendelton@classroom.edu"
+    },
+    {
+      "id": "blk-b",
+      "name": "Marie Curie Hall (Block B)",
+      "code": "BLK-B",
+      "genderAllowed": "FEMALE",
+      "totalFloors": 4,
+      "totalRooms": 50,
+      "totalBeds": 120,
+      "occupiedBeds": 104,
+      "wardenName": "Dr. Sunita Deshmukh",
+      "wardenContact": "+1 (555) 321-7789",
+      "wardenEmail": "sunita.deshmukh@classroom.edu"
+    },
+    {
+      "id": "blk-c",
+      "name": "C.V. Raman Postgrad Scholars Hall (Block C)",
+      "code": "BLK-C",
+      "genderAllowed": "COED",
+      "totalFloors": 3,
+      "totalRooms": 40,
+      "totalBeds": 40,
+      "occupiedBeds": 36,
+      "wardenName": "Prof. Kenneth Clark",
+      "wardenContact": "+1 (555) 321-7790",
+      "wardenEmail": "kenneth.clark@classroom.edu"
+    }
+  ],
+  "rooms": [
+    {
+      "id": "rm-a-101",
+      "blockId": "blk-a",
+      "blockName": "Nelson Mandela Hall (Block A)",
+      "roomNumber": "A-101",
+      "floor": 1,
+      "roomType": "DOUBLE_AC",
+      "capacity": 2,
+      "occupiedCount": 2,
+      "status": "FULL",
+      "feePerSemester": 1400,
+      "amenities": [
+        "Air Conditioning",
+        "Attached Bath",
+        "Study Desks",
+        "Wi-Fi 6"
+      ],
+      "beds": [
+        {
+          "id": "bed-a-101-a",
+          "roomId": "rm-a-101",
+          "bedNumber": "A",
+          "isOccupied": true,
+          "studentId": "stu-alex-01",
+          "studentName": "Alex Mercer",
+          "studentRoll": "CS2026-001",
+          "branch": "B.Tech Computer Science",
+          "allocatedDate": "2026-08-01",
+          "feeStatus": "PAID"
+        },
+        {
+          "id": "bed-a-101-b",
+          "roomId": "rm-a-101",
+          "bedNumber": "B",
+          "isOccupied": true,
+          "studentId": "stu-ryan-02",
+          "studentName": "Ryan Gosling",
+          "studentRoll": "CS2026-002",
+          "branch": "B.Tech Computer Science",
+          "allocatedDate": "2026-08-01",
+          "feeStatus": "PAID"
+        }
+      ]
+    },
+    {
+      "id": "rm-a-102",
+      "blockId": "blk-a",
+      "blockName": "Nelson Mandela Hall (Block A)",
+      "roomNumber": "A-102",
+      "floor": 1,
+      "roomType": "TRIPLE_NON_AC",
+      "capacity": 3,
+      "occupiedCount": 2,
+      "status": "PARTIALLY_OCCUPIED",
+      "feePerSemester": 950,
+      "amenities": [
+        "Ceiling Fans",
+        "Common Washroom",
+        "High-speed Ethernet",
+        "Balcony"
+      ],
+      "beds": [
+        {
+          "id": "bed-a-102-a",
+          "roomId": "rm-a-102",
+          "bedNumber": "A",
+          "isOccupied": true,
+          "studentId": "stu-david-05",
+          "studentName": "David Miller",
+          "studentRoll": "ME2026-015",
+          "branch": "Mechanical Engineering",
+          "allocatedDate": "2026-08-02",
+          "feeStatus": "PAID"
+        },
+        {
+          "id": "bed-a-102-b",
+          "roomId": "rm-a-102",
+          "bedNumber": "B",
+          "isOccupied": true,
+          "studentId": "stu-arjun-09",
+          "studentName": "Arjun Verma",
+          "studentRoll": "EE2026-008",
+          "branch": "Electrical Engineering",
+          "allocatedDate": "2026-08-03",
+          "feeStatus": "PARTIAL"
+        },
+        {
+          "id": "bed-a-102-c",
+          "roomId": "rm-a-102",
+          "bedNumber": "C",
+          "isOccupied": false
+        }
+      ]
+    },
+    {
+      "id": "rm-b-201",
+      "blockId": "blk-b",
+      "blockName": "Marie Curie Hall (Block B)",
+      "roomNumber": "B-201",
+      "floor": 2,
+      "roomType": "DOUBLE_AC",
+      "capacity": 2,
+      "occupiedCount": 1,
+      "status": "PARTIALLY_OCCUPIED",
+      "feePerSemester": 1400,
+      "amenities": [
+        "Air Conditioning",
+        "Ensuite Bath",
+        "Dual Desks",
+        "Balcony"
+      ],
+      "beds": [
+        {
+          "id": "bed-b-201-a",
+          "roomId": "rm-b-201",
+          "bedNumber": "A",
+          "isOccupied": true,
+          "studentId": "stu-priya-03",
+          "studentName": "Priya Sharma",
+          "studentRoll": "CS2026-018",
+          "branch": "B.Tech Computer Science",
+          "allocatedDate": "2026-08-01",
+          "feeStatus": "PAID"
+        },
+        {
+          "id": "bed-b-201-b",
+          "roomId": "rm-b-201",
+          "bedNumber": "B",
+          "isOccupied": false
+        }
+      ]
+    },
+    {
+      "id": "rm-c-301",
+      "blockId": "blk-c",
+      "blockName": "C.V. Raman Postgrad Scholars Hall (Block C)",
+      "roomNumber": "C-301",
+      "floor": 3,
+      "roomType": "SINGLE_AC",
+      "capacity": 1,
+      "occupiedCount": 1,
+      "status": "FULL",
+      "feePerSemester": 1950,
+      "amenities": [
+        "Single Executive Bed",
+        "Attached Bath",
+        "Private Workspace",
+        "AC & Geyser"
+      ],
+      "beds": [
+        {
+          "id": "bed-c-301-a",
+          "roomId": "rm-c-301",
+          "bedNumber": "A",
+          "isOccupied": true,
+          "studentId": "stu-chen-04",
+          "studentName": "Chen Wei",
+          "studentRoll": "PHD-AI-003",
+          "branch": "Ph.D. Computer Science",
+          "allocatedDate": "2026-07-15",
+          "feeStatus": "PAID"
+        }
+      ]
+    }
+  ],
+  "gatePasses": [
+    {
+      "id": "gp-1791303634915",
+      "passNumber": "GP-2026-8739",
+      "studentId": "stu-guest",
+      "studentName": "Alex Mercer",
+      "studentRoll": "CS2026-001",
+      "roomNumber": "A-101",
+      "blockName": "Nelson Mandela Hall",
+      "reason": "National Robotics Olympiad Finals",
+      "destination": "New York, NY",
+      "departureTime": "2026-11-01T08:00:00.000Z",
+      "expectedReturnTime": "2026-11-03T20:00:00.000Z",
+      "status": "PENDING_WARDEN",
+      "emergencyContact": "+1 (555) 881-2233",
+      "parentConsentVerified": true,
+      "createdAt": "2026-10-06T16:20:34.915Z"
+    },
+    {
+      "id": "gp-001",
+      "passNumber": "GP-2026-1049",
+      "studentId": "stu-alex-01",
+      "studentName": "Alex Mercer",
+      "studentRoll": "CS2026-001",
+      "roomNumber": "A-101",
+      "blockName": "Nelson Mandela Hall (Block A)",
+      "reason": "ACM ICPC Regional Collegiate Programming Contest Final",
+      "destination": "MIT Convention Center, Cambridge, MA",
+      "departureTime": "2026-10-10T08:00:00.000Z",
+      "expectedReturnTime": "2026-10-12T20:00:00.000Z",
+      "status": "APPROVED",
+      "emergencyContact": "+1 (555) 998-1122",
+      "parentConsentVerified": true,
+      "approvedBy": "Dr. Arthur Pendelton (Chief Warden)",
+      "remarks": "Authorized team departure with faculty mentor sponsorship.",
+      "createdAt": "2026-10-05T14:30:00.000Z"
+    },
+    {
+      "id": "gp-002",
+      "passNumber": "GP-2026-1050",
+      "studentId": "stu-priya-03",
+      "studentName": "Priya Sharma",
+      "studentRoll": "CS2026-018",
+      "roomNumber": "B-201",
+      "blockName": "Marie Curie Hall (Block B)",
+      "reason": "Family wedding and festival weekend leave",
+      "destination": "Chicago, IL",
+      "departureTime": "2026-10-15T16:00:00.000Z",
+      "expectedReturnTime": "2026-10-19T21:00:00.000Z",
+      "status": "PENDING_WARDEN",
+      "emergencyContact": "+1 (555) 774-8833",
+      "parentConsentVerified": true,
+      "createdAt": "2026-10-06T09:15:00.000Z"
+    }
+  ],
+  "messPlans": [
+    {
+      "id": "mp-veg",
+      "name": "Royal Sattvic & Continental Veg",
+      "description": "Nutritionally balanced multi-cuisine vegetarian menu prepared in dedicated clean kitchens.",
+      "dietType": "VEG",
+      "monthlyFee": 260,
+      "activeSubscribers": 185,
+      "weeklyHighlights": {
+        "breakfast": "Oatmeal porridge, Fresh Fruit, Idli/Sambar, Masala Omelette alternative",
+        "lunch": "Paneer Lababdar, Dal Tadka, Steamed Basmati Rice, Artisan Naan, Curd",
+        "snacks": "Samosa/Tea & Cold Pressed Juice",
+        "dinner": "Methi Malai Mutter, Mixed Lentils, Phulkas, Kheer dessert"
+      }
+    },
+    {
+      "id": "mp-special",
+      "name": "High-Protein & Non-Vegetarian Executive",
+      "description": "Custom athlete and fitness plan with grilled chicken, eggs, fish curry, and macro-counted sides.",
+      "dietType": "NON_VEG",
+      "monthlyFee": 340,
+      "activeSubscribers": 142,
+      "weeklyHighlights": {
+        "breakfast": "Boiled Eggs, Peanut Butter Toast, Protein Shake, Seasonal Fruits",
+        "lunch": "Grilled Herb Chicken Breast, Brown Rice, Steamed Greens, Lentil Soup",
+        "snacks": "Roasted Almonds, Whey Shake, Banana Walnut Muffin",
+        "dinner": "Coastal Fish Curry, Fragrant Rice, Garden Salad, Low-fat Custard"
+      }
+    }
+  ],
+  "subscriptions": [
+    {
+      "studentId": "stu-alex-01",
+      "studentName": "Alex Mercer",
+      "studentRoll": "CS2026-001",
+      "planId": "mp-special",
+      "planName": "High-Protein & Non-Vegetarian Executive",
+      "status": "ACTIVE",
+      "rebateDaysCount": 0
+    },
+    {
+      "studentId": "stu-priya-03",
+      "studentName": "Priya Sharma",
+      "studentRoll": "CS2026-018",
+      "planId": "mp-veg",
+      "planName": "Royal Sattvic & Continental Veg",
+      "status": "ACTIVE",
+      "rebateDaysCount": 0
+    }
+  ]
+}

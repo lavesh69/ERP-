@@ -35,6 +35,10 @@ import {
   FileCode2,
   X,
   UserCheck,
+  Bed,
+  Bus,
+  Scale,
+  Boxes,
 } from "lucide-react";
 
 interface NavSection {
@@ -139,6 +143,34 @@ const NAV_SECTIONS: NavSection[] = [
         icon: HeartHandshake,
         badge: "Guardian",
         roles: ["SUPER_ADMIN", "INSTITUTION_ADMIN", "PARENT"],
+      },
+      {
+        name: "Hostel & Housing",
+        href: "/hostel",
+        icon: Bed,
+        badge: "Dorm",
+        roles: ["SUPER_ADMIN", "INSTITUTION_ADMIN", "PRINCIPAL", "HOD", "FACULTY", "STUDENT", "PARENT"],
+      },
+      {
+        name: "Transport Fleet",
+        href: "/transport",
+        icon: Bus,
+        badge: "GPS",
+        roles: ["SUPER_ADMIN", "INSTITUTION_ADMIN", "PRINCIPAL", "STUDENT", "PARENT"],
+      },
+      {
+        name: "Grievances & POSH",
+        href: "/grievances",
+        icon: Scale,
+        badge: "UGC",
+        roles: ["SUPER_ADMIN", "INSTITUTION_ADMIN", "PRINCIPAL", "HOD", "FACULTY", "STUDENT", "PARENT", "HR_STAFF"],
+      },
+      {
+        name: "Campus Assets",
+        href: "/inventory",
+        icon: Boxes,
+        badge: "Assets",
+        roles: ["SUPER_ADMIN", "INSTITUTION_ADMIN", "PRINCIPAL", "HOD", "ACCOUNTANT", "FACULTY"],
       },
     ],
   },

@@ -1,0 +1,142 @@
+{
+  "assets": [
+    {
+      "id": "ast-1791303634956",
+      "assetTag": "AST-IT_-2031",
+      "name": "Quantum Computing Simulation Workstation",
+      "category": "IT_COMPUTING",
+      "department": "Computer Science & Engineering",
+      "locationRoom": "Advanced Quantum Lab (Q-104)",
+      "custodianFaculty": "Dr. Alan Turing",
+      "purchaseDate": "2025-01-10",
+      "purchaseCost": 18500,
+      "currentDepreciatedValue": 12071,
+      "warrantyExpiry": "2028-12-31",
+      "status": "OPERATIONAL",
+      "serialNumber": "SN-QUANTUM-2026-X1",
+      "modelNumber": "QC-SIM-V4",
+      "maintenanceHistoryCount": 1
+    },
+    {
+      "id": "ast-01",
+      "assetTag": "AST-CS-1092",
+      "name": "NVIDIA DGX H100 AI Supercomputing Node",
+      "category": "IT_COMPUTING",
+      "department": "Computer Science & Engineering",
+      "locationRoom": "HPC Data Center Rack 04",
+      "custodianFaculty": "Dr. Alan Turing",
+      "purchaseDate": "2024-03-15",
+      "purchaseCost": 320000,
+      "currentDepreciatedValue": 192000,
+      "warrantyExpiry": "2027-03-15",
+      "status": "OPERATIONAL",
+      "serialNumber": "SN-NV-DGX-99812",
+      "modelNumber": "DGX-H100-8X",
+      "maintenanceHistoryCount": 2
+    },
+    {
+      "id": "ast-02",
+      "assetTag": "AST-MECH-4410",
+      "name": "HAAS VF-2 Precision CNC Milling Center",
+      "category": "LAB_INSTRUMENTATION",
+      "department": "Mechanical & Mechatronics",
+      "locationRoom": "Advanced Manufacturing Shop (Bldg D-12)",
+      "custodianFaculty": "Dr. Arthur Pendelton",
+      "purchaseDate": "2023-08-20",
+      "purchaseCost": 85000,
+      "currentDepreciatedValue": 47200,
+      "warrantyExpiry": "2026-08-20",
+      "status": "OPERATIONAL",
+      "serialNumber": "SN-HAAS-VF2-3310",
+      "modelNumber": "VF-2-SS",
+      "maintenanceHistoryCount": 4
+    },
+    {
+      "id": "ast-03",
+      "assetTag": "AST-AV-2019",
+      "name": "Epson Pro L1755UNL Laser Cinema Projector",
+      "category": "CLASSROOM_AV",
+      "department": "Central Academic Facility",
+      "locationRoom": "Auditorium Hall A (500-Seater)",
+      "custodianFaculty": "Prof. Kenneth Clark",
+      "purchaseDate": "2024-06-10",
+      "purchaseCost": 22000,
+      "currentDepreciatedValue": 14800,
+      "warrantyExpiry": "2027-06-10",
+      "status": "UNDER_MAINTENANCE",
+      "serialNumber": "SN-EPS-L175-994",
+      "modelNumber": "L1755UNL",
+      "maintenanceHistoryCount": 1
+    }
+  ],
+  "consumables": [
+    {
+      "id": "con-01",
+      "itemCode": "MAT-PLA-01",
+      "name": "Industrial 3D Printing Filament (PLA+ 1.75mm)",
+      "category": "Maker Lab Supplies",
+      "unit": "Spools (1kg)",
+      "quantityOnHand": 42,
+      "minReorderThreshold": 15,
+      "unitCost": 28,
+      "supplierName": "Polymer Pro Labs Inc.",
+      "needsReorder": false
+    },
+    {
+      "id": "con-02",
+      "itemCode": "CHM-ETH-99",
+      "name": "Analytical Grade Ethanol (99.8% Pure)",
+      "category": "Chemistry Consumables",
+      "unit": "Bottles (2.5L)",
+      "quantityOnHand": 4,
+      "minReorderThreshold": 10,
+      "unitCost": 65,
+      "supplierName": "Sigma-Aldrich Chemicals",
+      "needsReorder": true
+    },
+    {
+      "id": "con-03",
+      "itemCode": "IT-RJ45-CAT6",
+      "name": "Shielded Cat6 Gigabit Patch Cables (3 Meter)",
+      "category": "Networking Supplies",
+      "unit": "Packs of 10",
+      "quantityOnHand": 18,
+      "minReorderThreshold": 12,
+      "unitCost": 35,
+      "supplierName": "Belkin Enterprise Cables",
+      "needsReorder": false
+    }
+  ],
+  "workOrders": [
+    {
+      "id": "wo-1791303634961",
+      "workOrderNo": "WO-2026-7766",
+      "assetId": "ast-1791303634956",
+      "assetTag": "AST-IT_-2031",
+      "assetName": "Quantum Computing Simulation Workstation",
+      "reportedIssue": "Liquid cooling fan speed oscillation detected during benchmark.",
+      "priority": "MEDIUM",
+      "status": "COMPLETED",
+      "assignedTechnician": "Marcus Vance",
+      "estimatedCost": 120,
+      "reportedDate": "2026-10-06T16:20:34.961Z",
+      "actualCost": 115,
+      "completedDate": "2026-10-06T16:20:34.965Z",
+      "notes": "Pump firmware updated and coolant refilled. Testing completed successfully."
+    },
+    {
+      "id": "wo-01",
+      "workOrderNo": "WO-2026-4401",
+      "assetId": "ast-03",
+      "assetTag": "AST-AV-2019",
+      "assetName": "Epson Pro L1755UNL Laser Cinema Projector",
+      "reportedIssue": "High temperature optical lamp warning tripping after 45 minutes of continuous presentation.",
+      "priority": "HIGH",
+      "status": "IN_PROGRESS",
+      "assignedTechnician": "Marcus Vance (AV Lead)",
+      "estimatedCost": 350,
+      "reportedDate": "2026-10-04T10:00:00.000Z",
+      "notes": "Exhaust blower fan replacement ordered from OEM authorized distributor."
+    }
+  ]
+}

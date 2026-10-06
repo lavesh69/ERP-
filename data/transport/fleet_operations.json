@@ -1,0 +1,252 @@
+{
+  "vehicles": [
+    {
+      "id": "veh-01",
+      "registrationNumber": "MA-01-AX-9921",
+      "vehicleCode": "BUS-01",
+      "type": "ELECTRIC_BUS",
+      "capacity": 48,
+      "currentPassengers": 42,
+      "fuelType": "ELECTRIC",
+      "driverName": "Robert Kowalski",
+      "driverPhone": "+1 (555) 771-0021",
+      "driverLicense": "CDL-MA-99281A",
+      "attendantName": "Samira Patel",
+      "attendantPhone": "+1 (555) 771-0022",
+      "status": "ACTIVE_EN_ROUTE",
+      "gpsLat": 42.3601,
+      "gpsLng": -71.0589,
+      "speedKmH": 38,
+      "batteryOrFuelLevel": 82,
+      "nextFcDate": "2027-05-15",
+      "insuranceExpiry": "2027-04-20",
+      "pucExpiry": "2027-08-10"
+    },
+    {
+      "id": "veh-02",
+      "registrationNumber": "MA-01-BX-4482",
+      "vehicleCode": "BUS-02",
+      "type": "BUS",
+      "capacity": 52,
+      "currentPassengers": 36,
+      "fuelType": "DIESEL",
+      "driverName": "Dmitri Volkov",
+      "driverPhone": "+1 (555) 771-0033",
+      "driverLicense": "CDL-MA-88192B",
+      "attendantName": "Carlos Mendez",
+      "attendantPhone": "+1 (555) 771-0034",
+      "status": "ON_CAMPUS",
+      "gpsLat": 42.3505,
+      "gpsLng": -71.1054,
+      "speedKmH": 0,
+      "batteryOrFuelLevel": 65,
+      "nextFcDate": "2027-03-10",
+      "insuranceExpiry": "2027-06-12",
+      "pucExpiry": "2027-02-28"
+    },
+    {
+      "id": "veh-03",
+      "registrationNumber": "MA-01-CX-1029",
+      "vehicleCode": "VAN-03",
+      "type": "VAN",
+      "capacity": 20,
+      "currentPassengers": 14,
+      "fuelType": "CNG",
+      "driverName": "Marcus Vance",
+      "driverPhone": "+1 (555) 771-0045",
+      "driverLicense": "CDL-MA-44912C",
+      "attendantName": "Amina Yusuf",
+      "attendantPhone": "+1 (555) 771-0046",
+      "status": "ON_CAMPUS",
+      "gpsLat": 42.3505,
+      "gpsLng": -71.1054,
+      "speedKmH": 0,
+      "batteryOrFuelLevel": 90,
+      "nextFcDate": "2027-07-20",
+      "insuranceExpiry": "2027-08-15",
+      "pucExpiry": "2027-09-01"
+    }
+  ],
+  "routes": [
+    {
+      "id": "rt-01",
+      "routeNumber": "R-01",
+      "routeName": "North Suburbs Metro Corridor",
+      "startingPoint": "Somerville Union Square",
+      "destination": "Main University Campus Gate 1",
+      "totalDistanceKm": 24.5,
+      "morningStartTime": "07:15 AM",
+      "eveningDepartureTime": "05:15 PM",
+      "assignedVehicleId": "veh-01",
+      "assignedVehicleCode": "BUS-01",
+      "assignedDriverName": "Robert Kowalski",
+      "totalRegisteredStudents": 43,
+      "stops": [
+        {
+          "stopName": "Union Square Metro",
+          "landmark": "Opposite Market Basket",
+          "morningPickupTime": "07:15 AM",
+          "eveningDropTime": "06:05 PM",
+          "sequenceOrder": 1,
+          "distanceKmFromCampus": 24.5
+        },
+        {
+          "stopName": "Porter Square T-Station",
+          "landmark": "Commuter Rail Entrance",
+          "morningPickupTime": "07:30 AM",
+          "eveningDropTime": "05:50 PM",
+          "sequenceOrder": 2,
+          "distanceKmFromCampus": 18.2
+        },
+        {
+          "stopName": "Harvard North Gate",
+          "landmark": "Science Center Plaza",
+          "morningPickupTime": "07:45 AM",
+          "eveningDropTime": "05:35 PM",
+          "sequenceOrder": 3,
+          "distanceKmFromCampus": 12
+        },
+        {
+          "stopName": "Kendall Square Tech Hub",
+          "landmark": "Main Street Crossing",
+          "morningPickupTime": "08:00 AM",
+          "eveningDropTime": "05:25 PM",
+          "sequenceOrder": 4,
+          "distanceKmFromCampus": 6.5
+        },
+        {
+          "stopName": "University Campus Central",
+          "landmark": "Academic Quadrangle",
+          "morningPickupTime": "08:20 AM",
+          "eveningDropTime": "05:15 PM",
+          "sequenceOrder": 5,
+          "distanceKmFromCampus": 0
+        }
+      ]
+    },
+    {
+      "id": "rt-02",
+      "routeNumber": "R-02",
+      "routeName": "South Shore Coastal Express",
+      "startingPoint": "Quincy Adams Depot",
+      "destination": "Main University Campus Gate 2",
+      "totalDistanceKm": 31,
+      "morningStartTime": "07:00 AM",
+      "eveningDepartureTime": "05:30 PM",
+      "assignedVehicleId": "veh-02",
+      "assignedVehicleCode": "BUS-02",
+      "assignedDriverName": "Dmitri Volkov",
+      "totalRegisteredStudents": 36,
+      "stops": [
+        {
+          "stopName": "Quincy Adams Transit",
+          "landmark": "Parking Garage Level 1",
+          "morningPickupTime": "07:00 AM",
+          "eveningDropTime": "06:20 PM",
+          "sequenceOrder": 1,
+          "distanceKmFromCampus": 31
+        },
+        {
+          "stopName": "Neponset Circle",
+          "landmark": "Riverway Gas Station",
+          "morningPickupTime": "07:20 AM",
+          "eveningDropTime": "06:00 PM",
+          "sequenceOrder": 2,
+          "distanceKmFromCampus": 22.4
+        },
+        {
+          "stopName": "Dorchester JFK Station",
+          "landmark": "Red Line Terminal",
+          "morningPickupTime": "07:40 AM",
+          "eveningDropTime": "05:45 PM",
+          "sequenceOrder": 3,
+          "distanceKmFromCampus": 14.2
+        },
+        {
+          "stopName": "University Campus Central",
+          "landmark": "Gate 2 Transit Pavilion",
+          "morningPickupTime": "08:15 AM",
+          "eveningDropTime": "05:30 PM",
+          "sequenceOrder": 4,
+          "distanceKmFromCampus": 0
+        }
+      ]
+    }
+  ],
+  "passes": [
+    {
+      "id": "pass-1791303634926",
+      "passNumber": "BP-2026-4173",
+      "studentName": "Alex Mercer",
+      "studentRoll": "CS2026-001",
+      "routeId": "rt-01",
+      "routeNumber": "R-01",
+      "stopName": "Porter Square T-Station",
+      "academicYear": "2026-2027",
+      "validUntil": "2027-05-31",
+      "status": "ACTIVE",
+      "feeAmount": 450,
+      "feeStatus": "PAID",
+      "qrCodeFingerprint": "0dfde1a64e7771e8414f0d3ea094cfb0",
+      "issuedAt": "2026-10-06T16:20:34.926Z"
+    },
+    {
+      "id": "pass-001",
+      "passNumber": "BP-2026-8801",
+      "studentId": "stu-alex-01",
+      "studentName": "Alex Mercer",
+      "studentRoll": "CS2026-001",
+      "routeId": "rt-01",
+      "routeNumber": "R-01",
+      "stopName": "Porter Square T-Station",
+      "academicYear": "2026-2027",
+      "validUntil": "2027-05-31",
+      "status": "ACTIVE",
+      "feeAmount": 450,
+      "feeStatus": "PAID",
+      "qrCodeFingerprint": "0dfde1a64e7771e8414f0d3ea094cfb0",
+      "issuedAt": "2026-08-15T10:00:00.000Z"
+    },
+    {
+      "id": "pass-002",
+      "passNumber": "BP-2026-8802",
+      "studentId": "stu-priya-03",
+      "studentName": "Priya Sharma",
+      "studentRoll": "CS2026-018",
+      "routeId": "rt-02",
+      "routeNumber": "R-02",
+      "stopName": "Dorchester JFK Station",
+      "academicYear": "2026-2027",
+      "validUntil": "2027-05-31",
+      "status": "ACTIVE",
+      "feeAmount": 450,
+      "feeStatus": "PAID",
+      "qrCodeFingerprint": "35873b7d4c54c47edf0e93a77fef50b1",
+      "issuedAt": "2026-08-16T11:20:00.000Z"
+    }
+  ],
+  "maintenance": [
+    {
+      "id": "maint-01",
+      "vehicleId": "veh-01",
+      "vehicleCode": "BUS-01",
+      "serviceType": "EV High-Voltage Inverter & Brake Pad Inspection",
+      "date": "2026-09-12",
+      "odometerKm": 34200,
+      "cost": 720,
+      "workshopName": "Apex EcoTransit OEM Service Center",
+      "notes": "Regenerative braking calibration performed. Battery health 98.4%."
+    },
+    {
+      "id": "maint-02",
+      "vehicleId": "veh-02",
+      "vehicleCode": "BUS-02",
+      "serviceType": "Engine Oil Flush, Filter Replacement & Speed Governor Check",
+      "date": "2026-08-28",
+      "odometerKm": 61850,
+      "cost": 540,
+      "workshopName": "State Certified Diesel Works",
+      "notes": "Mandatory speed governor checked at 60 km/h limit. All parameters green."
+    }
+  ]
+}

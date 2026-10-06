@@ -7,7 +7,7 @@ export const ROLE_CONFIGS: Record<UserRole, RoleConfig> = {
     description: "Platform-wide system configuration, tenant management, and root telemetry",
     badgeColor: "bg-rose-primary text-white",
     dashboardPath: "/admin",
-    allowedNav: ["admin", "institution", "students", "faculty", "lms", "attendance", "timetable", "assignments", "examinations", "finance", "library", "research", "careers", "scholarships", "communication", "analytics", "ai-assistant", "documents"],
+    allowedNav: ["admin", "institution", "students", "faculty", "lms", "attendance", "timetable", "assignments", "examinations", "finance", "library", "research", "careers", "scholarships", "communication", "analytics", "ai-assistant", "documents", "hostel", "transport", "grievances", "inventory"],
   },
   INSTITUTION_ADMIN: {
     role: "INSTITUTION_ADMIN",
@@ -15,7 +15,7 @@ export const ROLE_CONFIGS: Record<UserRole, RoleConfig> = {
     description: "Campus operations, department governance, and academic administration",
     badgeColor: "bg-rose-primary text-white",
     dashboardPath: "/institution",
-    allowedNav: ["institution", "students", "faculty", "lms", "attendance", "timetable", "assignments", "examinations", "finance", "library", "research", "careers", "scholarships", "communication", "analytics", "ai-assistant", "documents"],
+    allowedNav: ["institution", "students", "faculty", "lms", "attendance", "timetable", "assignments", "examinations", "finance", "library", "research", "careers", "scholarships", "communication", "analytics", "ai-assistant", "documents", "hostel", "transport", "grievances", "inventory"],
   },
   PRINCIPAL: {
     role: "PRINCIPAL",
@@ -23,7 +23,7 @@ export const ROLE_CONFIGS: Record<UserRole, RoleConfig> = {
     description: "Executive oversight, accreditation evidence, and faculty governance",
     badgeColor: "bg-rose-accent text-white",
     dashboardPath: "/analytics",
-    allowedNav: ["analytics", "institution", "students", "faculty", "attendance", "timetable", "examinations", "finance", "research", "scholarships", "communication", "ai-assistant", "documents"],
+    allowedNav: ["analytics", "institution", "students", "faculty", "attendance", "timetable", "examinations", "finance", "research", "scholarships", "communication", "ai-assistant", "documents", "hostel", "transport", "grievances", "inventory"],
   },
   HOD: {
     role: "HOD",
@@ -31,7 +31,7 @@ export const ROLE_CONFIGS: Record<UserRole, RoleConfig> = {
     description: "Department course scheduling, faculty workload, and cohort monitoring",
     badgeColor: "bg-rose-accent text-white",
     dashboardPath: "/institution",
-    allowedNav: ["institution", "faculty", "students", "lms", "timetable", "attendance", "assignments", "examinations", "research", "scholarships", "communication", "analytics", "ai-assistant", "documents"],
+    allowedNav: ["institution", "faculty", "students", "lms", "timetable", "attendance", "assignments", "examinations", "research", "scholarships", "communication", "analytics", "ai-assistant", "documents", "hostel", "transport", "grievances", "inventory"],
   },
   FACULTY: {
     role: "FACULTY",
@@ -39,7 +39,7 @@ export const ROLE_CONFIGS: Record<UserRole, RoleConfig> = {
     description: "Course delivery, attendance taking, assignment grading, and research",
     badgeColor: "bg-academic-info text-white",
     dashboardPath: "/faculty",
-    allowedNav: ["faculty", "attendance", "lms", "assignments", "timetable", "examinations", "library", "research", "communication", "ai-assistant", "documents"],
+    allowedNav: ["faculty", "attendance", "lms", "assignments", "timetable", "examinations", "library", "research", "communication", "ai-assistant", "documents", "hostel", "grievances", "inventory"],
   },
   CLASS_TEACHER: {
     role: "CLASS_TEACHER",
@@ -55,7 +55,7 @@ export const ROLE_CONFIGS: Record<UserRole, RoleConfig> = {
     description: "Enrolled courses, assignments, exams, grades, attendance, and career hub",
     badgeColor: "bg-academic-success text-white",
     dashboardPath: "/students/profile",
-    allowedNav: ["students/profile", "lms", "attendance", "timetable", "assignments", "examinations", "finance", "library", "careers", "scholarships", "communication", "ai-assistant", "documents"],
+    allowedNav: ["students/profile", "lms", "attendance", "timetable", "assignments", "examinations", "finance", "library", "careers", "scholarships", "communication", "ai-assistant", "documents", "hostel", "transport", "grievances"],
   },
   PARENT: {
     role: "PARENT",
@@ -63,7 +63,7 @@ export const ROLE_CONFIGS: Record<UserRole, RoleConfig> = {
     description: "Child attendance, grades, fee installments, and teacher communication",
     badgeColor: "bg-academic-warning text-white",
     dashboardPath: "/parent",
-    allowedNav: ["parent", "attendance", "finance", "communication", "ai-assistant"],
+    allowedNav: ["parent", "attendance", "finance", "communication", "ai-assistant", "hostel", "transport", "grievances"],
   },
   ACCOUNTANT: {
     role: "ACCOUNTANT",
@@ -71,7 +71,7 @@ export const ROLE_CONFIGS: Record<UserRole, RoleConfig> = {
     description: "Tuition structures, fee receipts, payment reconciliation, and refunds",
     badgeColor: "bg-academic-warning text-white",
     dashboardPath: "/finance",
-    allowedNav: ["finance", "scholarships", "students", "communication", "analytics", "ai-assistant", "documents"],
+    allowedNav: ["finance", "scholarships", "students", "communication", "analytics", "ai-assistant", "documents", "inventory"],
   },
   LIBRARIAN: {
     role: "LIBRARIAN",
@@ -111,7 +111,7 @@ export const ROLE_CONFIGS: Record<UserRole, RoleConfig> = {
     description: "Faculty leave management, service records, and personnel appraisals",
     badgeColor: "bg-charcoal-800 text-white",
     dashboardPath: "/faculty",
-    allowedNav: ["faculty", "attendance", "timetable", "communication", "ai-assistant", "documents"],
+    allowedNav: ["faculty", "attendance", "timetable", "communication", "ai-assistant", "documents", "grievances"],
   },
   ALUMNI: {
     role: "ALUMNI",

@@ -144,6 +144,33 @@ import {
   evaluateRefundEligibility,
   generateDayEndSettlementHash,
 } from "@/lib/finance/finance-engine";
+import { GET as handleHostelGet, POST as handleHostelPost } from "@/app/api/hostel/route";
+import {
+  calculateBlockOccupancy,
+  validateGatePassRequest,
+  processGatePassAction,
+  calculateMessRebate,
+} from "@/lib/hostel/hostel-engine";
+import { GET as handleTransportGet, POST as handleTransportPost } from "@/app/api/transport/route";
+import {
+  calculateRouteOccupancy,
+  generateBusPassFingerprint,
+  checkVehicleComplianceAlerts,
+  validateBusPassApplication,
+} from "@/lib/transport/transport-engine";
+import { GET as handleGrievancesGet, POST as handleGrievancesPost } from "@/app/api/grievances/route";
+import {
+  assignStatutoryCommittee,
+  computeSlaStatus,
+  validateGrievanceSubmission,
+  calculateDisposalRate,
+} from "@/lib/grievances/grievances-engine";
+import { GET as handleInventoryGet, POST as handleInventoryPost } from "@/app/api/inventory/route";
+import {
+  computeStraightLineDepreciation,
+  evaluateReorderStatus,
+  validateAssetRegistration,
+} from "@/lib/inventory/inventory-engine";
 
 async function runTestSuite() {
   console.log("=================================================");
@@ -5037,6 +5064,219 @@ By breaking down large monolithic systems into decoupled microservices, systems 
   });
   const createRefundRes = await handleFinanceRefundsPost(createRefundReq);
   assert(createRefundRes.status === 200, "POST /api/finance/refunds (action: REQUEST_REFUND) creates refund voucher with 200 OK");
+
+  // =========================================================================
+  // GROUP 54: Complete Campus ERP Pillars: Hostel, Transport, Grievances & Inventory
+  // =========================================================================
+  console.log("\n📦 Running Group 54: Campus Pillars — Hostel, Transport, Grievances & Inventory");
+
+  // 1. Hostel & Residence Life Management
+  const blockStats = calculateBlockOccupancy({
+    id: "blk-test",
+    name: "Test Block",
+    code: "BLK-T",
+    genderAllowed: "MALE",
+    totalFloors: 4,
+    totalRooms: 50,
+    totalBeds: 100,
+    occupiedBeds: 85,
+    wardenName: "Warden Smith",
+    wardenContact: "555-0101",
+    wardenEmail: "smith@test.edu",
+  });
+  assert(blockStats.occupancyRate === 85, "calculateBlockOccupancy returns accurate percentage (85%)");
+  assert(blockStats.availableBeds === 15, "calculateBlockOccupancy calculates available vacancies (15 beds)");
+
+  const invalidPass = validateGatePassRequest({
+    studentName: "Alex Mercer",
+    studentRoll: "CS2026-001",
+    reason: "Short",
+  });
+  assert(!invalidPass.isValid, "validateGatePassRequest flags short reason or missing fields");
+
+  const validPass = validateGatePassRequest({
+    studentName: "Alex Mercer",
+    studentRoll: "CS2026-001",
+    reason: "ACM ICPC Regional Collegiate Programming Contest Final",
+    destination: "Boston, MA",
+    departureTime: "2026-10-10T08:00:00.000Z",
+    expectedReturnTime: "2026-10-12T20:00:00.000Z",
+    emergencyContact: "+1 (555) 998-1122",
+  });
+  assert(validPass.isValid, "validateGatePassRequest accepts valid departure & return window");
+
+  const rebate = calculateMessRebate(300, 5);
+  assert(rebate === 35, `calculateMessRebate computes 70% refund for sanctioned absence ($35)`);
+
+  const hostelSumReq = new NextRequest("http://localhost:3000/api/hostel?tab=summary", {
+    headers: { Cookie: `classroom_session=${adminToken}` },
+  });
+  const hostelSumRes = await handleHostelGet(hostelSumReq);
+  assert(hostelSumRes.status === 200, "GET /api/hostel?tab=summary returns 200 OK");
+  const hostelSumData = await hostelSumRes.json();
+  assert(hostelSumData.summary.totalBeds > 0, "Hostel summary returns registered residential bed capacity");
+
+  const hostelPassReq = new NextRequest("http://localhost:3000/api/hostel", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "REQUEST_GATE_PASS",
+      studentName: "Alex Mercer",
+      studentRoll: "CS2026-001",
+      roomNumber: "A-101",
+      blockName: "Nelson Mandela Hall",
+      reason: "National Robotics Olympiad Finals",
+      destination: "New York, NY",
+      departureTime: "2026-11-01T08:00:00.000Z",
+      expectedReturnTime: "2026-11-03T20:00:00.000Z",
+      emergencyContact: "+1 (555) 881-2233",
+      parentConsentVerified: true,
+    }),
+  });
+  const hostelPassRes = await handleHostelPost(hostelPassReq);
+  assert(hostelPassRes.status === 200, "POST /api/hostel (action: REQUEST_GATE_PASS) creates outpass with 200 OK");
+
+  // 2. Transport & Fleet Management
+  const routeOccupancy = calculateRouteOccupancy(50, 42);
+  assert(routeOccupancy.occupancyRate === 84, "calculateRouteOccupancy calculates 84% fleet load");
+  assert(!routeOccupancy.isOverloaded, "calculateRouteOccupancy confirms vehicle within legal capacity");
+
+  const passFingerprint = generateBusPassFingerprint("CS2026-001", "R-01", "2027-05-31");
+  assert(typeof passFingerprint === "string" && passFingerprint.length === 32, "generateBusPassFingerprint outputs 32-char cryptographic seal");
+
+  const transportSumReq = new NextRequest("http://localhost:3000/api/transport?tab=summary", {
+    headers: { Cookie: `classroom_session=${adminToken}` },
+  });
+  const transportSumRes = await handleTransportGet(transportSumReq);
+  assert(transportSumRes.status === 200, "GET /api/transport?tab=summary returns 200 OK");
+  const transportSumData = await transportSumRes.json();
+  assert(transportSumData.summary.totalVehicles > 0, "Transport fleet summary lists active campus vehicles");
+
+  const issuePassReq = new NextRequest("http://localhost:3000/api/transport", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "ISSUE_PASS",
+      studentName: "Alex Mercer",
+      studentRoll: "CS2026-001",
+      routeId: "rt-01",
+      stopName: "Porter Square T-Station",
+      feeAmount: 450,
+    }),
+  });
+  const issuePassRes = await handleTransportPost(issuePassReq);
+  assert(issuePassRes.status === 200, "POST /api/transport (action: ISSUE_PASS) issues verified transit pass with 200 OK");
+
+  // 3. Grievances & Statutory Ombudsman
+  const arcRouting = assignStatutoryCommittee("ANTI_RAGGING");
+  assert(arcRouting.defaultDays === 2, "assignStatutoryCommittee assigns 2-day mandatory SLA for Anti-Ragging complaints");
+
+  const icRouting = assignStatutoryCommittee("INTERNAL_COMPLAINTS_ICC");
+  assert(icRouting.committeeName.includes("POSH"), "assignStatutoryCommittee correctly identifies ICC/POSH Cell");
+
+  const grvSumReq = new NextRequest("http://localhost:3000/api/grievances?tab=summary", {
+    headers: { Cookie: `classroom_session=${adminToken}` },
+  });
+  const grvSumRes = await handleGrievancesGet(grvSumReq);
+  assert(grvSumRes.status === 200, "GET /api/grievances?tab=summary returns 200 OK");
+  const grvSumData = await grvSumRes.json();
+  assert(grvSumData.summary.disposalRate >= 0, "Grievances summary returns statutory disposal rate");
+
+  const createGrvReq = new NextRequest("http://localhost:3000/api/grievances", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "SUBMIT_GRIEVANCE",
+      title: "Automated Test Ombudsman Petition Regarding Lab Access",
+      description: "Laboratory air conditioning and power backup tripped during semester test session.",
+      category: "CAMPUS_INFRASTRUCTURE",
+      severity: "MEDIUM",
+      isAnonymous: false,
+      grievantName: "Alex Mercer",
+      grievantRollOrId: "CS2026-001",
+    }),
+  });
+  const createGrvRes = await handleGrievancesPost(createGrvReq);
+  assert(createGrvRes.status === 200, "POST /api/grievances (action: SUBMIT_GRIEVANCE) logs statutory grievance with 200 OK");
+  const createGrvData = await createGrvRes.json();
+
+  const resolveGrvReq = new NextRequest("http://localhost:3000/api/grievances", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "RESOLVE_GRIEVANCE",
+      grievanceId: createGrvData.grievance.id,
+      actionTakenReport: "UPS auxiliary power inverter replaced by estate engineering. Certified functional.",
+      status: "RESOLVED",
+    }),
+  });
+  const resolveGrvRes = await handleGrievancesPost(resolveGrvReq);
+  assert(resolveGrvRes.status === 200, "POST /api/grievances (action: RESOLVE_GRIEVANCE) signs official ATR with 200 OK");
+
+  // 4. Campus Asset & Facility Inventory
+  const depCalculation = computeStraightLineDepreciation(10000, "2024-01-01", 5, 0);
+  assert(depCalculation.annualDepreciation === 2000, "computeStraightLineDepreciation calculates $2,000 annual depreciation");
+  assert(depCalculation.currentBookValue < 10000, "computeStraightLineDepreciation reduces net book value over time");
+
+  const needsReorder = evaluateReorderStatus(5, 10);
+  assert(needsReorder === true, "evaluateReorderStatus triggers low-stock alert when count <= threshold");
+
+  const invSumReq = new NextRequest("http://localhost:3000/api/inventory?tab=summary", {
+    headers: { Cookie: `classroom_session=${adminToken}` },
+  });
+  const invSumRes = await handleInventoryGet(invSumReq);
+  assert(invSumRes.status === 200, "GET /api/inventory?tab=summary returns 200 OK");
+  const invSumData = await invSumRes.json();
+  assert(invSumData.summary.totalAssetValuation > 0, "Inventory summary returns non-zero campus book asset valuation");
+
+  const addAssetReq = new NextRequest("http://localhost:3000/api/inventory", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "ADD_ASSET",
+      name: "Quantum Computing Simulation Workstation",
+      category: "IT_COMPUTING",
+      department: "Computer Science & Engineering",
+      locationRoom: "Advanced Quantum Lab (Q-104)",
+      custodianFaculty: "Dr. Alan Turing",
+      purchaseDate: "2025-01-10",
+      purchaseCost: 18500,
+      serialNumber: "SN-QUANTUM-2026-X1",
+      modelNumber: "QC-SIM-V4",
+    }),
+  });
+  const addAssetRes = await handleInventoryPost(addAssetReq);
+  assert(addAssetRes.status === 200, "POST /api/inventory (action: ADD_ASSET) registers capital equipment with 200 OK");
+  const addAssetData = await addAssetRes.json();
+
+  const createWoReq = new NextRequest("http://localhost:3000/api/inventory", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "CREATE_WORK_ORDER",
+      assetId: addAssetData.asset.id,
+      reportedIssue: "Liquid cooling fan speed oscillation detected during benchmark.",
+      priority: "MEDIUM",
+      assignedTechnician: "Marcus Vance",
+      estimatedCost: 120,
+    }),
+  });
+  const createWoRes = await handleInventoryPost(createWoReq);
+  assert(createWoRes.status === 200, "POST /api/inventory (action: CREATE_WORK_ORDER) logs work order with 200 OK");
+  const createWoData = await createWoRes.json();
+
+  const completeWoReq = new NextRequest("http://localhost:3000/api/inventory", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "COMPLETE_WORK_ORDER",
+      orderId: createWoData.workOrder.id,
+      actualCost: 115,
+      notes: "Pump firmware updated and coolant refilled. Testing completed successfully.",
+    }),
+  });
+  const completeWoRes = await handleInventoryPost(completeWoReq);
+  assert(completeWoRes.status === 200, "POST /api/inventory (action: COMPLETE_WORK_ORDER) marks repair completed with 200 OK");
 
   console.log("\n=================================================");
   console.log(`🎉 ALL ${passedTests}/${totalTests} TESTS PASSED SUCCESSFULLY!`);
