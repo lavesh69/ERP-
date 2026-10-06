@@ -1,0 +1,222 @@
+{
+  "applicants": [
+    {
+      "id": "app-1791305106630",
+      "applicationNo": "ADM-2026-881",
+      "fullName": "Linus Torvalds Jr.",
+      "email": "linus.jr@test-admissions.edu",
+      "phone": "+1 (555) 019-2834",
+      "programCode": "BTECH-CSE",
+      "programName": "B.Tech Computer Science & Engineering",
+      "highSchoolGpa": 4,
+      "entranceExamScore": 1560,
+      "meritRank": 71,
+      "stage": "OFFER_EXTENDED",
+      "documentsStatus": {
+        "transcriptsVerified": false,
+        "identityProofVerified": false,
+        "recommendationLettersVerified": false
+      },
+      "seatDepositPaid": false,
+      "depositAmount": 0,
+      "assignedCounselor": "Admissions Central Desk",
+      "source": "PORTAL_DIRECT",
+      "appliedDate": "2026-10-06T16:45:06.630Z"
+    },
+    {
+      "id": "app-1791305069563",
+      "applicationNo": "ADM-2026-374",
+      "fullName": "Linus Torvalds Jr.",
+      "email": "linus.jr@test-admissions.edu",
+      "phone": "+1 (555) 019-2834",
+      "programCode": "BTECH-CSE",
+      "programName": "B.Tech Computer Science & Engineering",
+      "highSchoolGpa": 4,
+      "entranceExamScore": 1560,
+      "meritRank": 87,
+      "stage": "OFFER_EXTENDED",
+      "documentsStatus": {
+        "transcriptsVerified": false,
+        "identityProofVerified": false,
+        "recommendationLettersVerified": false
+      },
+      "seatDepositPaid": false,
+      "depositAmount": 0,
+      "assignedCounselor": "Admissions Central Desk",
+      "source": "PORTAL_DIRECT",
+      "appliedDate": "2026-10-06T16:44:29.563Z"
+    },
+    {
+      "id": "app-1791304985426",
+      "applicationNo": "ADM-2026-270",
+      "fullName": "Linus Torvalds Jr.",
+      "email": "linus.jr@test-admissions.edu",
+      "phone": "+1 (555) 019-2834",
+      "programCode": "BTECH-CSE",
+      "programName": "B.Tech Computer Science & Engineering",
+      "highSchoolGpa": 4,
+      "entranceExamScore": 1560,
+      "meritRank": 37,
+      "stage": "OFFER_EXTENDED",
+      "documentsStatus": {
+        "transcriptsVerified": false,
+        "identityProofVerified": false,
+        "recommendationLettersVerified": false
+      },
+      "seatDepositPaid": false,
+      "depositAmount": 0,
+      "assignedCounselor": "Admissions Central Desk",
+      "source": "PORTAL_DIRECT",
+      "appliedDate": "2026-10-06T16:43:05.426Z"
+    },
+    {
+      "id": "app-1791304926578",
+      "applicationNo": "ADM-2026-651",
+      "fullName": "Linus Torvalds Jr.",
+      "email": "linus.jr@test-admissions.edu",
+      "phone": "+1 (555) 019-2834",
+      "programCode": "BTECH-CSE",
+      "programName": "B.Tech Computer Science & Engineering",
+      "highSchoolGpa": 4,
+      "entranceExamScore": 1560,
+      "meritRank": 99,
+      "stage": "OFFER_EXTENDED",
+      "documentsStatus": {
+        "transcriptsVerified": false,
+        "identityProofVerified": false,
+        "recommendationLettersVerified": false
+      },
+      "seatDepositPaid": false,
+      "depositAmount": 0,
+      "assignedCounselor": "Admissions Central Desk",
+      "source": "PORTAL_DIRECT",
+      "appliedDate": "2026-10-06T16:42:06.578Z"
+    },
+    {
+      "id": "app-1791304883518",
+      "applicationNo": "ADM-2026-684",
+      "fullName": "Linus Torvalds Jr.",
+      "email": "linus.jr@test-admissions.edu",
+      "phone": "+1 (555) 019-2834",
+      "programCode": "BTECH-CSE",
+      "programName": "B.Tech Computer Science & Engineering",
+      "highSchoolGpa": 4,
+      "entranceExamScore": 1560,
+      "meritRank": 96,
+      "stage": "MERIT_SHORTLISTED",
+      "documentsStatus": {
+        "transcriptsVerified": false,
+        "identityProofVerified": false,
+        "recommendationLettersVerified": false
+      },
+      "seatDepositPaid": false,
+      "depositAmount": 0,
+      "assignedCounselor": "Admissions Central Desk",
+      "source": "PORTAL_DIRECT",
+      "appliedDate": "2026-10-06T16:41:23.518Z"
+    },
+    {
+      "id": "app-01",
+      "applicationNo": "ADM-2026-901",
+      "fullName": "Kavita R. Nair",
+      "email": "kavita.nair@applicant.org",
+      "phone": "+1 (555) 334-9911",
+      "programCode": "BTECH-CSE",
+      "programName": "B.Tech Computer Science & Engineering",
+      "highSchoolGpa": 3.92,
+      "entranceExamScore": 1480,
+      "meritRank": 14,
+      "stage": "SEAT_CONFIRMED",
+      "documentsStatus": {
+        "transcriptsVerified": true,
+        "identityProofVerified": true,
+        "recommendationLettersVerified": true
+      },
+      "seatDepositPaid": true,
+      "depositAmount": 1500,
+      "assignedCounselor": "Dr. Evelyn Reed (Admissions Dean)",
+      "source": "WEBSITE",
+      "appliedDate": "2026-08-10T10:00:00.000Z"
+    },
+    {
+      "id": "app-02",
+      "applicationNo": "ADM-2026-902",
+      "fullName": "Ethan Christopher Vance",
+      "email": "ethan.vance@applicant.org",
+      "phone": "+1 (555) 334-9922",
+      "programCode": "BTECH-AI",
+      "programName": "B.Tech Artificial Intelligence & Robotics",
+      "highSchoolGpa": 3.85,
+      "entranceExamScore": 1440,
+      "meritRank": 28,
+      "stage": "OFFER_EXTENDED",
+      "documentsStatus": {
+        "transcriptsVerified": true,
+        "identityProofVerified": true,
+        "recommendationLettersVerified": false
+      },
+      "seatDepositPaid": false,
+      "depositAmount": 0,
+      "assignedCounselor": "Sarah Jenkins (Senior Counselor)",
+      "source": "EDUCATION_FAIR",
+      "appliedDate": "2026-08-14T14:20:00.000Z"
+    },
+    {
+      "id": "app-03",
+      "applicationNo": "ADM-2026-903",
+      "fullName": "Liam Zhao",
+      "email": "liam.zhao@applicant.org",
+      "phone": "+1 (555) 334-9933",
+      "programCode": "BTECH-CSE",
+      "programName": "B.Tech Computer Science & Engineering",
+      "highSchoolGpa": 3.65,
+      "entranceExamScore": 1390,
+      "meritRank": 84,
+      "stage": "MERIT_SHORTLISTED",
+      "documentsStatus": {
+        "transcriptsVerified": true,
+        "identityProofVerified": true,
+        "recommendationLettersVerified": true
+      },
+      "seatDepositPaid": false,
+      "depositAmount": 0,
+      "assignedCounselor": "Sarah Jenkins (Senior Counselor)",
+      "source": "REFERRAL",
+      "appliedDate": "2026-08-20T09:15:00.000Z"
+    }
+  ],
+  "quotas": [
+    {
+      "programCode": "BTECH-CSE",
+      "programName": "B.Tech Computer Science & Engineering",
+      "totalSeats": 120,
+      "confirmedSeats": 104,
+      "cutoffScore": 82,
+      "applicationFee": 75
+    },
+    {
+      "programCode": "BTECH-AI",
+      "programName": "B.Tech Artificial Intelligence & Robotics",
+      "totalSeats": 60,
+      "confirmedSeats": 54,
+      "cutoffScore": 84.5,
+      "applicationFee": 75
+    },
+    {
+      "programCode": "BTECH-MECH",
+      "programName": "B.Tech Mechanical & Mechatronics",
+      "totalSeats": 90,
+      "confirmedSeats": 68,
+      "cutoffScore": 74,
+      "applicationFee": 60
+    },
+    {
+      "programCode": "MBA-TECH",
+      "programName": "Master of Business Administration (Tech Management)",
+      "totalSeats": 60,
+      "confirmedSeats": 48,
+      "cutoffScore": 78,
+      "applicationFee": 90
+    }
+  ]
+}

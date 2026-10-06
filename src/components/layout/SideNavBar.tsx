@@ -39,6 +39,8 @@ import {
   Bus,
   Scale,
   Boxes,
+  UserPlus,
+  HeartPulse,
 } from "lucide-react";
 
 interface NavSection {
@@ -172,6 +174,20 @@ const NAV_SECTIONS: NavSection[] = [
         badge: "Assets",
         roles: ["SUPER_ADMIN", "INSTITUTION_ADMIN", "PRINCIPAL", "HOD", "ACCOUNTANT", "FACULTY"],
       },
+      {
+        name: "Admissions CRM",
+        href: "/admissions",
+        icon: UserPlus,
+        badge: "CRM",
+        roles: ["SUPER_ADMIN", "INSTITUTION_ADMIN", "PRINCIPAL", "HOD", "ACCOUNTANT"],
+      },
+      {
+        name: "Campus Clinic",
+        href: "/clinic",
+        icon: HeartPulse,
+        badge: "OPD",
+        roles: ["SUPER_ADMIN", "INSTITUTION_ADMIN", "PRINCIPAL", "HOD", "FACULTY", "STUDENT", "PARENT", "HR_STAFF"],
+      },
     ],
   },
   {
@@ -183,6 +199,13 @@ const NAV_SECTIONS: NavSection[] = [
         icon: Briefcase,
         badge: "ATS",
         roles: ["SUPER_ADMIN", "INSTITUTION_ADMIN", "PLACEMENT_OFFICER", "STUDENT", "ALUMNI"],
+      },
+      {
+        name: "Alumni Network",
+        href: "/alumni",
+        icon: GraduationCap,
+        badge: "Network",
+        roles: ["SUPER_ADMIN", "INSTITUTION_ADMIN", "PLACEMENT_OFFICER", "STUDENT", "ALUMNI", "FACULTY"],
       },
     ],
   },
@@ -249,6 +272,13 @@ const NAV_SECTIONS: NavSection[] = [
         href: "/institution",
         icon: Building2,
         roles: ["SUPER_ADMIN", "INSTITUTION_ADMIN", "PRINCIPAL", "HOD", "GUEST"],
+      },
+      {
+        name: "HR & Payroll",
+        href: "/hr",
+        icon: Briefcase,
+        badge: "HRMS",
+        roles: ["SUPER_ADMIN", "INSTITUTION_ADMIN", "PRINCIPAL", "HOD", "FACULTY", "HR_STAFF", "ACCOUNTANT"],
       },
     ],
   },

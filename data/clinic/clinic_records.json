@@ -1,0 +1,127 @@
+{
+  "emergencyProfiles": [
+    {
+      "id": "med-01",
+      "patientId": "stu-alex-01",
+      "name": "Alex Mercer",
+      "rollOrEmpId": "CS2026-001",
+      "role": "STUDENT",
+      "bloodGroup": "O+",
+      "knownAllergies": [
+        "Penicillin",
+        "Peanuts"
+      ],
+      "chronicConditions": [
+        "None"
+      ],
+      "emergencyContactName": "Helena Mercer (Mother)",
+      "emergencyContactPhone": "+1 (555) 998-1122",
+      "isInsured": true
+    },
+    {
+      "id": "med-02",
+      "patientId": "fac-alan-01",
+      "name": "Dr. Alan Turing",
+      "rollOrEmpId": "FAC-CS-01",
+      "role": "FACULTY",
+      "bloodGroup": "A+",
+      "knownAllergies": [
+        "Dust Mites"
+      ],
+      "chronicConditions": [
+        "Mild Hypertension"
+      ],
+      "emergencyContactName": "Joan Clarke",
+      "emergencyContactPhone": "+1 (555) 881-2244",
+      "isInsured": true
+    }
+  ],
+  "consultations": [
+    {
+      "id": "cs-1791305106654",
+      "caseNo": "OPD-2026-248",
+      "patientName": "Alex Mercer",
+      "patientRoll": "CS2026-001",
+      "visitDate": "2026-10-06T16:45:06.654Z",
+      "chiefComplaint": "Severe migraine and acute eye fatigue during compiler build sprint",
+      "vitals": {
+        "bp": "125/82",
+        "pulseRate": 74,
+        "temperatureF": 98.8,
+        "spo2Percent": 99
+      },
+      "diagnosis": "Visual fatigue and tension headache",
+      "prescriptions": [
+        {
+          "name": "Naproxen",
+          "dosage": "250mg",
+          "frequency": "BID",
+          "days": 3
+        }
+      ],
+      "attendingDoctor": "Dr. Marcus Welby (Campus Physician)",
+      "requiresSickBayAdmit": true,
+      "status": "ADMITTED_SICK_BAY"
+    },
+    {
+      "id": "cs-01",
+      "caseNo": "OPD-2026-104",
+      "patientName": "Alex Mercer",
+      "patientRoll": "CS2026-001",
+      "visitDate": "2026-10-04T11:30:00.000Z",
+      "chiefComplaint": "Acute tension headache with mild eye strain following 12-hour programming marathon",
+      "vitals": {
+        "bp": "122/82",
+        "pulseRate": 76,
+        "temperatureF": 98.4,
+        "spo2Percent": 99
+      },
+      "diagnosis": "Digital eye strain & tension-type cephalea",
+      "prescriptions": [
+        {
+          "name": "Paracetamol",
+          "dosage": "500mg",
+          "frequency": "SOS",
+          "days": 3
+        },
+        {
+          "name": "Carboxymethylcellulose Eye Drops",
+          "dosage": "0.5%",
+          "frequency": "TID",
+          "days": 5
+        }
+      ],
+      "attendingDoctor": "Dr. Marcus Welby (Campus Physician)",
+      "requiresSickBayAdmit": false,
+      "status": "TREATED_DISCHARGED"
+    }
+  ],
+  "beds": [
+    {
+      "id": "bed-01",
+      "bedNumber": "Bed 1 (Male Wing)",
+      "roomNumber": "Clinic Room A",
+      "isOccupied": true,
+      "patientName": "Alex Mercer",
+      "admittedAt": "2026-10-06T16:45:06.654Z"
+    },
+    {
+      "id": "bed-02",
+      "bedNumber": "Bed 2 (Male Wing)",
+      "roomNumber": "Clinic Room A",
+      "isOccupied": false
+    },
+    {
+      "id": "bed-03",
+      "bedNumber": "Bed 3 (Female Wing)",
+      "roomNumber": "Clinic Room B",
+      "isOccupied": false
+    },
+    {
+      "id": "bed-04",
+      "bedNumber": "Bed 4 (Emergency Recovery)",
+      "roomNumber": "Triage Bay",
+      "isOccupied": false
+    }
+  ]
+}

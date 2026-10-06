@@ -171,6 +171,14 @@ import {
   evaluateReorderStatus,
   validateAssetRegistration,
 } from "@/lib/inventory/inventory-engine";
+import { GET as handleAdmissionsGet, POST as handleAdmissionsPost } from "@/app/api/admissions/route";
+import { calculateCompositeMeritScore, validateApplicantData } from "@/lib/admissions/admissions-engine";
+import { GET as handleHrLeavesGet, POST as handleHrLeavesPost } from "@/app/api/hr/leaves/route";
+import { GET as handleHrPayrollGet } from "@/app/api/hr/payroll/route";
+import { GET as handleAlumniDirectoryGet } from "@/app/api/alumni/directory/route";
+import { POST as handleAlumniVerificationPost } from "@/app/api/alumni/verification/route";
+import { GET as handleClinicGet, POST as handleClinicPost } from "@/app/api/clinic/route";
+import { checkTriageUrgency } from "@/lib/clinic/clinic-engine";
 
 async function runTestSuite() {
   console.log("=================================================");
@@ -5277,6 +5285,171 @@ By breaking down large monolithic systems into decoupled microservices, systems 
   });
   const completeWoRes = await handleInventoryPost(completeWoReq);
   assert(completeWoRes.status === 200, "POST /api/inventory (action: COMPLETE_WORK_ORDER) marks repair completed with 200 OK");
+
+  // =========================================================================
+  // GROUP 55: ENTERPRISE LIFECYCLE EXTENSIONS (ADMISSIONS, HR/PAYROLL, ALUMNI, CLINIC)
+  // =========================================================================
+  console.log("\n--- GROUP 55: ADMISSIONS CRM, HR & PAYROLL, ALUMNI DIRECTORY, CAMPUS CLINIC ---");
+
+  // 1. Admissions CRM & Enrolment Management
+  const compositeMerit = calculateCompositeMeritScore(3.8, 1420);
+  assert(compositeMerit > 80 && compositeMerit < 100, "calculateCompositeMeritScore correctly generates composite score between 80 and 100");
+
+  const validAppCheck = validateApplicantData({
+    fullName: "Arthur Conan",
+    email: "arthur@example.com",
+    phone: "+1 (555) 019-2834",
+    programCode: "BTECH-CSE",
+    highSchoolGpa: 3.9,
+    entranceExamScore: 1450,
+  });
+  assert(validAppCheck.isValid === true, "validateApplicantData confirms valid prospective student profile");
+
+  const admSummaryReq = new NextRequest("http://localhost:3000/api/admissions?tab=summary", {
+    headers: { Cookie: `classroom_session=${adminToken}` },
+  });
+  const admSummaryRes = await handleAdmissionsGet(admSummaryReq);
+  assert(admSummaryRes.status === 200, "GET /api/admissions?tab=summary returns 200 OK");
+  const admSummaryData = await admSummaryRes.json();
+  assert(admSummaryData.summary.totalSeatCapacity > 0, "Admissions summary returns positive institutional seat quota");
+
+  const submitAppReq = new NextRequest("http://localhost:3000/api/admissions", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "SUBMIT_APPLICATION",
+      fullName: "Linus Torvalds Jr.",
+      email: "linus.jr@test-admissions.edu",
+      phone: "+1 (555) 019-2834",
+      programCode: "BTECH-CSE",
+      highSchoolGpa: 4.0,
+      entranceExamScore: 1560,
+      source: "PORTAL_DIRECT",
+    }),
+  });
+  const submitAppRes = await handleAdmissionsPost(submitAppReq);
+  assert(submitAppRes.status === 200, "POST /api/admissions (action: SUBMIT_APPLICATION) enrolls applicant with 200 OK");
+  const submitAppData = await submitAppRes.json();
+  assert(submitAppData.applicant.applicationNo.startsWith("ADM-2026"), "Applicant assigned institutional application reference number");
+
+  const updateStageReq = new NextRequest("http://localhost:3000/api/admissions", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "UPDATE_STAGE",
+      applicantId: submitAppData.applicant.id,
+      stage: "OFFER_EXTENDED",
+      depositPaid: false,
+    }),
+  });
+  const updateStageRes = await handleAdmissionsPost(updateStageReq);
+  assert(updateStageRes.status === 200, "POST /api/admissions (action: UPDATE_STAGE) transitions admissions pipeline with 200 OK");
+
+  // 2. HR, Leave Entitlements & Cryptographic Payroll
+  const hrLeavesReq = new NextRequest("http://localhost:3000/api/hr/leaves", {
+    headers: { Cookie: `classroom_session=${adminToken}` },
+  });
+  const hrLeavesRes = await handleHrLeavesGet(hrLeavesReq);
+  assert(hrLeavesRes.status === 200, "GET /api/hr/leaves returns 200 OK with leave balance metrics");
+  const hrLeavesData = await hrLeavesRes.json();
+  assert(hrLeavesData.leaveQuotas.casualLeaveTotal === 12, "Institutional faculty casual leave entitlement calibrated to 12 days/year");
+
+  const applyLeaveReq = new NextRequest("http://localhost:3000/api/hr/leaves", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      leaveType: "MEDICAL_LEAVE",
+      days: 3,
+      startDate: "2026-11-10",
+      endDate: "2026-11-12",
+      reason: "Post-conference recovery",
+    }),
+  });
+  const applyLeaveRes = await handleHrLeavesPost(applyLeaveReq);
+  assert(applyLeaveRes.status === 201, "POST /api/hr/leaves files leave petition with 201 Created");
+
+  const hrPayrollReq = new NextRequest("http://localhost:3000/api/hr/payroll?payPeriod=October 2026", {
+    headers: { Cookie: `classroom_session=${adminToken}` },
+  });
+  const hrPayrollRes = await handleHrPayrollGet(hrPayrollReq);
+  assert(hrPayrollRes.status === 200, "GET /api/hr/payroll computes salary breakdown with 200 OK");
+  const hrPayrollData = await hrPayrollRes.json();
+  assert(hrPayrollData.salarySlip.netPay > 0, "HR payroll yields positive net pay after PF and TDS deductions");
+  assert(typeof hrPayrollData.salarySlip.verificationHash === "string", "Salary slip sealed with SHA-256 cryptographic verification checksum");
+
+  // 3. Alumni Network & Graduate Verification Seal
+  const alumniDirReq = new NextRequest("http://localhost:3000/api/alumni/directory", {
+    headers: { Cookie: `classroom_session=${adminToken}` },
+  });
+  const alumniDirRes = await handleAlumniDirectoryGet(alumniDirReq);
+  assert(alumniDirRes.status === 200, "GET /api/alumni/directory returns 200 OK");
+  const alumniDirData = await alumniDirRes.json();
+  assert(Array.isArray(alumniDirData.alumni), "Alumni directory contains registered graduates list");
+
+  const seededStudent = await prisma.student.findFirst({
+    include: { user: true, program: { include: { department: true } } },
+  });
+  const testRoll = seededStudent ? seededStudent.rollNumber : "CS2026-001";
+
+  const alumniVerifReq = new NextRequest("http://localhost:3000/api/alumni/verification", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      rollNumber: testRoll,
+      verificationAgency: "Autonomous Accreditation Board Background Screening",
+    }),
+  });
+  const alumniVerifRes = await handleAlumniVerificationPost(alumniVerifReq);
+  assert(alumniVerifRes.status === 200, "POST /api/alumni/verification verifies student credentials with 200 OK");
+  const alumniVerifData = await alumniVerifRes.json();
+  assert(alumniVerifData.result?.verified === true, "Alumni verification returns true for enrolled student record");
+  assert(alumniVerifData.result?.cryptographicProof?.certificateReference?.startsWith("DEG-APEX-"), "Alumni credential issues authentic DEG-APEX registrar hash stamp");
+
+  // 4. Campus Health, Outpatient Triage & Infirmary Sick-Bay
+  const triageAssessment = checkTriageUrgency({
+    bp: "120/80",
+    pulseRate: 72,
+    temperatureF: 98.6,
+    spo2Percent: 99,
+  });
+  assert(triageAssessment.level === "ROUTINE", "checkTriageUrgency classifies normal vitals as ROUTINE triage");
+
+  const criticalTriage = checkTriageUrgency({
+    bp: "190/115",
+    pulseRate: 135,
+    temperatureF: 104.2,
+    spo2Percent: 88,
+  });
+  assert(criticalTriage.level === "CRITICAL", "checkTriageUrgency identifies hyperpyrexia, hypoxia and hypertensive emergency as CRITICAL");
+
+  const clinicSumReq = new NextRequest("http://localhost:3000/api/clinic?tab=summary", {
+    headers: { Cookie: `classroom_session=${adminToken}` },
+  });
+  const clinicSumRes = await handleClinicGet(clinicSumReq);
+  assert(clinicSumRes.status === 200, "GET /api/clinic?tab=summary returns 200 OK");
+  const clinicSumData = await clinicSumRes.json();
+  assert(clinicSumData.summary.totalBeds > 0, "Campus clinic summary tracks infirmary sick-bay capacity");
+
+  const logConsultReq = new NextRequest("http://localhost:3000/api/clinic", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "LOG_CONSULTATION",
+      patientName: "Alex Mercer",
+      patientRoll: "CS2026-001",
+      chiefComplaint: "Severe migraine and acute eye fatigue during compiler build sprint",
+      vitals: { bp: "125/82", pulseRate: 74, temperatureF: 98.8, spo2Percent: 99 },
+      diagnosis: "Visual fatigue and tension headache",
+      prescriptions: [{ name: "Naproxen", dosage: "250mg", frequency: "BID", days: 3 }],
+      attendingDoctor: "Dr. Marcus Welby (Campus Physician)",
+      requiresSickBayAdmit: true,
+    }),
+  });
+  const logConsultRes = await handleClinicPost(logConsultReq);
+  assert(logConsultRes.status === 200, "POST /api/clinic (action: LOG_CONSULTATION) logs OPD consultation with 200 OK");
+  const logConsultData = await logConsultRes.json();
+  assert(logConsultData.consultation.caseNo.startsWith("OPD-2026"), "Clinic case assigned formal OPD reference number");
+  assert(logConsultData.consultation.status === "ADMITTED_SICK_BAY", "Infirmary bed occupancy updated upon patient observation admission");
 
   console.log("\n=================================================");
   console.log(`🎉 ALL ${passedTests}/${totalTests} TESTS PASSED SUCCESSFULLY!`);
