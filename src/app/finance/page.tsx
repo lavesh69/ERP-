@@ -24,7 +24,20 @@ import {
   Search,
   Printer,
   ShieldCheck,
+  Layers,
+  AlertTriangle,
+  Gift,
+  Landmark,
+  RotateCcw,
+  ArrowLeftRight,
 } from "lucide-react";
+import { FeeStructuresView } from "@/components/finance/FeeStructuresView";
+import { InstallmentsView } from "@/components/finance/InstallmentsView";
+import { LateFinesView } from "@/components/finance/LateFinesView";
+import { ConcessionsView } from "@/components/finance/ConcessionsView";
+import { BRSView } from "@/components/finance/BRSView";
+import { RefundsView } from "@/components/finance/RefundsView";
+import { DayEndCashbookView } from "@/components/finance/DayEndCashbookView";
 
 interface FinanceSummary {
   totalBilled: number;
@@ -73,6 +86,9 @@ export default function FinancePage() {
   const [page, setPage] = useState(1);
   const [limit] = useState(8);
   const [pagination, setPagination] = useState({ page: 1, limit: 8, total: 0, totalPages: 1 });
+  const [activeTab, setActiveTab] = useState<
+    "ledgers" | "structures" | "installments" | "fines" | "concessions" | "brs" | "refunds" | "day-end"
+  >("ledgers");
 
   // Payment Modal state
   const [isPayModalOpen, setIsPayModalOpen] = useState(false);
@@ -421,7 +437,40 @@ export default function FinancePage() {
           </div>
         </div>
 
-        {/* 3 Finance KPI Cards */}
+        {/* Enterprise Navigation Tabs */}
+        <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar">
+          {[
+            { id: "ledgers", label: "Student Accounts & Ledgers", icon: CreditCard },
+            { id: "structures", label: "Fee Structures & Quotas", icon: Layers },
+            { id: "installments", label: "Installments & EMI", icon: Calendar },
+            { id: "fines", label: "Late Fines & Penalties", icon: AlertTriangle },
+            { id: "concessions", label: "Waivers & Concessions", icon: Gift },
+            { id: "brs", label: "Bank Reconciliation (BRS)", icon: Landmark },
+            { id: "refunds", label: "Caution Money & Refunds", icon: RotateCcw },
+            { id: "day-end", label: "Day-End Cashbook", icon: Receipt },
+          ].map((tab) => {
+            const Icon = tab.icon;
+            const isActive = activeTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id as any)}
+                className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer ${
+                  isActive
+                    ? "bg-rose-primary text-white shadow-sm shadow-rose-primary/20"
+                    : "bg-white dark:bg-charcoal-800 text-charcoal-700 dark:text-charcoal-300 hover:bg-rose-container hover:text-rose-primary border border-border dark:border-charcoal-700"
+                }`}
+              >
+                <Icon className="h-4 w-4" />
+                <span>{tab.label}</span>
+              </button>
+            );
+          })}
+        </div>
+
+        {activeTab === "ledgers" && (
+          <>
+            {/* 3 Finance KPI Cards */}
         {loading ? (
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <SkeletonCard />
@@ -757,6 +806,27 @@ export default function FinancePage() {
             </table>
           </div>
         </div>
+          </>
+        )}
+
+        {activeTab === "structures" && <FeeStructuresView showToast={showToast} />}
+        {activeTab === "installments" && <InstallmentsView showToast={showToast} />}
+        {activeTab === "fines" && <LateFinesView showToast={showToast} />}
+        {activeTab === "concessions" && (
+          <ConcessionsView
+            studentFees={studentFees}
+            showToast={showToast}
+            onConcessionApplied={triggerRefresh}
+          />
+        )}
+        {activeTab === "brs" && (
+          <BRSView
+            showToast={showToast}
+            onReconciliationComplete={triggerRefresh}
+          />
+        )}
+        {activeTab === "refunds" && <RefundsView showToast={showToast} />}
+        {activeTab === "day-end" && <DayEndCashbookView showToast={showToast} />}
 
         {/* Modal: Process / Record Payment */}
         <Modal

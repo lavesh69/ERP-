@@ -131,6 +131,19 @@ import {
   STANDARD_PROGRAM_OUTCOMES,
   BLOOMS_LEVELS,
 } from "@/lib/curriculum/obe-engine";
+import { GET as handleFinanceStructuresGet, POST as handleFinanceStructuresPost } from "@/app/api/finance/structures/route";
+import { GET as handleFinanceInstallmentsGet } from "@/app/api/finance/installments/route";
+import { GET as handleFinanceLateFinesGet, POST as handleFinanceLateFinesPost } from "@/app/api/finance/late-fines/route";
+import { GET as handleFinanceBrsGet, POST as handleFinanceBrsPost } from "@/app/api/finance/brs/route";
+import { GET as handleFinanceRefundsGet, POST as handleFinanceRefundsPost } from "@/app/api/finance/refunds/route";
+import {
+  calculateFeeStructureTotal,
+  generateInstallmentSchedule,
+  computeLateFine,
+  matchBankTransactionsWithChallans,
+  evaluateRefundEligibility,
+  generateDayEndSettlementHash,
+} from "@/lib/finance/finance-engine";
 
 async function runTestSuite() {
   console.log("=================================================");
@@ -4822,6 +4835,208 @@ By breaking down large monolithic systems into decoupled microservices, systems 
   assert(exportSarData.report.criterion.includes("Course Outcomes and Program Outcomes"), "Report correctly cites NBA Tier-I Criterion 3");
   assert(typeof exportSarData.report.verificationFingerprint === "string" && exportSarData.report.verificationFingerprint.length === 64, "SAR report sealed with SHA-256 cryptographic verification checksum");
   assert(Array.isArray(exportSarData.report.poAttainmentTable), "SAR includes PO Attainment Table with CQI action recommendations");
+
+  // =========================================================================
+  // GROUP 53: Enterprise Campus Finance, Master Fee Structures, Installments, Late Fines, BRS & Refunds
+  // =========================================================================
+  console.log("\n📦 Running Group 53: Enterprise Campus Finance, Master Fee Structures, Installments, Late Fines, BRS & Refunds");
+
+  // 1. Fee Structure Math
+  const headsTotal = calculateFeeStructureTotal([
+    { id: "1", name: "Tuition", category: "TUITION", amount: 5000 },
+    { id: "2", name: "Lab", category: "LAB", amount: 1500 },
+    { id: "3", name: "Library", category: "LIBRARY", amount: 500 },
+    { id: "4", name: "Caution", category: "CAUTION_DEPOSIT", amount: 600, isRefundable: true },
+  ]);
+  assert(headsTotal === 7600, "calculateFeeStructureTotal accurately aggregates multi-head fees ($7,600)");
+
+  // 2. Installment Schedule Generator
+  const installments = generateInstallmentSchedule(10000);
+  assert(installments.length === 3, "generateInstallmentSchedule generates 3-term milestone plan");
+  assert(installments[0].percentage === 50 && installments[0].amount === 5000, "Term 1 milestone allocates 50% ($5,000)");
+  assert(installments[1].percentage === 25 && installments[1].amount === 2500, "Term 2 milestone allocates 25% ($2,500)");
+  assert(installments[2].percentage === 25 && installments[2].amount === 2500, "Term 3 milestone allocates remaining 25% ($2,500)");
+  assert(installments.reduce((sum, m) => sum + m.amount, 0) === 10000, "Milestone allocations sum exactly to 100% of total fee");
+
+  // 3. Late Fine Calculation (Within vs Beyond Grace Period)
+  const testRule = {
+    id: "rule-1",
+    name: "Test Rule",
+    gracePeriodDays: 7,
+    model: "DAILY" as const,
+    flatAmount: 50,
+    dailyRate: 10,
+    percentageRate: 2,
+    maxCap: 150,
+    isActive: true,
+  };
+  const nowTime = new Date();
+  const fiveDaysOverdue = new Date(nowTime.getTime() - 5 * 86400000);
+  const withinGrace = computeLateFine(fiveDaysOverdue, 2000, testRule, nowTime);
+  assert(withinGrace.fineAmount === 0 && !withinGrace.isGraceExceeded, "Overdue within grace period incurs $0 late fine");
+
+  const twentyDaysOverdue = new Date(nowTime.getTime() - 20 * 86400000);
+  const beyondGrace = computeLateFine(twentyDaysOverdue, 2000, testRule, nowTime);
+  assert(beyondGrace.isGraceExceeded === true, "Overdue beyond grace period flags grace exceeded");
+  assert(beyondGrace.fineAmount === 130, "Beyond grace period assesses daily rate ($10/day for 13 charge days = $130)");
+
+  // 4. BRS Auto-Matcher Logic
+  const bankEntries = [
+    {
+      id: "b1",
+      txnDate: "2026-10-06",
+      utrNumber: "CMS-NEFT-9988",
+      remitterName: "John Mercer",
+      amount: 1500,
+      description: "CHL-REF-1001 TUITION",
+      matchedStatus: "UNMATCHED" as const,
+    },
+    {
+      id: "b2",
+      txnDate: "2026-10-06",
+      utrNumber: "UPI-449102",
+      remitterName: "Sarah Connor",
+      amount: 750,
+      description: "UPI TRANSFER UNKNOWN",
+      matchedStatus: "UNMATCHED" as const,
+    },
+  ];
+  const pendingChallans = [
+    { id: "c1", referenceNumber: "CHL-REF-1001", studentName: "Alex Mercer", amount: 1500, rollNo: "CS-01" },
+  ];
+  const brsResults = matchBankTransactionsWithChallans(bankEntries, pendingChallans);
+  assert(brsResults.length === 2, "BRS matcher evaluates all bank statement entries");
+  assert(brsResults[0].status === "EXACT_MATCH" && brsResults[0].confidenceScore === 1.0, "Exact reference match yields 1.0 confidence EXACT_MATCH");
+  assert(brsResults[1].status === "NO_MATCH", "Unmatched credit entry yields NO_MATCH");
+
+  // 5. Refund Clearance Eligibility
+  const unclearedVoucher = {
+    id: "rf-1",
+    voucherNo: "RFND-001",
+    studentId: "s1",
+    studentName: "Student 1",
+    rollNo: "CS01",
+    program: "CS",
+    type: "CAUTION_MONEY" as const,
+    amount: 500,
+    bankDetails: { accountHolder: "S1", accountNumber: "123", ifscOrSwift: "CHAS", bankName: "Chase" },
+    clearanceStatus: { libraryCleared: true, hostelCleared: false, labCleared: true },
+    status: "PENDING_APPROVAL" as const,
+    requestedAt: new Date().toISOString(),
+  };
+  const unclearedCheck = evaluateRefundEligibility(unclearedVoucher);
+  assert(!unclearedCheck.eligible && unclearedCheck.pendingClearances.length === 1, "Pending hostel clearance prevents caution money refund");
+
+  const clearedVoucher = {
+    ...unclearedVoucher,
+    clearanceStatus: { libraryCleared: true, hostelCleared: true, labCleared: true },
+  };
+  const clearedCheck = evaluateRefundEligibility(clearedVoucher);
+  assert(clearedCheck.eligible && clearedCheck.pendingClearances.length === 0, "Full departmental clearance qualifies student for caution refund");
+
+  // 6. Day-End Settlement Hash
+  const dayEndHash = generateDayEndSettlementHash("2026-10-06", 15400, 12, "bursar@apex.edu");
+  assert(typeof dayEndHash === "string" && dayEndHash.length === 64, "Day-End cashbook generates deterministic SHA-256 seal (64 chars)");
+
+  // 7. API Routes Verification (Admin JWT session)
+  const financeAdminUser = await prisma.user.findFirst({
+    where: { role: "SUPER_ADMIN" },
+  });
+  assert(financeAdminUser != null, "Found Super Admin user for finance testing");
+  const adminToken = await signJwt({
+    userId: financeAdminUser!.id,
+    email: financeAdminUser!.email,
+    role: "SUPER_ADMIN",
+    institutionId: financeAdminUser!.institutionId,
+  });
+
+  // GET /api/finance/structures
+  const structReq = new NextRequest("http://localhost:3000/api/finance/structures", {
+    headers: { Cookie: `classroom_session=${adminToken}` },
+  });
+  const structRes = await handleFinanceStructuresGet(structReq);
+  assert(structRes.status === 200, "GET /api/finance/structures returns 200 OK");
+  const structData = await structRes.json();
+  assert(Array.isArray(structData.structures) && structData.structures.length > 0, "Fee structures catalog returns active structures");
+
+  // POST /api/finance/structures (Create new)
+  const createStructReq = new NextRequest("http://localhost:3000/api/finance/structures", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      code: `TEST-STR-${Date.now().toString().slice(-4)}`,
+      title: "Automated Suite Test Fee Structure",
+      programCode: "BTECH-CSE",
+      academicYear: "2026-2027",
+      quotaType: "MERIT_GENERAL",
+      studentType: "DAY_SCHOLAR",
+      dueDate: "2026-12-01",
+      heads: [{ id: "h1", name: "Tuition", category: "TUITION", amount: 7500 }],
+    }),
+  });
+  const createStructRes = await handleFinanceStructuresPost(createStructReq);
+  assert(createStructRes.status === 200, "POST /api/finance/structures creates fee structure with 200 OK");
+
+  // GET /api/finance/installments
+  const instReq = new NextRequest("http://localhost:3000/api/finance/installments", {
+    headers: { Cookie: `classroom_session=${adminToken}` },
+  });
+  const instRes = await handleFinanceInstallmentsGet(instReq);
+  assert(instRes.status === 200, "GET /api/finance/installments returns 200 OK");
+  const instData = await instRes.json();
+  assert(Array.isArray(instData.plans), "Installments API returns student milestone schedules");
+
+  // GET & POST /api/finance/late-fines
+  const finesReq = new NextRequest("http://localhost:3000/api/finance/late-fines", {
+    headers: { Cookie: `classroom_session=${adminToken}` },
+  });
+  const finesRes = await handleFinanceLateFinesGet(finesReq);
+  assert(finesRes.status === 200, "GET /api/finance/late-fines returns active late fine rule with 200 OK");
+
+  const runBatchReq = new NextRequest("http://localhost:3000/api/finance/late-fines", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({ action: "RUN_ASSESSMENT_BATCH" }),
+  });
+  const runBatchRes = await handleFinanceLateFinesPost(runBatchReq);
+  assert(runBatchRes.status === 200, "POST /api/finance/late-fines (action: RUN_ASSESSMENT_BATCH) executes assessment batch with 200 OK");
+
+  // GET & POST /api/finance/brs
+  const brsReq = new NextRequest("http://localhost:3000/api/finance/brs", {
+    headers: { Cookie: `classroom_session=${adminToken}` },
+  });
+  const brsRes = await handleFinanceBrsGet(brsReq);
+  assert(brsRes.status === 200, "GET /api/finance/brs returns bank statement feed with 200 OK");
+
+  const autoRecReq = new NextRequest("http://localhost:3000/api/finance/brs", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({ action: "AUTO_RECONCILE" }),
+  });
+  const autoRecRes = await handleFinanceBrsPost(autoRecReq);
+  assert(autoRecRes.status === 200, "POST /api/finance/brs (action: AUTO_RECONCILE) auto-matches bank credits with 200 OK");
+
+  // GET & POST /api/finance/refunds
+  const refundsReq = new NextRequest("http://localhost:3000/api/finance/refunds", {
+    headers: { Cookie: `classroom_session=${adminToken}` },
+  });
+  const refundsRes = await handleFinanceRefundsGet(refundsReq);
+  assert(refundsRes.status === 200, "GET /api/finance/refunds returns caution vouchers with 200 OK");
+
+  const createRefundReq = new NextRequest("http://localhost:3000/api/finance/refunds", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "REQUEST_REFUND",
+      studentName: "Alex Mercer",
+      rollNo: "CS2026-001",
+      program: "B.Tech Computer Science",
+      type: "CAUTION_MONEY",
+      amount: 500,
+    }),
+  });
+  const createRefundRes = await handleFinanceRefundsPost(createRefundReq);
+  assert(createRefundRes.status === 200, "POST /api/finance/refunds (action: REQUEST_REFUND) creates refund voucher with 200 OK");
 
   console.log("\n=================================================");
   console.log(`🎉 ALL ${passedTests}/${totalTests} TESTS PASSED SUCCESSFULLY!`);
