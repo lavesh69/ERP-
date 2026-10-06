@@ -33,9 +33,11 @@ import {
   Scale,
   ShieldAlert,
   Percent,
+  Target,
 } from "lucide-react";
+import { COPOMappingView } from "@/components/examinations/COPOMappingView";
 
-type ExamTab = "schedules" | "evaluations" | "seating" | "transcript" | "scanner";
+type ExamTab = "schedules" | "evaluations" | "seating" | "transcript" | "scanner" | "obe-mapping";
 
 export default function ExaminationsPage() {
   const { showToast, setIsAIChatOpen, refreshTrigger, triggerRefresh, currentRole } = useApp();
@@ -503,6 +505,18 @@ export default function ExaminationsPage() {
           >
             <QrCode className="h-4 w-4 text-rose-500" />
             Admit Card & Gate Scanner
+          </button>
+
+          <button
+            onClick={() => setActiveTab("obe-mapping")}
+            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all whitespace-nowrap ${
+              activeTab === "obe-mapping"
+                ? "bg-white dark:bg-charcoal-800 text-charcoal-900 dark:text-ivory-100 shadow-sm"
+                : "text-charcoal-600 dark:text-charcoal-400 hover:text-charcoal-900 dark:hover:text-ivory-100"
+            }`}
+          >
+            <Target className="h-4 w-4 text-rose-primary" />
+            CO-PO Mapping &amp; NBA Attainment
           </button>
         </div>
 
@@ -1267,6 +1281,13 @@ export default function ExaminationsPage() {
               </div>
             </div>
           </div>
+        )}
+
+        {/* ======================================================== */}
+        {/* TAB 6: CO-PO ARTICULATION & NBA ATTAINMENT MATRIX        */}
+        {/* ======================================================== */}
+        {activeTab === "obe-mapping" && (
+          <COPOMappingView showToast={showToast} canEdit={canEditExams} />
         )}
 
         {/* ======================================================== */}

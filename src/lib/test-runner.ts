@@ -122,6 +122,15 @@ import { POST as handleAttendanceExceptionsPost } from "@/app/api/attendance/exc
 import { POST as handleRegisterPost } from "@/app/api/auth/register/route";
 import { GET as handleProfileMeGet, PATCH as handleProfileMePatch } from "@/app/api/profile/me/route";
 import { POST as handleChangePasswordPost } from "@/app/api/auth/change-password/route";
+import { GET as handleCoPoGet, POST as handleCoPoPost } from "@/app/api/examinations/co-po/route";
+import {
+  calculateDirectAttainment,
+  calculateIndirectAttainment,
+  calculateOverallCOAttainment,
+  calculatePOAttainment,
+  STANDARD_PROGRAM_OUTCOMES,
+  BLOOMS_LEVELS,
+} from "@/lib/curriculum/obe-engine";
 
 async function runTestSuite() {
   console.log("=================================================");
@@ -4728,6 +4737,91 @@ By breaking down large monolithic systems into decoupled microservices, systems 
     const illicitDesignationRes = await handleProfileMePatch(illicitDesignationReq);
     assert(illicitDesignationRes.status === 403, "PATCH /api/profile/me strictly denies faculty self-promoting designation with 403 Forbidden");
   }
+
+  // =========================================================================
+  // GROUP 52: Outcome-Based Education (OBE), CO-PO Mapping & NBA Attainment
+  // =========================================================================
+  console.log("\n📦 Running Group 52: Outcome-Based Education (OBE), CO-PO Mapping & NBA Attainment");
+
+  // 1. Washington Accord PO Specifications & Bloom's Taxonomy
+  assert(STANDARD_PROGRAM_OUTCOMES.length === 14, "OBE Engine defines 12 standard Washington Accord Program Outcomes plus 2 PSOs");
+  assert(STANDARD_PROGRAM_OUTCOMES.filter((p) => p.code.startsWith("PO")).length === 12, "Contains exactly 12 standard Program Outcomes (PO1 to PO12)");
+  assert(STANDARD_PROGRAM_OUTCOMES[0].code === "PO1" && STANDARD_PROGRAM_OUTCOMES[11].code === "PO12", "PO codes correctly span PO1 (Engineering Knowledge) to PO12 (Life-long Learning)");
+  assert(Object.keys(BLOOMS_LEVELS).length === 6, "Bloom's Revised Taxonomy includes all 6 cognitive domain levels (K1 to K6)");
+  assert(BLOOMS_LEVELS["K6"].label === "Create", "K6 corresponds to highest cognitive domain: Create / Synthesis");
+
+  // 2. OBE Direct, Indirect and Overall Attainment Formulae
+  const directLevel = calculateDirectAttainment([75, 82, 64, 91, 55], 60);
+  assert(directLevel === 3, "Direct attainment correctly computes Level 3 for >= 70% students reaching threshold");
+
+  const indirectScore = calculateIndirectAttainment(2.4, 3.0);
+  assert(indirectScore === 2.4, "Indirect survey attainment correctly normalized to 3.0 scale");
+
+  const overallCoAttainment = calculateOverallCOAttainment(3.0, 2.5);
+  assert(Math.abs(overallCoAttainment - 2.9) < 0.001, "Overall CO attainment computes 80% Direct + 20% Indirect composite (expected: 2.9)");
+
+  // 3. Weighted PO Attainment Calculation
+  const poAttainmentVal = calculatePOAttainment(
+    [{ coCode: "CO1", attainment: 2.5 }, { coCode: "CO2", attainment: 2.0 }],
+    [{ coCode: "CO1", weight: 3 }, { coCode: "CO2", weight: 2 }]
+  );
+  assert(Math.abs(poAttainmentVal - 2.3) < 0.001, "Weighted PO attainment calculates accurate weighted average across mapped COs (expected: 2.3)");
+
+  // 4. API Integration: GET /api/examinations/co-po with available courses
+  const getCoursesReq = new NextRequest("http://localhost:3000/api/examinations/co-po");
+  const getCoursesRes = await handleCoPoGet(getCoursesReq);
+  assert(getCoursesRes.status === 200, "GET /api/examinations/co-po returns 200 OK");
+  const getCoursesData = await getCoursesRes.json();
+  assert(Array.isArray(getCoursesData.availableCourses) && getCoursesData.availableCourses.length > 0, "GET /api/examinations/co-po lists accredited courses including CS-402");
+
+  // 5. API Integration: GET /api/examinations/co-po?courseCode=CS-402
+  const getCoPoReq = new NextRequest("http://localhost:3000/api/examinations/co-po?courseCode=CS-402");
+  const getCoPoRes = await handleCoPoGet(getCoPoReq);
+  assert(getCoPoRes.status === 200, "GET /api/examinations/co-po?courseCode=CS-402 returns 200 OK");
+  const getCoPoData = await getCoPoRes.json();
+  assert(getCoPoData.success === true, "Course articulation response reports success true");
+  assert(getCoPoData.articulation.courseCode === "CS-402", "Retrieved articulation matches CS-402 Distributed Systems course");
+  assert(getCoPoData.articulation.outcomes.length === 6, "Articulation defines all 6 Course Outcomes (CO1 to CO6)");
+  assert(Array.isArray(getCoPoData.poAttainments) && getCoPoData.poAttainments.length === 14, "Attainment reports calculated for all 12 Program Outcomes and 2 PSOs");
+
+  // 6. API Integration: POST /api/examinations/co-po with SAVE_MATRIX
+  const sampleMatrix = JSON.parse(JSON.stringify(getCoPoData.articulation.mappingMatrix));
+  if (sampleMatrix["CO1"]) {
+    sampleMatrix["CO1"]["PO1"] = 3;
+  }
+  const saveMatrixReq = new NextRequest("http://localhost:3000/api/examinations/co-po", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      action: "SAVE_MATRIX",
+      courseCode: "CS-402",
+      mappingMatrix: sampleMatrix,
+      academicYear: "2025-2026",
+    }),
+  });
+  const saveMatrixRes = await handleCoPoPost(saveMatrixReq);
+  assert(saveMatrixRes.status === 200, "POST /api/examinations/co-po (action: SAVE_MATRIX) updates matrix with 200 OK");
+  const saveMatrixData = await saveMatrixRes.json();
+  assert(saveMatrixData.success === true, "Matrix save confirmation returns success true");
+  assert(saveMatrixData.poAttainments != null, "Matrix save returns newly recalculated PO attainment profile");
+
+  // 7. API Integration: POST /api/examinations/co-po with EXPORT_SAR (NBA Criterion 3)
+  const exportSarReq = new NextRequest("http://localhost:3000/api/examinations/co-po", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      action: "EXPORT_SAR",
+      courseCode: "CS-402",
+      academicYear: "2025-2026",
+    }),
+  });
+  const exportSarRes = await handleCoPoPost(exportSarReq);
+  assert(exportSarRes.status === 200, "POST /api/examinations/co-po (action: EXPORT_SAR) generates NBA dossier with 200 OK");
+  const exportSarData = await exportSarRes.json();
+  assert(exportSarData.success === true, "SAR export operation succeeded");
+  assert(exportSarData.report.criterion.includes("Course Outcomes and Program Outcomes"), "Report correctly cites NBA Tier-I Criterion 3");
+  assert(typeof exportSarData.report.verificationFingerprint === "string" && exportSarData.report.verificationFingerprint.length === 64, "SAR report sealed with SHA-256 cryptographic verification checksum");
+  assert(Array.isArray(exportSarData.report.poAttainmentTable), "SAR includes PO Attainment Table with CQI action recommendations");
 
   console.log("\n=================================================");
   console.log(`🎉 ALL ${passedTests}/${totalTests} TESTS PASSED SUCCESSFULLY!`);
