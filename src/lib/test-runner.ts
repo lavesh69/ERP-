@@ -179,6 +179,18 @@ import { GET as handleAlumniDirectoryGet } from "@/app/api/alumni/directory/rout
 import { POST as handleAlumniVerificationPost } from "@/app/api/alumni/verification/route";
 import { GET as handleClinicGet, POST as handleClinicPost } from "@/app/api/clinic/route";
 import { checkTriageUrgency } from "@/lib/clinic/clinic-engine";
+import { GET as handleEventsGet, POST as handleEventsPost } from "@/app/api/events/route";
+import { detectVenueBookingConflict } from "@/lib/events/events-engine";
+import { GET as handleClubsGet, POST as handleClubsPost } from "@/app/api/clubs/route";
+import { calculateStudentActivityPoints } from "@/lib/clubs/clubs-engine";
+import { GET as handleSecurityGet, POST as handleSecurityPost } from "@/app/api/security/route";
+import { generateVisitorPassQr } from "@/lib/security/security-engine";
+import { GET as handleAccreditationGet, POST as handleAccreditationPost } from "@/app/api/accreditation/route";
+import {
+  calculateFacultyStudentRatio,
+  calculateCadreRatio,
+  generateAQARDossier,
+} from "@/lib/accreditation/accreditation-engine";
 
 async function runTestSuite() {
   console.log("=================================================");
@@ -5450,6 +5462,272 @@ By breaking down large monolithic systems into decoupled microservices, systems 
   const logConsultData = await logConsultRes.json();
   assert(logConsultData.consultation.caseNo.startsWith("OPD-2026"), "Clinic case assigned formal OPD reference number");
   assert(logConsultData.consultation.status === "ADMITTED_SICK_BAY", "Infirmary bed occupancy updated upon patient observation admission");
+
+  // =========================================================================
+  // GROUP 56: INSTITUTIONAL OPERATIONS & QUALITY GOVERNANCE
+  // =========================================================================================
+  console.log("\n--- GROUP 56: EVENTS VENUES, STUDENT CLUBS, GATE SECURITY, ACCREDITATION ---");
+
+  // 1. Campus Events & Venue Reservation Suite
+  const mockBooking = {
+    id: "booking-99",
+    bookingRef: "EVT-2026-9999",
+    eventTitle: "Annual Keynote",
+    organizingDepartmentOrClub: "CSE Dept",
+    category: "ACADEMIC_SYMPOSIUM" as const,
+    venueId: "auditorium-main",
+    venueName: "Sir C.V. Raman Grand Auditorium",
+    eventDate: "2026-11-20",
+    timeSlot: "09:00 - 13:00",
+    expectedAttendees: 600,
+    contactPersonName: "Dr. Alan Turing",
+    contactPersonEmail: "alan@apex.edu",
+    status: "CONFIRMED" as const,
+    createdAt: new Date().toISOString(),
+  };
+
+  const conflictCheckSameSlot = detectVenueBookingConflict([mockBooking], "auditorium-main", "2026-11-20", "09:00 - 13:00");
+  assert(conflictCheckSameSlot.hasConflict === true, "detectVenueBookingConflict catches same-venue, same-date, same-timeSlot collision");
+
+  const conflictCheckFullDay = detectVenueBookingConflict([mockBooking], "auditorium-main", "2026-11-20", "FULL_DAY");
+  assert(conflictCheckFullDay.hasConflict === true, "detectVenueBookingConflict flags collision when overlapping with FULL_DAY booking");
+
+  const conflictCheckDifferentDate = detectVenueBookingConflict([mockBooking], "auditorium-main", "2026-11-21", "09:00 - 13:00");
+  assert(conflictCheckDifferentDate.hasConflict === false, "detectVenueBookingConflict permits booking on non-conflicting date");
+
+  const eventsSummaryReq = new NextRequest("http://localhost:3000/api/events?tab=summary", {
+    headers: { Cookie: `classroom_session=${adminToken}` },
+  });
+  const eventsSummaryRes = await handleEventsGet(eventsSummaryReq);
+  assert(eventsSummaryRes.status === 200, "GET /api/events?tab=summary returns 200 OK");
+  const eventsSummaryData = await eventsSummaryRes.json();
+  assert(eventsSummaryData.summary.totalVenues > 0, "Campus venues registry contains active bookable facilities");
+
+  const eventsVenuesReq = new NextRequest("http://localhost:3000/api/events?tab=venues", {
+    headers: { Cookie: `classroom_session=${adminToken}` },
+  });
+  const eventsVenuesRes = await handleEventsGet(eventsVenuesReq);
+  assert(eventsVenuesRes.status === 200, "GET /api/events?tab=venues returns 200 OK");
+  const eventsVenuesData = await eventsVenuesRes.json();
+  assert(Array.isArray(eventsVenuesData.venues) && eventsVenuesData.venues.length > 0, "Campus venues returns list of auditoriums and labs");
+
+  const dynamicTestDate = `2029-11-${String(Math.floor(10 + ((Date.now() + Math.random() * 1000) % 18))).padStart(2, "0")}`;
+  const reqVenueBookingReq = new NextRequest("http://localhost:3000/api/events", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "REQUEST_BOOKING",
+      eventTitle: "National Robotics Championship 2026",
+      organizingDepartmentOrClub: "Robotics & AI Guild",
+      category: "HACKATHON",
+      venueId: eventsVenuesData.venues[0].id,
+      eventDate: dynamicTestDate,
+      timeSlot: "FULL_DAY",
+      expectedAttendees: 350,
+      contactPersonName: "Prof. Grace Hopper",
+      contactPersonEmail: "grace.hopper@apex.edu",
+    }),
+  });
+  const reqVenueBookingRes = await handleEventsPost(reqVenueBookingReq);
+  assert(reqVenueBookingRes.status === 200, "POST /api/events (action: REQUEST_BOOKING) files venue reservation with 200 OK");
+  const reqVenueBookingData = await reqVenueBookingRes.json();
+  assert(reqVenueBookingData.booking.bookingRef.startsWith("EVT-2026"), "Booking reference code follows institutional EVT standard prefix");
+
+  const decideBookingReq = new NextRequest("http://localhost:3000/api/events", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "DECIDE_BOOKING",
+      bookingId: reqVenueBookingData.booking.id,
+      status: "CONFIRMED",
+      approvalRemarks: "Approved by Dean of Student Affairs & Estate Office",
+    }),
+  });
+  const decideBookingRes = await handleEventsPost(decideBookingReq);
+  assert(decideBookingRes.status === 200, "POST /api/events (action: DECIDE_BOOKING) approves reservation with 200 OK");
+  const decideBookingData = await decideBookingRes.json();
+  assert(decideBookingData.booking.status === "CONFIRMED", "Venue booking status updated to CONFIRMED");
+
+  // 2. Student Clubs & Co-Curricular Activity Points
+  const mockActivityClaims = [
+    {
+      id: "claim-1",
+      claimRef: "ACT-001",
+      studentRoll: "CS2026-001",
+      studentName: "Alex Mercer",
+      clubCode: "CLUB-ACM",
+      clubName: "ACM Student Chapter",
+      category: "TECHNICAL" as const,
+      activityTitle: "Open Source Hackathon Mentor",
+      description: "Mentored 1st year participants",
+      participationHours: 25,
+      pointsClaimed: 30,
+      pointsAwarded: 30,
+      status: "APPROVED" as const,
+      evidenceReference: "EVID-CERT-01",
+      submittedAt: new Date().toISOString(),
+    },
+    {
+      id: "claim-2",
+      claimRef: "ACT-002",
+      studentRoll: "CS2026-001",
+      studentName: "Alex Mercer",
+      clubCode: "CLUB-NSS",
+      clubName: "National Service Scheme",
+      category: "SOCIAL_SERVICE" as const,
+      activityTitle: "Rural Digital Literacy Drive",
+      description: "Conducted workshops in nearby villages",
+      participationHours: 40,
+      pointsClaimed: 40,
+      pointsAwarded: 40,
+      status: "APPROVED" as const,
+      evidenceReference: "EVID-NSS-88",
+      submittedAt: new Date().toISOString(),
+    },
+    {
+      id: "claim-3",
+      claimRef: "ACT-003",
+      studentRoll: "CS2026-001",
+      studentName: "Alex Mercer",
+      clubCode: "CLUB-SPORTS",
+      clubName: "University Sports Council",
+      category: "SPORTS" as const,
+      activityTitle: "Inter-College Basketball Championship",
+      description: "Captain of University Team",
+      participationHours: 35,
+      pointsClaimed: 35,
+      pointsAwarded: 35,
+      status: "APPROVED" as const,
+      evidenceReference: "EVID-SP-10",
+      submittedAt: new Date().toISOString(),
+    },
+  ];
+
+  const pointsCalc = calculateStudentActivityPoints(mockActivityClaims);
+  assert(pointsCalc.totalPoints === 105, "calculateStudentActivityPoints aggregates awarded points across categories (105 pts)");
+  assert(pointsCalc.isEligibleForDegree === true, "calculateStudentActivityPoints grants degree eligibility upon exceeding 100 points statutory threshold");
+  assert(pointsCalc.completionPercentage === 100, "calculateStudentActivityPoints caps completion at 100%");
+
+  const clubsListReq = new NextRequest("http://localhost:3000/api/clubs?tab=clubs", {
+    headers: { Cookie: `classroom_session=${adminToken}` },
+  });
+  const clubsListRes = await handleClubsGet(clubsListReq);
+  assert(clubsListRes.status === 200, "GET /api/clubs?tab=clubs returns 200 OK");
+  const clubsListData = await clubsListRes.json();
+  assert(Array.isArray(clubsListData.clubs) && clubsListData.clubs.length > 0, "Registered campus clubs directory returns active student societies");
+
+  const submitClaimReq = new NextRequest("http://localhost:3000/api/clubs", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "SUBMIT_CLAIM",
+      studentRoll: "CS2026-001",
+      studentName: "Alex Mercer",
+      clubCode: clubsListData.clubs[0].code,
+      activityTitle: "AI Model Benchmark Workshop",
+      description: "Delivered lecture on local LLM orchestration",
+      participationHours: 12,
+      pointsClaimed: 20,
+      evidenceReference: "CERT-AI-WORKSHOP-2026",
+    }),
+  });
+  const submitClaimRes = await handleClubsPost(submitClaimReq);
+  assert(submitClaimRes.status === 200, "POST /api/clubs (action: SUBMIT_CLAIM) registers co-curricular claim with 200 OK");
+  const submitClaimData = await submitClaimRes.json();
+  assert(submitClaimData.claim.claimRef.startsWith("ACT-2026"), "Activity claim assigned institutional ACT reference code");
+
+  const verifyClaimReq = new NextRequest("http://localhost:3000/api/clubs", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "VERIFY_CLAIM",
+      claimId: submitClaimData.claim.id,
+      status: "APPROVED",
+      pointsAwarded: 20,
+    }),
+  });
+  const verifyClaimRes = await handleClubsPost(verifyClaimReq);
+  assert(verifyClaimRes.status === 200, "POST /api/clubs (action: VERIFY_CLAIM) faculty approves activity points with 200 OK");
+  const verifyClaimData = await verifyClaimRes.json();
+  assert(verifyClaimData.claim.status === "APPROVED" && verifyClaimData.claim.pointsAwarded === 20, "Activity claim status set to APPROVED with awarded points");
+
+  // 3. Campus Gate Security & Visitor Access Suite
+  const testQr = generateVisitorPassQr("Dr. Richard Feynman", "Dean Academic Affairs", "2026-11-01T18:00:00Z");
+  assert(testQr.startsWith("SEC-PASS-"), "generateVisitorPassQr issues SHA-256 backed QR token with SEC-PASS- prefix");
+
+  const securityGatesReq = new NextRequest("http://localhost:3000/api/security?tab=gates", {
+    headers: { Cookie: `classroom_session=${adminToken}` },
+  });
+  const securityGatesRes = await handleSecurityGet(securityGatesReq);
+  assert(securityGatesRes.status === 200, "GET /api/security?tab=gates returns 200 OK");
+  const securityGatesData = await securityGatesRes.json();
+  assert(Array.isArray(securityGatesData.gates) && securityGatesData.gates.length > 0, "Security perimeter gates list returns active campus checkpoints");
+
+  const issueGatePassReq = new NextRequest("http://localhost:3000/api/security", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "ISSUE_PASS",
+      visitorName: "David Attenborough",
+      contactPhone: "+1 (555) 789-0123",
+      idProofType: "PASSPORT",
+      idProofNumber: "P987654321",
+      visitorType: "GUEST_SPEAKER",
+      hostName: "Prof. Ada Lovelace",
+      hostDepartment: "Computer Science & Engineering",
+      purposeOfVisit: "Distinguished Campus Colloquium Keynote",
+      vehicleNumber: "KA-01-EQ-9900",
+      entryGate: securityGatesData.gates[0].name,
+      validUntil: new Date(Date.now() + 6 * 3600 * 1000).toISOString(),
+    }),
+  });
+  const issueGatePassRes = await handleSecurityPost(issueGatePassReq);
+  assert(issueGatePassRes.status === 200, "POST /api/security (action: ISSUE_PASS) grants entry permit with 200 OK");
+  const issueGatePassData = await issueGatePassRes.json();
+  assert(issueGatePassData.pass.passNumber.startsWith("VTR-2026"), "Visitor pass generated with institutional VTR-2026 identifier");
+  assert(issueGatePassData.pass.status === "ACTIVE_ON_CAMPUS", "Visitor marked as ACTIVE_ON_CAMPUS in live headcount");
+
+  const checkOutPassReq = new NextRequest("http://localhost:3000/api/security", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "CHECK_OUT",
+      passId: issueGatePassData.pass.id,
+    }),
+  });
+  const checkOutPassRes = await handleSecurityPost(checkOutPassReq);
+  assert(checkOutPassRes.status === 200, "POST /api/security (action: CHECK_OUT) records exit with 200 OK");
+  const checkOutPassData = await checkOutPassRes.json();
+  assert(checkOutPassData.pass.status === "CHECKED_OUT", "Visitor pass status updated to CHECKED_OUT");
+
+  // 4. Institutional Accreditation & Quality Assurance Suite
+  const fsrNorm = calculateFacultyStudentRatio(1500, 100, 15);
+  assert(fsrNorm.isCompliant === true, "calculateFacultyStudentRatio validates statutory 1:15 ratio compliance");
+  assert(fsrNorm.ratioString === "1:15", "calculateFacultyStudentRatio normalizes ratio string properly");
+
+  const cadreCheck = calculateCadreRatio(5, 12, 35);
+  assert(cadreCheck.isCadreBalanced === true, "calculateCadreRatio confirms healthy professor-to-lecturer hierarchy");
+
+  const accredCriteriaReq = new NextRequest("http://localhost:3000/api/accreditation?tab=criteria", {
+    headers: { Cookie: `classroom_session=${adminToken}` },
+  });
+  const accredCriteriaRes = await handleAccreditationGet(accredCriteriaReq);
+  assert(accredCriteriaRes.status === 200, "GET /api/accreditation?tab=criteria returns 200 OK");
+  const accredCriteriaData = await accredCriteriaRes.json();
+  assert(Array.isArray(accredCriteriaData.criteria) && accredCriteriaData.criteria.length === 7, "Accreditation criteria returns all 7 statutory NAAC quality pillars");
+
+  const generateAqarReq = new NextRequest("http://localhost:3000/api/accreditation", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "GENERATE_AQAR",
+    }),
+  });
+  const generateAqarRes = await handleAccreditationPost(generateAqarReq);
+  assert(generateAqarRes.status === 200, "POST /api/accreditation (action: GENERATE_AQAR) compiles official AQAR with 200 OK");
+  const generateAqarData = await generateAqarRes.json();
+  assert(generateAqarData.dossier.accreditationGrade === "A++", "Institutional CGPA qualifies for NAAC A++ premier accreditation rating");
+  assert(generateAqarData.dossier.verificationHash.startsWith("AQAR-NAAC-"), "AQAR dossier certified with official SHA-256 verification hash stamp");
 
   console.log("\n=================================================");
   console.log(`🎉 ALL ${passedTests}/${totalTests} TESTS PASSED SUCCESSFULLY!`);

@@ -1,0 +1,145 @@
+{
+  "venues": [
+    {
+      "id": "vn-01",
+      "name": "Main University Grand Auditorium",
+      "building": "Central Academic Block A",
+      "seatingCapacity": 1200,
+      "amenities": [
+        "4K Laser Projection",
+        "Dolby Atmos Surround",
+        "Dual Stage Green Rooms",
+        "Full Central AC",
+        "Motorized Curtains"
+      ],
+      "isOperational": true,
+      "custodianOfficer": "Estate Management & Audio-Visual Unit"
+    },
+    {
+      "id": "vn-02",
+      "name": "Dr. APJ Abdul Kalam Mini Auditorium",
+      "building": "Science & Innovation Complex",
+      "seatingCapacity": 300,
+      "amenities": [
+        "Dual Laser Projectors",
+        "Live Streaming Kit",
+        "Acoustic Wall Paneling",
+        "AC"
+      ],
+      "isOperational": true,
+      "custodianOfficer": "Dean Student Welfare Office"
+    },
+    {
+      "id": "vn-03",
+      "name": "Sir CV Raman Seminar Hall",
+      "building": "Department of Computer Science & Physics",
+      "seatingCapacity": 160,
+      "amenities": [
+        "Interactive Smart Podium",
+        "Surround Sound",
+        "High-speed Wi-Fi 6",
+        "AC"
+      ],
+      "isOperational": true,
+      "custodianOfficer": "HOD Computer Science"
+    },
+    {
+      "id": "vn-04",
+      "name": "Indoor Multi-Sports Arena",
+      "building": "Sports Pavilion",
+      "seatingCapacity": 800,
+      "amenities": [
+        "Maple Hardwood Basketball Court",
+        "Electronic Scoreboard",
+        "Press Box",
+        "Locker Rooms"
+      ],
+      "isOperational": true,
+      "custodianOfficer": "Director of Physical Education"
+    },
+    {
+      "id": "vn-05",
+      "name": "Central Moot Court & Deliberation Chamber",
+      "building": "School of Legal Studies",
+      "seatingCapacity": 120,
+      "amenities": [
+        "Judicial Bench Podiums",
+        "Court Recording System",
+        "Law Library Annex",
+        "AC"
+      ],
+      "isOperational": true,
+      "custodianOfficer": "Faculty Dean of Law"
+    }
+  ],
+  "bookings": [
+    {
+      "id": "bk-1791306336719",
+      "bookingRef": "EVT-2026-875",
+      "eventTitle": "National Robotics Championship 2026",
+      "organizingDepartmentOrClub": "Robotics & AI Guild",
+      "category": "HACKATHON",
+      "venueId": "vn-01",
+      "venueName": "Main University Grand Auditorium",
+      "eventDate": "2029-11-24",
+      "timeSlot": "FULL_DAY",
+      "expectedAttendees": 350,
+      "contactPersonName": "Prof. Grace Hopper",
+      "contactPersonEmail": "grace.hopper@apex.edu",
+      "status": "CONFIRMED",
+      "approvalRemarks": "Submitted for Estate & Student Affairs clearance.",
+      "createdAt": "2026-10-06T17:05:36.719Z"
+    },
+    {
+      "id": "bk-1791306248712",
+      "bookingRef": "EVT-2026-758",
+      "eventTitle": "National Robotics Championship 2026",
+      "organizingDepartmentOrClub": "Robotics & AI Guild",
+      "category": "HACKATHON",
+      "venueId": "vn-01",
+      "venueName": "Main University Grand Auditorium",
+      "eventDate": "2026-12-15",
+      "timeSlot": "FULL_DAY",
+      "expectedAttendees": 350,
+      "contactPersonName": "Prof. Grace Hopper",
+      "contactPersonEmail": "grace.hopper@apex.edu",
+      "status": "CONFIRMED",
+      "approvalRemarks": "Submitted for Estate & Student Affairs clearance.",
+      "createdAt": "2026-10-06T17:04:08.712Z"
+    },
+    {
+      "id": "bk-01",
+      "bookingRef": "EVT-2026-801",
+      "eventTitle": "Annual National AI & Quantum Hackathon 2026",
+      "organizingDepartmentOrClub": "IEEE Student Branch & CS Department",
+      "category": "HACKATHON",
+      "venueId": "vn-01",
+      "venueName": "Main University Grand Auditorium",
+      "eventDate": "2026-11-15",
+      "timeSlot": "FULL_DAY",
+      "expectedAttendees": 650,
+      "contactPersonName": "Alex Mercer",
+      "contactPersonEmail": "alex.mercer@apex.edu",
+      "status": "CONFIRMED",
+      "approvalRemarks": "Approved by Dean of Student Affairs. Security & power backup notified.",
+      "createdAt": "2026-10-01T10:00:00.000Z"
+    },
+    {
+      "id": "bk-02",
+      "bookingRef": "EVT-2026-802",
+      "eventTitle": "Distinguished Alumni Keynote: Frontier Generative AI",
+      "organizingDepartmentOrClub": "Corporate Relations & Alumni Association",
+      "category": "GUEST_LECTURE",
+      "venueId": "vn-02",
+      "venueName": "Dr. APJ Abdul Kalam Mini Auditorium",
+      "eventDate": "2026-10-25",
+      "timeSlot": "14:00 - 18:00",
+      "expectedAttendees": 240,
+      "contactPersonName": "Jessica Alvarez",
+      "contactPersonEmail": "careers@apex.edu",
+      "status": "CONFIRMED",
+      "approvalRemarks": "Confirmed. Livestream setup scheduled with AV Unit.",
+      "createdAt": "2026-10-03T14:30:00.000Z"
+    }
+  ]
+}

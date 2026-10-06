@@ -41,6 +41,8 @@ import {
   Boxes,
   UserPlus,
   HeartPulse,
+  CalendarDays,
+  Compass,
 } from "lucide-react";
 
 interface NavSection {
@@ -188,6 +190,27 @@ const NAV_SECTIONS: NavSection[] = [
         badge: "OPD",
         roles: ["SUPER_ADMIN", "INSTITUTION_ADMIN", "PRINCIPAL", "HOD", "FACULTY", "STUDENT", "PARENT", "HR_STAFF"],
       },
+      {
+        name: "Campus Events",
+        href: "/events",
+        icon: CalendarDays,
+        badge: "Venues",
+        roles: ["SUPER_ADMIN", "INSTITUTION_ADMIN", "PRINCIPAL", "HOD", "FACULTY", "STUDENT"],
+      },
+      {
+        name: "Clubs & Points",
+        href: "/clubs",
+        icon: Compass,
+        badge: "Points",
+        roles: ["SUPER_ADMIN", "INSTITUTION_ADMIN", "PRINCIPAL", "HOD", "FACULTY", "STUDENT"],
+      },
+      {
+        name: "Gate Security",
+        href: "/security",
+        icon: ShieldCheck,
+        badge: "Passes",
+        roles: ["SUPER_ADMIN", "INSTITUTION_ADMIN", "PRINCIPAL", "HR_STAFF", "FACULTY", "GUEST"],
+      },
     ],
   },
   {
@@ -279,6 +302,13 @@ const NAV_SECTIONS: NavSection[] = [
         icon: Briefcase,
         badge: "HRMS",
         roles: ["SUPER_ADMIN", "INSTITUTION_ADMIN", "PRINCIPAL", "HOD", "FACULTY", "HR_STAFF", "ACCOUNTANT"],
+      },
+      {
+        name: "Accreditation IQAC",
+        href: "/accreditation",
+        icon: Award,
+        badge: "NAAC",
+        roles: ["SUPER_ADMIN", "INSTITUTION_ADMIN", "PRINCIPAL", "HOD", "FACULTY"],
       },
     ],
   },
