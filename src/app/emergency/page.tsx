@@ -17,6 +17,9 @@ import {
   Clock,
   Volume2,
   PhoneCall,
+  Download,
+  Search,
+  Filter,
 } from "lucide-react";
 
 interface Alert {
@@ -55,6 +58,73 @@ export default function EmergencyPage() {
   const [showBroadcastModal, setShowBroadcastModal] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState<{ text: string; type: "success" | "error" } | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filterCategory, setFilterCategory] = useState("ALL");
+
+  const EMERGENCY_TEMPLATES = [
+    {
+      label: "Fire Evacuation",
+      category: "FIRE_EVACUATION",
+      severity: "CRITICAL_EVACUATION",
+      headline: "Immediate Building Evacuation Ordered - Fire Alarm Triggered",
+      instructions: "Evacuate using nearest fire exit stairs. DO NOT use elevators. Report immediately to outdoor muster assembly points.",
+      affectedZones: ["Central Academic Block", "Science Quad"],
+      channels: ["SMS_GATEWAY", "CAMPUS_SIRENS", "MOBILE_APP_PUSH", "PA_AUDIO_SYSTEM"],
+    },
+    {
+      label: "Severe Tornado / Cyclone",
+      category: "SEVERE_WEATHER_ALERT",
+      severity: "CRITICAL_EVACUATION",
+      headline: "Tornado Warning Active - Seek Immediate Reinforced Shelter",
+      instructions: "Take shelter immediately in lowest floor interior rooms away from glass windows. Cover heads.",
+      affectedZones: ["All Campus Quads", "Hostels"],
+      channels: ["SMS_GATEWAY", "CAMPUS_SIRENS", "MOBILE_APP_PUSH", "EMERGENCY_EMAILS"],
+    },
+    {
+      label: "Security Lockdown",
+      category: "CAMPUS_SECURITY_LOCKDOWN",
+      severity: "CRITICAL_EVACUATION",
+      headline: "Active Perimeter Lockdown - Shelter in Place",
+      instructions: "Lock all doors, turn off lights, silence cellphones, and stay out of sight until official ALL CLEAR is broadcast.",
+      affectedZones: ["All Campus Facilities"],
+      channels: ["SMS_GATEWAY", "MOBILE_APP_PUSH", "CAMPUS_SIRENS"],
+    },
+    {
+      label: "Chemical Hazard",
+      category: "MEDICAL_HAZARD",
+      severity: "HIGH_WARNING",
+      headline: "Hazardous Chemical / Gas Release - Science Complex Evacuation",
+      instructions: "Do not enter Chemistry Building A. Avoid downwind perimeter. Facilities HAZMAT teams deployed.",
+      affectedZones: ["Chemistry Complex", "Engineering Labs"],
+      channels: ["SMS_GATEWAY", "MOBILE_APP_PUSH", "EMERGENCY_EMAILS"],
+    },
+  ];
+
+  const handleApplyTemplate = (tmpl: any) => {
+    setFormData({
+      category: tmpl.category,
+      severity: tmpl.severity,
+      headline: tmpl.headline,
+      instructions: tmpl.instructions,
+      affectedZones: tmpl.affectedZones,
+      dispatchedChannels: tmpl.channels,
+    });
+  };
+
+  const handleExportCleryLogCsv = () => {
+    const headers = "Incident Code,Category,Severity,Headline,Instructions,Zones,Channels,Initiated By,Timestamp,Active,Seal Checksum\n";
+    const rows = alerts
+      .map((a) => `"${a.alertCode}","${a.category}","${a.severity}","${a.headline}","${(a.instructions || "").replace(/"/g, '""')}","${a.affectedZones.join("; ")}","${a.dispatchedChannels.join("; ")}","${a.initiatedBy}","${a.initiatedAt}",${a.isActive},"${a.cryptographicBroadcastSeal}"`)
+      .join("\n");
+    const blob = new Blob([headers + rows], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", `Clery_Act_EOC_Incident_Audit_${new Date().toISOString().split("T")[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   const [formData, setFormData] = useState({
     category: "FIRE_EVACUATION",
@@ -191,13 +261,22 @@ export default function EmergencyPage() {
           </div>
         </div>
 
-        <button
-          onClick={() => setShowBroadcastModal(true)}
-          className="flex items-center gap-2 px-4 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-xl text-sm font-semibold transition-all shadow-sm shadow-red-600/30"
-        >
-          <Radio className="w-4 h-4" />
-          Broadcast Emergency SOS
-        </button>
+        <div className="flex flex-wrap items-center gap-3">
+          <button
+            onClick={handleExportCleryLogCsv}
+            className="flex items-center gap-2 px-4 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl text-sm font-semibold transition-all border border-slate-200 dark:border-slate-700"
+          >
+            <Download className="w-4 h-4" />
+            Export Clery Audit Log (CSV)
+          </button>
+          <button
+            onClick={() => setShowBroadcastModal(true)}
+            className="flex items-center gap-2 px-4 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-xl text-sm font-semibold transition-all shadow-sm shadow-red-600/30"
+          >
+            <Radio className="w-4 h-4" />
+            Broadcast Emergency SOS
+          </button>
+        </div>
       </div>
 
       {message && (
@@ -260,6 +339,35 @@ export default function EmergencyPage() {
         </div>
       </div>
 
+      {/* Search & Category Filter Toolbar */}
+      <div className="flex flex-col sm:flex-row gap-3 items-center justify-between bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800">
+        <div className="relative w-full sm:w-96">
+          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+          <input
+            type="text"
+            placeholder="Search alerts, zones, incident codes..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-9 pr-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-red-500 text-slate-900 dark:text-white"
+          />
+        </div>
+        <div className="flex items-center gap-2 w-full sm:w-auto">
+          <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Category:</span>
+          <select
+            value={filterCategory}
+            onChange={(e) => setFilterCategory(e.target.value)}
+            className="px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-red-500 text-slate-900 dark:text-white"
+          >
+            <option value="ALL">All Categories</option>
+            <option value="FIRE_EVACUATION">Fire Evacuation</option>
+            <option value="SEVERE_WEATHER_ALERT">Severe Weather</option>
+            <option value="CAMPUS_SECURITY_LOCKDOWN">Security Lockdown</option>
+            <option value="MEDICAL_HAZARD">Medical / Hazmat</option>
+            <option value="DRILL_SIMULATION">Safety Drills</option>
+          </select>
+        </div>
+      </div>
+
       {/* Tabs */}
       <div className="flex border-b border-slate-200 dark:border-slate-800">
         <button
@@ -271,7 +379,7 @@ export default function EmergencyPage() {
           }`}
         >
           <Radio className="w-4 h-4" />
-          Emergency Alert Dispatches
+          Emergency Alert Dispatches ({alerts.length})
         </button>
         <button
           onClick={() => setActiveTab("muster")}
@@ -282,14 +390,26 @@ export default function EmergencyPage() {
           }`}
         >
           <Users className="w-4 h-4" />
-          Muster Point Assembly &amp; Wardens
+          Muster Point Assembly &amp; Wardens ({musterPoints.length})
         </button>
       </div>
 
       {/* Tab 1: Alerts History */}
       {activeTab === "alerts" && (
         <div className="space-y-4">
-          {alerts.map((al) => (
+          {alerts
+            .filter((al) => {
+              const q = searchQuery.toLowerCase();
+              const matchesSearch =
+                !q ||
+                al.alertCode.toLowerCase().includes(q) ||
+                al.headline.toLowerCase().includes(q) ||
+                al.instructions.toLowerCase().includes(q) ||
+                al.affectedZones.some((z) => z.toLowerCase().includes(q));
+              const matchesCategory = filterCategory === "ALL" || al.category === filterCategory;
+              return matchesSearch && matchesCategory;
+            })
+            .map((al) => (
             <div
               key={al.id}
               className={`bg-white dark:bg-slate-900 p-5 rounded-2xl border shadow-sm space-y-3 ${
@@ -414,6 +534,24 @@ export default function EmergencyPage() {
             </div>
 
             <form onSubmit={handleBroadcast} className="space-y-4 text-sm">
+              <div>
+                <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">
+                  ⚡ Quick Response Presets:
+                </label>
+                <div className="flex flex-wrap gap-1.5">
+                  {EMERGENCY_TEMPLATES.map((tmpl, idx) => (
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={() => handleApplyTemplate(tmpl)}
+                      className="px-2.5 py-1 text-xs font-medium rounded-lg bg-red-50 hover:bg-red-100 dark:bg-red-950/40 dark:hover:bg-red-900/40 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-800 transition"
+                    >
+                      {tmpl.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">

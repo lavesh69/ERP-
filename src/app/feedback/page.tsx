@@ -13,6 +13,8 @@ import {
   PlusCircle,
   HelpCircle,
   ShieldCheck,
+  Search,
+  Download,
 } from "lucide-react";
 
 interface FacultyIndex {
@@ -49,6 +51,38 @@ export default function FeedbackPage() {
   const [showSurveyModal, setShowSurveyModal] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState<{ text: string; type: "success" | "error" } | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedDept, setSelectedDept] = useState("ALL");
+
+  const handleExportCsv = () => {
+    if (activeTab === "faculty") {
+      const headers = "Faculty ID,Name,Department,Submissions,Pedagogy,Syllabus,Punctuality,Doubt Clearing,Course Material,Overall FPI,Performance Band\n";
+      const rows = facultyIndices
+        .map((f) => `"${f.facultyId}","${f.facultyName}","${f.departmentCode}",${f.totalSubmissions},${f.avgPedagogy},${f.avgSyllabus},${f.avgPunctuality},${f.avgDoubtClearing},${f.avgCourseMaterial},${f.overallFPI},"${f.performanceBand}"`)
+        .join("\n");
+      const blob = new Blob([headers + rows], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", `FPI_Faculty_Evaluation_Report_${new Date().toISOString().split("T")[0]}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } else {
+      const headers = "Survey Ref,Course Code,Course Name,Faculty Name,Overall Score,Remarks,Date\n";
+      const rows = responses
+        .map((r) => `"${r.surveyRef}","${r.courseCode}","${r.courseName}","${r.facultyName}",${r.overallScore},"${(r.qualitativeRemarks || "").replace(/"/g, '""')}","${r.submittedAt}"`)
+        .join("\n");
+      const blob = new Blob([headers + rows], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", `Student_Evaluation_Responses_${new Date().toISOString().split("T")[0]}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  };
 
   // Form state
   const [formData, setFormData] = useState({
@@ -143,13 +177,22 @@ export default function FeedbackPage() {
           </div>
         </div>
 
-        <button
-          onClick={() => setShowSurveyModal(true)}
-          className="flex items-center gap-2 px-4 py-2.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-sm font-semibold transition-all shadow-sm shadow-rose-600/20"
-        >
-          <PlusCircle className="w-4 h-4" />
-          Submit Course Evaluation
-        </button>
+        <div className="flex flex-wrap items-center gap-3">
+          <button
+            onClick={handleExportCsv}
+            className="flex items-center gap-2 px-4 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl text-sm font-semibold transition-all border border-slate-200 dark:border-slate-700"
+          >
+            <Download className="w-4 h-4" />
+            Export SET Dossier (CSV)
+          </button>
+          <button
+            onClick={() => setShowSurveyModal(true)}
+            className="flex items-center gap-2 px-4 py-2.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-sm font-semibold transition-all shadow-sm shadow-rose-600/20"
+          >
+            <PlusCircle className="w-4 h-4" />
+            Submit Course Evaluation
+          </button>
+        </div>
       </div>
 
       {message && (
@@ -212,6 +255,35 @@ export default function FeedbackPage() {
         </div>
       </div>
 
+      {/* Search and Department Filter Toolbar */}
+      <div className="flex flex-col sm:flex-row gap-3 items-center justify-between bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800">
+        <div className="relative w-full sm:w-96">
+          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+          <input
+            type="text"
+            placeholder="Search by faculty, department or course..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-9 pr-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-rose-500 text-slate-900 dark:text-white"
+          />
+        </div>
+        <div className="flex items-center gap-2 w-full sm:w-auto">
+          <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Dept:</span>
+          <select
+            value={selectedDept}
+            onChange={(e) => setSelectedDept(e.target.value)}
+            className="px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-rose-500 text-slate-900 dark:text-white"
+          >
+            <option value="ALL">All Departments</option>
+            <option value="CSE">Computer Science (CSE)</option>
+            <option value="ECE">Electronics (ECE)</option>
+            <option value="ME">Mechanical (ME)</option>
+            <option value="CIVIL">Civil (CIVIL)</option>
+            <option value="HUM">Humanities (HUM)</option>
+          </select>
+        </div>
+      </div>
+
       {/* Tabs */}
       <div className="flex border-b border-slate-200 dark:border-slate-800">
         <button
@@ -223,7 +295,7 @@ export default function FeedbackPage() {
           }`}
         >
           <Award className="w-4 h-4" />
-          Faculty Performance Indices (FPI)
+          Faculty Performance Indices (FPI) ({facultyIndices.length})
         </button>
         <button
           onClick={() => setActiveTab("responses")}
@@ -234,14 +306,22 @@ export default function FeedbackPage() {
           }`}
         >
           <FileText className="w-4 h-4" />
-          Anonymous Evaluation Responses
+          Anonymous Evaluation Responses ({responses.length})
         </button>
       </div>
 
       {/* Tab 1: Faculty FPI Cards */}
       {activeTab === "faculty" && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {facultyIndices.map((fac) => (
+          {facultyIndices
+            .filter((fac) => {
+              const matchesSearch =
+                fac.facultyName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                fac.departmentCode.toLowerCase().includes(searchQuery.toLowerCase());
+              const matchesDept = selectedDept === "ALL" || fac.departmentCode === selectedDept;
+              return matchesSearch && matchesDept;
+            })
+            .map((fac) => (
             <div
               key={fac.facultyId}
               className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4"
@@ -337,7 +417,18 @@ export default function FeedbackPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-slate-700 dark:text-slate-300">
-                {responses.map((r) => (
+                {responses
+                  .filter((r) => {
+                    const q = searchQuery.toLowerCase();
+                    return (
+                      !q ||
+                      r.courseCode.toLowerCase().includes(q) ||
+                      r.courseName.toLowerCase().includes(q) ||
+                      r.facultyName.toLowerCase().includes(q) ||
+                      r.surveyRef.toLowerCase().includes(q)
+                    );
+                  })
+                  .map((r) => (
                   <tr key={r.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/40">
                     <td className="py-3 px-4 font-mono text-xs font-semibold text-rose-600 dark:text-rose-400">
                       {r.surveyRef}

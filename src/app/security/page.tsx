@@ -15,6 +15,8 @@ import {
   LogOut,
   MapPin,
   Lock,
+  Download,
+  Search,
 } from "lucide-react";
 import { VisitorPass, SecurityGate, PassStatus } from "@/lib/security/security-engine";
 
@@ -34,6 +36,22 @@ export default function SecurityPage() {
   const [passes, setPasses] = useState<VisitorPass[]>([]);
   const [gates, setGates] = useState<SecurityGate[]>([]);
   const [statusMessage, setStatusMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const handleExportSecurityCsv = () => {
+    const headers = "Pass Ref,Visitor Name,Phone,ID Proof,Visitor Type,Host Name,Department,Purpose,Vehicle No,Entry Gate,Status,Check-In Time,Check-Out Time\n";
+    const rows = passes
+      .map((p) => `"${p.passNumber}","${p.visitorName}","${p.contactPhone}","${p.idProofType}: ${p.idProofNumber}","${p.visitorType}","${p.hostName}","${p.hostDepartment}","${(p.purposeOfVisit || "").replace(/"/g, '""')}","${p.vehicleNumber || "N/A"}","${p.entryGate}","${p.status}","${p.checkInTime}","${p.checkOutTime || "N/A"}"`)
+      .join("\n");
+    const blob = new Blob([headers + rows], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", `Perimeter_Security_Gate_Passes_${new Date().toISOString().split("T")[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   // New Pass Modal
   const [showModal, setShowModal] = useState(false);
@@ -162,7 +180,24 @@ export default function SecurityPage() {
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="relative">
+            <Search className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
+            <input
+              type="text"
+              placeholder="Search visitor, phone, car..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-9 pr-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm w-52"
+            />
+          </div>
+          <button
+            onClick={handleExportSecurityCsv}
+            className="flex items-center gap-2 px-3.5 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-medium text-sm rounded-xl border border-slate-200 dark:border-slate-700 transition-all"
+          >
+            <Download className="w-4 h-4" />
+            Export Passes (CSV)
+          </button>
           <button
             onClick={() => setShowModal(true)}
             className="flex items-center gap-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-medium text-sm rounded-xl shadow-sm transition-all"
@@ -294,7 +329,19 @@ export default function SecurityPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                {passes.map((p) => (
+                {passes
+                  .filter((p) => {
+                    const q = searchQuery.toLowerCase();
+                    return (
+                      !q ||
+                      p.passNumber.toLowerCase().includes(q) ||
+                      p.visitorName.toLowerCase().includes(q) ||
+                      p.contactPhone.toLowerCase().includes(q) ||
+                      (p.vehicleNumber && p.vehicleNumber.toLowerCase().includes(q)) ||
+                      p.hostName.toLowerCase().includes(q)
+                    );
+                  })
+                  .map((p) => (
                   <tr key={p.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/40">
                     <td className="p-4 font-mono font-medium text-xs text-emerald-600 dark:text-emerald-400">
                       {p.passNumber}

@@ -15,6 +15,8 @@ import {
   Building,
   DollarSign,
   PackageCheck,
+  Download,
+  Filter,
 } from "lucide-react";
 
 interface Candidate {
@@ -58,6 +60,23 @@ export default function ConvocationPage() {
     degreeDispatchMode: "CONVOCATION_IN_PERSON" as "CONVOCATION_IN_PERSON" | "POSTAL_SPEEDPOST" | "COLLECT_AT_REGISTRAR",
   });
   const [message, setMessage] = useState<{ text: string; type: "success" | "error" } | null>(null);
+  const [filterProgram, setFilterProgram] = useState("ALL");
+  const [filterClearance, setFilterClearance] = useState("ALL");
+
+  const handleExportConvocationCsv = () => {
+    const headers = "Candidate Ref,Student Roll,Full Name,Program,Final CGPA,Honors,Medalist,All Clearances,Registered For Ceremony,Gown Size,Guest Passes,Dispatch Mode,Certificate Seal Hash\n";
+    const rows = filteredCandidates
+      .map((c) => `"${c.candidateRef}","${c.studentRoll}","${c.fullName}","${c.program}",${c.finalCgpa},"${c.honorsCategory}",${c.isMedalist},${c.allClearancesGranted},${c.convocationRegistered},"${c.robeSize || "N/A"}",${c.guestPassesCount},"${c.degreeDispatchMode}","${c.certificateHash}"`)
+      .join("\n");
+    const blob = new Blob([headers + rows], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", `Convocation_Degree_Ledger_${new Date().toISOString().split("T")[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   const fetchData = async () => {
     try {
@@ -136,11 +155,17 @@ export default function ConvocationPage() {
     }
   };
 
-  const filteredCandidates = candidates.filter(
-    (c) =>
+  const filteredCandidates = candidates.filter((c) => {
+    const matchesSearch =
       c.fullName.toLowerCase().includes(searchRoll.toLowerCase()) ||
-      c.studentRoll.toLowerCase().includes(searchRoll.toLowerCase())
-  );
+      c.studentRoll.toLowerCase().includes(searchRoll.toLowerCase());
+    const matchesProgram = filterProgram === "ALL" || c.program.includes(filterProgram);
+    const matchesClearance =
+      filterClearance === "ALL" ||
+      (filterClearance === "CLEARED" && c.allClearancesGranted) ||
+      (filterClearance === "PENDING" && !c.allClearancesGranted);
+    return matchesSearch && matchesProgram && matchesClearance;
+  });
 
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6">
@@ -162,17 +187,43 @@ export default function ConvocationPage() {
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <div className="relative">
             <Search className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
             <input
               type="text"
-              placeholder="Search student roll / name..."
+              placeholder="Search roll / name..."
               value={searchRoll}
               onChange={(e) => setSearchRoll(e.target.value)}
-              className="pl-9 pr-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm w-64"
+              className="pl-9 pr-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm w-44"
             />
           </div>
+          <select
+            value={filterProgram}
+            onChange={(e) => setFilterProgram(e.target.value)}
+            className="px-2.5 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold text-slate-800 dark:text-slate-200"
+          >
+            <option value="ALL">All Programs</option>
+            <option value="Computer Science">Computer Science</option>
+            <option value="Mechanical">Mechanical</option>
+            <option value="Electronics">Electronics</option>
+          </select>
+          <select
+            value={filterClearance}
+            onChange={(e) => setFilterClearance(e.target.value)}
+            className="px-2.5 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold text-slate-800 dark:text-slate-200"
+          >
+            <option value="ALL">All Clearances</option>
+            <option value="CLEARED">100% Cleared</option>
+            <option value="PENDING">Dues Pending</option>
+          </select>
+          <button
+            onClick={handleExportConvocationCsv}
+            className="flex items-center gap-1.5 px-3 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-bold transition-all shadow-sm shadow-amber-600/20"
+          >
+            <Download className="w-3.5 h-3.5" />
+            Export CSV
+          </button>
         </div>
       </div>
 

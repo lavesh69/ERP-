@@ -16,6 +16,8 @@ import {
   Clock,
   Thermometer,
   FileHeart,
+  Download,
+  Filter,
 } from "lucide-react";
 import { checkTriageUrgency } from "@/lib/clinic/clinic-engine";
 
@@ -36,6 +38,44 @@ export default function ClinicPage() {
   const [consultations, setConsultations] = useState<any[]>([]);
   const [profiles, setProfiles] = useState<any[]>([]);
   const [statusMessage, setStatusMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filterStatus, setFilterStatus] = useState<string>("ALL");
+
+  const handleExportClinicCsv = () => {
+    const listToExport = filteredConsultations;
+    const headers = ["Case #", "Patient Name", "Roll / Staff ID", "Chief Complaint", "BP", "Pulse", "Temp (F)", "SpO2 (%)", "Diagnosis", "Status", "Attending Doctor"];
+    const rows = listToExport.map((c: any) => [
+      c.caseNo,
+      `"${(c.patientName || "").replace(/"/g, '""')}"`,
+      `"${c.patientRoll || ""}"`,
+      `"${(c.chiefComplaint || "").replace(/"/g, '""')}"`,
+      c.vitals?.bp || "",
+      c.vitals?.pulseRate || "",
+      c.vitals?.temperatureF || "",
+      c.vitals?.spo2Percent || "",
+      `"${(c.diagnosis || "").replace(/"/g, '""')}"`,
+      c.status,
+      `"${(c.attendingDoctor || "").replace(/"/g, '""')}"`,
+    ]);
+    const csvContent = "data:text/csv;charset=utf-8," + [headers.join(","), ...rows.map(e => e.join(","))].join("\n");
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `Campus_Clinic_EMR_Logs_${new Date().toISOString().split("T")[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const filteredConsultations = consultations.filter((c: any) => {
+    const matchesSearch =
+      c.patientName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      c.patientRoll?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      c.caseNo?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      c.diagnosis?.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesStatus = filterStatus === "ALL" || c.status === filterStatus;
+    return matchesSearch && matchesStatus;
+  });
 
   // New Consultation Modal
   const [showModal, setShowModal] = useState(false);
@@ -185,7 +225,14 @@ export default function ClinicPage() {
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
+          <button
+            onClick={handleExportClinicCsv}
+            className="flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 font-medium text-sm rounded-xl shadow-sm transition-all"
+          >
+            <Download className="w-4 h-4 text-slate-500" />
+            Export OPD Logs (CSV)
+          </button>
           <button
             onClick={() => setShowModal(true)}
             className="flex items-center gap-2 px-4 py-2.5 bg-rose-600 hover:bg-rose-700 text-white font-medium text-sm rounded-xl shadow-sm transition-all"
@@ -322,9 +369,35 @@ export default function ClinicPage() {
       {/* Tab 1: OPD Consultations */}
       {activeTab === "consultations" && (
         <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm overflow-hidden">
-          <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center">
-            <h3 className="font-semibold text-slate-900 dark:text-white">Recent Outpatient Logs</h3>
-            <span className="text-xs text-slate-400">{consultations.length} records found</span>
+          <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <h3 className="font-semibold text-slate-900 dark:text-white">Recent Outpatient Logs</h3>
+              <p className="text-xs text-slate-400">{filteredConsultations.length} of {consultations.length} records matching</p>
+            </div>
+            <div className="flex flex-wrap items-center gap-2.5">
+              <div className="relative">
+                <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
+                <input
+                  type="text"
+                  placeholder="Search patient, roll, case #..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-9 pr-3 py-1.5 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-rose-500 w-48 sm:w-56"
+                />
+              </div>
+              <div className="flex items-center gap-1.5">
+                <Filter className="w-3.5 h-3.5 text-slate-400" />
+                <select
+                  value={filterStatus}
+                  onChange={(e) => setFilterStatus(e.target.value)}
+                  className="px-2.5 py-1.5 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-rose-500"
+                >
+                  <option value="ALL">All Statuses</option>
+                  <option value="TREATED_DISCHARGED">Treated & Discharged</option>
+                  <option value="ADMITTED_SICK_BAY">Admitted to Sick Bay</option>
+                </select>
+              </div>
+            </div>
           </div>
 
           <div className="overflow-x-auto">
@@ -340,7 +413,7 @@ export default function ClinicPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                {consultations.map((c) => (
+                {filteredConsultations.map((c) => (
                   <tr key={c.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/40">
                     <td className="p-4 font-mono font-medium text-xs text-rose-600 dark:text-rose-400">
                       {c.caseNo}

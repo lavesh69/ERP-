@@ -16,6 +16,8 @@ import {
   Check,
   X,
   Compass,
+  Download,
+  Search,
 } from "lucide-react";
 import { StudentClub, ActivityPointClaim, DEGREE_REQUIRED_ACTIVITY_POINTS } from "@/lib/clubs/clubs-engine";
 
@@ -42,6 +44,22 @@ export default function ClubsPage() {
   const [claims, setClaims] = useState<ActivityPointClaim[]>([]);
   const [clubs, setClubs] = useState<StudentClub[]>([]);
   const [statusMessage, setStatusMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const handleExportClubsCsv = () => {
+    const headers = "Claim ID,Student Roll,Student Name,Club Code,Activity Title,Points Claimed,Awarded Points,Status,Submission Date\n";
+    const rows = claims
+      .map((c) => `"${c.id}","${c.studentRoll}","${c.studentName}","${c.clubCode}","${c.activityTitle}",${c.pointsClaimed},${c.pointsAwarded},"${c.status}","${c.submittedAt}"`)
+      .join("\n");
+    const blob = new Blob([headers + rows], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", `Student_Activity_Points_Claims_${new Date().toISOString().split("T")[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   // New Claim Modal
   const [showModal, setShowModal] = useState(false);
@@ -170,7 +188,24 @@ export default function ClubsPage() {
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="relative">
+            <Search className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
+            <input
+              type="text"
+              placeholder="Search clubs, claims..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-9 pr-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm w-48"
+            />
+          </div>
+          <button
+            onClick={handleExportClubsCsv}
+            className="flex items-center gap-2 px-3.5 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-medium text-sm rounded-xl border border-slate-200 dark:border-slate-700 transition-all"
+          >
+            <Download className="w-4 h-4" />
+            Export Claims (CSV)
+          </button>
           <button
             onClick={() => setShowModal(true)}
             className="flex items-center gap-2 px-4 py-2.5 bg-amber-600 hover:bg-amber-700 text-white font-medium text-sm rounded-xl shadow-sm transition-all"

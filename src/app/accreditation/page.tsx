@@ -106,6 +106,21 @@ export default function AccreditationPage() {
     }
   };
 
+  const handleExportAccreditationCsv = () => {
+    const headers = "Criterion Number,Criterion Name,Score Achieved,Max Weightage,Grade Equivalent,Key Indicators\n";
+    const rows = criteria
+      .map((c) => `"${c.criterionNumber}","${c.name.replace(/"/g, '""')}",${c.scoreAchieved},${c.weightage},"${c.gradeEquivalent}","${c.keyIndicators.map(k => `${k.indicator}: ${k.achieved}/${k.target}`).join("; ").replace(/"/g, '""')}"`)
+      .join("\n");
+    const blob = new Blob([headers + rows], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", `NAAC_Accreditation_Criteria_Report_${new Date().toISOString().split("T")[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 p-6 md:p-8 space-y-6">
       {/* Top Banner */}
@@ -126,7 +141,14 @@ export default function AccreditationPage() {
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
+          <button
+            onClick={handleExportAccreditationCsv}
+            className="flex items-center gap-2 px-4 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-medium text-sm rounded-xl border border-slate-200 dark:border-slate-700 transition-all"
+          >
+            <Download className="w-4 h-4" />
+            Export Criteria Metrics (CSV)
+          </button>
           <button
             onClick={handleGenerateDossier}
             className="flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm rounded-xl shadow-sm transition-all"

@@ -14,6 +14,9 @@ import {
   Target,
   FileText,
   Briefcase,
+  Download,
+  Search,
+  Filter,
 } from "lucide-react";
 
 interface Startup {
@@ -44,6 +47,23 @@ export default function IncubationPage() {
   const [showModal, setShowModal] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState<{ text: string; type: "success" | "error" } | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filterSector, setFilterSector] = useState("ALL");
+
+  const handleExportIncubationCsv = () => {
+    const headers = "Company Ref,Startup Name,Founder,Role,Staff/Roll ID,Sector,Stage,Seed Disbursed,Univ Equity %,External Funding,Patents,Lab Desks,Mentor,Status\n";
+    const rows = startups
+      .map((s) => `"${s.companyRef}","${s.startupName}","${s.founderName}","${s.founderRole}","${s.founderRollOrStaffId}","${s.sector}","${s.stage}",${s.seedGrantDisbursed},${s.universityEquityPercentage},${s.externalFundingRaised},${s.patentsFiled},${s.labDesksAllocated},"${s.mentorName}","${s.status}"`)
+      .join("\n");
+    const blob = new Blob([headers + rows], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", `University_Incubator_Portfolio_${new Date().toISOString().split("T")[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   const [formData, setFormData] = useState({
     startupName: "",
@@ -133,13 +153,22 @@ export default function IncubationPage() {
           </div>
         </div>
 
-        <button
-          onClick={() => setShowModal(true)}
-          className="flex items-center gap-2 px-4 py-2.5 bg-violet-600 hover:bg-violet-700 text-white rounded-xl text-sm font-semibold transition-all shadow-sm shadow-violet-600/20"
-        >
-          <PlusCircle className="w-4 h-4" />
-          Onboard Startup Venture
-        </button>
+        <div className="flex flex-wrap items-center gap-3">
+          <button
+            onClick={handleExportIncubationCsv}
+            className="flex items-center gap-2 px-4 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl text-sm font-semibold transition-all border border-slate-200 dark:border-slate-700"
+          >
+            <Download className="w-4 h-4" />
+            Export Portfolio (CSV)
+          </button>
+          <button
+            onClick={() => setShowModal(true)}
+            className="flex items-center gap-2 px-4 py-2.5 bg-violet-600 hover:bg-violet-700 text-white rounded-xl text-sm font-semibold transition-all shadow-sm shadow-violet-600/20"
+          >
+            <PlusCircle className="w-4 h-4" />
+            Onboard Startup Venture
+          </button>
+        </div>
       </div>
 
       {message && (
@@ -202,6 +231,36 @@ export default function IncubationPage() {
         </div>
       </div>
 
+      {/* Search & Sector Filter Toolbar */}
+      <div className="flex flex-col sm:flex-row gap-3 items-center justify-between bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800">
+        <div className="relative w-full sm:w-96">
+          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+          <input
+            type="text"
+            placeholder="Search startups, founders, technologies..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-9 pr-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-violet-500 text-slate-900 dark:text-white"
+          />
+        </div>
+        <div className="flex items-center gap-2 w-full sm:w-auto">
+          <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Sector:</span>
+          <select
+            value={filterSector}
+            onChange={(e) => setFilterSector(e.target.value)}
+            className="px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-violet-500 text-slate-900 dark:text-white"
+          >
+            <option value="ALL">All Sectors</option>
+            <option value="AI_ML">AI & Machine Learning</option>
+            <option value="ROBOTICS_IOT">Robotics & IoT</option>
+            <option value="FINTECH">Fintech & Blockchain</option>
+            <option value="CLEANTECH">CleanTech & Energy</option>
+            <option value="HEALTH_TECH">HealthTech & Bio</option>
+            <option value="EDTECH">EdTech & Platforms</option>
+          </select>
+        </div>
+      </div>
+
       {/* Tabs */}
       <div className="flex border-b border-slate-200 dark:border-slate-800">
         <button
@@ -213,7 +272,7 @@ export default function IncubationPage() {
           }`}
         >
           <Rocket className="w-4 h-4" />
-          Active Startup Ventures
+          Active Startup Ventures ({startups.length})
         </button>
         <button
           onClick={() => setActiveTab("portfolio")}
@@ -231,7 +290,19 @@ export default function IncubationPage() {
       {/* Tab 1: Ventures Grid */}
       {activeTab === "ventures" && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {startups.map((s) => (
+          {startups
+            .filter((s) => {
+              const q = searchQuery.toLowerCase();
+              const matchesSearch =
+                !q ||
+                s.startupName.toLowerCase().includes(q) ||
+                s.founderName.toLowerCase().includes(q) ||
+                s.pitchDeckSummary.toLowerCase().includes(q) ||
+                s.companyRef.toLowerCase().includes(q);
+              const matchesSector = filterSector === "ALL" || s.sector === filterSector;
+              return matchesSearch && matchesSector;
+            })
+            .map((s) => (
             <div
               key={s.id}
               className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4"

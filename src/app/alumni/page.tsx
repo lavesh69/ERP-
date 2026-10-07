@@ -20,6 +20,7 @@ import {
   DollarSign,
   TrendingUp,
   Filter,
+  Download,
 } from "lucide-react";
 
 export default function AlumniPage() {
@@ -126,6 +127,29 @@ export default function AlumniPage() {
     });
   };
 
+  const handleExportAlumniCsv = () => {
+    const listToExport = filteredAlumni;
+    const headers = ["Full Name", "Batch", "Degree", "Current Company", "Job Title", "Location", "LinkedIn", "Mentorship Available"];
+    const rows = listToExport.map((a: any) => [
+      `"${a.fullName.replace(/"/g, '""')}"`,
+      a.graduationBatch,
+      `"${a.degree.replace(/"/g, '""')}"`,
+      `"${a.currentCompany.replace(/"/g, '""')}"`,
+      `"${a.jobTitle.replace(/"/g, '""')}"`,
+      `"${a.location.replace(/"/g, '""')}"`,
+      `"${a.linkedinUrl || ""}"`,
+      a.isAvailableForMentorship ? "YES" : "NO",
+    ]);
+    const csvContent = "data:text/csv;charset=utf-8," + [headers.join(","), ...rows.map(e => e.join(","))].join("\n");
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `Alumni_Directory_${new Date().toISOString().split("T")[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   const filteredAlumni = alumni.filter(
     (a) =>
       a.fullName.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -153,6 +177,15 @@ export default function AlumniPage() {
             <p className="text-sm md:text-base text-rose-100/80 mt-1 max-w-2xl">
               Lifelong graduate network, 1-on-1 industry mentorship matching, degree verification gateway, and institutional endowments.
             </p>
+          </div>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={handleExportAlumniCsv}
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium text-sm bg-white/10 hover:bg-white/20 text-white border border-white/20 shadow-sm transition-all active:scale-95"
+            >
+              <Download className="w-4 h-4" />
+              Export Directory (CSV)
+            </button>
           </div>
         </div>
 

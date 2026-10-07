@@ -19,6 +19,7 @@ import {
   Printer,
   ChevronRight,
   Filter,
+  Search,
 } from "lucide-react";
 
 export default function HRPage() {
@@ -82,6 +83,41 @@ export default function HRPage() {
       status: "ACTIVE",
     },
   ]);
+
+  const [searchStaff, setSearchStaff] = useState("");
+  const [deptFilter, setDeptFilter] = useState("ALL");
+
+  const handleExportStaffCsv = () => {
+    const headers = ["Staff ID", "Name", "Email", "Designation", "Department", "Joined Date", "Basic Pay", "Status"];
+    const rows = filteredStaff.map((m) => [
+      m.id,
+      `"${m.name.replace(/"/g, '""')}"`,
+      `"${m.email}"`,
+      `"${m.designation.replace(/"/g, '""')}"`,
+      `"${m.department.replace(/"/g, '""')}"`,
+      m.joinedDate,
+      m.basicPay,
+      m.status,
+    ]);
+    const csvContent = "data:text/csv;charset=utf-8," + [headers.join(","), ...rows.map(e => e.join(","))].join("\n");
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `HR_Staff_Roster_${new Date().toISOString().split("T")[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const filteredStaff = staffMembers.filter((m) => {
+    const matchesSearch =
+      m.name.toLowerCase().includes(searchStaff.toLowerCase()) ||
+      m.email.toLowerCase().includes(searchStaff.toLowerCase()) ||
+      m.designation.toLowerCase().includes(searchStaff.toLowerCase()) ||
+      m.department.toLowerCase().includes(searchStaff.toLowerCase());
+    const matchesDept = deptFilter === "ALL" || m.department === deptFilter;
+    return matchesSearch && matchesDept;
+  });
 
   const fetchHRData = async () => {
     try {
@@ -166,6 +202,13 @@ export default function HRPage() {
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-3">
+            <button
+              onClick={handleExportStaffCsv}
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium text-sm bg-white/10 hover:bg-white/20 text-white border border-white/20 shadow-sm transition-all active:scale-95"
+            >
+              <Download className="w-4 h-4" />
+              Export Staff (CSV)
+            </button>
             <button
               onClick={() => setShowLeaveModal(true)}
               className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium text-sm bg-rose-primary hover:bg-rose-600 text-white shadow-md transition-all active:scale-95"
@@ -267,14 +310,40 @@ export default function HRPage() {
       {/* TAB 1: FACULTY & STAFF DIRECTORY */}
       {activeTab === "staff" && (
         <div className="bg-white dark:bg-charcoal-900 rounded-xl border border-border dark:border-charcoal-800 shadow-sm overflow-hidden">
-          <div className="p-4 border-b border-border dark:border-charcoal-800 flex justify-between items-center">
+          <div className="p-4 border-b border-border dark:border-charcoal-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
               <h2 className="text-base font-bold text-charcoal-900 dark:text-ivory-100">
                 Institutional Workforce Register
               </h2>
               <p className="text-xs text-charcoal-500">
-                Academic faculty, research fellows, and executive administration personnel
+                {filteredStaff.length} of {staffMembers.length} faculty and staff records matching
               </p>
+            </div>
+            <div className="flex flex-wrap items-center gap-2.5">
+              <div className="relative">
+                <Search className="w-3.5 h-3.5 text-charcoal-400 absolute left-3 top-2.5" />
+                <input
+                  type="text"
+                  placeholder="Search staff, email, dept..."
+                  value={searchStaff}
+                  onChange={(e) => setSearchStaff(e.target.value)}
+                  className="pl-8 pr-3 py-1.5 text-xs bg-ivory-50 dark:bg-charcoal-800 border border-border dark:border-charcoal-700 rounded-lg text-charcoal-900 dark:text-ivory-100 focus:outline-none focus:ring-1 focus:ring-rose-500 w-44 sm:w-52"
+                />
+              </div>
+              <div className="flex items-center gap-1.5">
+                <Filter className="w-3.5 h-3.5 text-charcoal-400" />
+                <select
+                  value={deptFilter}
+                  onChange={(e) => setDeptFilter(e.target.value)}
+                  className="px-2.5 py-1.5 text-xs bg-ivory-50 dark:bg-charcoal-800 border border-border dark:border-charcoal-700 rounded-lg text-charcoal-900 dark:text-ivory-100 focus:outline-none focus:ring-1 focus:ring-rose-500"
+                >
+                  <option value="ALL">All Departments</option>
+                  <option value="Computer Science & Engineering">CSE</option>
+                  <option value="Mechanical Engineering">Mechanical</option>
+                  <option value="Electrical & Electronics">EEE</option>
+                  <option value="Administrative Affairs">Administration</option>
+                </select>
+              </div>
             </div>
           </div>
 
@@ -292,7 +361,7 @@ export default function HRPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-border dark:divide-charcoal-800">
-                {staffMembers.map((m) => (
+                {filteredStaff.map((m) => (
                   <tr key={m.id} className="hover:bg-ivory-50/50 dark:hover:bg-charcoal-800/40 transition-colors">
                     <td className="p-3.5">
                       <p className="font-bold text-charcoal-900 dark:text-ivory-100">{m.name}</p>

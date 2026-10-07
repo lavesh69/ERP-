@@ -18,6 +18,8 @@ import {
   ChevronRight,
   Send,
   Building,
+  Download,
+  Search,
 } from "lucide-react";
 
 interface AdmissionsSummary {
@@ -36,7 +38,42 @@ export default function AdmissionsPage() {
   const [summary, setSummary] = useState<AdmissionsSummary | null>(null);
   const [applicants, setApplicants] = useState<any[]>([]);
   const [selectedStage, setSelectedStage] = useState<string>("ALL");
+  const [searchQuery, setSearchQuery] = useState("");
   const [statusMessage, setStatusMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+
+  const handleExportAdmissionsCsv = () => {
+    const listToExport = filteredApplicants;
+    const headers = ["Application No", "Full Name", "Program", "Merit Rank", "Stage", "Deposit Paid", "GPA", "Exam Score", "Email", "Phone"];
+    const rows = listToExport.map((a: any) => [
+      a.applicationNo,
+      `"${a.fullName.replace(/"/g, '""')}"`,
+      `"${a.programName.replace(/"/g, '""')}"`,
+      a.meritRank,
+      a.stage,
+      a.seatDepositPaid ? "YES" : "NO",
+      a.highSchoolGpa,
+      a.entranceExamScore,
+      `"${a.email}"`,
+      `"${a.phone}"`,
+    ]);
+    const csvContent = "data:text/csv;charset=utf-8," + [headers.join(","), ...rows.map(e => e.join(","))].join("\n");
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `Admissions_Applicants_${new Date().toISOString().split("T")[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const filteredApplicants = applicants.filter((a: any) => {
+    return (
+      a.fullName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      a.applicationNo?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      a.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      a.programName?.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  });
 
   // New Application Form
   const [showAppModal, setShowAppModal] = useState(false);
@@ -151,6 +188,13 @@ export default function AdmissionsPage() {
           </div>
           <div className="flex flex-wrap items-center gap-3">
             <button
+              onClick={handleExportAdmissionsCsv}
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium text-sm bg-white/10 hover:bg-white/20 text-white border border-white/20 shadow-sm transition-all active:scale-95"
+            >
+              <Download className="w-4 h-4" />
+              Export Applicants (CSV)
+            </button>
+            <button
               onClick={() => setShowAppModal(true)}
               className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium text-sm bg-rose-primary hover:bg-rose-600 text-white shadow-md transition-all active:scale-95"
             >
@@ -247,30 +291,43 @@ export default function AdmissionsPage() {
       {/* TAB 1: APPLICANT PIPELINE */}
       {activeTab === "pipeline" && (
         <div className="space-y-4">
-          {/* Stage Filter */}
+          {/* Stage & Search Filter */}
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-white dark:bg-charcoal-900 p-4 rounded-xl border border-border dark:border-charcoal-800 shadow-sm">
-            <div className="flex items-center gap-2">
-              <Filter className="w-4 h-4 text-charcoal-500" />
-              <span className="text-sm font-medium text-charcoal-700 dark:text-ivory-300">Funnel Stage:</span>
-              <select
-                value={selectedStage}
-                onChange={(e) => setSelectedStage(e.target.value)}
-                className="text-sm bg-ivory-50 dark:bg-charcoal-800 border border-border dark:border-charcoal-700 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-rose-500"
-              >
-                <option value="ALL">All Applicants</option>
-                <option value="APPLICATION_SUBMITTED">Submitted</option>
-                <option value="MERIT_SHORTLISTED">Merit Shortlisted</option>
-                <option value="OFFER_EXTENDED">Offer Extended</option>
-                <option value="SEAT_CONFIRMED">Seat Confirmed (Enrolled)</option>
-              </select>
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="flex items-center gap-2">
+                <Filter className="w-4 h-4 text-charcoal-500" />
+                <span className="text-sm font-medium text-charcoal-700 dark:text-ivory-300">Stage:</span>
+                <select
+                  value={selectedStage}
+                  onChange={(e) => setSelectedStage(e.target.value)}
+                  className="text-sm bg-ivory-50 dark:bg-charcoal-800 border border-border dark:border-charcoal-700 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-rose-500"
+                >
+                  <option value="ALL">All Applicants</option>
+                  <option value="APPLICATION_SUBMITTED">Submitted</option>
+                  <option value="MERIT_SHORTLISTED">Merit Shortlisted</option>
+                  <option value="OFFER_EXTENDED">Offer Extended</option>
+                  <option value="SEAT_CONFIRMED">Seat Confirmed (Enrolled)</option>
+                </select>
+              </div>
+
+              <div className="relative">
+                <Search className="w-3.5 h-3.5 text-charcoal-400 absolute left-3 top-2.5" />
+                <input
+                  type="text"
+                  placeholder="Search name, app #, program..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-8 pr-3 py-1.5 text-xs bg-ivory-50 dark:bg-charcoal-800 border border-border dark:border-charcoal-700 rounded-lg text-charcoal-900 dark:text-ivory-100 focus:outline-none focus:ring-1 focus:ring-rose-500 w-48 sm:w-56"
+                />
+              </div>
             </div>
             <span className="text-xs text-charcoal-500">
-              Showing {applicants.length} Applicant Dossiers
+              Showing {filteredApplicants.length} of {applicants.length} Applicant Dossiers
             </span>
           </div>
 
           <div className="grid grid-cols-1 gap-4">
-            {applicants.map((lead) => {
+            {filteredApplicants.map((lead) => {
               const isEnrolled = lead.stage === "SEAT_CONFIRMED";
               return (
                 <div

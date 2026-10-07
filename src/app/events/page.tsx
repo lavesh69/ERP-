@@ -17,6 +17,7 @@ import {
   Check,
   X,
   Volume2,
+  Download,
 } from "lucide-react";
 import { CampusVenue, EventBooking, BookingStatus } from "@/lib/events/events-engine";
 
@@ -50,6 +51,45 @@ export default function EventsPage() {
     expectedAttendees: 200,
     contactPersonName: currentUser?.fullName || "Prof. Sarah Chen",
     contactPersonEmail: currentUser?.email || "sarah.chen@apex.edu",
+  });
+
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string>("ALL");
+
+  const handleExportEventsCsv = () => {
+    const listToExport = filteredBookings;
+    const headers = ["Booking Ref", "Event Title", "Organizing Unit", "Category", "Venue", "Event Date", "Time Slot", "Attendees", "Status", "Contact Person", "Contact Email"];
+    const rows = listToExport.map((b) => [
+      b.bookingRef,
+      `"${b.eventTitle.replace(/"/g, '""')}"`,
+      `"${b.organizingDepartmentOrClub.replace(/"/g, '""')}"`,
+      b.category,
+      `"${b.venueName.replace(/"/g, '""')}"`,
+      b.eventDate,
+      `"${b.timeSlot}"`,
+      b.expectedAttendees,
+      b.status,
+      `"${b.contactPersonName || ""}"`,
+      `"${b.contactPersonEmail || ""}"`,
+    ]);
+    const csvContent = "data:text/csv;charset=utf-8," + [headers.join(","), ...rows.map(e => e.join(","))].join("\n");
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `Campus_Events_Ledger_${new Date().toISOString().split("T")[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const filteredBookings = bookings.filter((b) => {
+    const matchesSearch =
+      b.eventTitle.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      b.organizingDepartmentOrClub.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      b.venueName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      b.bookingRef.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesStatus = statusFilter === "ALL" || b.status === statusFilter;
+    return matchesSearch && matchesStatus;
   });
 
   const fetchData = async () => {
@@ -165,7 +205,14 @@ export default function EventsPage() {
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
+          <button
+            onClick={handleExportEventsCsv}
+            className="flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 font-medium text-sm rounded-xl shadow-sm transition-all"
+          >
+            <Download className="w-4 h-4 text-slate-500" />
+            Export Bookings (CSV)
+          </button>
           <button
             onClick={() => setShowModal(true)}
             className="flex items-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-medium text-sm rounded-xl shadow-sm transition-all"
@@ -290,9 +337,36 @@ export default function EventsPage() {
       {/* Tab 1: Bookings Table */}
       {activeTab === "bookings" && (
         <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm overflow-hidden">
-          <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center">
-            <h3 className="font-semibold text-slate-900 dark:text-white">Venue Reservation Ledger</h3>
-            <span className="text-xs text-slate-400">{bookings.length} reservations found</span>
+          <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <h3 className="font-semibold text-slate-900 dark:text-white">Venue Reservation Ledger</h3>
+              <p className="text-xs text-slate-400">{filteredBookings.length} of {bookings.length} reservations matching</p>
+            </div>
+            <div className="flex flex-wrap items-center gap-2.5">
+              <div className="relative">
+                <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
+                <input
+                  type="text"
+                  placeholder="Search events, venues..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-9 pr-3 py-1.5 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-indigo-500 w-48 sm:w-56"
+                />
+              </div>
+              <div className="flex items-center gap-1.5">
+                <Filter className="w-3.5 h-3.5 text-slate-400" />
+                <select
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                  className="px-2.5 py-1.5 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                >
+                  <option value="ALL">All Statuses</option>
+                  <option value="CONFIRMED">CONFIRMED</option>
+                  <option value="PENDING_APPROVAL">PENDING_APPROVAL</option>
+                  <option value="CANCELLED">CANCELLED</option>
+                </select>
+              </div>
+            </div>
           </div>
 
           <div className="overflow-x-auto">
@@ -309,7 +383,7 @@ export default function EventsPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                {bookings.map((b) => (
+                {filteredBookings.map((b) => (
                   <tr key={b.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/40">
                     <td className="p-4 font-mono font-medium text-xs text-indigo-600 dark:text-indigo-400">
                       {b.bookingRef}

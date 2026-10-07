@@ -15,6 +15,8 @@ import {
   BookOpen,
   Calendar,
   FileCheck,
+  Download,
+  Filter,
 } from "lucide-react";
 
 interface Partner {
@@ -58,6 +60,38 @@ export default function InternationalPage() {
   const [showApplyModal, setShowApplyModal] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState<{ text: string; type: "success" | "error" } | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filterCountry, setFilterCountry] = useState("ALL");
+
+  const handleExportInternationalCsv = () => {
+    if (activeTab === "partners") {
+      const headers = "Partner University,Country,City,QS Rank,MoU Signed,MoU Expiry,Exchange Seats/Yr,Active\n";
+      const rows = partners
+        .map((p) => `"${p.institutionName}","${p.country}","${p.city}",${p.qsWorldRanking},"${p.mouSigningDate}","${p.mouExpiryDate}",${p.exchangeSeatsPerYear},${p.isActive}`)
+        .join("\n");
+      const blob = new Blob([headers + rows], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", `Global_Partner_Universities_${new Date().toISOString().split("T")[0]}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } else {
+      const headers = "App Ref,Type,Student Name,Roll/ID,Home University,Host University,Program,Semester,Credits Mapped,Passport,Visa Expiry,FRRO Status,Grant Amount\n";
+      const rows = students
+        .map((s) => `"${s.applicationRef}","${s.type}","${s.studentName}","${s.studentRollOrId}","${s.homeUniversity}","${s.hostUniversity}","${s.program}","${s.targetSemester}",${s.creditsMapped},"${s.passportNumber}","${s.visaExpiryDate}","${s.frroStatus}",${s.scholarshipGrantAmount}`)
+        .join("\n");
+      const blob = new Blob([headers + rows], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", `International_Exchange_Students_${new Date().toISOString().split("T")[0]}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  };
 
   const [formData, setFormData] = useState({
     studentName: "",
@@ -150,13 +184,22 @@ export default function InternationalPage() {
           </div>
         </div>
 
-        <button
-          onClick={() => setShowApplyModal(true)}
-          className="flex items-center gap-2 px-4 py-2.5 bg-cyan-600 hover:bg-cyan-700 text-white rounded-xl text-sm font-semibold transition-all shadow-sm shadow-cyan-600/20"
-        >
-          <Plane className="w-4 h-4" />
-          Nominate Exchange Student
-        </button>
+        <div className="flex flex-wrap items-center gap-3">
+          <button
+            onClick={handleExportInternationalCsv}
+            className="flex items-center gap-2 px-4 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl text-sm font-semibold transition-all border border-slate-200 dark:border-slate-700"
+          >
+            <Download className="w-4 h-4" />
+            Export Exchange Dossier (CSV)
+          </button>
+          <button
+            onClick={() => setShowApplyModal(true)}
+            className="flex items-center gap-2 px-4 py-2.5 bg-cyan-600 hover:bg-cyan-700 text-white rounded-xl text-sm font-semibold transition-all shadow-sm shadow-cyan-600/20"
+          >
+            <Plane className="w-4 h-4" />
+            Nominate Exchange Student
+          </button>
+        </div>
       </div>
 
       {message && (
@@ -219,6 +262,36 @@ export default function InternationalPage() {
         </div>
       </div>
 
+      {/* Search & Country Filter Toolbar */}
+      <div className="flex flex-col sm:flex-row gap-3 items-center justify-between bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800">
+        <div className="relative w-full sm:w-96">
+          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+          <input
+            type="text"
+            placeholder="Search partners, students, countries..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-9 pr-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500 text-slate-900 dark:text-white"
+          />
+        </div>
+        <div className="flex items-center gap-2 w-full sm:w-auto">
+          <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Country:</span>
+          <select
+            value={filterCountry}
+            onChange={(e) => setFilterCountry(e.target.value)}
+            className="px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-cyan-500 text-slate-900 dark:text-white"
+          >
+            <option value="ALL">All Countries</option>
+            <option value="Singapore">Singapore</option>
+            <option value="Germany">Germany</option>
+            <option value="Canada">Canada</option>
+            <option value="USA">United States</option>
+            <option value="UK">United Kingdom</option>
+            <option value="Japan">Japan</option>
+          </select>
+        </div>
+      </div>
+
       {/* Tabs */}
       <div className="flex border-b border-slate-200 dark:border-slate-800">
         <button
@@ -230,7 +303,7 @@ export default function InternationalPage() {
           }`}
         >
           <Building2 className="w-4 h-4" />
-          Global Partner Universities
+          Global Partner Universities ({partners.length})
         </button>
         <button
           onClick={() => setActiveTab("students")}
@@ -241,7 +314,7 @@ export default function InternationalPage() {
           }`}
         >
           <Plane className="w-4 h-4" />
-          Exchange Student Ledger
+          Exchange Student Ledger ({students.length})
         </button>
         <button
           onClick={() => setActiveTab("visa")}
@@ -259,7 +332,18 @@ export default function InternationalPage() {
       {/* Tab 1: Partner Universities */}
       {activeTab === "partners" && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {partners.map((p) => (
+          {partners
+            .filter((p) => {
+              const q = searchQuery.toLowerCase();
+              const matchesSearch =
+                !q ||
+                p.institutionName.toLowerCase().includes(q) ||
+                p.country.toLowerCase().includes(q) ||
+                p.city.toLowerCase().includes(q);
+              const matchesCountry = filterCountry === "ALL" || p.country.toLowerCase().includes(filterCountry.toLowerCase());
+              return matchesSearch && matchesCountry;
+            })
+            .map((p) => (
             <div
               key={p.id}
               className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4"
@@ -329,7 +413,18 @@ export default function InternationalPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-slate-700 dark:text-slate-300">
-                {students.map((s) => (
+                {students
+                  .filter((s) => {
+                    const q = searchQuery.toLowerCase();
+                    return (
+                      !q ||
+                      s.studentName.toLowerCase().includes(q) ||
+                      s.studentRollOrId.toLowerCase().includes(q) ||
+                      s.hostUniversity.toLowerCase().includes(q) ||
+                      s.applicationRef.toLowerCase().includes(q)
+                    );
+                  })
+                  .map((s) => (
                   <tr key={s.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/40">
                     <td className="py-3 px-4 font-mono text-xs font-semibold text-cyan-600 dark:text-cyan-400">
                       {s.applicationRef}
