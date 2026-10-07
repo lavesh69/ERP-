@@ -22,6 +22,9 @@ import {
   Search,
   Eye,
   Printer,
+  Mail,
+  CheckSquare,
+  Square,
 } from "lucide-react";
 
 interface AdmissionsSummary {
@@ -43,6 +46,11 @@ export default function AdmissionsPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusMessage, setStatusMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
   const [selectedApplicantDossier, setSelectedApplicantDossier] = useState<any | null>(null);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [showOfferDispatchModal, setShowOfferDispatchModal] = useState(false);
+  const [targetOfferApplicant, setTargetOfferApplicant] = useState<any | null>(null);
+  const [dispatchLog, setDispatchLog] = useState<string[]>([]);
+  const [dispatching, setDispatching] = useState(false);
 
   const handleExportAdmissionsCsv = () => {
     const listToExport = filteredApplicants;
@@ -166,6 +174,75 @@ export default function AdmissionsPage() {
     } catch (err: any) {
       setStatusMessage({ type: "error", text: err.message });
     }
+  };
+
+  const handleToggleSelect = (id: string) => {
+    setSelectedIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
+  };
+
+  const handleSelectAll = () => {
+    if (selectedIds.length === filteredApplicants.length) {
+      setSelectedIds([]);
+    } else {
+      setSelectedIds(filteredApplicants.map((a) => a.id));
+    }
+  };
+
+  const handleBulkStage = async (stage: string, depositPaid?: boolean) => {
+    if (selectedIds.length === 0) return;
+    try {
+      setLoading(true);
+      await Promise.all(
+        selectedIds.map((applicantId) =>
+          fetch("/api/admissions", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              action: "UPDATE_STAGE",
+              applicantId,
+              stage,
+              depositPaid,
+            }),
+          })
+        )
+      );
+      setStatusMessage({
+        type: "success",
+        text: `Successfully updated ${selectedIds.length} applicants to ${stage.replace(/_/g, " ")}`,
+      });
+      setSelectedIds([]);
+      fetchData();
+    } catch (err: any) {
+      setStatusMessage({ type: "error", text: err.message || "Bulk stage update failed" });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSimulateOfferDispatch = (applicant: any) => {
+    setTargetOfferApplicant(applicant);
+    setShowOfferDispatchModal(true);
+    setDispatchLog(["[1/4] Establishing TLS connection to campus SMTP relay mail.apex.edu:587..."]);
+    setDispatching(true);
+    setTimeout(() => {
+      setDispatchLog((prev) => [
+        ...prev,
+        `[2/4] Generating cryptographic admission seal DEG-OFFER-${applicant.meritRank}-2026...`,
+      ]);
+    }, 400);
+    setTimeout(() => {
+      setDispatchLog((prev) => [
+        ...prev,
+        `[3/4] Attaching signed scholarship confirmation & fee structure for ${applicant.programName}...`,
+      ]);
+    }, 800);
+    setTimeout(() => {
+      setDispatchLog((prev) => [
+        ...prev,
+        `[4/4] 250 OK: Digital offer letter successfully dispatched to ${applicant.email} (Message-ID: <apex_adm_${Date.now()}@apex.edu>)`,
+      ]);
+      setDispatching(false);
+    }, 1200);
   };
 
   return (
@@ -324,64 +401,139 @@ export default function AdmissionsPage() {
                   className="pl-8 pr-3 py-1.5 text-xs bg-ivory-50 dark:bg-charcoal-800 border border-border dark:border-charcoal-700 rounded-lg text-charcoal-900 dark:text-ivory-100 focus:outline-none focus:ring-1 focus:ring-rose-500 w-48 sm:w-56"
                 />
               </div>
+
+              <button
+                onClick={handleSelectAll}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-ivory-100 dark:bg-charcoal-800 hover:bg-ivory-200 dark:hover:bg-charcoal-700 text-charcoal-700 dark:text-ivory-200 border border-border dark:border-charcoal-700 transition-colors"
+              >
+                {selectedIds.length === filteredApplicants.length && filteredApplicants.length > 0 ? (
+                  <CheckSquare className="w-3.5 h-3.5 text-rose-primary" />
+                ) : (
+                  <Square className="w-3.5 h-3.5" />
+                )}
+                {selectedIds.length === filteredApplicants.length && filteredApplicants.length > 0 ? "Deselect All" : "Select All"}
+              </button>
             </div>
             <span className="text-xs text-charcoal-500">
               Showing {filteredApplicants.length} of {applicants.length} Applicant Dossiers
             </span>
           </div>
 
+          {/* Sticky Floating Bulk Operations Bar */}
+          {selectedIds.length > 0 && (
+            <div className="sticky top-20 z-30 bg-charcoal-900 text-white rounded-2xl p-4 shadow-2xl border border-rose-500/40 flex flex-wrap items-center justify-between gap-3 animate-in slide-in-from-top-2 duration-300">
+              <div className="flex items-center gap-3">
+                <span className="px-3 py-1 rounded-full text-xs font-bold bg-rose-500 text-white shadow-sm">
+                  {selectedIds.length} Applicants Selected
+                </span>
+                <span className="text-xs text-rose-200 hidden sm:inline">Bulk Pipeline Actions:</span>
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  onClick={() => handleBulkStage("MERIT_SHORTLISTED")}
+                  className="px-3 py-1.5 rounded-xl text-xs font-semibold bg-rose-primary hover:bg-rose-600 text-white transition-all shadow-sm"
+                >
+                  Bulk Shortlist
+                </button>
+                <button
+                  onClick={() => handleBulkStage("OFFER_EXTENDED")}
+                  className="px-3 py-1.5 rounded-xl text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white transition-all shadow-sm"
+                >
+                  Bulk Issue Offers
+                </button>
+                <button
+                  onClick={() => handleBulkStage("SEAT_CONFIRMED", true)}
+                  className="px-3 py-1.5 rounded-xl text-xs font-semibold bg-blue-600 hover:bg-blue-500 text-white transition-all shadow-sm"
+                >
+                  Bulk Confirm Enrolment
+                </button>
+                <button
+                  onClick={() => handleBulkStage("REJECTED")}
+                  className="px-3 py-1.5 rounded-xl text-xs font-semibold bg-rose-900 hover:bg-rose-800 text-white transition-all"
+                >
+                  Bulk Decline
+                </button>
+                <button
+                  onClick={() => setSelectedIds([])}
+                  className="px-3 py-1.5 rounded-xl text-xs font-semibold bg-white/10 hover:bg-white/20 text-white transition-all"
+                >
+                  Clear Selection
+                </button>
+              </div>
+            </div>
+          )}
+
           <div className="grid grid-cols-1 gap-4">
             {filteredApplicants.map((lead) => {
               const isEnrolled = lead.stage === "SEAT_CONFIRMED";
+              const isSelected = selectedIds.includes(lead.id);
               return (
                 <div
                   key={lead.id}
-                  className="bg-white dark:bg-charcoal-900 rounded-xl p-5 border border-border dark:border-charcoal-800 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4"
+                  className={`bg-white dark:bg-charcoal-900 rounded-xl p-5 border transition-all ${
+                    isSelected
+                      ? "border-rose-500 ring-2 ring-rose-500/20 shadow-md"
+                      : "border-border dark:border-charcoal-800 shadow-sm"
+                  } flex flex-col md:flex-row justify-between items-start md:items-center gap-4`}
                 >
-                  <div className="space-y-1.5 max-w-2xl">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className="font-mono text-xs font-bold text-rose-primary dark:text-rose-light">
-                        {lead.applicationNo}
-                      </span>
-                      <span className="text-xs px-2.5 py-0.5 rounded-full font-bold bg-rose-100 dark:bg-rose-950/60 text-rose-800 dark:text-rose-200">
-                        Rank #{lead.meritRank}
-                      </span>
-                      <span
-                        className={`text-xs px-2.5 py-0.5 rounded-full font-semibold ${
-                          isEnrolled
-                            ? "bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-200 border border-emerald-300"
-                            : "bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-200 border border-amber-300"
-                        }`}
-                      >
-                        {lead.stage.replace(/_/g, " ")}
-                      </span>
-                      {lead.seatDepositPaid && (
-                        <span className="text-[10px] px-2 py-0.5 rounded bg-emerald-50 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 font-medium">
-                          Deposit Cleared (${lead.depositAmount})
-                        </span>
+                  <div className="flex items-start gap-3 max-w-2xl">
+                    <button
+                      onClick={() => handleToggleSelect(lead.id)}
+                      className="mt-1 text-charcoal-400 hover:text-rose-primary transition-colors focus:outline-none"
+                      title={isSelected ? "Deselect applicant" : "Select applicant"}
+                    >
+                      {isSelected ? (
+                        <CheckSquare className="w-5 h-5 text-rose-primary" />
+                      ) : (
+                        <Square className="w-5 h-5" />
                       )}
-                    </div>
+                    </button>
 
-                    <h3 className="font-bold text-base text-charcoal-900 dark:text-ivory-100 mt-1">
-                      {lead.fullName} — {lead.programName}
-                    </h3>
-                    <div className="text-xs text-charcoal-600 dark:text-ivory-300 flex flex-wrap gap-4 pt-0.5">
-                      <span>High School GPA: <b>{lead.highSchoolGpa}</b></span>
-                      <span>SAT / Entrance Score: <b>{lead.entranceExamScore}</b></span>
-                      <span>Contact: {lead.email} • {lead.phone}</span>
-                    </div>
+                    <div className="space-y-1.5">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="font-mono text-xs font-bold text-rose-primary dark:text-rose-light">
+                          {lead.applicationNo}
+                        </span>
+                        <span className="text-xs px-2.5 py-0.5 rounded-full font-bold bg-rose-100 dark:bg-rose-950/60 text-rose-800 dark:text-rose-200">
+                          Rank #{lead.meritRank}
+                        </span>
+                        <span
+                          className={`text-xs px-2.5 py-0.5 rounded-full font-semibold ${
+                            isEnrolled
+                              ? "bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-200 border border-emerald-300"
+                              : "bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-200 border border-amber-300"
+                          }`}
+                        >
+                          {lead.stage.replace(/_/g, " ")}
+                        </span>
+                        {lead.seatDepositPaid && (
+                          <span className="text-[10px] px-2 py-0.5 rounded bg-emerald-50 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 font-medium">
+                            Deposit Cleared (${lead.depositAmount})
+                          </span>
+                        )}
+                      </div>
 
-                    {/* Document Verification Checks */}
-                    <div className="text-[11px] text-charcoal-500 pt-1 flex flex-wrap gap-3">
-                      <span className="flex items-center gap-1">
-                        <FileCheck className="w-3.5 h-3.5 text-emerald-500" /> Transcripts: {lead.documentsStatus.transcriptsVerified ? "Verified" : "Pending"}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <FileCheck className="w-3.5 h-3.5 text-emerald-500" /> Identity: {lead.documentsStatus.identityProofVerified ? "Verified" : "Pending"}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <FileCheck className="w-3.5 h-3.5 text-emerald-500" /> Recommendations: {lead.documentsStatus.recommendationLettersVerified ? "Verified" : "Pending"}
-                      </span>
+                      <h3 className="font-bold text-base text-charcoal-900 dark:text-ivory-100 mt-1">
+                        {lead.fullName} — {lead.programName}
+                      </h3>
+                      <div className="text-xs text-charcoal-600 dark:text-ivory-300 flex flex-wrap gap-4 pt-0.5">
+                        <span>High School GPA: <b>{lead.highSchoolGpa}</b></span>
+                        <span>SAT / Entrance Score: <b>{lead.entranceExamScore}</b></span>
+                        <span>Contact: {lead.email} • {lead.phone}</span>
+                      </div>
+
+                      {/* Document Verification Checks */}
+                      <div className="text-[11px] text-charcoal-500 pt-1 flex flex-wrap gap-3">
+                        <span className="flex items-center gap-1">
+                          <FileCheck className="w-3.5 h-3.5 text-emerald-500" /> Transcripts: {lead.documentsStatus.transcriptsVerified ? "Verified" : "Pending"}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <FileCheck className="w-3.5 h-3.5 text-emerald-500" /> Identity: {lead.documentsStatus.identityProofVerified ? "Verified" : "Pending"}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <FileCheck className="w-3.5 h-3.5 text-emerald-500" /> Recommendations: {lead.documentsStatus.recommendationLettersVerified ? "Verified" : "Pending"}
+                        </span>
+                      </div>
                     </div>
                   </div>
 
@@ -412,6 +564,13 @@ export default function AdmissionsPage() {
                           Release Offer Letter
                         </button>
                         <button
+                          onClick={() => handleSimulateOfferDispatch(lead)}
+                          className="px-2.5 py-1.5 rounded-lg text-xs font-medium text-purple-700 bg-purple-50 hover:bg-purple-100 dark:bg-purple-950/60 dark:text-purple-300 transition-colors flex items-center gap-1"
+                        >
+                          <Mail className="w-3.5 h-3.5" />
+                          Email Offer
+                        </button>
+                        <button
                           onClick={() => handleUpdateStage(lead.id, "REJECTED")}
                           className="px-2.5 py-1.5 rounded-lg text-xs font-medium text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors"
                         >
@@ -426,6 +585,13 @@ export default function AdmissionsPage() {
                           className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-blue-600 text-white hover:bg-blue-700 transition-colors"
                         >
                           Confirm Seat Deposit
+                        </button>
+                        <button
+                          onClick={() => handleSimulateOfferDispatch(lead)}
+                          className="px-2.5 py-1.5 rounded-lg text-xs font-medium text-purple-700 bg-purple-50 hover:bg-purple-100 dark:bg-purple-950/60 dark:text-purple-300 transition-colors flex items-center gap-1"
+                        >
+                          <Mail className="w-3.5 h-3.5" />
+                          Resend Offer
                         </button>
                         <button
                           onClick={() => handleUpdateStage(lead.id, "REJECTED")}
@@ -854,6 +1020,103 @@ export default function AdmissionsPage() {
                   Close
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Automated Email Offer Letter Dispatch Simulator Modal */}
+      {showOfferDispatchModal && targetOfferApplicant && (
+        <div className="fixed inset-0 z-50 bg-charcoal-900/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
+          <div className="bg-white dark:bg-charcoal-900 rounded-2xl border border-border dark:border-charcoal-800 p-6 max-w-2xl w-full shadow-2xl space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-border dark:border-charcoal-800">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-lg bg-rose-100 dark:bg-rose-950/60 flex items-center justify-center text-rose-primary">
+                  <Mail className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-base text-charcoal-900 dark:text-ivory-100">
+                    Digital Offer Letter Dispatch Simulator
+                  </h3>
+                  <p className="text-xs text-charcoal-500">
+                    Automated SMTP Relay & Cryptographic Admissions Package
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => {
+                  setShowOfferDispatchModal(false);
+                  setTargetOfferApplicant(null);
+                }}
+                className="text-charcoal-400 hover:text-charcoal-600 dark:hover:text-ivory-200 p-1.5 rounded-lg text-sm font-bold"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Offer Letter Document Preview */}
+            <div className="p-4 rounded-xl border border-dashed border-rose-300 dark:border-rose-900/60 bg-rose-50/30 dark:bg-rose-950/20 text-xs space-y-3 font-sans">
+              <div className="flex justify-between items-start border-b border-rose-200 dark:border-rose-900/50 pb-2">
+                <div>
+                  <span className="font-bold uppercase tracking-wider text-[11px] text-rose-900 dark:text-rose-200 block">
+                    Apex Institutional Institute of Technology & Research
+                  </span>
+                  <span className="text-[10px] text-charcoal-500">Office of the Registrar & Admissions Deanery</span>
+                </div>
+                <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 font-bold">
+                  PROVISIONAL OFFER
+                </span>
+              </div>
+
+              <div className="space-y-1">
+                <p className="text-charcoal-700 dark:text-ivory-200">
+                  <b>Candidate:</b> {targetOfferApplicant.fullName} (Ref: {targetOfferApplicant.applicationNo})
+                </p>
+                <p className="text-charcoal-700 dark:text-ivory-200">
+                  <b>Program Admitted:</b> {targetOfferApplicant.programName}
+                </p>
+                <p className="text-charcoal-700 dark:text-ivory-200">
+                  <b>Merit Rank:</b> #{targetOfferApplicant.meritRank} • <b>High School GPA:</b> {targetOfferApplicant.highSchoolGpa}
+                </p>
+                <p className="text-charcoal-600 dark:text-ivory-300 text-[11px] pt-1">
+                  We are delighted to extend you provisional admission for the Academic Year 2026-27. To reserve your matriculation seat, please confirm the admission deposit within 14 calendar days.
+                </p>
+              </div>
+            </div>
+
+            {/* Live SMTP Dispatch Simulator Stream */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between text-xs font-semibold text-charcoal-700 dark:text-ivory-300">
+                <span>SMTP Relay Dispatch Log:</span>
+                {dispatching ? (
+                  <span className="text-amber-600 dark:text-amber-400 flex items-center gap-1 font-mono text-[11px]">
+                    <Clock className="w-3 h-3 animate-spin" /> In Progress...
+                  </span>
+                ) : (
+                  <span className="text-emerald-600 dark:text-emerald-400 flex items-center gap-1 font-mono text-[11px]">
+                    <CheckCircle2 className="w-3 h-3" /> Relay Confirmed (250 OK)
+                  </span>
+                )}
+              </div>
+              <div className="bg-charcoal-950 text-emerald-400 font-mono text-[11px] p-3 rounded-xl border border-charcoal-800 space-y-1 max-h-36 overflow-y-auto">
+                {dispatchLog.map((line, idx) => (
+                  <div key={idx} className="leading-relaxed">
+                    {line}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="pt-2 border-t border-border dark:border-charcoal-800 flex justify-end gap-2">
+              <button
+                onClick={() => {
+                  setShowOfferDispatchModal(false);
+                  setTargetOfferApplicant(null);
+                }}
+                className="px-4 py-2 rounded-xl text-xs font-semibold bg-charcoal-900 dark:bg-ivory-100 text-white dark:text-charcoal-900 hover:opacity-90 transition-opacity"
+              >
+                Close Simulator
+              </button>
             </div>
           </div>
         </div>

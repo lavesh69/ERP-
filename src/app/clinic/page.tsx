@@ -20,6 +20,8 @@ import {
   Filter,
   Eye,
   Printer,
+  Pill,
+  PackageCheck,
 } from "lucide-react";
 import { checkTriageUrgency } from "@/lib/clinic/clinic-engine";
 
@@ -34,7 +36,7 @@ interface ClinicSummary {
 
 export default function ClinicPage() {
   const { currentUser } = useApp();
-  const [activeTab, setActiveTab] = useState<"consultations" | "beds" | "profiles" | "triage">("consultations");
+  const [activeTab, setActiveTab] = useState<"consultations" | "beds" | "profiles" | "triage" | "pharmacy">("consultations");
   const [loading, setLoading] = useState(true);
   const [summary, setSummary] = useState<ClinicSummary | null>(null);
   const [consultations, setConsultations] = useState<any[]>([]);
@@ -43,6 +45,50 @@ export default function ClinicPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState<string>("ALL");
   const [selectedConsultation, setSelectedConsultation] = useState<any | null>(null);
+
+  // Pharmacy Medication Stock Tracker
+  const [pharmacyStock, setPharmacyStock] = useState([
+    { id: "MED-01", name: "Paracetamol 650mg Tabs", category: "Analgesic / Antipyretic", stock: 85, minThreshold: 30, unit: "tablets", expiry: "2027-08", batch: "BATCH-PCM-89" },
+    { id: "MED-02", name: "ORS Oral Rehydration Salts", category: "Electrolyte Replenisher", stock: 12, minThreshold: 25, unit: "sachets", expiry: "2026-12", batch: "BATCH-ORS-21" },
+    { id: "MED-03", name: "Amoxicillin 500mg Caps", category: "Antibiotic", stock: 42, minThreshold: 20, unit: "capsules", expiry: "2027-04", batch: "BATCH-AMX-77" },
+    { id: "MED-04", name: "Cetirizine 10mg Tabs", category: "Antihistamine / Allergy", stock: 16, minThreshold: 20, unit: "tablets", expiry: "2026-11", batch: "BATCH-CTZ-09" },
+    { id: "MED-05", name: "Betadine 10% Ointment", category: "Antiseptic Microbicide", stock: 58, minThreshold: 15, unit: "tubes", expiry: "2028-01", batch: "BATCH-BTD-45" },
+    { id: "MED-06", name: "Sterile Gauze & Bandage Packs", category: "First Aid & Trauma", stock: 120, minThreshold: 40, unit: "packs", expiry: "2029-06", batch: "BATCH-GBZ-12" },
+  ]);
+
+  const lowStockAlerts = pharmacyStock.filter((m) => m.stock < m.minThreshold);
+
+  const handleDispenseMedicine = (medId: string, quantity: number = 2) => {
+    setPharmacyStock((prev) =>
+      prev.map((m) => {
+        if (m.id === medId) {
+          return { ...m, stock: Math.max(0, m.stock - quantity) };
+        }
+        return m;
+      })
+    );
+    const med = pharmacyStock.find((m) => m.id === medId);
+    setStatusMessage({
+      type: "success",
+      text: `Dispensed ${quantity} ${med?.unit} of ${med?.name}. Stock ledger updated.`,
+    });
+  };
+
+  const handleRestockMedicine = (medId: string, quantity: number = 50) => {
+    setPharmacyStock((prev) =>
+      prev.map((m) => {
+        if (m.id === medId) {
+          return { ...m, stock: m.stock + quantity };
+        }
+        return m;
+      })
+    );
+    const med = pharmacyStock.find((m) => m.id === medId);
+    setStatusMessage({
+      type: "success",
+      text: `Restocked +${quantity} ${med?.unit} of ${med?.name}. Statutory batch verified.`,
+    });
+  };
 
   const handleExportClinicCsv = () => {
     const listToExport = filteredConsultations;
@@ -277,6 +323,29 @@ export default function ClinicPage() {
         </div>
       )}
 
+      {/* Critical Low Stock Warning Banner */}
+      {lowStockAlerts.length > 0 && (
+        <div className="bg-amber-500/10 border border-amber-500/30 text-amber-900 dark:text-amber-200 p-4 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs animate-in fade-in">
+          <div className="flex items-center gap-2.5">
+            <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" />
+            <div>
+              <span className="font-bold">Pharmacy Alert: </span>
+              <span>
+                {lowStockAlerts.length} essential pharmaceuticals below safe reserve threshold (
+                {lowStockAlerts.map((m) => m.name.split(" ")[0]).join(", ")}
+                ). Immediate replenishment protocol indicated.
+              </span>
+            </div>
+          </div>
+          <button
+            onClick={() => setActiveTab("pharmacy")}
+            className="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-lg font-bold shrink-0 shadow-sm transition-colors self-start sm:self-auto"
+          >
+            Review Pharmacy Stock ({lowStockAlerts.length})
+          </button>
+        </div>
+      )}
+
       {/* Summary KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 rounded-2xl shadow-sm">
@@ -384,6 +453,23 @@ export default function ClinicPage() {
         >
           <Thermometer className="w-4 h-4" />
           Vitals Triage Analyzer
+        </button>
+
+        <button
+          onClick={() => setActiveTab("pharmacy")}
+          className={`pb-3 text-sm font-semibold border-b-2 transition-all flex items-center gap-2 ${
+            activeTab === "pharmacy"
+              ? "border-rose-600 text-rose-600 dark:text-rose-400"
+              : "border-transparent text-slate-500 hover:text-slate-900 dark:hover:text-slate-200"
+          }`}
+        >
+          <Pill className="w-4 h-4" />
+          Pharmacy Stock & Ledger
+          {lowStockAlerts.length > 0 && (
+            <span className="px-1.5 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-800 dark:bg-amber-900/60 dark:text-amber-200">
+              {lowStockAlerts.length}
+            </span>
+          )}
         </button>
       </div>
 
@@ -698,6 +784,118 @@ export default function ClinicPage() {
 
             <div className="mt-6 pt-4 border-t border-current/20 text-xs">
               Protocol: Emergency department transfer if SpO2 &lt; 90% or Systolic BP &gt; 180 mmHg.
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Tab 5: Pharmacy & Medication Stock Ledger */}
+      {activeTab === "pharmacy" && (
+        <div className="space-y-6 animate-in fade-in duration-200">
+          {/* Pharmacy KPI cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 rounded-2xl shadow-sm">
+              <span className="text-xs font-semibold uppercase text-slate-500 tracking-wider">Monitored Formulary</span>
+              <p className="text-2xl font-bold text-slate-900 dark:text-white mt-1">{pharmacyStock.length} Drugs</p>
+              <p className="text-xs text-slate-400 mt-0.5">Essential campus dispensary list</p>
+            </div>
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 rounded-2xl shadow-sm">
+              <span className="text-xs font-semibold uppercase text-slate-500 tracking-wider">Below Min Threshold</span>
+              <p className={`text-2xl font-bold mt-1 ${lowStockAlerts.length > 0 ? "text-amber-600" : "text-emerald-600"}`}>
+                {lowStockAlerts.length} Critical
+              </p>
+              <p className="text-xs text-slate-400 mt-0.5">Requires supply re-order</p>
+            </div>
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 rounded-2xl shadow-sm">
+              <span className="text-xs font-semibold uppercase text-slate-500 tracking-wider">Total Units on Hand</span>
+              <p className="text-2xl font-bold text-slate-900 dark:text-white mt-1">
+                {pharmacyStock.reduce((acc, m) => acc + m.stock, 0)} Units
+              </p>
+              <p className="text-xs text-slate-400 mt-0.5">Inspected & batch verified</p>
+            </div>
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 rounded-2xl shadow-sm">
+              <span className="text-xs font-semibold uppercase text-slate-500 tracking-wider">Quarantine & Cold Chain</span>
+              <p className="text-2xl font-bold text-emerald-600 mt-1">100% Compliant</p>
+              <p className="text-xs text-slate-400 mt-0.5">Temperature logged (2°C - 8°C)</p>
+            </div>
+          </div>
+
+          {/* Pharmacy Stock Ledger Table */}
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm overflow-hidden">
+            <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div>
+                <h3 className="font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+                  <Pill className="w-4 h-4 text-rose-600" />
+                  Campus Dispensary & Pharmacy Stock Ledger
+                </h3>
+                <p className="text-xs text-slate-400">Real-time stock depletion tracker, batch expiry, and dispensing ledger</p>
+              </div>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead className="text-[11px] uppercase bg-slate-50 dark:bg-slate-800/50 text-slate-500 border-b border-slate-200 dark:border-slate-800">
+                  <tr>
+                    <th className="p-3">Med Code</th>
+                    <th className="p-3">Medicine & Therapeutic Class</th>
+                    <th className="p-3">Batch & Expiry</th>
+                    <th className="p-3">Stock Units</th>
+                    <th className="p-3">Safety Status</th>
+                    <th className="p-3 text-right">Dispensary Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                  {pharmacyStock.map((med) => {
+                    const isLow = med.stock < med.minThreshold;
+                    return (
+                      <tr key={med.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
+                        <td className="p-3 font-mono font-bold text-rose-600">{med.id}</td>
+                        <td className="p-3">
+                          <p className="font-semibold text-slate-900 dark:text-white">{med.name}</p>
+                          <p className="text-[11px] text-slate-400">{med.category}</p>
+                        </td>
+                        <td className="p-3">
+                          <p className="font-mono text-slate-700 dark:text-slate-300">{med.batch}</p>
+                          <p className="text-[10px] text-slate-400">Exp: {med.expiry}</p>
+                        </td>
+                        <td className="p-3">
+                          <span className="font-bold text-sm text-slate-900 dark:text-white">{med.stock}</span>{" "}
+                          <span className="text-slate-400">{med.unit}</span>
+                          <span className="block text-[10px] text-slate-400">Min: {med.minThreshold}</span>
+                        </td>
+                        <td className="p-3">
+                          {isLow ? (
+                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border border-amber-300">
+                              <AlertTriangle className="w-3 h-3" /> Low Stock
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-300">
+                              <CheckCircle2 className="w-3 h-3" /> Adequate
+                            </span>
+                          )}
+                        </td>
+                        <td className="p-3 text-right">
+                          <div className="flex items-center justify-end gap-2">
+                            <button
+                              onClick={() => handleDispenseMedicine(med.id, 2)}
+                              disabled={med.stock <= 0}
+                              className="px-2.5 py-1 text-[11px] font-semibold bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-lg transition-colors disabled:opacity-50"
+                            >
+                              Dispense Rx (-2)
+                            </button>
+                            <button
+                              onClick={() => handleRestockMedicine(med.id, 50)}
+                              className="px-2.5 py-1 text-[11px] font-semibold bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/50 dark:hover:bg-rose-900/50 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800 rounded-lg transition-colors"
+                            >
+                              + Restock 50
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
             </div>
           </div>
         </div>

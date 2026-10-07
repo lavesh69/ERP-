@@ -21,16 +21,66 @@ import {
   Filter,
   Search,
   Eye,
+  Fingerprint,
+  Cpu,
+  Wifi,
+  Radio,
 } from "lucide-react";
 
 export default function HRPage() {
   const { currentUser } = useApp();
-  const [activeTab, setActiveTab] = useState<"staff" | "leaves" | "payroll">("staff");
+  const [activeTab, setActiveTab] = useState<"staff" | "leaves" | "payroll" | "biometric">("staff");
   const [loading, setLoading] = useState(true);
   const [leaveData, setLeaveData] = useState<any>(null);
   const [payrollData, setPayrollData] = useState<any>(null);
   const [statusMessage, setStatusMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
   const [selectedStaffProfile, setSelectedStaffProfile] = useState<any | null>(null);
+
+  // Biometric Terminal Simulator State
+  const [punchSimulator, setPunchSimulator] = useState({
+    staffId: "fac-01",
+    terminalId: "BIO-ZKTECO-01",
+    punchMode: "FINGERPRINT",
+    punchType: "PUNCH_IN",
+  });
+  const [punchesLog, setPunchesLog] = useState([
+    {
+      id: "pch-001",
+      staffId: "fac-01",
+      staffName: "Dr. Alan Turing",
+      terminalId: "BIO-ZKTECO-01",
+      location: "Main Gate Turnstile A",
+      punchMode: "FINGERPRINT",
+      punchType: "PUNCH_IN",
+      timestamp: "08:54:12 AM",
+      token: "BIO-TOKEN-7FA1",
+      status: "AUTHENTICATED",
+    },
+    {
+      id: "pch-002",
+      staffId: "fac-03",
+      staffName: "Dr. Sunita Deshmukh",
+      terminalId: "BIO-FACIAL-03",
+      location: "Faculty Admin Wing",
+      punchMode: "FACIAL_3D",
+      punchType: "PUNCH_IN",
+      timestamp: "08:58:34 AM",
+      token: "BIO-TOKEN-84BC",
+      status: "AUTHENTICATED",
+    },
+    {
+      id: "pch-003",
+      staffId: "fac-02",
+      staffName: "Dr. Arthur Pendelton",
+      terminalId: "BIO-ESSL-02",
+      location: "Academic Block North",
+      punchMode: "RFID_SMARTCARD",
+      punchType: "PUNCH_IN",
+      timestamp: "09:02:11 AM",
+      token: "BIO-TOKEN-29DD",
+      status: "AUTHENTICATED",
+    },
+  ]);
 
   // Apply Leave Modal
   const [showLeaveModal, setShowLeaveModal] = useState(false);
@@ -182,6 +232,36 @@ export default function HRPage() {
     }
   };
 
+  const handleSimulatePunch = (e: React.FormEvent) => {
+    e.preventDefault();
+    const staff = staffMembers.find((s) => s.id === punchSimulator.staffId);
+    if (!staff) return;
+    const now = new Date();
+    const timeStr = now.toLocaleTimeString();
+    const terminalLocations: Record<string, string> = {
+      "BIO-ZKTECO-01": "Main Gate Turnstile A",
+      "BIO-ESSL-02": "Academic Block North Entry",
+      "BIO-FACIAL-03": "Faculty Administration Wing",
+    };
+    const newPunch = {
+      id: `pch-${Date.now().toString().slice(-4)}`,
+      staffId: staff.id,
+      staffName: staff.name,
+      terminalId: punchSimulator.terminalId,
+      location: terminalLocations[punchSimulator.terminalId] || "Terminal",
+      punchMode: punchSimulator.punchMode,
+      punchType: punchSimulator.punchType,
+      timestamp: timeStr,
+      token: `BIO-TOKEN-${Math.random().toString(36).substring(2, 6).toUpperCase()}`,
+      status: "AUTHENTICATED",
+    };
+    setPunchesLog([newPunch, ...punchesLog]);
+    setStatusMessage({
+      type: "success",
+      text: `Biometric Hardware ${punchSimulator.punchType.replace(/_/g, " ")} recorded for ${staff.name} via ${punchSimulator.terminalId}!`,
+    });
+  };
+
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
       {/* Top Banner */}
@@ -284,6 +364,7 @@ export default function HRPage() {
           { id: "staff", label: "Faculty & Staff Directory", icon: Users },
           { id: "leaves", label: "Leave Management & Quotas", icon: Calendar, count: leaveData?.applications?.filter((a: any) => a.status === "PENDING")?.length },
           { id: "payroll", label: "Enterprise Payroll & Payslips", icon: DollarSign },
+          { id: "biometric", label: "Biometric Hardware Sync", icon: Fingerprint },
         ].map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
@@ -667,6 +748,240 @@ export default function HRPage() {
               Loading verified payroll voucher...
             </div>
           )}
+        </div>
+      )}
+
+      {/* TAB 4: BIOMETRIC HARDWARE FLEET & PUNCH SYNC */}
+      {activeTab === "biometric" && (
+        <div className="space-y-6">
+          {/* Hardware Device Fleet Overview */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {[
+              {
+                id: "BIO-ZKTECO-01",
+                name: "Turnstile A - Main Campus Gate",
+                ip: "192.168.10.45",
+                mode: "Dual Thumbprint / RFID",
+                status: "ONLINE",
+                uptime: "99.8%",
+                ping: "12ms",
+                firmware: "v4.2.1-ent",
+              },
+              {
+                id: "BIO-ESSL-02",
+                name: "Turnstile B - Academic Complex North",
+                ip: "192.168.10.46",
+                mode: "Optical Sensor / Smartcard",
+                status: "ONLINE",
+                uptime: "99.9%",
+                ping: "16ms",
+                firmware: "v4.2.1-ent",
+              },
+              {
+                id: "BIO-FACIAL-03",
+                name: "Kiosk C - Faculty Admin Wing",
+                ip: "192.168.10.48",
+                mode: "3D AI Facial Recognition",
+                status: "ONLINE",
+                uptime: "100%",
+                ping: "20ms",
+                firmware: "v5.0.0-ai",
+              },
+            ].map((device) => (
+              <div
+                key={device.id}
+                className="bg-white dark:bg-charcoal-900 rounded-xl p-5 border border-border dark:border-charcoal-800 shadow-sm space-y-3"
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-lg bg-rose-50 dark:bg-rose-950/60 flex items-center justify-center text-rose-primary">
+                      <Cpu className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <span className="font-mono text-xs font-bold text-rose-primary dark:text-rose-light">
+                        {device.id}
+                      </span>
+                      <h4 className="text-xs font-bold text-charcoal-900 dark:text-ivory-100">
+                        {device.name}
+                      </h4>
+                    </div>
+                  </div>
+                  <span className="flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                    {device.status}
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2 text-[11px] pt-1 border-t border-border dark:border-charcoal-800">
+                  <div>
+                    <span className="text-charcoal-400 block">IP Address:</span>
+                    <span className="font-mono font-medium text-charcoal-800 dark:text-ivory-200">{device.ip}</span>
+                  </div>
+                  <div>
+                    <span className="text-charcoal-400 block">Auth Sensor:</span>
+                    <span className="font-medium text-charcoal-800 dark:text-ivory-200">{device.mode}</span>
+                  </div>
+                  <div>
+                    <span className="text-charcoal-400 block">Network Ping:</span>
+                    <span className="font-mono text-emerald-600 dark:text-emerald-400 font-semibold">{device.ping} (Active)</span>
+                  </div>
+                  <div>
+                    <span className="text-charcoal-400 block">Hardware Uptime:</span>
+                    <span className="font-mono text-charcoal-800 dark:text-ivory-200">{device.uptime}</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Interactive Hardware Punch Simulator & Event Stream */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Left: Punch Trigger Form */}
+            <div className="bg-white dark:bg-charcoal-900 rounded-xl p-5 border border-border dark:border-charcoal-800 shadow-sm space-y-4">
+              <div className="flex items-center gap-2 pb-3 border-b border-border dark:border-charcoal-800">
+                <Fingerprint className="w-5 h-5 text-rose-primary" />
+                <div>
+                  <h3 className="font-bold text-sm text-charcoal-900 dark:text-ivory-100">
+                    Hardware Punch Simulator
+                  </h3>
+                  <p className="text-[11px] text-charcoal-500">
+                    Simulate biometric sensor ingress & terminal authentication
+                  </p>
+                </div>
+              </div>
+
+              <form onSubmit={handleSimulatePunch} className="space-y-3 text-xs">
+                <div>
+                  <label className="block font-medium text-charcoal-700 dark:text-ivory-300 mb-1">
+                    Select Faculty / Staff
+                  </label>
+                  <select
+                    value={punchSimulator.staffId}
+                    onChange={(e) => setPunchSimulator({ ...punchSimulator, staffId: e.target.value })}
+                    className="w-full p-2 bg-ivory-50 dark:bg-charcoal-800 border border-border dark:border-charcoal-700 rounded-lg text-charcoal-900 dark:text-ivory-100 focus:outline-none focus:ring-1 focus:ring-rose-500"
+                  >
+                    {staffMembers.map((m) => (
+                      <option key={m.id} value={m.id}>
+                        {m.name} ({m.department})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block font-medium text-charcoal-700 dark:text-ivory-300 mb-1">
+                    Biometric Terminal Device
+                  </label>
+                  <select
+                    value={punchSimulator.terminalId}
+                    onChange={(e) => setPunchSimulator({ ...punchSimulator, terminalId: e.target.value })}
+                    className="w-full p-2 bg-ivory-50 dark:bg-charcoal-800 border border-border dark:border-charcoal-700 rounded-lg text-charcoal-900 dark:text-ivory-100 focus:outline-none focus:ring-1 focus:ring-rose-500"
+                  >
+                    <option value="BIO-ZKTECO-01">BIO-ZKTECO-01 (Turnstile A - Main Gate)</option>
+                    <option value="BIO-ESSL-02">BIO-ESSL-02 (Turnstile B - Academic Complex North)</option>
+                    <option value="BIO-FACIAL-03">BIO-FACIAL-03 (Kiosk C - Faculty Admin Wing)</option>
+                  </select>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="block font-medium text-charcoal-700 dark:text-ivory-300 mb-1">
+                      Sensor Mode
+                    </label>
+                    <select
+                      value={punchSimulator.punchMode}
+                      onChange={(e) => setPunchSimulator({ ...punchSimulator, punchMode: e.target.value })}
+                      className="w-full p-2 bg-ivory-50 dark:bg-charcoal-800 border border-border dark:border-charcoal-700 rounded-lg text-charcoal-900 dark:text-ivory-100 focus:outline-none focus:ring-1 focus:ring-rose-500"
+                    >
+                      <option value="FINGERPRINT">Thumbprint</option>
+                      <option value="RFID_SMARTCARD">RFID Smartcard</option>
+                      <option value="FACIAL_3D">3D Face Scan</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block font-medium text-charcoal-700 dark:text-ivory-300 mb-1">
+                      Punch Action
+                    </label>
+                    <select
+                      value={punchSimulator.punchType}
+                      onChange={(e) => setPunchSimulator({ ...punchSimulator, punchType: e.target.value })}
+                      className="w-full p-2 bg-ivory-50 dark:bg-charcoal-800 border border-border dark:border-charcoal-700 rounded-lg text-charcoal-900 dark:text-ivory-100 focus:outline-none focus:ring-1 focus:ring-rose-500"
+                    >
+                      <option value="PUNCH_IN">Punch IN (Shift Start)</option>
+                      <option value="PUNCH_OUT">Punch OUT (Shift End)</option>
+                    </select>
+                  </div>
+                </div>
+
+                <button
+                  type="submit"
+                  className="w-full mt-2 py-2.5 rounded-xl font-semibold text-xs bg-rose-primary hover:bg-rose-600 text-white shadow-md transition-all active:scale-95 flex items-center justify-center gap-2"
+                >
+                  <Fingerprint className="w-4 h-4" />
+                  Simulate Biometric Hardware Punch
+                </button>
+              </form>
+            </div>
+
+            {/* Right: Live Ingress Punch Log */}
+            <div className="lg:col-span-2 bg-white dark:bg-charcoal-900 rounded-xl p-5 border border-border dark:border-charcoal-800 shadow-sm space-y-3">
+              <div className="flex items-center justify-between pb-3 border-b border-border dark:border-charcoal-800">
+                <div>
+                  <h3 className="font-bold text-sm text-charcoal-900 dark:text-ivory-100">
+                    Live Hardware Event Stream (Biometric Timekeeping)
+                  </h3>
+                  <p className="text-[11px] text-charcoal-500">
+                    Chronological audit ledger of physical biometric turnstile swipes
+                  </p>
+                </div>
+                <span className="px-2.5 py-1 rounded-full text-xs font-mono font-bold bg-rose-100 dark:bg-rose-950/60 text-rose-800 dark:text-rose-200">
+                  {punchesLog.length} Records
+                </span>
+              </div>
+
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs">
+                  <thead className="text-[11px] uppercase bg-ivory-50 dark:bg-charcoal-800/50 text-charcoal-500 border-b border-border dark:border-charcoal-800">
+                    <tr>
+                      <th className="p-2.5">Time</th>
+                      <th className="p-2.5">Staff Member</th>
+                      <th className="p-2.5">Device & Location</th>
+                      <th className="p-2.5">Mode</th>
+                      <th className="p-2.5">Punch Type</th>
+                      <th className="p-2.5">Auth Hash</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border dark:divide-charcoal-800">
+                    {punchesLog.map((p) => (
+                      <tr key={p.id} className="hover:bg-ivory-50 dark:hover:bg-charcoal-800/40 transition-colors">
+                        <td className="p-2.5 font-mono text-[11px] text-charcoal-600 dark:text-ivory-300">{p.timestamp}</td>
+                        <td className="p-2.5 font-semibold text-charcoal-900 dark:text-ivory-100">{p.staffName}</td>
+                        <td className="p-2.5">
+                          <span className="font-mono text-[11px] text-rose-primary block">{p.terminalId}</span>
+                          <span className="text-[10px] text-charcoal-400">{p.location}</span>
+                        </td>
+                        <td className="p-2.5">
+                          <span className="px-2 py-0.5 rounded text-[10px] font-medium bg-ivory-100 dark:bg-charcoal-800 text-charcoal-700 dark:text-ivory-300">
+                            {p.punchMode.replace(/_/g, " ")}
+                          </span>
+                        </td>
+                        <td className="p-2.5">
+                          <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                            p.punchType === "PUNCH_IN"
+                              ? "bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300"
+                              : "bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300"
+                          }`}>
+                            {p.punchType.replace(/_/g, " ")}
+                          </span>
+                        </td>
+                        <td className="p-2.5 font-mono text-[10px] text-charcoal-400">{p.token}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
         </div>
       )}
 

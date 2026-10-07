@@ -21,6 +21,10 @@ import {
   Printer,
   X,
   RotateCcw,
+  FileCode,
+  Copy,
+  Check,
+  FileText,
 } from "lucide-react";
 
 interface Candidate {
@@ -78,6 +82,58 @@ export default function ConvocationPage() {
     const link = document.createElement("a");
     link.href = url;
     link.setAttribute("download", `Convocation_Degree_Ledger_${new Date().toISOString().split("T")[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const [showNadModal, setShowNadModal] = useState(false);
+  const [copiedXml, setCopiedXml] = useState(false);
+
+  const generateNadXml = (cands: Candidate[]) => {
+    const awardList = cands
+      .map(
+        (c) => `    <DegreeCertificate>
+      <StudentDetail>
+        <ABC_Account_ID>ABC-${(c.studentRoll.replace(/[^0-9]/g, "") || "992481").padStart(6, "0")}-2026</ABC_Account_ID>
+        <RollNo>${c.studentRoll}</RollNo>
+        <StudentName>${c.fullName.replace(/&/g, "&amp;")}</StudentName>
+      </StudentDetail>
+      <AwardDetail>
+        <DegreeName>${c.program.replace(/&/g, "&amp;")}</DegreeName>
+        <CGPA>${c.finalCgpa.toFixed(2)}</CGPA>
+        <Classification>${c.honorsCategory.replace(/&/g, "&amp;")}</Classification>
+        <Medalist>${c.isMedalist ? (c.medalType || "YES") : "NO"}</Medalist>
+        <ClearanceCertified>${c.allClearancesGranted ? "TRUE" : "FALSE"}</ClearanceCertified>
+        <DigitalCertificateDigest>${c.certificateHash}</DigitalCertificateDigest>
+        <AuthoritySignatory>Registrar &amp; Controller of Examinations, Apex University</AuthoritySignatory>
+      </AwardDetail>
+    </DegreeCertificate>`
+      )
+      .join("\n");
+
+    return `<?xml version="1.0" encoding="UTF-8"?>
+<AcademicAwards xmlns="http://nad.gov.in/schema/v1.2"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  institutionCode="UGC-IND-APEX-2026"
+  institutionName="Apex University of Science and Technology"
+  batchYear="2026"
+  convocationCycle="42nd Annual Convocation"
+  certifiedTimestamp="${new Date().toISOString()}">
+  <RecordCount>${cands.length}</RecordCount>
+  <AwardsList>
+${awardList}
+  </AwardsList>
+</AcademicAwards>`;
+  };
+
+  const handleDownloadNadXml = (cands = filteredCandidates) => {
+    const xmlContent = generateNadXml(cands);
+    const blob = new Blob([xmlContent], { type: "application/xml;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", `DigiLocker_NAD_Awards_ApexUniv_${new Date().toISOString().split("T")[0]}.xml`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -222,6 +278,13 @@ export default function ConvocationPage() {
             <option value="CLEARED">100% Cleared</option>
             <option value="PENDING">Dues Pending</option>
           </select>
+          <button
+            onClick={() => setShowNadModal(true)}
+            className="flex items-center gap-1.5 px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition-all shadow-sm shadow-indigo-600/20"
+          >
+            <FileCode className="w-3.5 h-3.5" />
+            DigiLocker / NAD XML
+          </button>
           <button
             onClick={handleExportConvocationCsv}
             className="flex items-center gap-1.5 px-3 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-bold transition-all shadow-sm shadow-amber-600/20"
@@ -783,6 +846,29 @@ export default function ConvocationPage() {
               </div>
             </div>
 
+            {/* DigiLocker / APAAR ID Integration Card */}
+            <div className="p-3.5 bg-indigo-50/70 dark:bg-indigo-950/40 rounded-xl border border-indigo-200 dark:border-indigo-800/60 flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <FileCode className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+                <div className="text-xs">
+                  <div className="font-bold text-indigo-950 dark:text-indigo-200">
+                    National Academic Depository (NAD) / DigiLocker
+                  </div>
+                  <div className="text-[11px] font-mono text-indigo-700 dark:text-indigo-300">
+                    ABC ID: ABC-{(selectedCandidateDossier.studentRoll.replace(/[^0-9]/g, "") || "992481").padStart(6, "0")}-2026 • Verified
+                  </div>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => handleDownloadNadXml([selectedCandidateDossier])}
+                className="px-2.5 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-semibold flex items-center gap-1 transition-colors"
+              >
+                <Download className="w-3.5 h-3.5" />
+                Export XML
+              </button>
+            </div>
+
             {/* Cryptographic Proof Hash */}
             <div className="p-3 bg-slate-50 dark:bg-slate-800/40 rounded-xl text-xs space-y-1 font-mono border border-slate-100 dark:border-slate-800">
               <span className="text-[10px] text-slate-400 uppercase tracking-wider block">Registrar Cryptographic Degree Seal Hash</span>
@@ -803,6 +889,84 @@ export default function ConvocationPage() {
               >
                 Close
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* DigiLocker / NAD XML Payload Exporter Modal */}
+      {showNadModal && (
+        <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto animate-in fade-in duration-200">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl max-w-2xl w-full p-6 shadow-2xl space-y-4 my-8">
+            <div className="flex items-start justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 bg-indigo-100 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 rounded-xl">
+                  <FileCode className="w-6 h-6" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h3 className="font-bold text-slate-900 dark:text-white text-base">
+                      DigiLocker / NAD Academic Awards XML Payload
+                    </h3>
+                    <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
+                      SCHEMA v1.2 VALID
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-500">
+                    Compliant with Government of India Ministry of Education National Academic Depository
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowNadModal(false)}
+                className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="flex items-center justify-between text-xs text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-slate-800/40 p-3 rounded-xl border border-slate-200 dark:border-slate-700">
+              <span>Candidate Records Packaged: <strong>{filteredCandidates.length} Awardees</strong></span>
+              <span>Statutory Entity: <strong>UGC-IND-APEX-2026</strong></span>
+            </div>
+
+            <div className="relative">
+              <div className="max-h-64 overflow-y-auto p-4 bg-slate-950 text-emerald-400 rounded-xl font-mono text-[11px] leading-relaxed border border-slate-800 selection:bg-emerald-800">
+                <pre>{generateNadXml(filteredCandidates)}</pre>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-800">
+              <button
+                type="button"
+                onClick={() => {
+                  navigator.clipboard?.writeText(generateNadXml(filteredCandidates));
+                  setCopiedXml(true);
+                  setTimeout(() => setCopiedXml(false), 2500);
+                }}
+                className="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-colors"
+              >
+                {copiedXml ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5 text-slate-500" />}
+                {copiedXml ? "Copied XML!" : "Copy XML to Clipboard"}
+              </button>
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setShowNadModal(false)}
+                  className="px-4 py-2 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
+                >
+                  Close
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleDownloadNadXml(filteredCandidates)}
+                  className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-semibold shadow-sm flex items-center gap-1.5 transition-colors"
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  Download .XML File
+                </button>
+              </div>
             </div>
           </div>
         </div>

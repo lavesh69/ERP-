@@ -21,6 +21,9 @@ import {
   Printer,
   X,
   RotateCcw,
+  ShieldCheck,
+  Sparkles,
+  Sliders,
 } from "lucide-react";
 
 interface Startup {
@@ -44,7 +47,7 @@ interface Startup {
 }
 
 export default function IncubationPage() {
-  const [activeTab, setActiveTab] = useState<"ventures" | "portfolio">("ventures");
+  const [activeTab, setActiveTab] = useState<"ventures" | "portfolio" | "investor">("ventures");
   const [loading, setLoading] = useState(true);
   const [summary, setSummary] = useState<any>(null);
   const [startups, setStartups] = useState<Startup[]>([]);
@@ -55,6 +58,19 @@ export default function IncubationPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [filterSector, setFilterSector] = useState("ALL");
   const [filterStage, setFilterStage] = useState("ALL");
+
+  // Investor Scorecard Evaluation Rubric State
+  const [evalVentureId, setEvalVentureId] = useState<string>("");
+  const [evalTeam, setEvalTeam] = useState<number>(85);
+  const [evalTam, setEvalTam] = useState<number>(80);
+  const [evalMoat, setEvalMoat] = useState<number>(75);
+  const [evalTraction, setEvalTraction] = useState<number>(70);
+  const [evalUnitEcon, setEvalUnitEcon] = useState<number>(80);
+  const [evalValuationCap, setEvalValuationCap] = useState<number>(3000000);
+  const [evalSeedTicket, setEvalSeedTicket] = useState<number>(50000);
+  const [evalCommitteeNotes, setEvalCommitteeNotes] = useState<string>(
+    "Defensible deep-tech solution with strong faculty-student founding team. Lab trials completed with high efficiency."
+  );
 
   const handleUpdateStartupStage = async (id: string, stage: string) => {
     try {
@@ -341,6 +357,17 @@ export default function IncubationPage() {
           <TrendingUp className="w-4 h-4" />
           Portfolio Valuation & Cap-Table
         </button>
+        <button
+          onClick={() => setActiveTab("investor")}
+          className={`flex items-center gap-2 px-5 py-3 text-sm font-semibold border-b-2 transition-all ${
+            activeTab === "investor"
+              ? "border-violet-600 text-violet-600 dark:text-violet-400"
+              : "border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200"
+          }`}
+        >
+          <Award className="w-4 h-4" />
+          Angel & VC Investor Scorecard
+        </button>
       </div>
 
       {/* Tab 1: Ventures Grid */}
@@ -521,7 +548,437 @@ export default function IncubationPage() {
         </div>
       )}
 
-      {/* Onboard Modal */}
+      {/* Tab 3: Angel & VC Investor Scorecard */}
+      {activeTab === "investor" && (
+        <div className="space-y-6">
+          {/* Header & Venture Selector */}
+          <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="p-2 bg-violet-50 dark:bg-violet-950/60 text-violet-600 dark:text-violet-400 rounded-xl">
+                  <Award className="w-5 h-5" />
+                </span>
+                <h2 className="text-lg font-bold text-slate-900 dark:text-white">
+                  Angel & VC Investor Evaluation Scorecard
+                </h2>
+              </div>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                Institutional Investment Committee Due Diligence Rubric (5-Pillars Weighted Matrix)
+              </p>
+            </div>
+
+            <div className="flex items-center gap-3 w-full md:w-auto">
+              <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider shrink-0">
+                Target Venture:
+              </span>
+              <select
+                value={evalVentureId || (startups[0]?.id || "")}
+                onChange={(e) => setEvalVentureId(e.target.value)}
+                className="w-full md:w-64 px-3.5 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-violet-500"
+              >
+                {startups.map((s) => (
+                  <option key={s.id} value={s.id}>
+                    {s.startupName} ({s.companyRef})
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          {/* Active Venture Summary Dossier Strip */}
+          {(() => {
+            const currentVenture = startups.find((s) => s.id === (evalVentureId || startups[0]?.id)) || startups[0];
+            const compositeScore = Math.round(
+              evalTeam * 0.25 +
+              evalTam * 0.20 +
+              evalMoat * 0.20 +
+              evalTraction * 0.20 +
+              evalUnitEcon * 0.15
+            );
+
+            const isTier1 = compositeScore >= 80;
+            const isTier2 = compositeScore >= 65 && compositeScore < 80;
+
+            const handleDownloadMemo = () => {
+              if (!currentVenture) return;
+              const memoContent = `# INSTITUTIONAL INVESTMENT COMMITTEE EVALUATION MEMO
+--------------------------------------------------
+VENTURE: ${currentVenture.startupName} (${currentVenture.companyRef})
+FOUNDER: ${currentVenture.founderName} (${currentVenture.founderRole})
+SECTOR: ${currentVenture.sector} | STAGE: ${currentVenture.stage}
+DATE: ${new Date().toLocaleDateString()}
+
+==================================================
+DILIGENCE RUBRIC SCORES (WEIGHTED 5-PILLARS)
+==================================================
+1. Team Pedigree & Execution (25%): ${evalTeam}/100
+2. Market Size & TAM Opportunity (20%): ${evalTam}/100
+3. IP Moat & Tech Defensibility (20%): ${evalMoat}/100
+4. Traction & Commercial Velocity (20%): ${evalTraction}/100
+5. Unit Economics & Capital Runway (15%): ${evalUnitEcon}/100
+
+COMPOSITE SCORE: ${compositeScore}%
+COMMITTEE VERDICT: ${isTier1 ? "TIER 1: HIGH CONVICTION SEED ALLOCATION" : isTier2 ? "TIER 2: CONDITIONAL DUE DILIGENCE" : "TIER 3: INCUBATION PROTOTYPE ITERATION"}
+
+==================================================
+TERM SHEET RECOMMENDATION
+==================================================
+- SAFE Valuation Cap: $${evalValuationCap.toLocaleString()}
+- Seed Grant Ticket: $${evalSeedTicket.toLocaleString()}
+- University Equity Stake: ${currentVenture.universityEquityPercentage}%
+- Hardware Desks Assigned: ${currentVenture.labDesksAllocated} Desks
+- Assigned Advisory Mentor: ${currentVenture.mentorName}
+
+COMMITTEE NOTES:
+${evalCommitteeNotes}
+`;
+              const blob = new Blob([memoContent], { type: "text/markdown;charset=utf-8;" });
+              const url = URL.createObjectURL(blob);
+              const link = document.createElement("a");
+              link.href = url;
+              link.setAttribute("download", `Investment_Memo_${currentVenture.startupName.replace(/\s+/g, "_")}.md`);
+              document.body.appendChild(link);
+              link.click();
+              document.body.removeChild(link);
+            };
+
+            return (
+              <div className="space-y-6">
+                {currentVenture && (
+                  <div className="p-4 bg-violet-50/60 dark:bg-violet-950/30 rounded-2xl border border-violet-200/80 dark:border-violet-800/50 flex flex-wrap items-center justify-between gap-4 text-xs">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-violet-600 text-white flex items-center justify-center font-black text-sm">
+                        {currentVenture.startupName.charAt(0)}
+                      </div>
+                      <div>
+                        <div className="font-bold text-slate-900 dark:text-white text-sm">
+                          {currentVenture.startupName}
+                        </div>
+                        <div className="text-slate-500">
+                          Founder: {currentVenture.founderName} • Sector: {currentVenture.sector} • Ref: {currentVenture.companyRef}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-4 text-slate-700 dark:text-slate-300">
+                      <div>
+                        <span className="text-[10px] text-slate-400 uppercase block font-semibold">Seed Disbursed</span>
+                        <span className="font-extrabold text-slate-900 dark:text-white">
+                          ${currentVenture.seedGrantDisbursed.toLocaleString()}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="text-[10px] text-slate-400 uppercase block font-semibold">External Funding</span>
+                        <span className="font-extrabold text-emerald-600 dark:text-emerald-400">
+                          ${currentVenture.externalFundingRaised.toLocaleString()}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="text-[10px] text-slate-400 uppercase block font-semibold">Equity Stake</span>
+                        <span className="font-extrabold text-violet-600 dark:text-violet-400">
+                          {currentVenture.universityEquityPercentage}%
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Score & Verdict Banner */}
+                <div className={`p-6 rounded-2xl border shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-6 ${
+                  isTier1
+                    ? "bg-emerald-50/50 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-800/60"
+                    : isTier2
+                    ? "bg-amber-50/50 dark:bg-amber-950/20 border-amber-200 dark:border-amber-800/60"
+                    : "bg-rose-50/50 dark:bg-rose-950/20 border-rose-200 dark:border-rose-800/60"
+                }`}>
+                  <div className="flex items-center gap-5">
+                    <div className={`w-20 h-20 rounded-2xl flex flex-col items-center justify-center font-extrabold text-2xl shadow-inner ${
+                      isTier1
+                        ? "bg-emerald-500 text-white"
+                        : isTier2
+                        ? "bg-amber-500 text-white"
+                        : "bg-rose-500 text-white"
+                    }`}>
+                      <span>{compositeScore}</span>
+                      <span className="text-[10px] uppercase font-semibold tracking-wider">Score</span>
+                    </div>
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider ${
+                          isTier1
+                            ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/60 dark:text-emerald-300"
+                            : isTier2
+                            ? "bg-amber-100 text-amber-800 dark:bg-amber-900/60 dark:text-amber-300"
+                            : "bg-rose-100 text-rose-800 dark:bg-rose-900/60 dark:text-rose-300"
+                        }`}>
+                          {isTier1 ? "Tier 1: High Conviction" : isTier2 ? "Tier 2: Conditional Diligence" : "Tier 3: Needs Iteration"}
+                        </span>
+                        <span className="text-xs font-semibold text-slate-500">
+                          {compositeScore >= 80 ? "Fast-Track Seed Qualified" : compositeScore >= 65 ? "Requires Milestone Audit" : "Lab Mentorship Track"}
+                        </span>
+                      </div>
+                      <h3 className="text-base font-bold text-slate-900 dark:text-white">
+                        {isTier1
+                          ? "Approved for Fast-Track Institutional Seed Allocation ($50,000 - $100,000)"
+                          : isTier2
+                          ? "Conditionally Approved Pending Customer Pilot Verification & Patent Filing"
+                          : "Incubation Lab Mentorship Required Before Seed Committee Review"}
+                      </h3>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 max-w-xl">
+                        {isTier1
+                          ? "Exceptional score across team execution, defensible technical IP, and TAM scale. Recommendation: Sanction SAFE agreement and assign Demo Day key pitch slot."
+                          : isTier2
+                          ? "Strong fundamentals identified. Recommendation: Complete customer pilot references and verify patent defensibility before capital release."
+                          : "Prototype shows promise but requires technical derisking. Retain in hardware workspace with dedicated faculty mentor."}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-wrap md:flex-col gap-2 shrink-0 w-full md:w-auto">
+                    <button
+                      onClick={() => {
+                        setMessage({
+                          text: `Investment Committee Verdict recorded for ${currentVenture?.startupName}: Score ${compositeScore}% (${isTier1 ? 'TIER 1 APPROVED' : isTier2 ? 'TIER 2 CONDITIONAL' : 'TIER 3 LAB ITERATION'})`,
+                          type: "success",
+                        });
+                      }}
+                      className="flex-1 md:flex-initial px-4 py-2.5 bg-violet-600 hover:bg-violet-700 text-white rounded-xl text-xs font-semibold shadow-sm transition-all text-center"
+                    >
+                      Record Committee Vote
+                    </button>
+                    <button
+                      onClick={handleDownloadMemo}
+                      className="flex-1 md:flex-initial px-4 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl text-xs font-semibold border border-slate-200 dark:border-slate-700 transition-all text-center flex items-center justify-center gap-1.5"
+                    >
+                      <Download className="w-3.5 h-3.5" />
+                      Export Memo (.md)
+                    </button>
+                  </div>
+                </div>
+
+                {/* 5-Pillars Evaluation Sliders */}
+                <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-6">
+                  <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+                    <div>
+                      <h3 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                        5-Pillar Investment Diligence Rubric
+                      </h3>
+                      <p className="text-xs text-slate-500">
+                        Adjust individual weights to evaluate startup readiness and defensibility
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => {
+                        setEvalTeam(85);
+                        setEvalTam(80);
+                        setEvalMoat(75);
+                        setEvalTraction(70);
+                        setEvalUnitEcon(80);
+                      }}
+                      className="px-3 py-1 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-400 rounded-lg text-xs font-medium flex items-center gap-1 transition-all"
+                    >
+                      <RotateCcw className="w-3 h-3" />
+                      Reset Rubric
+                    </button>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Pillar 1 */}
+                    <div className="space-y-2 p-4 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-100 dark:border-slate-800">
+                      <div className="flex justify-between items-center text-xs">
+                        <span className="font-bold text-slate-800 dark:text-slate-200">
+                          1. Team Pedigree & Domain Grit (25% Weight)
+                        </span>
+                        <span className="px-2 py-0.5 rounded-md font-mono font-bold bg-violet-100 text-violet-700 dark:bg-violet-950/60 dark:text-violet-300">
+                          {evalTeam} / 100
+                        </span>
+                      </div>
+                      <input
+                        type="range"
+                        min="0"
+                        max="100"
+                        value={evalTeam}
+                        onChange={(e) => setEvalTeam(Number(e.target.value))}
+                        className="w-full accent-violet-600 cursor-pointer"
+                      />
+                      <p className="text-[11px] text-slate-400">
+                        Technical founder depth, student-faculty cohesion, past publications & hackathon track record.
+                      </p>
+                    </div>
+
+                    {/* Pillar 2 */}
+                    <div className="space-y-2 p-4 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-100 dark:border-slate-800">
+                      <div className="flex justify-between items-center text-xs">
+                        <span className="font-bold text-slate-800 dark:text-slate-200">
+                          2. Market Size & TAM Scale (20% Weight)
+                        </span>
+                        <span className="px-2 py-0.5 rounded-md font-mono font-bold bg-violet-100 text-violet-700 dark:bg-violet-950/60 dark:text-violet-300">
+                          {evalTam} / 100
+                        </span>
+                      </div>
+                      <input
+                        type="range"
+                        min="0"
+                        max="100"
+                        value={evalTam}
+                        onChange={(e) => setEvalTam(Number(e.target.value))}
+                        className="w-full accent-violet-600 cursor-pointer"
+                      />
+                      <p className="text-[11px] text-slate-400">
+                        Total addressable market ($500M+), annual CAGR {">"} 18%, macro economic tailwinds & urgency.
+                      </p>
+                    </div>
+
+                    {/* Pillar 3 */}
+                    <div className="space-y-2 p-4 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-100 dark:border-slate-800">
+                      <div className="flex justify-between items-center text-xs">
+                        <span className="font-bold text-slate-800 dark:text-slate-200">
+                          3. IP Moat & Tech Defensibility (20% Weight)
+                        </span>
+                        <span className="px-2 py-0.5 rounded-md font-mono font-bold bg-violet-100 text-violet-700 dark:bg-violet-950/60 dark:text-violet-300">
+                          {evalMoat} / 100
+                        </span>
+                      </div>
+                      <input
+                        type="range"
+                        min="0"
+                        max="100"
+                        value={evalMoat}
+                        onChange={(e) => setEvalMoat(Number(e.target.value))}
+                        className="w-full accent-violet-600 cursor-pointer"
+                      />
+                      <p className="text-[11px] text-slate-400">
+                        Indian/PCT patents, proprietary datasets, proprietary hardware architectures & high switching cost.
+                      </p>
+                    </div>
+
+                    {/* Pillar 4 */}
+                    <div className="space-y-2 p-4 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-100 dark:border-slate-800">
+                      <div className="flex justify-between items-center text-xs">
+                        <span className="font-bold text-slate-800 dark:text-slate-200">
+                          4. Traction & Commercial Velocity (20% Weight)
+                        </span>
+                        <span className="px-2 py-0.5 rounded-md font-mono font-bold bg-violet-100 text-violet-700 dark:bg-violet-950/60 dark:text-violet-300">
+                          {evalTraction} / 100
+                        </span>
+                      </div>
+                      <input
+                        type="range"
+                        min="0"
+                        max="100"
+                        value={evalTraction}
+                        onChange={(e) => setEvalTraction(Number(e.target.value))}
+                        className="w-full accent-violet-600 cursor-pointer"
+                      />
+                      <p className="text-[11px] text-slate-400">
+                        Active enterprise pilots, signed Letters of Intent (LOIs), MoM usage velocity & beta retention.
+                      </p>
+                    </div>
+
+                    {/* Pillar 5 */}
+                    <div className="col-span-1 md:col-span-2 space-y-2 p-4 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-100 dark:border-slate-800">
+                      <div className="flex justify-between items-center text-xs">
+                        <span className="font-bold text-slate-800 dark:text-slate-200">
+                          5. Unit Economics & Capital Runway (15% Weight)
+                        </span>
+                        <span className="px-2 py-0.5 rounded-md font-mono font-bold bg-violet-100 text-violet-700 dark:bg-violet-950/60 dark:text-violet-300">
+                          {evalUnitEcon} / 100
+                        </span>
+                      </div>
+                      <input
+                        type="range"
+                        min="0"
+                        max="100"
+                        value={evalUnitEcon}
+                        onChange={(e) => setEvalUnitEcon(Number(e.target.value))}
+                        className="w-full accent-violet-600 cursor-pointer"
+                      />
+                      <p className="text-[11px] text-slate-400">
+                        Gross margins {">"} 65%, low churn, customer payback {"<"} 12 months & runway duration post-grant.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Term Sheet Sanction & Committee Notes */}
+                <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+                  <h3 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                    Term Sheet Parameters & Committee Notes
+                  </h3>
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                        SAFE Valuation Cap ($)
+                      </label>
+                      <input
+                        type="number"
+                        step="250000"
+                        value={evalValuationCap}
+                        onChange={(e) => setEvalValuationCap(Number(e.target.value))}
+                        className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-bold text-slate-800 dark:text-slate-200"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                        Seed Check Allocation ($)
+                      </label>
+                      <input
+                        type="number"
+                        step="10000"
+                        value={evalSeedTicket}
+                        onChange={(e) => setEvalSeedTicket(Number(e.target.value))}
+                        className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-bold text-slate-800 dark:text-slate-200"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                        University Equity Stake
+                      </label>
+                      <div className="w-full px-3.5 py-2.5 bg-slate-100 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-bold text-violet-600 dark:text-violet-400">
+                        {currentVenture?.universityEquityPercentage || 3}% Institutional Common
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                      Diligence Committee Synthesis & Rationale
+                    </label>
+                    <textarea
+                      rows={2}
+                      value={evalCommitteeNotes}
+                      onChange={(e) => setEvalCommitteeNotes(e.target.value)}
+                      className="w-full px-3.5 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs text-slate-800 dark:text-slate-200"
+                      placeholder="Add specific investor committee observations, milestones, or risk disclosures..."
+                    />
+                  </div>
+
+                  <div className="flex justify-end gap-3 pt-3 border-t border-slate-100 dark:border-slate-800">
+                    <button
+                      onClick={() => window.print()}
+                      className="px-4 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all"
+                    >
+                      <Printer className="w-3.5 h-3.5" />
+                      Print Dossier
+                    </button>
+                    <button
+                      onClick={() => {
+                        setMessage({
+                          text: `Term Sheet of $${evalSeedTicket.toLocaleString()} at $${(evalValuationCap / 1000000).toFixed(1)}M Valuation Cap sanctioned for ${currentVenture?.startupName}!`,
+                          type: "success",
+                        });
+                      }}
+                      className="px-5 py-2 bg-violet-600 hover:bg-violet-700 text-white rounded-xl text-xs font-semibold shadow-sm transition-all"
+                    >
+                      Sanction Deal Term Sheet
+                    </button>
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
+        </div>
+      )}
       {showModal && (
         <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 max-w-lg w-full space-y-4 shadow-xl">

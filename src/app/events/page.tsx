@@ -20,6 +20,9 @@ import {
   Download,
   Eye,
   Printer,
+  CheckSquare,
+  Square,
+  Calendar,
 } from "lucide-react";
 import { CampusVenue, EventBooking, BookingStatus } from "@/lib/events/events-engine";
 
@@ -41,6 +44,7 @@ export default function EventsPage() {
   const [venues, setVenues] = useState<CampusVenue[]>([]);
   const [statusMessage, setStatusMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
   const [selectedBookingDossier, setSelectedBookingDossier] = useState<EventBooking | null>(null);
+  const [selectedBookingIds, setSelectedBookingIds] = useState<string[]>([]);
 
   // New Booking Modal
   const [showModal, setShowModal] = useState(false);
@@ -186,6 +190,83 @@ export default function EventsPage() {
       setStatusMessage({ type: "error", text: err.message });
       setTimeout(() => setStatusMessage(null), 5000);
     }
+  };
+
+  const handleToggleSelectBooking = (id: string) => {
+    setSelectedBookingIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
+  };
+
+  const handleSelectAllBookings = () => {
+    if (selectedBookingIds.length === filteredBookings.length) {
+      setSelectedBookingIds([]);
+    } else {
+      setSelectedBookingIds(filteredBookings.map((b) => b.id));
+    }
+  };
+
+  const handleBulkDecideBookings = async (status: "CONFIRMED" | "DECLINED") => {
+    if (selectedBookingIds.length === 0) return;
+    try {
+      setLoading(true);
+      await Promise.all(
+        selectedBookingIds.map((bookingId) =>
+          fetch("/api/events", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              action: "DECIDE_BOOKING",
+              bookingId,
+              status,
+              remarks: status === "CONFIRMED" ? "Sanctioned via bulk administrative review." : "Declined via bulk administrative review.",
+            }),
+          })
+        )
+      );
+      setStatusMessage({
+        type: "success",
+        text: `Successfully ${status === "CONFIRMED" ? "sanctioned" : "declined"} ${selectedBookingIds.length} venue reservations.`,
+      });
+      setSelectedBookingIds([]);
+      fetchData();
+    } catch (err: any) {
+      setStatusMessage({ type: "error", text: err.message || "Bulk booking decision failed" });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDownloadIcs = (booking: EventBooking) => {
+    const cleanDate = booking.eventDate.replace(/-/g, "");
+    const icsLines = [
+      "BEGIN:VCALENDAR",
+      "VERSION:2.0",
+      "PRODID:-//Apex Institutional ERP//Campus Events v1.0//EN",
+      "CALSCALE:GREGORIAN",
+      "METHOD:PUBLISH",
+      "BEGIN:VEVENT",
+      `UID:evt-${booking.id}-${Date.now()}@apex.edu`,
+      `DTSTAMP:${new Date().toISOString().replace(/[-:]/g, "").split(".")[0]}Z`,
+      `DTSTART:${cleanDate}T090000Z`,
+      `DTEND:${cleanDate}T130000Z`,
+      `SUMMARY:${booking.eventTitle}`,
+      `DESCRIPTION:Organized by ${booking.organizingDepartmentOrClub}. Category: ${booking.category}. Contact: ${booking.contactPersonEmail || ""}`,
+      `LOCATION:${booking.venueName}`,
+      `STATUS:${booking.status === "CONFIRMED" ? "CONFIRMED" : "TENTATIVE"}`,
+      "END:VEVENT",
+      "END:VCALENDAR",
+    ].join("\r\n");
+
+    const blob = new Blob([icsLines], { type: "text/calendar;charset=utf-8" });
+    const link = document.createElement("a");
+    link.href = window.URL.createObjectURL(blob);
+    link.setAttribute("download", `${booking.bookingRef}_Event_Calendar.ics`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    setStatusMessage({
+      type: "success",
+      text: `Calendar invite (.ics) generated for "${booking.eventTitle}". Ready to import into Google/Apple/Outlook!`,
+    });
   };
 
   return (
@@ -372,10 +453,55 @@ export default function EventsPage() {
             </div>
           </div>
 
+          {/* Sticky Bulk Action Toolbar */}
+          {selectedBookingIds.length > 0 && (
+            <div className="bg-slate-900 text-white p-3.5 px-5 rounded-xl flex flex-wrap items-center justify-between gap-3 m-4 shadow-xl border border-indigo-500/40 animate-in slide-in-from-top-2">
+              <div className="flex items-center gap-3">
+                <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-indigo-600 text-white">
+                  {selectedBookingIds.length} Bookings Selected
+                </span>
+                <span className="text-xs text-slate-300 hidden sm:inline">Bulk Venue Governance:</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => handleBulkDecideBookings("CONFIRMED")}
+                  className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold rounded-lg shadow-sm transition-all"
+                >
+                  Bulk Sanction
+                </button>
+                <button
+                  onClick={() => handleBulkDecideBookings("DECLINED")}
+                  className="px-3 py-1.5 bg-rose-600 hover:bg-rose-500 text-white text-xs font-semibold rounded-lg shadow-sm transition-all"
+                >
+                  Bulk Decline
+                </button>
+                <button
+                  onClick={() => setSelectedBookingIds([])}
+                  className="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white text-xs font-semibold rounded-lg transition-all"
+                >
+                  Clear Selection
+                </button>
+              </div>
+            </div>
+          )}
+
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm text-slate-600 dark:text-slate-300">
               <thead className="bg-slate-50 dark:bg-slate-800/50 text-slate-500 uppercase text-xs font-semibold">
                 <tr>
+                  <th className="p-4 w-10">
+                    <button
+                      onClick={handleSelectAllBookings}
+                      className="text-slate-400 hover:text-indigo-600 transition-colors"
+                      title={selectedBookingIds.length === filteredBookings.length && filteredBookings.length > 0 ? "Deselect All" : "Select All"}
+                    >
+                      {selectedBookingIds.length === filteredBookings.length && filteredBookings.length > 0 ? (
+                        <CheckSquare className="w-4 h-4 text-indigo-600" />
+                      ) : (
+                        <Square className="w-4 h-4" />
+                      )}
+                    </button>
+                  </th>
                   <th className="p-4">Ref #</th>
                   <th className="p-4">Event & Organizer</th>
                   <th className="p-4">Venue</th>
@@ -386,72 +512,99 @@ export default function EventsPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                {filteredBookings.map((b) => (
-                  <tr key={b.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/40">
-                    <td className="p-4 font-mono font-medium text-xs text-indigo-600 dark:text-indigo-400">
-                      {b.bookingRef}
-                    </td>
-                    <td className="p-4">
-                      <div className="font-medium text-slate-900 dark:text-white">{b.eventTitle}</div>
-                      <div className="text-xs text-slate-400">{b.organizingDepartmentOrClub}</div>
-                    </td>
-                    <td className="p-4 text-xs font-medium text-slate-800 dark:text-slate-200">
-                      <div className="flex items-center gap-1.5">
-                        <MapPin className="w-3.5 h-3.5 text-rose-500 shrink-0" />
-                        {b.venueName}
-                      </div>
-                    </td>
-                    <td className="p-4 text-xs">
-                      <div className="font-medium">{b.eventDate}</div>
-                      <div className="text-slate-400">{b.timeSlot}</div>
-                    </td>
-                    <td className="p-4 text-xs font-mono">
-                      {b.expectedAttendees} pax
-                    </td>
-                    <td className="p-4">
-                      <span
-                        className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${
-                          b.status === "CONFIRMED"
-                            ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300"
-                            : b.status === "CANCELLED"
-                            ? "bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300"
-                            : "bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300"
-                        }`}
-                      >
-                        {b.status}
-                      </span>
-                    </td>
-                    <td className="p-4 text-right">
-                      <div className="flex items-center justify-end gap-1.5">
+                {filteredBookings.map((b) => {
+                  const isSelected = selectedBookingIds.includes(b.id);
+                  return (
+                    <tr
+                      key={b.id}
+                      className={`transition-colors ${
+                        isSelected ? "bg-indigo-50/50 dark:bg-indigo-950/20" : "hover:bg-slate-50/50 dark:hover:bg-slate-800/40"
+                      }`}
+                    >
+                      <td className="p-4">
                         <button
-                          onClick={() => setSelectedBookingDossier(b)}
-                          className="px-2 py-1 text-xs font-semibold rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 transition-colors inline-flex items-center gap-1"
+                          onClick={() => handleToggleSelectBooking(b.id)}
+                          className="text-slate-400 hover:text-indigo-600 transition-colors"
                         >
-                          <Eye className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
-                          Dossier
+                          {isSelected ? (
+                            <CheckSquare className="w-4 h-4 text-indigo-600" />
+                          ) : (
+                            <Square className="w-4 h-4" />
+                          )}
                         </button>
-                        {b.status === "PENDING_APPROVAL" && (
-                          <>
-                            <button
-                              onClick={() => handleDecideBooking(b.id, "CONFIRMED")}
-                              className="p-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-600 dark:bg-emerald-950 dark:hover:bg-emerald-900 rounded-lg text-xs"
-                              title="Approve Booking"
-                            >
-                              <Check className="w-4 h-4" />
-                            </button>
-                            <button
-                              onClick={() => handleDecideBooking(b.id, "CANCELLED")}
-                              className="p-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 dark:bg-rose-950 dark:hover:bg-rose-900 rounded-lg text-xs"
-                              title="Decline Booking"
-                            >
-                              <X className="w-4 h-4" />
-                            </button>
-                          </>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                ))}
+                      </td>
+                      <td className="p-4 font-mono font-medium text-xs text-indigo-600 dark:text-indigo-400">
+                        {b.bookingRef}
+                      </td>
+                      <td className="p-4">
+                        <div className="font-medium text-slate-900 dark:text-white">{b.eventTitle}</div>
+                        <div className="text-xs text-slate-400">{b.organizingDepartmentOrClub}</div>
+                      </td>
+                      <td className="p-4 text-xs font-medium text-slate-800 dark:text-slate-200">
+                        <div className="flex items-center gap-1.5">
+                          <MapPin className="w-3.5 h-3.5 text-rose-500 shrink-0" />
+                          {b.venueName}
+                        </div>
+                      </td>
+                      <td className="p-4 text-xs">
+                        <div className="font-medium">{b.eventDate}</div>
+                        <div className="text-slate-400">{b.timeSlot}</div>
+                      </td>
+                      <td className="p-4 text-xs font-mono">
+                        {b.expectedAttendees} pax
+                      </td>
+                      <td className="p-4">
+                        <span
+                          className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${
+                            b.status === "CONFIRMED"
+                              ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300"
+                              : b.status === "CANCELLED"
+                              ? "bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300"
+                              : "bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300"
+                          }`}
+                        >
+                          {b.status}
+                        </span>
+                      </td>
+                      <td className="p-4 text-right">
+                        <div className="flex items-center justify-end gap-1.5">
+                          <button
+                            onClick={() => handleDownloadIcs(b)}
+                            className="p-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 dark:bg-indigo-950 dark:hover:bg-indigo-900 rounded-lg text-xs transition-colors"
+                            title="Export Calendar (.ics)"
+                          >
+                            <Calendar className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => setSelectedBookingDossier(b)}
+                            className="px-2 py-1 text-xs font-semibold rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 transition-colors inline-flex items-center gap-1"
+                          >
+                            <Eye className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
+                            Dossier
+                          </button>
+                          {b.status === "PENDING_APPROVAL" && (
+                            <>
+                              <button
+                                onClick={() => handleDecideBooking(b.id, "CONFIRMED")}
+                                className="p-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-600 dark:bg-emerald-950 dark:hover:bg-emerald-900 rounded-lg text-xs"
+                                title="Approve Booking"
+                              >
+                                <Check className="w-4 h-4" />
+                              </button>
+                              <button
+                                onClick={() => handleDecideBooking(b.id, "CANCELLED")}
+                                className="p-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 dark:bg-rose-950 dark:hover:bg-rose-900 rounded-lg text-xs"
+                                title="Decline Booking"
+                              >
+                                <X className="w-4 h-4" />
+                              </button>
+                            </>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
@@ -790,6 +943,13 @@ export default function EventsPage() {
               </div>
 
               <div className="flex items-center gap-2">
+                <button
+                  onClick={() => handleDownloadIcs(selectedBookingDossier)}
+                  className="px-3.5 py-2 text-xs font-semibold bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/60 dark:hover:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300 rounded-xl flex items-center gap-1.5 transition-colors border border-indigo-200 dark:border-indigo-800"
+                >
+                  <Calendar className="w-3.5 h-3.5" />
+                  Export .ics
+                </button>
                 <button
                   onClick={() => window.print()}
                   className="px-3.5 py-2 text-xs font-semibold bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl flex items-center gap-1.5 transition-colors"

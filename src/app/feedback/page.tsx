@@ -19,6 +19,11 @@ import {
   Printer,
   X,
   RotateCcw,
+  Smile,
+  Frown,
+  Meh,
+  Sparkles,
+  Brain,
 } from "lucide-react";
 
 interface FacultyIndex {
@@ -46,6 +51,91 @@ interface SurveyRecord {
   submittedAt: string;
 }
 
+function analyzeSentiment(remarks?: string, score?: number) {
+  if (!remarks || remarks.trim().length === 0) {
+    if (score && score >= 4.0) {
+      return {
+        polarity: 0.75,
+        label: "Delighted",
+        tone: "HIGHLY_FAVORABLE",
+        bg: "bg-emerald-50 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800",
+        description: "Standard satisfaction score indicates strong learner sentiment.",
+      };
+    }
+    if (score && score <= 2.5) {
+      return {
+        polarity: -0.65,
+        label: "Critical Concern",
+        tone: "ACTION_REQUIRED",
+        bg: "bg-rose-50 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300 border-rose-200 dark:border-rose-800",
+        description: "Low quantitative rating flagged for pedagogical review.",
+      };
+    }
+    return {
+      polarity: 0.05,
+      label: "Neutral",
+      tone: "NEUTRAL",
+      bg: "bg-slate-50 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border-slate-200 dark:border-slate-700",
+      description: "Balanced feedback baseline.",
+    };
+  }
+
+  const text = remarks.toLowerCase();
+  const positiveWords = ["excellent", "great", "amazing", "inspiring", "clear", "helpful", "best", "engaging", "patient", "supportive", "thorough", "outstanding", "good", "well", "superb", "brilliant"];
+  const negativeWords = ["poor", "slow", "fast", "unclear", "difficult", "late", "boring", "confusing", "hard", "disorganized", "tough", "harsh", "unfair", "missing", "delay", "struggle"];
+
+  let posCount = 0;
+  let negCount = 0;
+
+  for (const word of positiveWords) {
+    if (text.includes(word)) posCount++;
+  }
+  for (const word of negativeWords) {
+    if (text.includes(word)) negCount++;
+  }
+
+  let rawPolarity = (posCount - negCount) / Math.max(1, posCount + negCount);
+  if (posCount === 0 && negCount === 0) {
+    rawPolarity = score ? (score - 3) / 2 : 0;
+  }
+  const scoreFactor = score ? (score - 3) / 2 : 0;
+  const polarity = Number(((rawPolarity * 0.6) + (scoreFactor * 0.4)).toFixed(2));
+
+  if (polarity >= 0.40) {
+    return {
+      polarity,
+      label: "Delighted",
+      tone: "HIGHLY_FAVORABLE",
+      bg: "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 border-emerald-300 dark:border-emerald-800",
+      description: "High enthusiasm and pedagogical excellence praised.",
+    };
+  } else if (polarity >= 0.10) {
+    return {
+      polarity,
+      label: "Positive",
+      tone: "FAVORABLE",
+      bg: "bg-teal-50 text-teal-800 dark:bg-teal-950/60 dark:text-teal-300 border-teal-200 dark:border-teal-800",
+      description: "Encouraging comments affirming instructional quality.",
+    };
+  } else if (polarity >= -0.20) {
+    return {
+      polarity,
+      label: "Balanced",
+      tone: "NEUTRAL",
+      bg: "bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-300 border-slate-200 dark:border-slate-700",
+      description: "Constructive observations with mixed reception.",
+    };
+  } else {
+    return {
+      polarity,
+      label: "Action Required",
+      tone: "CRITICAL",
+      bg: "bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300 border-rose-300 dark:border-rose-800",
+      description: "Significant friction identified; recommended for HOD mentoring.",
+    };
+  }
+}
+
 export default function FeedbackPage() {
   const [activeTab, setActiveTab] = useState<"faculty" | "responses">("faculty");
   const [loading, setLoading] = useState(true);
@@ -59,6 +149,7 @@ export default function FeedbackPage() {
   const [selectedDept, setSelectedDept] = useState("ALL");
   const [selectedFacultyDossier, setSelectedFacultyDossier] = useState<FacultyIndex | null>(null);
   const [selectedSurveyDossier, setSelectedSurveyDossier] = useState<SurveyRecord | null>(null);
+  const [sentimentFilter, setSentimentFilter] = useState<"ALL" | "POSITIVE" | "CRITICAL">("ALL");
 
   const handleExportCsv = () => {
     if (activeTab === "faculty") {
@@ -437,13 +528,30 @@ export default function FeedbackPage() {
       {/* Tab 2: Anonymous Survey Responses */}
       {activeTab === "responses" && (
         <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
-          <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center">
-            <span className="text-sm font-semibold text-slate-700 dark:text-slate-300">
-              Recent Anonymized Course Feedback Entries
-            </span>
-            <div className="flex items-center gap-1.5 text-xs text-slate-400">
-              <ShieldCheck className="w-4 h-4 text-emerald-500" />
-              Student identity encrypted & masked
+          <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+            <div>
+              <span className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+                Recent Anonymized Course Feedback Entries
+              </span>
+              <p className="text-xs text-slate-400">AI-computed sentiment polarity scores & qualitative reflections</p>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-1.5 text-xs">
+                <span className="text-slate-500 font-medium">Sentiment:</span>
+                <select
+                  value={sentimentFilter}
+                  onChange={(e) => setSentimentFilter(e.target.value as any)}
+                  className="px-2.5 py-1 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-medium text-slate-800 dark:text-slate-200"
+                >
+                  <option value="ALL">All Sentiments</option>
+                  <option value="POSITIVE">Positive / Delighted Only</option>
+                  <option value="CRITICAL">Constructive / Concerns</option>
+                </select>
+              </div>
+              <div className="flex items-center gap-1.5 text-xs text-slate-400">
+                <ShieldCheck className="w-4 h-4 text-emerald-500" />
+                <span>Masked ID</span>
+              </div>
             </div>
           </div>
           <div className="overflow-x-auto">
@@ -454,6 +562,7 @@ export default function FeedbackPage() {
                   <th className="py-3 px-4">Course</th>
                   <th className="py-3 px-4">Faculty Instructor</th>
                   <th className="py-3 px-4">Overall Score</th>
+                  <th className="py-3 px-4">AI Sentiment</th>
                   <th className="py-3 px-4">Student Comments</th>
                   <th className="py-3 px-4">Date</th>
                   <th className="py-3 px-4 text-right">Action</th>
@@ -463,46 +572,68 @@ export default function FeedbackPage() {
                 {responses
                   .filter((r) => {
                     const q = searchQuery.toLowerCase();
-                    return (
+                    const matchesSearch =
                       !q ||
                       r.courseCode.toLowerCase().includes(q) ||
                       r.courseName.toLowerCase().includes(q) ||
                       r.facultyName.toLowerCase().includes(q) ||
-                      r.surveyRef.toLowerCase().includes(q)
-                    );
+                      r.surveyRef.toLowerCase().includes(q);
+
+                    if (!matchesSearch) return false;
+
+                    if (sentimentFilter === "ALL") return true;
+                    const sent = analyzeSentiment(r.qualitativeRemarks, r.overallScore);
+                    if (sentimentFilter === "POSITIVE") return sent.polarity >= 0.10;
+                    if (sentimentFilter === "CRITICAL") return sent.polarity < 0.10;
+                    return true;
                   })
-                  .map((r) => (
-                  <tr key={r.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/40">
-                    <td className="py-3 px-4 font-mono text-xs font-semibold text-rose-600 dark:text-rose-400">
-                      {r.surveyRef}
-                    </td>
-                    <td className="py-3 px-4 font-medium">
-                      {r.courseCode} - {r.courseName}
-                    </td>
-                    <td className="py-3 px-4 font-medium">{r.facultyName}</td>
-                    <td className="py-3 px-4">
-                      <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 rounded-lg text-xs font-bold">
-                        <Star className="w-3 h-3 fill-amber-400 text-amber-500" />
-                        {r.overallScore} / 5.0
-                      </span>
-                    </td>
-                    <td className="py-3 px-4 text-xs italic text-slate-500 max-w-xs truncate">
-                      {r.qualitativeRemarks || "No qualitative remarks recorded."}
-                    </td>
-                    <td className="py-3 px-4 text-xs text-slate-400">
-                      {new Date(r.submittedAt).toLocaleDateString()}
-                    </td>
-                    <td className="py-3 px-4 text-right">
-                      <button
-                        onClick={() => setSelectedSurveyDossier(r)}
-                        className="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-lg text-xs font-semibold inline-flex items-center gap-1.5 transition-colors"
-                      >
-                        <Eye className="w-3.5 h-3.5 text-slate-500" />
-                        Slip
-                      </button>
-                    </td>
-                  </tr>
-                ))}
+                  .map((r) => {
+                    const sentiment = analyzeSentiment(r.qualitativeRemarks, r.overallScore);
+                    return (
+                      <tr key={r.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/40">
+                        <td className="py-3 px-4 font-mono text-xs font-semibold text-rose-600 dark:text-rose-400">
+                          {r.surveyRef}
+                        </td>
+                        <td className="py-3 px-4 font-medium">
+                          {r.courseCode} - {r.courseName}
+                        </td>
+                        <td className="py-3 px-4 font-medium">{r.facultyName}</td>
+                        <td className="py-3 px-4">
+                          <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 rounded-lg text-xs font-bold">
+                            <Star className="w-3 h-3 fill-amber-400 text-amber-500" />
+                            {r.overallScore} / 5.0
+                          </span>
+                        </td>
+                        <td className="py-3 px-4">
+                          <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-semibold border ${sentiment.bg}`}>
+                            {sentiment.polarity >= 0.1 ? (
+                              <Smile className="w-3 h-3" />
+                            ) : sentiment.polarity <= -0.2 ? (
+                              <Frown className="w-3 h-3" />
+                            ) : (
+                              <Meh className="w-3 h-3" />
+                            )}
+                            <span>{sentiment.polarity > 0 ? `+${sentiment.polarity}` : sentiment.polarity} {sentiment.label}</span>
+                          </span>
+                        </td>
+                        <td className="py-3 px-4 text-xs italic text-slate-500 max-w-xs truncate">
+                          {r.qualitativeRemarks || "No qualitative remarks recorded."}
+                        </td>
+                        <td className="py-3 px-4 text-xs text-slate-400">
+                          {new Date(r.submittedAt).toLocaleDateString()}
+                        </td>
+                        <td className="py-3 px-4 text-right">
+                          <button
+                            onClick={() => setSelectedSurveyDossier(r)}
+                            className="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-lg text-xs font-semibold inline-flex items-center gap-1.5 transition-colors"
+                          >
+                            <Eye className="w-3.5 h-3.5 text-slate-500" />
+                            Slip
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
               </tbody>
             </table>
           </div>
@@ -823,6 +954,41 @@ export default function FeedbackPage() {
                 &ldquo;{selectedSurveyDossier.qualitativeRemarks || "No qualitative remarks recorded."}&rdquo;
               </p>
             </div>
+
+            {/* AI Sentiment Analysis Block */}
+            {(() => {
+              const sent = analyzeSentiment(selectedSurveyDossier.qualitativeRemarks, selectedSurveyDossier.overallScore);
+              return (
+                <div className="p-4 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-200 dark:border-slate-700/60 space-y-2.5">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Brain className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                      <span className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                        AI Sentiment & NLP Diagnostic
+                      </span>
+                    </div>
+                    <span className={`px-2 py-0.5 rounded text-[11px] font-bold border ${sent.bg}`}>
+                      {sent.polarity > 0 ? `+${sent.polarity}` : sent.polarity} • {sent.label}
+                    </span>
+                  </div>
+                  <div className="space-y-1">
+                    <div className="flex justify-between text-[11px] text-slate-500">
+                      <span>Valence Polarity Metric</span>
+                      <span className="font-mono font-semibold text-slate-700 dark:text-slate-300">Classification: {sent.tone}</span>
+                    </div>
+                    <div className="w-full bg-slate-200 dark:bg-slate-700 h-2 rounded-full overflow-hidden flex">
+                      <div
+                        className="bg-emerald-500 h-full rounded-full transition-all duration-300"
+                        style={{ width: `${Math.max(5, Math.min(100, (sent.polarity + 1) * 50))}%` }}
+                      />
+                    </div>
+                  </div>
+                  <p className="text-[11px] text-slate-600 dark:text-slate-300 leading-relaxed bg-white/60 dark:bg-slate-900/60 p-2.5 rounded-lg border border-slate-100 dark:border-slate-800">
+                    {sent.description}
+                  </p>
+                </div>
+              );
+            })()}
 
             <div className="flex justify-between items-center text-xs text-slate-400 border-t border-slate-100 dark:border-slate-800 pt-3">
               <span>Timestamp: {new Date(selectedSurveyDossier.submittedAt).toLocaleString()}</span>

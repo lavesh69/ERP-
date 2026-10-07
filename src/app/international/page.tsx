@@ -21,6 +21,10 @@ import {
   Printer,
   X,
   RotateCcw,
+  DollarSign,
+  Coins,
+  ArrowRightLeft,
+  TrendingUp,
 } from "lucide-react";
 
 interface Partner {
@@ -56,7 +60,7 @@ interface Student {
 }
 
 export default function InternationalPage() {
-  const [activeTab, setActiveTab] = useState<"partners" | "students" | "visa">("partners");
+  const [activeTab, setActiveTab] = useState<"partners" | "students" | "visa" | "forex">("partners");
   const [loading, setLoading] = useState(true);
   const [summary, setSummary] = useState<any>(null);
   const [partners, setPartners] = useState<Partner[]>([]);
@@ -64,6 +68,18 @@ export default function InternationalPage() {
   const [selectedExchangeDossier, setSelectedExchangeDossier] = useState<Student | null>(null);
   const [selectedPartnerDossier, setSelectedPartnerDossier] = useState<Partner | null>(null);
   const [showApplyModal, setShowApplyModal] = useState(false);
+  const [showForexModal, setShowForexModal] = useState(false);
+  const [forexAmount, setForexAmount] = useState<number>(5000);
+  const [forexCurrency, setForexCurrency] = useState<"USD" | "EUR" | "GBP" | "SGD" | "AUD" | "CAD">("USD");
+
+  const forexRates: Record<string, { inr: number; symbol: string; name: string; trend: string }> = {
+    USD: { inr: 86.50, symbol: "$", name: "US Dollar", trend: "+0.12%" },
+    EUR: { inr: 91.20, symbol: "€", name: "Euro", trend: "+0.08%" },
+    GBP: { inr: 109.80, symbol: "£", name: "British Pound", trend: "-0.05%" },
+    SGD: { inr: 64.10, symbol: "S$", name: "Singapore Dollar", trend: "+0.15%" },
+    AUD: { inr: 55.40, symbol: "A$", name: "Australian Dollar", trend: "+0.04%" },
+    CAD: { inr: 60.30, symbol: "C$", name: "Canadian Dollar", trend: "-0.02%" },
+  };
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState<{ text: string; type: "success" | "error" } | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
@@ -257,6 +273,13 @@ export default function InternationalPage() {
 
         <div className="flex flex-wrap items-center gap-3">
           <button
+            onClick={() => setShowForexModal(true)}
+            className="flex items-center gap-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-sm font-semibold transition-all shadow-sm shadow-emerald-600/20"
+          >
+            <Coins className="w-4 h-4" />
+            Forex Calculator
+          </button>
+          <button
             onClick={handleExportInternationalCsv}
             className="flex items-center gap-2 px-4 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl text-sm font-semibold transition-all border border-slate-200 dark:border-slate-700"
           >
@@ -416,6 +439,17 @@ export default function InternationalPage() {
         >
           <ShieldCheck className="w-4 h-4" />
           Visa & FRRO Compliance Desk
+        </button>
+        <button
+          onClick={() => setActiveTab("forex")}
+          className={`flex items-center gap-2 px-5 py-3 text-sm font-semibold border-b-2 transition-all ${
+            activeTab === "forex"
+              ? "border-emerald-600 text-emerald-600 dark:text-emerald-400"
+              : "border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200"
+          }`}
+        >
+          <DollarSign className="w-4 h-4" />
+          Forex & Grants Desk
         </button>
       </div>
 
@@ -693,6 +727,143 @@ export default function InternationalPage() {
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+      )}
+
+      {/* Tab 4: Forex & Grants Desk */}
+      {activeTab === "forex" && (
+        <div className="space-y-6">
+          {/* Real-time Ticker Grid */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+            {Object.entries(forexRates).map(([cur, data]) => (
+              <div
+                key={cur}
+                onClick={() => {
+                  setForexCurrency(cur as any);
+                }}
+                className={`p-3.5 rounded-xl border transition-all cursor-pointer ${
+                  forexCurrency === cur
+                    ? "bg-emerald-50 dark:bg-emerald-950/40 border-emerald-400 dark:border-emerald-600 shadow-sm"
+                    : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-slate-300"
+                }`}
+              >
+                <div className="flex items-center justify-between text-xs">
+                  <span className="font-bold text-slate-800 dark:text-slate-200">{cur} / INR</span>
+                  <span className={`text-[10px] font-semibold ${data.trend.startsWith('+') ? 'text-emerald-600' : 'text-rose-500'}`}>
+                    {data.trend}
+                  </span>
+                </div>
+                <div className="mt-2 text-lg font-bold text-slate-900 dark:text-white">
+                  ₹{data.inr.toFixed(2)}
+                </div>
+                <p className="text-[10px] text-slate-400 mt-0.5 truncate">{data.name}</p>
+              </div>
+            ))}
+          </div>
+
+          {/* Interactive Live Converter Card */}
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm space-y-5">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-4">
+              <div>
+                <h3 className="font-bold text-base text-slate-900 dark:text-white flex items-center gap-2">
+                  <Coins className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                  International Study Abroad Tuition & Stipend Converter
+                </h3>
+                <p className="text-xs text-slate-500">
+                  Instant calculation of institutional travel grants, tuition waivers, and monthly subsistence in INR.
+                </p>
+              </div>
+              <span className="px-2.5 py-1 rounded-full text-[11px] font-semibold bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
+                RBI Reference Rate Benchmarked
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-center">
+              {/* Input Form */}
+              <div className="space-y-4 p-4 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700">
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Foreign Currency</label>
+                    <select
+                      value={forexCurrency}
+                      onChange={(e) => setForexCurrency(e.target.value as any)}
+                      className="w-full mt-1 p-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-semibold"
+                    >
+                      {Object.keys(forexRates).map((cur) => (
+                        <option key={cur} value={cur}>
+                          {cur} ({forexRates[cur].name})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Amount ({forexRates[forexCurrency].symbol})</label>
+                    <input
+                      type="number"
+                      min={100}
+                      step={100}
+                      value={forexAmount}
+                      onChange={(e) => setForexAmount(Math.max(0, Number(e.target.value)))}
+                      className="w-full mt-1 p-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-bold"
+                    />
+                  </div>
+                </div>
+
+                {/* Quick Presets */}
+                <div className="space-y-1.5">
+                  <span className="text-[11px] text-slate-500 font-medium">Quick Grant Presets:</span>
+                  <div className="flex flex-wrap gap-2">
+                    {[
+                      { label: "Semester Stipend", amount: 6000, cur: "USD" },
+                      { label: "Erasmus Mobility", amount: 4500, cur: "EUR" },
+                      { label: "NUS Living Cost", amount: 5500, cur: "SGD" },
+                      { label: "UK Travel Allowance", amount: 3000, cur: "GBP" },
+                    ].map((p, idx) => (
+                      <button
+                        key={idx}
+                        type="button"
+                        onClick={() => {
+                          setForexCurrency(p.cur as any);
+                          setForexAmount(p.amount);
+                        }}
+                        className="px-2.5 py-1 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-[11px] font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100"
+                      >
+                        {p.label} ({p.amount} {p.cur})
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Conversion Result Card */}
+              <div className="p-5 rounded-2xl bg-gradient-to-br from-emerald-500/10 via-emerald-500/5 to-transparent border border-emerald-300 dark:border-emerald-700/60 space-y-4">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider block">Equivalent Value in Indian Rupees</span>
+                    <div className="text-3xl font-black text-slate-900 dark:text-white mt-1">
+                      ₹{(forexAmount * forexRates[forexCurrency].inr).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </div>
+                  </div>
+                  <span className="text-xs font-mono px-2 py-1 bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-700 text-emerald-600 dark:text-emerald-400 font-bold">
+                    1 {forexCurrency} = ₹{forexRates[forexCurrency].inr.toFixed(2)}
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3 text-xs pt-2 border-t border-emerald-200/50 dark:border-emerald-800/50">
+                  <div className="p-2.5 bg-white/70 dark:bg-slate-900/70 rounded-xl space-y-0.5">
+                    <span className="text-slate-500 text-[11px] block">Monthly Living Equivalency</span>
+                    <span className="font-bold text-slate-900 dark:text-white">
+                      ₹{((forexAmount * forexRates[forexCurrency].inr) / 5).toLocaleString("en-IN", { maximumFractionDigits: 0 })} / mo
+                    </span>
+                  </div>
+                  <div className="p-2.5 bg-white/70 dark:bg-slate-900/70 rounded-xl space-y-0.5">
+                    <span className="text-slate-500 text-[11px] block">Statutory Forex Surcharge</span>
+                    <span className="font-bold text-emerald-600 dark:text-emerald-400">0% (UGC University Exempt)</span>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       )}
@@ -1035,6 +1206,131 @@ export default function InternationalPage() {
                   Done
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Forex Calculator Modal */}
+      {showForexModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-2xl max-w-xl w-full p-6 space-y-6">
+            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
+              <div className="flex items-center gap-3">
+                <div className="p-3 bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 rounded-2xl">
+                  <Coins className="w-6 h-6" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-slate-900 dark:text-white">
+                    Forex & Global Grant Converter
+                  </h3>
+                  <p className="text-xs text-slate-400">
+                    Live currency valuation & living cost equivalency for study abroad
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowForexModal(false)}
+                className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                  Grant / Currency
+                </label>
+                <select
+                  value={forexCurrency}
+                  onChange={(e) => setForexCurrency(e.target.value as any)}
+                  className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-semibold text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                >
+                  <option value="USD">USD ($) - US Dollar</option>
+                  <option value="EUR">EUR (€) - Euro</option>
+                  <option value="GBP">GBP (£) - British Pound</option>
+                  <option value="SGD">SGD (S$) - Singapore Dollar</option>
+                  <option value="AUD">AUD (A$) - Australian Dollar</option>
+                  <option value="CAD">CAD (C$) - Canadian Dollar</option>
+                </select>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                  Foreign Amount ({forexRates[forexCurrency]?.symbol})
+                </label>
+                <input
+                  type="number"
+                  min="1"
+                  value={forexAmount}
+                  onChange={(e) => setForexAmount(Number(e.target.value))}
+                  className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-bold text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                />
+              </div>
+            </div>
+
+            {/* Quick Presets */}
+            <div className="space-y-2">
+              <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Quick Grant Presets</span>
+              <div className="flex flex-wrap gap-2">
+                {[
+                  { label: "$1,000 Travel Stmt", amount: 1000 },
+                  { label: "$2,500 Erasmus Grant", amount: 2500 },
+                  { label: "$5,000 Semester Living", amount: 5000 },
+                  { label: "$10,000 Full Fellowship", amount: 10000 },
+                ].map((preset) => (
+                  <button
+                    key={preset.label}
+                    onClick={() => setForexAmount(preset.amount)}
+                    className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl text-xs font-medium transition-all"
+                  >
+                    {preset.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Converted Summary Card */}
+            <div className="p-4 bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-950/40 dark:to-teal-950/30 rounded-2xl border border-emerald-200 dark:border-emerald-800/60 space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-semibold text-emerald-800 dark:text-emerald-300 uppercase tracking-wider">
+                  Equivalence in INR
+                </span>
+                <span className="text-xs font-mono font-medium text-emerald-600 dark:text-emerald-400">
+                  Rate: 1 {forexCurrency} = ₹{forexRates[forexCurrency]?.inr.toFixed(2)}
+                </span>
+              </div>
+              <div className="text-3xl font-extrabold text-emerald-950 dark:text-emerald-200">
+                ₹{(forexAmount * (forexRates[forexCurrency]?.inr || 86.5)).toLocaleString("en-IN", {
+                  maximumFractionDigits: 2,
+                })}
+              </div>
+              <p className="text-xs text-emerald-700 dark:text-emerald-400">
+                Covers approx. {Math.max(1, Math.round(forexAmount / 1200))} months of living and academic expenditures abroad based on standard overseas stipend allowances.
+              </p>
+            </div>
+
+            <div className="flex justify-end gap-3 pt-2 border-t border-slate-100 dark:border-slate-800">
+              <button
+                onClick={() => setShowForexModal(false)}
+                className="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl text-xs font-semibold transition-all"
+              >
+                Close
+              </button>
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(
+                    `${forexRates[forexCurrency]?.symbol}${forexAmount.toLocaleString()} ${forexCurrency} = ₹${(
+                      forexAmount * (forexRates[forexCurrency]?.inr || 86.5)
+                    ).toLocaleString("en-IN")} INR (Forex Rate: ₹${forexRates[forexCurrency]?.inr})`
+                  );
+                  alert("Forex calculation copied to clipboard!");
+                }}
+                className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-semibold shadow-sm transition-all"
+              >
+                Copy Calculation
+              </button>
             </div>
           </div>
         </div>

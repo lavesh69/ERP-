@@ -40,10 +40,27 @@ export default function AlumniPage() {
   const [verifyResult, setVerifyResult] = useState<any>(null);
   const [verifying, setVerifying] = useState(false);
 
-  // Mentorship Modal
+  // Mentorship Modal & Booking Flow
   const [showMentorModal, setShowMentorModal] = useState(false);
   const [selectedMentor, setSelectedMentor] = useState<any>(null);
   const [mentorTopic, setMentorTopic] = useState("");
+  const [mentorDate, setMentorDate] = useState("2026-11-15");
+  const [mentorSlot, setMentorSlot] = useState("16:00 - 16:45 IST");
+  const [mentorFormat, setMentorFormat] = useState("1:1 Video Mentorship (Google Meet)");
+
+  // Register Alumni Form
+  const [showRegisterModal, setShowRegisterModal] = useState(false);
+  const [registerForm, setRegisterForm] = useState({
+    fullName: "",
+    graduationBatch: 2024,
+    degree: "B.Tech Computer Science",
+    currentCompany: "",
+    jobTitle: "",
+    location: "Bengaluru, India",
+    isAvailableForMentorship: true,
+    mentorshipDomains: "Cloud Architecture, Career Guidance",
+    linkedinUrl: "https://linkedin.com/in/",
+  });
 
   // Giving Campaigns
   const [campaigns, setCampaigns] = useState([
@@ -116,12 +133,46 @@ export default function AlumniPage() {
 
   const handleSendMentorRequest = (e: React.FormEvent) => {
     e.preventDefault();
+    const meetLink = `https://meet.apex.edu/alumni-${Math.random().toString(36).substring(2, 7)}`;
     setStatusMessage({
       type: "success",
-      text: `Mentorship request submitted to ${selectedMentor?.fullName}! They will connect via email.`,
+      text: `1:1 Mentorship session confirmed with ${selectedMentor?.fullName} on ${mentorDate} at ${mentorSlot}! Meeting Link: ${meetLink}`,
     });
     setShowMentorModal(false);
     setMentorTopic("");
+  };
+
+  const handleRegisterAlumni = (e: React.FormEvent) => {
+    e.preventDefault();
+    const newAlumnus = {
+      id: `alm-${Date.now().toString().slice(-4)}`,
+      fullName: registerForm.fullName,
+      graduationBatch: Number(registerForm.graduationBatch),
+      degree: registerForm.degree,
+      currentCompany: registerForm.currentCompany,
+      jobTitle: registerForm.jobTitle,
+      location: registerForm.location,
+      isAvailableForMentorship: registerForm.isAvailableForMentorship,
+      mentorshipDomains: registerForm.mentorshipDomains.split(",").map((s) => s.trim()),
+      linkedinUrl: registerForm.linkedinUrl,
+    };
+    setAlumni([newAlumnus, ...alumni]);
+    setStatusMessage({
+      type: "success",
+      text: `Congratulations! ${registerForm.fullName} has been officially registered in the Institutional Alumni Directory.`,
+    });
+    setShowRegisterModal(false);
+    setRegisterForm({
+      fullName: "",
+      graduationBatch: 2024,
+      degree: "B.Tech Computer Science",
+      currentCompany: "",
+      jobTitle: "",
+      location: "Bengaluru, India",
+      isAvailableForMentorship: true,
+      mentorshipDomains: "Cloud Architecture, Career Guidance",
+      linkedinUrl: "https://linkedin.com/in/",
+    });
   };
 
   const handlePledgeDonation = (campaignTitle: string) => {
@@ -182,13 +233,20 @@ export default function AlumniPage() {
               Lifelong graduate network, 1-on-1 industry mentorship matching, degree verification gateway, and institutional endowments.
             </p>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
             <button
               onClick={handleExportAlumniCsv}
               className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium text-sm bg-white/10 hover:bg-white/20 text-white border border-white/20 shadow-sm transition-all active:scale-95"
             >
               <Download className="w-4 h-4" />
               Export Directory (CSV)
+            </button>
+            <button
+              onClick={() => setShowRegisterModal(true)}
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium text-sm bg-rose-primary hover:bg-rose-600 text-white shadow-md transition-all active:scale-95"
+            >
+              <PlusCircle className="w-4 h-4" />
+              Register as Alumni
             </button>
           </div>
         </div>
@@ -652,23 +710,72 @@ export default function AlumniPage() {
             </div>
 
             <form onSubmit={handleSendMentorRequest} className="space-y-3.5 mt-4 text-xs">
-              <div>
-                <p className="text-charcoal-600 dark:text-ivory-300">
-                  Mentor: <b>{selectedMentor?.fullName}</b> ({selectedMentor?.jobTitle} at {selectedMentor?.currentCompany})
+              <div className="p-3 rounded-xl bg-ivory-50 dark:bg-charcoal-800 border border-border dark:border-charcoal-700">
+                <p className="text-charcoal-800 dark:text-ivory-100 font-semibold">
+                  {selectedMentor?.fullName}
+                </p>
+                <p className="text-charcoal-500 text-[11px]">
+                  {selectedMentor?.jobTitle} • {selectedMentor?.currentCompany} ({selectedMentor?.location})
                 </p>
               </div>
 
               <div>
                 <label className="block font-medium text-charcoal-700 dark:text-ivory-300 mb-1">
-                  What guidance are you seeking?
+                  Mentorship Session Format
+                </label>
+                <select
+                  value={mentorFormat}
+                  onChange={(e) => setMentorFormat(e.target.value)}
+                  className="w-full p-2 bg-ivory-50 dark:bg-charcoal-800 border border-border dark:border-charcoal-700 rounded-lg text-charcoal-900 dark:text-ivory-100 focus:outline-none focus:ring-1 focus:ring-rose-500"
+                >
+                  <option value="1:1 Video Mentorship (Google Meet)">1:1 Video Mentorship (Google Meet)</option>
+                  <option value="Resume & Portfolio Review">Resume & Portfolio Review</option>
+                  <option value="Mock Technical Interview">Mock Technical Interview</option>
+                  <option value="Venture / Startup Pitch Deck Feedback">Venture / Startup Pitch Deck Feedback</option>
+                </select>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="block font-medium text-charcoal-700 dark:text-ivory-300 mb-1">
+                    Preferred Date
+                  </label>
+                  <input
+                    type="date"
+                    required
+                    value={mentorDate}
+                    onChange={(e) => setMentorDate(e.target.value)}
+                    className="w-full p-2 bg-ivory-50 dark:bg-charcoal-800 border border-border dark:border-charcoal-700 rounded-lg text-charcoal-900 dark:text-ivory-100 focus:outline-none focus:ring-1 focus:ring-rose-500"
+                  />
+                </div>
+                <div>
+                  <label className="block font-medium text-charcoal-700 dark:text-ivory-300 mb-1">
+                    Time Slot
+                  </label>
+                  <select
+                    value={mentorSlot}
+                    onChange={(e) => setMentorSlot(e.target.value)}
+                    className="w-full p-2 bg-ivory-50 dark:bg-charcoal-800 border border-border dark:border-charcoal-700 rounded-lg text-charcoal-900 dark:text-ivory-100 focus:outline-none focus:ring-1 focus:ring-rose-500"
+                  >
+                    <option value="16:00 - 16:45 IST">16:00 - 16:45 IST (Afternoon)</option>
+                    <option value="18:00 - 18:45 IST">18:00 - 18:45 IST (Evening)</option>
+                    <option value="20:00 - 20:45 IST">20:00 - 20:45 IST (Night)</option>
+                    <option value="10:00 - 10:45 IST">10:00 - 10:45 IST (Weekend Morning)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="block font-medium text-charcoal-700 dark:text-ivory-300 mb-1">
+                  What specific guidance or questions do you have?
                 </label>
                 <textarea
                   required
                   rows={3}
                   value={mentorTopic}
                   onChange={(e) => setMentorTopic(e.target.value)}
-                  className="w-full p-2.5 bg-ivory-50 dark:bg-charcoal-800 border rounded-lg"
-                  placeholder="e.g. Distributed systems interview preparation and resume review..."
+                  className="w-full p-2.5 bg-ivory-50 dark:bg-charcoal-800 border border-border dark:border-charcoal-700 rounded-lg text-charcoal-900 dark:text-ivory-100 focus:outline-none focus:ring-1 focus:ring-rose-500"
+                  placeholder="e.g. Preparing for distributed systems L5 interviews, reviewing system design tradeoffs..."
                 />
               </div>
 
@@ -676,15 +783,15 @@ export default function AlumniPage() {
                 <button
                   type="button"
                   onClick={() => setShowMentorModal(false)}
-                  className="px-3.5 py-2 rounded-lg font-medium bg-ivory-100 dark:bg-charcoal-800 hover:bg-ivory-200"
+                  className="px-3.5 py-2 rounded-lg font-medium bg-ivory-100 dark:bg-charcoal-800 hover:bg-ivory-200 text-charcoal-700 dark:text-ivory-200"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 rounded-lg font-semibold bg-rose-primary text-white hover:bg-rose-accent"
+                  className="px-4 py-2 rounded-lg font-semibold bg-rose-primary text-white hover:bg-rose-accent shadow-sm"
                 >
-                  Send Invitation
+                  Confirm 1:1 Session Booking
                 </button>
               </div>
             </form>
@@ -783,6 +890,175 @@ export default function AlumniPage() {
                 </button>
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL: Register New Alumni */}
+      {showRegisterModal && (
+        <div className="fixed inset-0 z-50 bg-charcoal-950/70 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-charcoal-900 rounded-2xl max-w-lg w-full p-6 border border-border dark:border-charcoal-800 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-border dark:border-charcoal-800">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-lg bg-rose-50 dark:bg-rose-950/60 flex items-center justify-center text-rose-primary">
+                  <GraduationCap className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-base text-charcoal-900 dark:text-ivory-100">
+                    Register as Graduate Alumni
+                  </h3>
+                  <p className="text-xs text-charcoal-500">
+                    Join the global alumni community & mentorship network
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowRegisterModal(false)}
+                className="text-charcoal-500 hover:text-charcoal-900 text-sm font-bold"
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleRegisterAlumni} className="space-y-3 text-xs">
+              <div>
+                <label className="block font-medium text-charcoal-700 dark:text-ivory-300 mb-1">
+                  Full Name
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Maya Lin"
+                  value={registerForm.fullName}
+                  onChange={(e) => setRegisterForm({ ...registerForm, fullName: e.target.value })}
+                  className="w-full p-2 bg-ivory-50 dark:bg-charcoal-800 border border-border dark:border-charcoal-700 rounded-lg text-charcoal-900 dark:text-ivory-100 focus:outline-none focus:ring-1 focus:ring-rose-500"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="block font-medium text-charcoal-700 dark:text-ivory-300 mb-1">
+                    Graduation Batch Year
+                  </label>
+                  <input
+                    type="number"
+                    required
+                    value={registerForm.graduationBatch}
+                    onChange={(e) => setRegisterForm({ ...registerForm, graduationBatch: Number(e.target.value) })}
+                    className="w-full p-2 bg-ivory-50 dark:bg-charcoal-800 border border-border dark:border-charcoal-700 rounded-lg text-charcoal-900 dark:text-ivory-100 focus:outline-none focus:ring-1 focus:ring-rose-500"
+                  />
+                </div>
+                <div>
+                  <label className="block font-medium text-charcoal-700 dark:text-ivory-300 mb-1">
+                    Degree / Discipline
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={registerForm.degree}
+                    onChange={(e) => setRegisterForm({ ...registerForm, degree: e.target.value })}
+                    className="w-full p-2 bg-ivory-50 dark:bg-charcoal-800 border border-border dark:border-charcoal-700 rounded-lg text-charcoal-900 dark:text-ivory-100 focus:outline-none focus:ring-1 focus:ring-rose-500"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="block font-medium text-charcoal-700 dark:text-ivory-300 mb-1">
+                    Current Employer / Company
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. Google, DeepMind, Stripe"
+                    value={registerForm.currentCompany}
+                    onChange={(e) => setRegisterForm({ ...registerForm, currentCompany: e.target.value })}
+                    className="w-full p-2 bg-ivory-50 dark:bg-charcoal-800 border border-border dark:border-charcoal-700 rounded-lg text-charcoal-900 dark:text-ivory-100 focus:outline-none focus:ring-1 focus:ring-rose-500"
+                  />
+                </div>
+                <div>
+                  <label className="block font-medium text-charcoal-700 dark:text-ivory-300 mb-1">
+                    Current Job Title / Role
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. Senior Software Engineer"
+                    value={registerForm.jobTitle}
+                    onChange={(e) => setRegisterForm({ ...registerForm, jobTitle: e.target.value })}
+                    className="w-full p-2 bg-ivory-50 dark:bg-charcoal-800 border border-border dark:border-charcoal-700 rounded-lg text-charcoal-900 dark:text-ivory-100 focus:outline-none focus:ring-1 focus:ring-rose-500"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="block font-medium text-charcoal-700 dark:text-ivory-300 mb-1">
+                    City / Country
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={registerForm.location}
+                    onChange={(e) => setRegisterForm({ ...registerForm, location: e.target.value })}
+                    className="w-full p-2 bg-ivory-50 dark:bg-charcoal-800 border border-border dark:border-charcoal-700 rounded-lg text-charcoal-900 dark:text-ivory-100 focus:outline-none focus:ring-1 focus:ring-rose-500"
+                  />
+                </div>
+                <div>
+                  <label className="block font-medium text-charcoal-700 dark:text-ivory-300 mb-1">
+                    LinkedIn URL
+                  </label>
+                  <input
+                    type="url"
+                    value={registerForm.linkedinUrl}
+                    onChange={(e) => setRegisterForm({ ...registerForm, linkedinUrl: e.target.value })}
+                    className="w-full p-2 bg-ivory-50 dark:bg-charcoal-800 border border-border dark:border-charcoal-700 rounded-lg text-charcoal-900 dark:text-ivory-100 focus:outline-none focus:ring-1 focus:ring-rose-500"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block font-medium text-charcoal-700 dark:text-ivory-300 mb-1">
+                  Mentorship Expertise Domains (Comma separated)
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. System Design, AI/ML, Venture Capital"
+                  value={registerForm.mentorshipDomains}
+                  onChange={(e) => setRegisterForm({ ...registerForm, mentorshipDomains: e.target.value })}
+                  className="w-full p-2 bg-ivory-50 dark:bg-charcoal-800 border border-border dark:border-charcoal-700 rounded-lg text-charcoal-900 dark:text-ivory-100 focus:outline-none focus:ring-1 focus:ring-rose-500"
+                />
+              </div>
+
+              <div className="flex items-center gap-2 pt-1">
+                <input
+                  type="checkbox"
+                  id="mentorAvail"
+                  checked={registerForm.isAvailableForMentorship}
+                  onChange={(e) => setRegisterForm({ ...registerForm, isAvailableForMentorship: e.target.checked })}
+                  className="rounded border-border text-rose-primary focus:ring-rose-500"
+                />
+                <label htmlFor="mentorAvail" className="text-charcoal-700 dark:text-ivory-300 font-medium cursor-pointer">
+                  Available for 1:1 student mentorship sessions
+                </label>
+              </div>
+
+              <div className="pt-2 flex justify-end gap-2 border-t border-border dark:border-charcoal-800">
+                <button
+                  type="button"
+                  onClick={() => setShowRegisterModal(false)}
+                  className="px-3.5 py-2 rounded-lg font-medium bg-ivory-100 dark:bg-charcoal-800 hover:bg-ivory-200 text-charcoal-700 dark:text-ivory-200"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 rounded-lg font-semibold bg-rose-primary text-white hover:bg-rose-accent shadow-sm"
+                >
+                  Submit Registration
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

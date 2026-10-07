@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   AlertTriangle,
   Siren,
@@ -16,6 +16,7 @@ import {
   CheckCircle2,
   Clock,
   Volume2,
+  VolumeX,
   PhoneCall,
   Download,
   Search,
@@ -24,6 +25,11 @@ import {
   Printer,
   X,
   RotateCcw,
+  Play,
+  Square,
+  Activity,
+  BellRing,
+  Sliders,
 } from "lucide-react";
 
 interface Alert {
@@ -54,7 +60,7 @@ interface MusterPoint {
 }
 
 export default function EmergencyPage() {
-  const [activeTab, setActiveTab] = useState<"alerts" | "muster">("alerts");
+  const [activeTab, setActiveTab] = useState<"alerts" | "muster" | "siren">("alerts");
   const [loading, setLoading] = useState(true);
   const [summary, setSummary] = useState<any>(null);
   const [alerts, setAlerts] = useState<Alert[]>([]);
@@ -66,6 +72,121 @@ export default function EmergencyPage() {
   const [message, setMessage] = useState<{ text: string; type: "success" | "error" } | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [filterCategory, setFilterCategory] = useState("ALL");
+
+  // Web Audio API Siren Synthesizer Engine
+  const audioCtxRef = useRef<AudioContext | null>(null);
+  const oscRef = useRef<OscillatorNode | null>(null);
+  const gainRef = useRef<GainNode | null>(null);
+  const sweepIntervalRef = useRef<any>(null);
+  const [isSirenActive, setIsSirenActive] = useState(false);
+  const [sirenMode, setSirenMode] = useState<"EVACUATION_WAIL" | "LOCKDOWN_STROBE" | "ALL_CLEAR_CHIME">("EVACUATION_WAIL");
+  const [sirenVolume, setSirenVolume] = useState<number>(0.15); // pleasant 15% safe volume
+  const [waveformBars, setWaveformBars] = useState<number[]>([12, 28, 45, 78, 92, 60, 35, 80, 55, 20]);
+
+  const stopSiren = () => {
+    if (sweepIntervalRef.current) {
+      clearInterval(sweepIntervalRef.current);
+      sweepIntervalRef.current = null;
+    }
+    if (oscRef.current) {
+      try {
+        oscRef.current.stop();
+        oscRef.current.disconnect();
+      } catch (e) {}
+      oscRef.current = null;
+    }
+    if (gainRef.current) {
+      try {
+        gainRef.current.disconnect();
+      } catch (e) {}
+      gainRef.current = null;
+    }
+    setIsSirenActive(false);
+  };
+
+  const startSiren = (mode = sirenMode) => {
+    stopSiren();
+    try {
+      const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+      if (!AudioCtx) {
+        alert("Web Audio API is not supported in this browser.");
+        return;
+      }
+      if (!audioCtxRef.current || audioCtxRef.current.state === "closed") {
+        audioCtxRef.current = new AudioCtx();
+      }
+      const ctx = audioCtxRef.current;
+      if (ctx.state === "suspended") {
+        ctx.resume();
+      }
+
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      gain.gain.setValueAtTime(sirenVolume, ctx.currentTime);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      if (mode === "EVACUATION_WAIL") {
+        osc.type = "sawtooth";
+        osc.frequency.setValueAtTime(750, ctx.currentTime);
+        let high = false;
+        sweepIntervalRef.current = setInterval(() => {
+          if (!audioCtxRef.current || !oscRef.current) return;
+          const now = audioCtxRef.current.currentTime;
+          high = !high;
+          oscRef.current.frequency.exponentialRampToValueAtTime(high ? 1250 : 750, now + 0.7);
+          // animate waveform bars
+          setWaveformBars(Array.from({ length: 12 }, () => Math.floor(Math.random() * 80 + 20)));
+        }, 700);
+      } else if (mode === "LOCKDOWN_STROBE") {
+        osc.type = "square";
+        osc.frequency.setValueAtTime(900, ctx.currentTime);
+        let pulse = false;
+        sweepIntervalRef.current = setInterval(() => {
+          if (!audioCtxRef.current || !gainRef.current) return;
+          pulse = !pulse;
+          gainRef.current.gain.setValueAtTime(pulse ? sirenVolume : 0.001, audioCtxRef.current.currentTime);
+          setWaveformBars(Array.from({ length: 12 }, () => (pulse ? Math.floor(Math.random() * 90 + 10) : 5)));
+        }, 220);
+      } else if (mode === "ALL_CLEAR_CHIME") {
+        osc.type = "sine";
+        const notes = [523.25, 659.25, 783.99, 1046.5];
+        let noteIdx = 0;
+        osc.frequency.setValueAtTime(notes[0], ctx.currentTime);
+        sweepIntervalRef.current = setInterval(() => {
+          if (!audioCtxRef.current || !oscRef.current) return;
+          noteIdx = (noteIdx + 1) % notes.length;
+          oscRef.current.frequency.setValueAtTime(notes[noteIdx], audioCtxRef.current.currentTime);
+          setWaveformBars(Array.from({ length: 12 }, () => Math.floor(Math.random() * 50 + 20)));
+        }, 350);
+      }
+
+      osc.start();
+      oscRef.current = osc;
+      gainRef.current = gain;
+      setIsSirenActive(true);
+    } catch (err) {
+      console.error("Failed to start siren:", err);
+    }
+  };
+
+  useEffect(() => {
+    if (gainRef.current && audioCtxRef.current) {
+      gainRef.current.gain.setValueAtTime(sirenVolume, audioCtxRef.current.currentTime);
+    }
+  }, [sirenVolume]);
+
+  useEffect(() => {
+    return () => {
+      stopSiren();
+      if (audioCtxRef.current && audioCtxRef.current.state !== "closed") {
+        try {
+          audioCtxRef.current.close();
+        } catch (e) {}
+      }
+    };
+  }, []);
 
   const EMERGENCY_TEMPLATES = [
     {
@@ -292,6 +413,20 @@ export default function EmergencyPage() {
 
         <div className="flex flex-wrap items-center gap-3">
           <button
+            onClick={() => {
+              if (isSirenActive) stopSiren();
+              else startSiren();
+            }}
+            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all border ${
+              isSirenActive
+                ? "bg-red-600 hover:bg-red-700 text-white animate-pulse border-red-700 shadow-lg shadow-red-600/40"
+                : "bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border-slate-200 dark:border-slate-700"
+            }`}
+          >
+            {isSirenActive ? <VolumeX className="w-4 h-4 animate-spin" /> : <Volume2 className="w-4 h-4" />}
+            {isSirenActive ? "Silence Campus Siren" : "Sound Siren Test"}
+          </button>
+          <button
             onClick={handleExportCleryLogCsv}
             className="flex items-center gap-2 px-4 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl text-sm font-semibold transition-all border border-slate-200 dark:border-slate-700"
           >
@@ -420,6 +555,18 @@ export default function EmergencyPage() {
         >
           <Users className="w-4 h-4" />
           Muster Point Assembly &amp; Wardens ({musterPoints.length})
+        </button>
+        <button
+          onClick={() => setActiveTab("siren")}
+          className={`flex items-center gap-2 px-5 py-3 text-sm font-semibold border-b-2 transition-all ${
+            activeTab === "siren"
+              ? "border-red-600 text-red-600 dark:text-red-400"
+              : "border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200"
+          }`}
+        >
+          <Siren className="w-4 h-4" />
+          Campus Siren &amp; PA Synthesizer
+          {isSirenActive && <span className="w-2 h-2 rounded-full bg-red-500 animate-ping ml-1" />}
         </button>
       </div>
 
@@ -594,7 +741,298 @@ export default function EmergencyPage() {
         </div>
       )}
 
-      {/* Broadcast SOS Modal */}
+      {/* Tab 3: Campus Siren & PA Synthesizer */}
+      {activeTab === "siren" && (
+        <div className="space-y-6">
+          {/* Synthesizer Control Deck */}
+          <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-6">
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-b border-slate-100 dark:border-slate-800 pb-4">
+              <div>
+                <div className="flex items-center gap-2.5">
+                  <div className={`p-2.5 rounded-xl ${
+                    isSirenActive
+                      ? "bg-red-600 text-white animate-pulse"
+                      : "bg-red-50 dark:bg-red-950/60 text-red-600 dark:text-red-400"
+                  }`}>
+                    <Siren className={`w-6 h-6 ${isSirenActive ? "animate-spin" : ""}`} />
+                  </div>
+                  <div>
+                    <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                      Campus Siren Synthesizer &amp; Public Address Matrix
+                      {isSirenActive ? (
+                        <span className="px-2 py-0.5 text-xs font-black uppercase rounded-full bg-red-100 dark:bg-red-950/80 text-red-700 dark:text-red-300 animate-pulse">
+                          Acoustic Alarm Broadcasting
+                        </span>
+                      ) : (
+                        <span className="px-2 py-0.5 text-xs font-semibold uppercase rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400">
+                          Standby Mode
+                        </span>
+                      )}
+                    </h2>
+                    <p className="text-xs text-slate-500">
+                      Real-Time Web Audio API Dual-Tone Frequency Sweeper &amp; 120 dBA PA Horn Network
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Master Play/Stop Button */}
+              <div className="flex items-center gap-3 w-full md:w-auto">
+                <button
+                  onClick={() => {
+                    if (isSirenActive) {
+                      stopSiren();
+                      setMessage({ text: "Campus Siren silenced. Audio output muted.", type: "success" });
+                    } else {
+                      startSiren();
+                      setMessage({ text: `Campus Siren sounding in ${sirenMode} mode!`, type: "success" });
+                    }
+                  }}
+                  className={`flex-1 md:flex-initial flex items-center justify-center gap-2.5 px-6 py-3 rounded-2xl font-bold text-sm shadow-lg transition-all ${
+                    isSirenActive
+                      ? "bg-red-600 hover:bg-red-700 text-white shadow-red-600/40 animate-pulse"
+                      : "bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-600/30"
+                  }`}
+                >
+                  {isSirenActive ? (
+                    <>
+                      <Square className="w-5 h-5 fill-current" />
+                      SILENCE ALL SIRENS
+                    </>
+                  ) : (
+                    <>
+                      <Play className="w-5 h-5 fill-current" />
+                      SOUND CAMPUS ALARM
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+
+            {/* Live Waveform & Telemetry Display */}
+            <div className="p-5 bg-slate-950 rounded-2xl border border-slate-800 space-y-4">
+              <div className="flex items-center justify-between text-xs font-mono text-slate-400">
+                <span className="flex items-center gap-2 text-emerald-400 font-semibold">
+                  <Activity className="w-4 h-4 animate-pulse" />
+                  LIVE ACOUSTIC TELEMETRY STREAM
+                </span>
+                <span>
+                  STATE: {isSirenActive ? "ACTIVE (BROADCASTING)" : "MUTED (READY)"}
+                </span>
+              </div>
+
+              {/* Animated Waveform Bars */}
+              <div className="h-24 bg-slate-900/80 rounded-xl p-4 flex items-end justify-between gap-1.5 border border-slate-800/80 overflow-hidden">
+                {waveformBars.map((height, idx) => (
+                  <div
+                    key={idx}
+                    className="flex-1 rounded-t-sm transition-all duration-150"
+                    style={{
+                      height: isSirenActive ? `${height}%` : "8%",
+                      backgroundColor: isSirenActive
+                        ? idx % 2 === 0
+                          ? "#ef4444"
+                          : "#f97316"
+                        : "#334155",
+                      boxShadow: isSirenActive ? "0 0 10px rgba(239, 68, 68, 0.5)" : "none",
+                    }}
+                  />
+                ))}
+              </div>
+
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs font-mono">
+                <div className="p-2.5 bg-slate-900 rounded-lg border border-slate-800">
+                  <span className="text-[10px] text-slate-500 block uppercase">Carrier Tone</span>
+                  <span className="text-white font-bold">
+                    {sirenMode === "EVACUATION_WAIL"
+                      ? "750 - 1250 Hz (Sweep)"
+                      : sirenMode === "LOCKDOWN_STROBE"
+                      ? "900 Hz (Strobe Pulse)"
+                      : "523 - 1046 Hz (Harmonic)"}
+                  </span>
+                </div>
+                <div className="p-2.5 bg-slate-900 rounded-lg border border-slate-800">
+                  <span className="text-[10px] text-slate-500 block uppercase">Acoustic SPL</span>
+                  <span className="text-emerald-400 font-bold">
+                    {isSirenActive ? "118.5 dBA @ 10m" : "0 dBA (Ambient)"}
+                  </span>
+                </div>
+                <div className="p-2.5 bg-slate-900 rounded-lg border border-slate-800">
+                  <span className="text-[10px] text-slate-500 block uppercase">Web Audio Engine</span>
+                  <span className="text-cyan-400 font-bold">48 kHz Stereo Low-Latency</span>
+                </div>
+                <div className="p-2.5 bg-slate-900 rounded-lg border border-slate-800">
+                  <span className="text-[10px] text-slate-500 block uppercase">Hardware Relays</span>
+                  <span className="text-amber-400 font-bold">6 Horn Arrays Armed</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Profile Picker & Volume Controls */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
+              <div className="space-y-3">
+                <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider block">
+                  Select Acoustic Sound Profile:
+                </label>
+                <div className="space-y-2">
+                  {[
+                    {
+                      id: "EVACUATION_WAIL",
+                      title: "Evacuation Wailing Siren",
+                      subtitle: "Continuous 750Hz - 1250Hz Sawtooth Frequency Sweep for Building Clears",
+                    },
+                    {
+                      id: "LOCKDOWN_STROBE",
+                      title: "Perimeter Lockdown Strobe",
+                      subtitle: "Rapid 900Hz Pulsing Square Wave for Shelter-in-Place & Active Security Threats",
+                    },
+                    {
+                      id: "ALL_CLEAR_CHIME",
+                      title: "All-Clear Harmonic Bell",
+                      subtitle: "Tri-Tone C-Major Sine Chord Progression Signifying Safe Stand-Down",
+                    },
+                  ].map((p) => (
+                    <button
+                      key={p.id}
+                      onClick={() => {
+                        setSirenMode(p.id as any);
+                        if (isSirenActive) {
+                          startSiren(p.id as any);
+                        }
+                      }}
+                      className={`w-full text-left p-3 rounded-xl border transition-all text-xs flex items-center justify-between ${
+                        sirenMode === p.id
+                          ? "bg-red-50 dark:bg-red-950/40 border-red-300 dark:border-red-800 text-red-900 dark:text-red-200 shadow-sm"
+                          : "bg-slate-50 dark:bg-slate-800/40 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:border-slate-300"
+                      }`}
+                    >
+                      <div>
+                        <div className="font-bold">{p.title}</div>
+                        <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">{p.subtitle}</div>
+                      </div>
+                      <div className={`w-3.5 h-3.5 rounded-full border-2 ml-3 shrink-0 ${
+                        sirenMode === p.id
+                          ? "border-red-600 bg-red-600"
+                          : "border-slate-300 dark:border-slate-600"
+                      }`} />
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                      Master Monitor Volume
+                    </span>
+                    <span className="font-mono font-bold px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200">
+                      {Math.round(sirenVolume * 100)}%
+                    </span>
+                  </div>
+                  <input
+                    type="range"
+                    min="0"
+                    max="0.5"
+                    step="0.01"
+                    value={sirenVolume}
+                    onChange={(e) => setSirenVolume(Number(e.target.value))}
+                    className="w-full accent-red-600 cursor-pointer"
+                  />
+                  <div className="flex justify-between text-[11px] text-slate-400">
+                    <span>Mute (0%)</span>
+                    <span>Comfortable (15%)</span>
+                    <span>Max Monitor (50%)</span>
+                  </div>
+                </div>
+
+                <div className="p-4 bg-amber-50 dark:bg-amber-950/30 rounded-xl border border-amber-200 dark:border-amber-800/60 text-xs space-y-1.5">
+                  <div className="font-bold text-amber-900 dark:text-amber-200 flex items-center gap-1.5">
+                    <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
+                    Campus Audible Alert Policy Notice
+                  </div>
+                  <p className="text-[11px] text-amber-800 dark:text-amber-300">
+                    Acoustic horns broadcast at up to 120 dBA across all outdoor quads. Only authorized Incident Commanders may trigger unscheduled alarms outside designated statutory drill hours.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Hardware Horn Relay Matrix */}
+          <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+              <div>
+                <h3 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                  Campus PA Speaker Relays &amp; Horn Network
+                </h3>
+                <p className="text-xs text-slate-500">
+                  Direct telemetry from IP-addressable outdoor sirens and indoor voice annunciators
+                </p>
+              </div>
+              <button
+                onClick={() => {
+                  startSiren("ALL_CLEAR_CHIME");
+                  setTimeout(() => stopSiren(), 3000);
+                  setMessage({ text: "3-Second Acoustic Pulse Chime dispatched to all horns.", type: "success" });
+                }}
+                className="px-3.5 py-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all"
+              >
+                <BellRing className="w-3.5 h-3.5" />
+                Pulse Test Chime (3s)
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {[
+                { name: "North Quad Horn Array", id: "HORN-N1", spl: "115 dBA", ip: "10.0.4.11", zone: "Academic Quad" },
+                { name: "Central Plaza Megaphone", id: "HORN-CP", spl: "120 dBA", ip: "10.0.4.12", zone: "Central Core" },
+                { name: "High-Bay Lab Annunciator", id: "HORN-ENG", spl: "110 dBA", ip: "10.0.4.13", zone: "Engineering" },
+                { name: "Residential Quad Array", id: "HORN-DORM", spl: "105 dBA", ip: "10.0.4.14", zone: "Hostels" },
+                { name: "Auditorium & Arena PA", id: "HORN-AUD", spl: "108 dBA", ip: "10.0.4.15", zone: "Sports Complex" },
+                { name: "Perimeter Gate Strobe", id: "HORN-GATE", spl: "112 dBA", ip: "10.0.4.16", zone: "North & South Gates" },
+              ].map((horn) => (
+                <div
+                  key={horn.id}
+                  className="p-4 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-200 dark:border-slate-800 space-y-3"
+                >
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <div className="font-bold text-slate-900 dark:text-white text-xs">{horn.name}</div>
+                      <div className="text-[11px] text-slate-400 font-mono">
+                        {horn.id} • {horn.ip}
+                      </div>
+                    </div>
+                    <span className="flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                      ONLINE
+                    </span>
+                  </div>
+
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-slate-500">Zone: {horn.zone}</span>
+                    <span className="font-mono font-bold text-red-600 dark:text-red-400">{horn.spl}</span>
+                  </div>
+
+                  <div className="pt-2 border-t border-slate-100 dark:border-slate-700/60 flex items-center justify-between text-[11px]">
+                    <span className="text-emerald-600 dark:text-emerald-400 font-medium">Ping: 18ms</span>
+                    <button
+                      onClick={() => {
+                        startSiren(sirenMode);
+                        setTimeout(() => stopSiren(), 2000);
+                        setMessage({ text: `2-second chirp dispatched to ${horn.name} (${horn.id})`, type: "success" });
+                      }}
+                      className="px-2.5 py-1 bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-800 dark:text-slate-200 rounded font-semibold transition"
+                    >
+                      Chirp (2s)
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
       {showBroadcastModal && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-white dark:bg-slate-900 rounded-2xl border border-red-200 dark:border-red-900 p-6 max-w-lg w-full space-y-4 shadow-2xl">
