@@ -1085,24 +1085,36 @@ export default function ClinicPage() {
             </div>
 
             <div className="space-y-3 text-xs">
+              {/* Patient Core Info */}
               <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 space-y-1.5">
-                <div className="flex justify-between">
+                <div className="flex justify-between items-center">
                   <span className="text-slate-500">Patient Full Name:</span>
                   <span className="font-bold text-slate-900 dark:text-white">{selectedConsultation.patientName}</span>
                 </div>
-                <div className="flex justify-between">
+                <div className="flex justify-between items-center">
                   <span className="text-slate-500">Roll / Institutional ID:</span>
                   <span className="font-mono text-slate-700 dark:text-slate-300">{selectedConsultation.patientRoll}</span>
                 </div>
-                <div className="flex justify-between">
+                <div className="flex justify-between items-center">
                   <span className="text-slate-500">Clinical Status:</span>
-                  <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${selectedConsultation.status === 'ADMITTED_SICK_BAY' ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'}`}>
+                  <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${selectedConsultation.status === 'ADMITTED_SICK_BAY' ? 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300' : 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'}`}>
                     {selectedConsultation.status === 'ADMITTED_SICK_BAY' ? 'Admitted to Sick Bay' : 'Treated & Discharged'}
                   </span>
                 </div>
               </div>
 
-              {/* Vitals */}
+              {/* Vitals Risk Indicator */}
+              {((selectedConsultation.vitals?.spo2Percent && selectedConsultation.vitals.spo2Percent < 95) ||
+                (selectedConsultation.vitals?.temperatureF && selectedConsultation.vitals.temperatureF > 100.4)) && (
+                <div className="p-2.5 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-800 flex items-center gap-2 text-amber-900 dark:text-amber-200">
+                  <AlertTriangle className="w-4 h-4 text-amber-600 flex-shrink-0" />
+                  <p className="text-[11px] font-medium leading-tight">
+                    Vitals Alert: Clinical observation required. Elevated temperature or hypoxic SpO2 reading detected.
+                  </p>
+                </div>
+              )}
+
+              {/* Vitals Grid */}
               <div>
                 <span className="font-semibold text-slate-700 dark:text-slate-300 block mb-1.5">Recorded Vital Signs:</span>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
@@ -1116,7 +1128,9 @@ export default function ClinicPage() {
                   </div>
                   <div className="p-2.5 bg-slate-50 dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 text-center">
                     <span className="text-slate-400 text-[10px] block">Oxygen (SpO2)</span>
-                    <span className="font-bold font-mono text-emerald-600 dark:text-emerald-400">{selectedConsultation.vitals?.spo2Percent || 99}%</span>
+                    <span className={`font-bold font-mono ${(selectedConsultation.vitals?.spo2Percent || 99) < 95 ? 'text-rose-600' : 'text-emerald-600 dark:text-emerald-400'}`}>
+                      {selectedConsultation.vitals?.spo2Percent || 99}%
+                    </span>
                   </div>
                   <div className="p-2.5 bg-slate-50 dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 text-center">
                     <span className="text-slate-400 text-[10px] block">Temperature</span>
@@ -1137,7 +1151,22 @@ export default function ClinicPage() {
                 </div>
                 {selectedConsultation.prescriptions && selectedConsultation.prescriptions.length > 0 && (
                   <div className="pt-1.5 border-t border-slate-200 dark:border-slate-700">
-                    <span className="text-slate-500 block text-[11px] mb-1">Dispensed Medications:</span>
+                    <div className="flex justify-between items-center mb-1">
+                      <span className="text-slate-500 block text-[11px]">Dispensed Medications:</span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          handleDispenseMedicine("MED-01", 2);
+                          setStatusMessage({
+                            type: "success",
+                            text: `Dispensed Rx package for Case ${selectedConsultation.caseNo} via Campus Pharmacy!`,
+                          });
+                        }}
+                        className="text-[10px] font-bold text-rose-600 hover:text-rose-700 dark:text-rose-400 flex items-center gap-1"
+                      >
+                        <Pill className="w-3 h-3" /> Dispense Rx from Pharmacy
+                      </button>
+                    </div>
                     <div className="space-y-1">
                       {selectedConsultation.prescriptions.map((rx: any, i: number) => (
                         <div key={i} className="flex justify-between p-1.5 bg-white dark:bg-slate-900 rounded border border-slate-200 dark:border-slate-700">
@@ -1148,6 +1177,34 @@ export default function ClinicPage() {
                     </div>
                   </div>
                 )}
+              </div>
+
+              {/* Physician Digital Stamp & Signature */}
+              <div className="p-2.5 rounded-xl bg-slate-100/70 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700 flex items-center justify-between text-[11px]">
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 flex-shrink-0" />
+                  <div>
+                    <span className="font-semibold text-slate-800 dark:text-slate-200">
+                      Digitally Verified by: Dr. Evelyn Reed, MD
+                    </span>
+                    <p className="text-[10px] text-slate-500">
+                      License # MED-2024-8199 • Campus Medical Officer
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const newStatus = selectedConsultation.status === "ADMITTED_SICK_BAY" ? "TREATED_DISCHARGED" : "ADMITTED_SICK_BAY";
+                    const updated = { ...selectedConsultation, status: newStatus };
+                    setSelectedConsultation(updated);
+                    setConsultations((prev) => prev.map((c) => c.id === updated.id ? updated : c));
+                    setStatusMessage({ type: "success", text: `Case ${updated.caseNo} status switched to ${newStatus}` });
+                  }}
+                  className="px-2 py-1 text-[10px] font-bold rounded bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-50"
+                >
+                  Toggle Admit Status
+                </button>
               </div>
             </div>
 

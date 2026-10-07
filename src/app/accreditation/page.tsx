@@ -708,7 +708,7 @@ export default function AccreditationPage() {
               <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">
                 Audited Key Indicators ({selectedCriterionDossier.keyIndicators.length})
               </h4>
-              <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
+              <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
                 {selectedCriterionDossier.keyIndicators.map((ki, idx) => (
                   <div key={idx} className="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl text-xs space-y-1 border border-slate-100 dark:border-slate-800">
                     <div className="flex justify-between items-center">
@@ -726,6 +726,16 @@ export default function AccreditationPage() {
               </div>
             </div>
 
+            {/* Qualitative IQAC Self Study Report Narrative */}
+            <div className="p-3.5 bg-blue-50/50 dark:bg-blue-950/20 rounded-xl border border-blue-200 dark:border-blue-900/40 text-xs space-y-1.5">
+              <span className="font-bold text-blue-950 dark:text-blue-200 flex items-center gap-1.5">
+                <FileText className="w-3.5 h-3.5 text-blue-600" /> IQAC Qualitative Narrative Justification (SSR 2026)
+              </span>
+              <p className="text-[11px] text-blue-900/80 dark:text-blue-300/80 leading-relaxed italic">
+                &ldquo;Continuous compliance achieved through institutional Outcome-Based Education (OBE), automated Bloom&rsquo;s taxonomy mapping, and verifiable real-time audit trails across academic, HR, and clinical subsystems.&rdquo;
+              </p>
+            </div>
+
             {/* Evidentiary Checklist */}
             <div className="p-3 bg-slate-50 dark:bg-slate-800/30 rounded-xl text-xs space-y-1.5 border border-slate-100 dark:border-slate-800 text-slate-600 dark:text-slate-300">
               <div className="font-bold text-slate-800 dark:text-slate-200">Statutory Documentary Evidence Index</div>
@@ -737,20 +747,46 @@ export default function AccreditationPage() {
               </div>
             </div>
 
-            <div className="flex justify-end gap-2.5 pt-2 border-t border-slate-100 dark:border-slate-800">
-              <button
-                onClick={() => window.print()}
-                className="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-colors"
-              >
-                <Printer className="w-3.5 h-3.5" />
-                Print Criterion Report
-              </button>
-              <button
-                onClick={() => setSelectedCriterionDossier(null)}
-                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-semibold shadow-sm transition-colors"
-              >
-                Done
-              </button>
+            <div className="flex flex-wrap items-center justify-between gap-2.5 pt-2 border-t border-slate-100 dark:border-slate-800">
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    const blob = new Blob(
+                      [
+                        `# NAAC / NIRF Criterion Assessment Report\n\nCriterion: ${selectedCriterionDossier.name} (Criterion #${selectedCriterionDossier.criterionNumber})\nScore: ${selectedCriterionDossier.scoreAchieved} / ${selectedCriterionDossier.weightage}\nGrade: ${selectedCriterionDossier.gradeEquivalent}\n\n## Key Indicators:\n` +
+                          selectedCriterionDossier.keyIndicators.map((ki: any) => `- ${ki.indicator}: Achieved ${ki.achieved} (Target: ${ki.target})`).join("\n")
+                      ],
+                      { type: "text/markdown" }
+                    );
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement("a");
+                    a.href = url;
+                    a.download = `Criterion-${selectedCriterionDossier.criterionNumber}-SSR.md`;
+                    a.click();
+                    URL.revokeObjectURL(url);
+                  }}
+                  className="px-3 py-1.5 bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/60 dark:hover:bg-blue-900/60 text-blue-700 dark:text-blue-300 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-colors border border-blue-200 dark:border-blue-800"
+                >
+                  <Download className="w-3.5 h-3.5" /> Export SSR (.md)
+                </button>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => window.print()}
+                  className="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-colors"
+                >
+                  <Printer className="w-3.5 h-3.5" />
+                  Print Report
+                </button>
+                <button
+                  onClick={() => setSelectedCriterionDossier(null)}
+                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-semibold shadow-sm transition-colors"
+                >
+                  Done
+                </button>
+              </div>
             </div>
           </div>
         </div>

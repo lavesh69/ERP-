@@ -1224,14 +1224,27 @@ ${evalCommitteeNotes}
               <div className="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl space-y-1">
                 <span className="text-[11px] text-slate-400 uppercase font-medium block">MakerSpace & IP</span>
                 <span className="font-semibold text-slate-900 dark:text-white block">
-                  {selectedStartupDossier.labDesksAllocated} Dedicated Hardware Desks
+                  {selectedStartupDossier.labDesksAllocated} Hardware Desks • Cleanroom B-12
                 </span>
                 <span className="text-indigo-600 dark:text-indigo-400 font-medium block">
-                  {selectedStartupDossier.patentsFiled} Patents Under Review
+                  PCT/US2026/049102 • {selectedStartupDossier.patentsFiled} Patents Filed
                 </span>
               </div>
               <div className="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl space-y-1">
-                <span className="text-[11px] text-slate-400 uppercase font-medium block">Assigned Lead Mentor</span>
+                <div className="flex justify-between items-center">
+                  <span className="text-[11px] text-slate-400 uppercase font-medium block">Lead Mentor</span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEvalVentureId(selectedStartupDossier.id);
+                      setActiveTab("investor");
+                      setSelectedStartupDossier(null);
+                    }}
+                    className="text-[10px] font-bold text-violet-600 dark:text-violet-400 hover:underline"
+                  >
+                    Open in Scorecard →
+                  </button>
+                </div>
                 <span className="font-semibold text-slate-900 dark:text-white block truncate">
                   {selectedStartupDossier.mentorName}
                 </span>

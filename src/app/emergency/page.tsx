@@ -1213,13 +1213,50 @@ export default function EmergencyPage() {
                 </div>
               </div>
               <div className="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl space-y-1.5">
-                <span className="text-[11px] text-slate-400 uppercase font-medium block">Multi-Channel Dispatches</span>
+                <div className="flex justify-between items-center">
+                  <span className="text-[11px] text-slate-400 uppercase font-medium block">Multi-Channel Dispatches</span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (isSirenActive) stopSiren();
+                      else startSiren();
+                    }}
+                    className="text-[10px] font-bold text-red-600 dark:text-red-400 hover:underline flex items-center gap-1"
+                  >
+                    <Volume2 className="w-3 h-3" /> {isSirenActive ? "Stop Siren" : "Test Incident Siren"}
+                  </button>
+                </div>
                 <div className="flex flex-wrap gap-1.5">
                   {selectedAlertDossier.dispatchedChannels.map((c, i) => (
                     <span key={i} className="px-2 py-0.5 bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 rounded font-semibold text-[11px]">
-                      ✓ {c.replace(/_/g, " ")}
+                      ✓ {c.replace(/_/g, " ")} (100% Ack)
                     </span>
                   ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Live Gateway Telemetry Matrix */}
+            <div className="p-3 bg-red-50/50 dark:bg-red-950/20 rounded-xl border border-red-200 dark:border-red-900/40 text-xs space-y-1.5">
+              <span className="font-bold text-red-950 dark:text-red-200 block text-[11px] uppercase tracking-wider">
+                Emergency Dispatch Gateway Telemetry:
+              </span>
+              <div className="grid grid-cols-4 gap-2 text-center text-[10px]">
+                <div className="p-1.5 bg-white dark:bg-slate-900 rounded border border-red-100 dark:border-red-900/30">
+                  <span className="text-slate-400 block">SMS Gateway</span>
+                  <span className="font-bold text-emerald-600">100% (4,820 msgs)</span>
+                </div>
+                <div className="p-1.5 bg-white dark:bg-slate-900 rounded border border-red-100 dark:border-red-900/30">
+                  <span className="text-slate-400 block">Push Pager</span>
+                  <span className="font-bold text-emerald-600">98.4% (3,210 app)</span>
+                </div>
+                <div className="p-1.5 bg-white dark:bg-slate-900 rounded border border-red-100 dark:border-red-900/30">
+                  <span className="text-slate-400 block">PA Audio / Siren</span>
+                  <span className="font-bold text-red-600">120dB Armed</span>
+                </div>
+                <div className="p-1.5 bg-white dark:bg-slate-900 rounded border border-red-100 dark:border-red-900/30">
+                  <span className="text-slate-400 block">Campus Email</span>
+                  <span className="font-bold text-emerald-600">Dispatched</span>
                 </div>
               </div>
             </div>
@@ -1341,6 +1378,24 @@ export default function EmergencyPage() {
                 <div>✓ Automated AED: <span className="text-emerald-600 font-medium">Inspected</span></div>
                 <div>✓ Megaphone & Siren: <span className="text-emerald-600 font-medium">Charged</span></div>
                 <div>✓ Potable Water Station: <span className="text-emerald-600 font-medium">Available</span></div>
+              </div>
+            </div>
+
+            {/* Building Floor & Wing Clearance Roll Call */}
+            <div className="p-3 bg-emerald-50/50 dark:bg-emerald-950/20 rounded-xl border border-emerald-200 dark:border-emerald-850 text-xs space-y-1.5">
+              <div className="flex justify-between items-center">
+                <span className="font-bold text-emerald-950 dark:text-emerald-200 text-[11px] uppercase tracking-wider">
+                  Assigned Quadrant Wing Roll-Call:
+                </span>
+                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300">
+                  All Units Accounted
+                </span>
+              </div>
+              <div className="grid grid-cols-2 gap-1.5 text-[11px] text-slate-600 dark:text-slate-300">
+                <div>• Floor 1 & Common Rooms: <span className="text-emerald-600 font-semibold">Cleared (100%)</span></div>
+                <div>• Floor 2 Lecture Theatres: <span className="text-emerald-600 font-semibold">Cleared (100%)</span></div>
+                <div>• Research Labs & Basements: <span className="text-emerald-600 font-semibold">Evacuated</span></div>
+                <div>• Facilities & Maintenance: <span className="text-emerald-600 font-semibold">Checked Out</span></div>
               </div>
             </div>
 

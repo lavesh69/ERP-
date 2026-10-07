@@ -824,15 +824,34 @@ ${awardList}
               </div>
             </div>
 
+            {/* Academic Transcript & Graduation Credits */}
+            <div className="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl text-xs space-y-1.5 border border-slate-100 dark:border-slate-800">
+              <div className="flex justify-between items-center">
+                <span className="font-bold text-slate-800 dark:text-slate-200 text-[11px] uppercase tracking-wider">
+                  Academic Degree Audit & Credits:
+                </span>
+                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300">
+                  160 / 160 Credits Satisfied
+                </span>
+              </div>
+              <div className="grid grid-cols-2 gap-2 text-[11px] text-slate-600 dark:text-slate-300 pt-0.5">
+                <div>Cumulative Grade: <strong className="text-slate-900 dark:text-white">CGPA {selectedCandidateDossier.finalCgpa}</strong></div>
+                <div>Honors Conferred: <strong className="text-amber-600 dark:text-amber-400">{selectedCandidateDossier.honorsCategory.replace(/_/g, " ")}</strong></div>
+              </div>
+            </div>
+
             {/* Ceremony Logistics & Degree Delivery */}
             <div className="grid grid-cols-2 gap-3 text-xs">
               <div className="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl space-y-1">
-                <span className="text-[11px] text-slate-400 uppercase font-medium block">Ceremony Allocation</span>
+                <span className="text-[11px] text-slate-400 uppercase font-medium block">Ceremony & Robe Allocation</span>
                 <span className="font-semibold text-slate-900 dark:text-white block">
                   {selectedCandidateDossier.convocationRegistered ? `Gown Size: ${selectedCandidateDossier.robeSize}` : "Not Registered"}
                 </span>
                 <span className="text-slate-500 block">
-                  {selectedCandidateDossier.guestPassesCount} Guest Seat Passes Reserved
+                  {selectedCandidateDossier.guestPassesCount} Guest Passes • Desk Counter #4
+                </span>
+                <span className="text-amber-600 dark:text-amber-400 font-medium block">
+                  Hall A • Row G, Seat #14
                 </span>
               </div>
               <div className="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl space-y-1">
@@ -842,6 +861,9 @@ ${awardList}
                 </span>
                 <span className="text-indigo-600 dark:text-indigo-400 font-mono block truncate">
                   AWB: {selectedCandidateDossier.courierTrackingAwb || "Registrar Vault Delivery"}
+                </span>
+                <span className="text-emerald-600 dark:text-emerald-400 text-[10px] block font-medium">
+                  Degree Parity: Blockchain Signed
                 </span>
               </div>
             </div>

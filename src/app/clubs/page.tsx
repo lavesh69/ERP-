@@ -978,37 +978,56 @@ export default function ClubsPage() {
 
             <div className="space-y-3 text-xs">
               <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 space-y-1.5">
-                <div className="flex justify-between">
+                <div className="flex justify-between items-center">
                   <span className="text-slate-500">Activity Title:</span>
                   <span className="font-bold text-slate-900 dark:text-white">{selectedClaimDossier.activityTitle}</span>
                 </div>
-                <div className="flex justify-between">
+                <div className="flex justify-between items-center">
                   <span className="text-slate-500">Hosting Club / Society:</span>
                   <span className="font-medium text-slate-800 dark:text-slate-200">{selectedClaimDossier.clubName}</span>
                 </div>
-                <div className="flex justify-between">
+                <div className="flex justify-between items-center">
                   <span className="text-slate-500">Point Category:</span>
                   <span className="font-semibold text-amber-600 dark:text-amber-400">{selectedClaimDossier.category}</span>
                 </div>
-                <div className="flex justify-between">
+                <div className="flex justify-between items-center">
                   <span className="text-slate-500">Participation Effort:</span>
                   <span className="font-medium text-slate-800 dark:text-slate-200">{selectedClaimDossier.participationHours} Hours</span>
                 </div>
-                <div className="flex justify-between">
+                <div className="flex justify-between items-center">
                   <span className="text-slate-500">Points Awarded / Claimed:</span>
                   <span className="font-bold text-emerald-600 dark:text-emerald-400">{selectedClaimDossier.pointsAwarded || selectedClaimDossier.pointsClaimed} Points</span>
                 </div>
-                <div className="flex justify-between">
+                <div className="flex justify-between items-center">
                   <span className="text-slate-500">Verification State:</span>
                   <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
                     selectedClaimDossier.status === 'APPROVED'
-                      ? 'bg-emerald-100 text-emerald-800'
+                      ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
                       : selectedClaimDossier.status === 'REJECTED'
-                      ? 'bg-rose-100 text-rose-800'
-                      : 'bg-amber-100 text-amber-800'
+                      ? 'bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300'
+                      : 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300'
                   }`}>
                     {selectedClaimDossier.status}
                   </span>
+                </div>
+              </div>
+
+              {/* Verified Certificate Preview Block */}
+              <div className="p-3.5 rounded-xl bg-amber-50/50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/40 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-bold text-amber-900 dark:text-amber-200 flex items-center gap-1.5">
+                    <Award className="w-3.5 h-3.5 text-amber-600" /> Official Co-Curricular Certificate of Merit
+                  </span>
+                  <span className="text-[10px] font-mono text-amber-700 dark:text-amber-300">
+                    CERT-{(selectedClaimDossier.claimRef || "001").replace(/\D/g, "") || "9982"}
+                  </span>
+                </div>
+                <p className="text-[11px] text-amber-950 dark:text-amber-200/90 leading-relaxed italic bg-white/60 dark:bg-slate-900/60 p-2 rounded-lg border border-amber-100 dark:border-amber-900/30">
+                  &ldquo;This is to certify active leadership & participation in {selectedClaimDossier.activityTitle} organized by {selectedClaimDossier.clubName}. Accredited towards mandatory university co-curricular activity points.&rdquo;
+                </p>
+                <div className="flex items-center justify-between text-[10px] text-amber-700 dark:text-amber-400 pt-0.5">
+                  <span>AICTE Activity Point Multiplier: 1.25x</span>
+                  <span>Dean of Student Affairs Signed</span>
                 </div>
               </div>
 
@@ -1042,29 +1061,28 @@ export default function ClubsPage() {
             </div>
 
             <div className="pt-2 flex flex-wrap items-center justify-between gap-2 border-t border-slate-200 dark:border-slate-800">
-              <div className="flex items-center gap-2 text-xs">
-                {selectedClaimDossier.status === "PENDING_FACULTY_REVIEW" && (
-                  <>
-                    <button
-                      onClick={async () => {
-                        await handleVerifyClaim(selectedClaimDossier.id, "APPROVED", selectedClaimDossier.pointsClaimed);
-                        setSelectedClaimDossier((prev: any) => ({ ...prev, status: "APPROVED", pointsAwarded: prev.pointsClaimed }));
-                      }}
-                      className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-semibold transition-colors"
-                    >
-                      Approve Points
-                    </button>
-                    <button
-                      onClick={async () => {
-                        await handleVerifyClaim(selectedClaimDossier.id, "REJECTED");
-                        setSelectedClaimDossier((prev: any) => ({ ...prev, status: "REJECTED" }));
-                      }}
-                      className="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300 rounded-lg font-semibold transition-colors"
-                    >
-                      Reject Claim
-                    </button>
-                  </>
-                )}
+              <div className="flex items-center gap-1.5 text-xs">
+                {(["APPROVED", "PENDING_FACULTY_REVIEW", "REJECTED"] as const).map((st) => (
+                  <button
+                    key={st}
+                    type="button"
+                    onClick={async () => {
+                      await handleVerifyClaim(selectedClaimDossier.id, st as any, selectedClaimDossier.pointsClaimed);
+                      setSelectedClaimDossier((prev: any) => ({
+                        ...prev,
+                        status: st,
+                        pointsAwarded: st === "APPROVED" ? prev.pointsClaimed : 0,
+                      }));
+                    }}
+                    className={`px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all ${
+                      selectedClaimDossier.status === st
+                        ? "bg-amber-600 text-white shadow-sm"
+                        : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200"
+                    }`}
+                  >
+                    {st === "PENDING_FACULTY_REVIEW" ? "PENDING" : st}
+                  </button>
+                ))}
               </div>
 
               <div className="flex items-center gap-2">

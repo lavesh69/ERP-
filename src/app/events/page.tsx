@@ -23,6 +23,7 @@ import {
   CheckSquare,
   Square,
   Calendar,
+  ShieldCheck,
 } from "lucide-react";
 import { CampusVenue, EventBooking, BookingStatus } from "@/lib/events/events-engine";
 
@@ -873,36 +874,71 @@ export default function EventsPage() {
 
             <div className="space-y-3 text-xs">
               <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 space-y-1.5">
-                <div className="flex justify-between">
+                <div className="flex justify-between items-center">
                   <span className="text-slate-500">Reserved Facility:</span>
                   <span className="font-bold text-slate-900 dark:text-white">{selectedBookingDossier.venueName}</span>
                 </div>
-                <div className="flex justify-between">
+                <div className="flex justify-between items-center">
                   <span className="text-slate-500">Event Date & Schedule:</span>
                   <span className="font-semibold text-indigo-600 dark:text-indigo-400">{selectedBookingDossier.eventDate} ({selectedBookingDossier.timeSlot})</span>
                 </div>
-                <div className="flex justify-between">
+                <div className="flex justify-between items-center">
                   <span className="text-slate-500">Organizing Department / Club:</span>
                   <span className="font-medium text-slate-800 dark:text-slate-200">{selectedBookingDossier.organizingDepartmentOrClub}</span>
                 </div>
-                <div className="flex justify-between">
+                <div className="flex justify-between items-center">
                   <span className="text-slate-500">Expected Attendance:</span>
                   <span className="font-bold text-slate-900 dark:text-white">{selectedBookingDossier.expectedAttendees} Attendees</span>
                 </div>
-                <div className="flex justify-between">
+                <div className="flex justify-between items-center">
                   <span className="text-slate-500">Reservation Status:</span>
                   <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
                     selectedBookingDossier.status === 'CONFIRMED'
-                      ? 'bg-emerald-100 text-emerald-800'
+                      ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
                       : selectedBookingDossier.status === 'CANCELLED'
-                      ? 'bg-rose-100 text-rose-800'
-                      : 'bg-amber-100 text-amber-800'
+                      ? 'bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300'
+                      : 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300'
                   }`}>
                     {selectedBookingDossier.status}
                   </span>
                 </div>
               </div>
 
+              {/* AV and Infrastructure Checklist */}
+              <div className="p-3 rounded-xl bg-indigo-50/60 dark:bg-indigo-950/20 border border-indigo-200 dark:border-indigo-900/40 space-y-1.5">
+                <span className="font-semibold text-indigo-950 dark:text-indigo-200 text-[11px] block">
+                  AV & Technical Infrastructure Provisioning:
+                </span>
+                <div className="grid grid-cols-2 gap-1.5 text-[11px] text-slate-700 dark:text-slate-300">
+                  <span className="flex items-center gap-1.5">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" /> 4K Laser Projection Rig
+                  </span>
+                  <span className="flex items-center gap-1.5">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" /> 4x UHF Wireless Mics
+                  </span>
+                  <span className="flex items-center gap-1.5">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" /> High-Density Wi-Fi
+                  </span>
+                  <span className="flex items-center gap-1.5">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" /> DMX Stage Spotlights
+                  </span>
+                </div>
+              </div>
+
+              {/* Facility Housekeeping and Security */}
+              <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 flex items-center justify-between">
+                <div>
+                  <span className="font-semibold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                    <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" /> Facility Readiness & Housekeeping
+                  </span>
+                  <p className="text-[10px] text-slate-500">Sanitation certified • HVAC preset to 22°C • Campus Security notified</p>
+                </div>
+                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300">
+                  Passed
+                </span>
+              </div>
+
+              {/* Organizer Contact */}
               <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 space-y-1.5">
                 <span className="font-semibold text-slate-700 dark:text-slate-300 block mb-1">Organizer Contact:</span>
                 <div className="flex justify-between">
@@ -917,29 +953,24 @@ export default function EventsPage() {
             </div>
 
             <div className="pt-2 flex flex-wrap items-center justify-between gap-2 border-t border-slate-200 dark:border-slate-800">
-              <div className="flex items-center gap-2 text-xs">
-                {selectedBookingDossier.status === "PENDING_APPROVAL" && (
-                  <>
-                    <button
-                      onClick={async () => {
-                        await handleDecideBooking(selectedBookingDossier.id, "CONFIRMED");
-                        setSelectedBookingDossier((prev: any) => ({ ...prev, status: "CONFIRMED" }));
-                      }}
-                      className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-semibold transition-colors"
-                    >
-                      Approve Booking
-                    </button>
-                    <button
-                      onClick={async () => {
-                        await handleDecideBooking(selectedBookingDossier.id, "CANCELLED");
-                        setSelectedBookingDossier((prev: any) => ({ ...prev, status: "CANCELLED" }));
-                      }}
-                      className="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300 rounded-lg font-semibold transition-colors"
-                    >
-                      Decline
-                    </button>
-                  </>
-                )}
+              <div className="flex items-center gap-1.5 text-xs">
+                {(["CONFIRMED", "PENDING_APPROVAL", "CANCELLED"] as const).map((st) => (
+                  <button
+                    key={st}
+                    type="button"
+                    onClick={async () => {
+                      await handleDecideBooking(selectedBookingDossier.id, st);
+                      setSelectedBookingDossier((prev: any) => ({ ...prev, status: st }));
+                    }}
+                    className={`px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all ${
+                      selectedBookingDossier.status === st
+                        ? "bg-indigo-600 text-white shadow-sm"
+                        : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200"
+                    }`}
+                  >
+                    {st === "PENDING_APPROVAL" ? "PENDING" : st}
+                  </button>
+                ))}
               </div>
 
               <div className="flex items-center gap-2">

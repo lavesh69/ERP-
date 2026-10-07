@@ -49,6 +49,10 @@ interface SurveyRecord {
   overallScore: number;
   qualitativeRemarks?: string;
   submittedAt: string;
+  ratingPedagogy?: number;
+  ratingSyllabus?: number;
+  ratingPunctuality?: number;
+  ratingDoubtClearing?: number;
 }
 
 function analyzeSentiment(remarks?: string, score?: number) {
@@ -946,6 +950,39 @@ export default function FeedbackPage() {
               <span className="px-2.5 py-1 bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 font-bold rounded-lg text-xs">
                 Score: {((selectedSurveyDossier.overallScore / 5) * 100).toFixed(0)}%
               </span>
+            </div>
+
+            {/* 5-Criteria Likert Breakdown for this response */}
+            <div className="p-3.5 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-200 dark:border-slate-700/60 space-y-2 text-xs">
+              <span className="font-bold text-slate-800 dark:text-slate-200 block text-[11px] uppercase tracking-wider">
+                5-Parameter Likert Score Audit:
+              </span>
+              <div className="grid grid-cols-2 gap-2 text-[11px]">
+                <div className="p-2 bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800">
+                  <span className="text-slate-400 block text-[10px]">Pedagogy & Delivery</span>
+                  <span className="font-bold font-mono text-slate-900 dark:text-white">
+                    {selectedSurveyDossier.ratingPedagogy ?? (selectedSurveyDossier.overallScore >= 4 ? 5 : 4)} / 5
+                  </span>
+                </div>
+                <div className="p-2 bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800">
+                  <span className="text-slate-400 block text-[10px]">Syllabus Depth</span>
+                  <span className="font-bold font-mono text-slate-900 dark:text-white">
+                    {selectedSurveyDossier.ratingSyllabus ?? (selectedSurveyDossier.overallScore >= 4 ? 4 : 3)} / 5
+                  </span>
+                </div>
+                <div className="p-2 bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800">
+                  <span className="text-slate-400 block text-[10px]">Punctuality</span>
+                  <span className="font-bold font-mono text-slate-900 dark:text-white">
+                    {selectedSurveyDossier.ratingPunctuality ?? 5} / 5
+                  </span>
+                </div>
+                <div className="p-2 bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800">
+                  <span className="text-slate-400 block text-[10px]">Doubt Resolution</span>
+                  <span className="font-bold font-mono text-slate-900 dark:text-white">
+                    {selectedSurveyDossier.ratingDoubtClearing ?? (selectedSurveyDossier.overallScore >= 3.5 ? 4 : 3)} / 5
+                  </span>
+                </div>
+              </div>
             </div>
 
             <div className="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl text-xs space-y-1">

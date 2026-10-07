@@ -1133,12 +1133,50 @@ export default function InternationalPage() {
                 <span className="text-slate-500 block">Visa Expiry: {selectedExchangeDossier.visaExpiryDate}</span>
               </div>
               <div className="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl space-y-1">
-                <span className="text-[11px] text-slate-400 uppercase font-medium block">FRRO / Global Grant</span>
+                <div className="flex justify-between items-center">
+                  <span className="text-[11px] text-slate-400 uppercase font-medium block">FRRO / Global Grant</span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setForexAmount(selectedExchangeDossier.scholarshipGrantAmount || 2500);
+                      setShowForexModal(true);
+                    }}
+                    className="text-[10px] font-bold text-emerald-600 hover:text-emerald-700 underline"
+                  >
+                    Forex Converter
+                  </button>
+                </div>
                 <span className="font-semibold text-emerald-600 dark:text-emerald-400 block">
                   Status: {selectedExchangeDossier.frroStatus}
                 </span>
                 <span className="text-slate-900 dark:text-white font-bold block">
                   Grant Disbursed: ${selectedExchangeDossier.scholarshipGrantAmount}
+                </span>
+              </div>
+            </div>
+
+            {/* Overseas Travel Medical Insurance & Host Emergency Contact */}
+            <div className="grid grid-cols-2 gap-3 text-xs">
+              <div className="p-3 bg-cyan-50/50 dark:bg-cyan-950/20 rounded-xl border border-cyan-200 dark:border-cyan-900/40 space-y-1">
+                <span className="text-[11px] font-semibold text-cyan-950 dark:text-cyan-200 block">
+                  Overseas Medical Health Insurance:
+                </span>
+                <span className="font-mono text-slate-800 dark:text-slate-200 block text-[11px]">
+                  Policy: ALLIANZ-GLOB-{(selectedExchangeDossier.id || "001").replace(/\D/g, "") || "8921"}
+                </span>
+                <span className="text-[10px] text-cyan-700 dark:text-cyan-400 block">
+                  Allianz Worldwide Care • $500,000 USD Medical Evacuation Covered
+                </span>
+              </div>
+              <div className="p-3 bg-cyan-50/50 dark:bg-cyan-950/20 rounded-xl border border-cyan-200 dark:border-cyan-900/40 space-y-1">
+                <span className="text-[11px] font-semibold text-cyan-950 dark:text-cyan-200 block">
+                  Host IRO Emergency Contact:
+                </span>
+                <span className="font-medium text-slate-800 dark:text-slate-200 block text-[11px]">
+                  Dr. Hans Schmidt (Dean International)
+                </span>
+                <span className="text-[10px] text-cyan-700 dark:text-cyan-400 block font-mono">
+                  +49 89 289 01 • 24/7 Desk Active
                 </span>
               </div>
             </div>

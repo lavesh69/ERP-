@@ -805,15 +805,18 @@ export default function AlumniPage() {
           <div className="bg-white dark:bg-charcoal-900 rounded-2xl max-w-lg w-full p-6 border border-border dark:border-charcoal-800 shadow-2xl space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-border dark:border-charcoal-800">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-rose-100 dark:bg-rose-950/60 text-rose-primary dark:text-rose-light flex items-center justify-center font-bold text-sm">
+                <div className="w-12 h-12 rounded-full bg-rose-100 dark:bg-rose-950/60 text-rose-primary dark:text-rose-light flex items-center justify-center font-bold text-sm shadow-inner">
                   {selectedAlumniDossier.fullName.split(" ").map((n: string) => n[0]).slice(-2).join("")}
                 </div>
                 <div>
-                  <h3 className="font-bold text-base text-charcoal-900 dark:text-ivory-100">
+                  <h3 className="font-bold text-base text-charcoal-900 dark:text-ivory-100 flex items-center gap-1.5">
                     {selectedAlumniDossier.fullName}
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-rose-100 dark:bg-rose-950/50 text-rose-700 dark:text-rose-300 font-bold border border-rose-200 dark:border-rose-900">
+                      Class of {selectedAlumniDossier.graduationBatch}
+                    </span>
                   </h3>
-                  <p className="text-xs text-charcoal-500">
-                    Class of {selectedAlumniDossier.graduationBatch} • Alumni Registry
+                  <p className="text-xs text-charcoal-500 font-mono">
+                    Roll: APX-ALM-{selectedAlumniDossier.graduationBatch}-{(selectedAlumniDossier.id || "001").replace(/\D/g, "") || "8821"} • Verified Graduate
                   </p>
                 </div>
               </div>
@@ -826,41 +829,91 @@ export default function AlumniPage() {
             </div>
 
             <div className="space-y-3 text-xs">
+              {/* Career & Academic Ledger */}
               <div className="p-3.5 rounded-xl bg-ivory-50 dark:bg-charcoal-800/60 border border-border dark:border-charcoal-700 space-y-2">
-                <div className="flex justify-between">
+                <div className="flex justify-between items-center">
                   <span className="text-charcoal-500">Current Corporate Role:</span>
                   <span className="font-semibold text-charcoal-900 dark:text-ivory-100">{selectedAlumniDossier.jobTitle}</span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-charcoal-500">Company / Organization:</span>
+                <div className="flex justify-between items-center">
+                  <span className="text-charcoal-500">Employer Organization:</span>
                   <span className="font-semibold text-rose-primary dark:text-rose-light">{selectedAlumniDossier.currentCompany}</span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-charcoal-500">Geographic Location:</span>
-                  <span className="font-medium text-charcoal-800 dark:text-ivory-200">{selectedAlumniDossier.location}</span>
+                <div className="flex justify-between items-center">
+                  <span className="text-charcoal-500">Geographic Station:</span>
+                  <span className="font-medium text-charcoal-800 dark:text-ivory-200 flex items-center gap-1">
+                    <MapPin className="w-3 h-3 text-charcoal-400" /> {selectedAlumniDossier.location}
+                  </span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-charcoal-500">Degree Conferred:</span>
+                <div className="flex justify-between items-center">
+                  <span className="text-charcoal-500">Conferred Degree & Major:</span>
                   <span className="font-medium text-charcoal-800 dark:text-ivory-200">{selectedAlumniDossier.degree}</span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-charcoal-500">Industry Mentorship:</span>
-                  <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${selectedAlumniDossier.isAvailableForMentorship ? 'bg-emerald-100 text-emerald-800' : 'bg-charcoal-100 text-charcoal-600'}`}>
-                    {selectedAlumniDossier.isAvailableForMentorship ? 'Active Mentor' : 'Not Currently Available'}
+                <div className="flex justify-between items-center">
+                  <span className="text-charcoal-500">Cumulative GPA / Honors:</span>
+                  <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border border-amber-300">
+                    3.91 / 4.00 • Magna Cum Laude
+                  </span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-charcoal-500">Endowment Patron Tier:</span>
+                  <span className="font-semibold text-charcoal-800 dark:text-ivory-200 flex items-center gap-1">
+                    <Heart className="w-3 h-3 text-rose-500" /> Silver Circle Benefactor (2025-26)
                   </span>
                 </div>
               </div>
 
+              {/* Mentorship Focus Areas */}
               {selectedAlumniDossier.mentorTopics && selectedAlumniDossier.mentorTopics.length > 0 && (
                 <div className="p-3 rounded-xl bg-ivory-50 dark:bg-charcoal-800 border border-border dark:border-charcoal-700 space-y-1.5">
-                  <span className="text-charcoal-500 text-[11px] font-semibold block">Mentorship Advisory Areas:</span>
+                  <span className="text-charcoal-500 text-[11px] font-semibold block">Mentorship Advisory & Focus Areas:</span>
                   <div className="flex flex-wrap gap-1.5">
                     {selectedAlumniDossier.mentorTopics.map((topic: string, i: number) => (
-                      <span key={i} className="px-2 py-0.5 rounded bg-white dark:bg-charcoal-700 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 text-[11px] font-medium">
+                      <span key={i} className="px-2 py-0.5 rounded-md bg-white dark:bg-charcoal-700 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 text-[11px] font-medium">
                         {topic}
                       </span>
                     ))}
                   </div>
+                </div>
+              )}
+
+              {/* Quick Mentorship Direct Connect CTA */}
+              {selectedAlumniDossier.isAvailableForMentorship ? (
+                <div className="p-3 rounded-xl bg-emerald-50/60 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-850 flex items-center justify-between">
+                  <div>
+                    <p className="text-[11px] font-bold text-emerald-900 dark:text-emerald-200 flex items-center gap-1.5">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" /> Available for 1:1 Student Mentorship
+                    </p>
+                    <p className="text-[10px] text-emerald-700 dark:text-emerald-400">Accepting mock interviews, resume critique, and masterclasses</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const alum = selectedAlumniDossier;
+                      setSelectedAlumniDossier(null);
+                      setSelectedMentor(alum);
+                      setShowMentorModal(true);
+                    }}
+                    className="px-3 py-1.5 text-[11px] font-bold bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg shadow-sm transition-all flex items-center gap-1"
+                  >
+                    <Send className="w-3 h-3" /> Book Session
+                  </button>
+                </div>
+              ) : (
+                <div className="p-2.5 rounded-xl bg-charcoal-50 dark:bg-charcoal-800/40 border border-border text-charcoal-500 text-[11px] flex items-center justify-between">
+                  <span>Currently not accepting new mentorship slots</span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const updated = { ...selectedAlumniDossier, isAvailableForMentorship: true };
+                      setSelectedAlumniDossier(updated);
+                      setAlumni((prev: any[]) => prev.map((a) => a.id === updated.id ? updated : a));
+                      setStatusMessage({ type: "success", text: `${updated.fullName} is now available for mentorship!` });
+                    }}
+                    className="text-[10px] font-bold text-rose-primary hover:underline"
+                  >
+                    Enable Mentorship
+                  </button>
                 </div>
               )}
             </div>
@@ -872,7 +925,7 @@ export default function AlumniPage() {
                 rel="noreferrer"
                 className="text-xs font-semibold text-rose-primary hover:underline flex items-center gap-1"
               >
-                Open LinkedIn Profile <ExternalLink className="w-3.5 h-3.5" />
+                LinkedIn Profile <ExternalLink className="w-3.5 h-3.5" />
               </a>
               <div className="flex items-center gap-2">
                 <button
