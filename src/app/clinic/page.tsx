@@ -551,9 +551,18 @@ export default function ClinicPage() {
                   </button>
                 </div>
               ) : (
-                <p className="mt-3 pt-3 border-t border-slate-100 dark:border-slate-800 text-xs text-slate-400">
-                  Ready for admission. Sanitized and equipped with oxygen monitor.
-                </p>
+                <div className="mt-3 pt-3 border-t border-slate-100 dark:border-slate-800 text-xs">
+                  <p className="text-slate-400 mb-2">Ready for admission. Sanitized and equipped with oxygen monitor.</p>
+                  <button
+                    onClick={() => {
+                      setConsultationForm(prev => ({ ...prev, requiresSickBayAdmit: true }));
+                      setShowModal(true);
+                    }}
+                    className="w-full py-1.5 px-3 rounded-xl bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/40 dark:hover:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300 font-medium text-xs border border-emerald-200 dark:border-emerald-800 transition-colors"
+                  >
+                    + Admit Patient to this Bed
+                  </button>
+                </div>
               )}
             </div>
           ))}

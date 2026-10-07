@@ -842,6 +842,13 @@ export default function HRPage() {
 
             <div className="pt-2 flex justify-end gap-2 border-t border-border dark:border-charcoal-800">
               <button
+                onClick={() => window.print()}
+                className="px-3.5 py-2 text-xs font-semibold bg-ivory-100 hover:bg-ivory-200 dark:bg-charcoal-800 dark:hover:bg-charcoal-700 text-charcoal-700 dark:text-ivory-200 rounded-xl flex items-center gap-1.5 transition-colors"
+              >
+                <Printer className="w-3.5 h-3.5" />
+                Print Profile Slip
+              </button>
+              <button
                 onClick={() => {
                   setSelectedStaffProfile(null);
                   setActiveTab("payroll");

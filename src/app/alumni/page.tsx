@@ -22,6 +22,8 @@ import {
   Filter,
   Download,
   Eye,
+  Printer,
+  PlusCircle,
 } from "lucide-react";
 
 export default function AlumniPage() {
@@ -554,9 +556,18 @@ export default function AlumniPage() {
                     </p>
                   </div>
 
-                  <div className="pt-2 flex justify-between items-center text-[11px] font-mono opacity-80">
-                    <span>Reference: {verifyResult.cryptographicProof.certificateReference}</span>
-                    <span>Stamp: {verifyResult.cryptographicProof.registrarDigitalStamp}</span>
+                  <div className="pt-2 flex flex-wrap justify-between items-center text-[11px] font-mono opacity-80 gap-2 border-t border-emerald-200 dark:border-emerald-800">
+                    <div>
+                      <span>Reference: {verifyResult.cryptographicProof.certificateReference}</span>
+                      <span className="ml-3">Stamp: {verifyResult.cryptographicProof.registrarDigitalStamp}</span>
+                    </div>
+                    <button
+                      onClick={() => window.print()}
+                      className="px-3 py-1.5 rounded-lg font-sans font-semibold bg-emerald-600 hover:bg-emerald-700 text-white flex items-center gap-1.5 shadow-sm text-xs transition-colors"
+                    >
+                      <Printer className="w-3.5 h-3.5" />
+                      Print Degree Verification Slip
+                    </button>
                   </div>
                 </div>
               ) : (
@@ -756,12 +767,21 @@ export default function AlumniPage() {
               >
                 Open LinkedIn Profile <ExternalLink className="w-3.5 h-3.5" />
               </a>
-              <button
-                onClick={() => setSelectedAlumniDossier(null)}
-                className="px-4 py-2 text-xs font-semibold bg-charcoal-900 dark:bg-ivory-100 text-white dark:text-charcoal-900 rounded-xl hover:opacity-90 transition-opacity"
-              >
-                Close Dossier
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => window.print()}
+                  className="px-3.5 py-2 text-xs font-semibold bg-ivory-100 hover:bg-ivory-200 dark:bg-charcoal-800 dark:hover:bg-charcoal-700 text-charcoal-700 dark:text-ivory-200 rounded-xl flex items-center gap-1.5 transition-colors"
+                >
+                  <Printer className="w-3.5 h-3.5" />
+                  Print Dossier
+                </button>
+                <button
+                  onClick={() => setSelectedAlumniDossier(null)}
+                  className="px-4 py-2 text-xs font-semibold bg-charcoal-900 dark:bg-ivory-100 text-white dark:text-charcoal-900 rounded-xl hover:opacity-90 transition-opacity"
+                >
+                  Close Dossier
+                </button>
+              </div>
             </div>
           </div>
         </div>

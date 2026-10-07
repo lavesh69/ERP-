@@ -146,3 +146,45 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Failed to process staff leave request" }, { status: 500 });
   }
 }
+
+export async function PATCH(req: NextRequest) {
+  const auth = await requireRoleAuth(req, HR_ROLES);
+  if (auth instanceof NextResponse) return auth;
+
+  try {
+    const body = await req.json();
+    const isHrOrAdmin = ["SUPER_ADMIN", "INSTITUTION_ADMIN", "HR_STAFF", "PRINCIPAL"].includes(auth.payload.role);
+    if (!isHrOrAdmin) {
+      return NextResponse.json({ error: "Forbidden: Only HR or Principal can decide leave petitions" }, { status: 403 });
+    }
+
+    const leaveId = body.leaveId || body.applicationId;
+    const decision = body.action === "APPROVE" ? "APPROVED" : (body.decision || (body.action === "REJECT" ? "REJECTED" : "APPROVED"));
+
+    const target = SAMPLE_LEAVE_APPLICATIONS.find((a) => a.id === leaveId);
+    if (!target) {
+      return NextResponse.json({ error: "Leave application not found" }, { status: 404 });
+    }
+
+    target.status = decision === "APPROVED" ? "APPROVED" : "REJECTED";
+    target.approvedBy = auth.payload.email;
+
+    await logAuditEvent({
+      institutionId: auth.payload.institutionId || "global",
+      actorUserId: auth.payload.userId || "hr_staff",
+      action: `STAFF_LEAVE_${target.status}`,
+      targetEntity: "StaffLeave",
+      targetId: target.id,
+      details: { staff: target.staffEmail, decision: target.status },
+    });
+
+    return NextResponse.json({
+      success: true,
+      message: `Staff leave application ${target.id} marked as ${target.status}.`,
+      application: target,
+    });
+  } catch (error: any) {
+    logger.error("HR leaves PATCH error", error);
+    return NextResponse.json({ error: "Failed to process leave decision" }, { status: 500 });
+  }
+}

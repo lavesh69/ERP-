@@ -782,20 +782,62 @@ export default function IncubationPage() {
               </div>
             </div>
 
-            <div className="flex justify-end gap-2.5 pt-2 border-t border-slate-100 dark:border-slate-800">
-              <button
-                onClick={() => window.print()}
-                className="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-colors"
-              >
-                <Printer className="w-3.5 h-3.5" />
-                Print Term Sheet
-              </button>
-              <button
-                onClick={() => setSelectedStartupDossier(null)}
-                className="px-4 py-2 bg-violet-600 hover:bg-violet-700 text-white rounded-xl text-xs font-semibold shadow-sm transition-colors"
-              >
-                Done
-              </button>
+            <div className="flex flex-wrap items-center justify-between gap-2.5 pt-2 border-t border-slate-100 dark:border-slate-800">
+              <div className="flex flex-wrap items-center gap-1.5 text-xs">
+                <span className="text-slate-400 text-[11px] font-semibold mr-1">Stage:</span>
+                <button
+                  onClick={async () => {
+                    await handleUpdateStartupStage(selectedStartupDossier.id, "MVP_BUILD");
+                    setSelectedStartupDossier((prev: any) => ({ ...prev, stage: "MVP_BUILD" }));
+                  }}
+                  className="px-2.5 py-1 bg-amber-50 hover:bg-amber-100 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300 rounded-lg font-medium transition-colors"
+                >
+                  MVP Build
+                </button>
+                <button
+                  onClick={async () => {
+                    await handleUpdateStartupStage(selectedStartupDossier.id, "PILOT_DEPLOYED");
+                    setSelectedStartupDossier((prev: any) => ({ ...prev, stage: "PILOT_DEPLOYED" }));
+                  }}
+                  className="px-2.5 py-1 bg-blue-50 hover:bg-blue-100 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300 rounded-lg font-medium transition-colors"
+                >
+                  Pilot Deployed
+                </button>
+                <button
+                  onClick={async () => {
+                    await handleUpdateStartupStage(selectedStartupDossier.id, "EXTERNAL_FUNDED");
+                    setSelectedStartupDossier((prev: any) => ({ ...prev, stage: "EXTERNAL_FUNDED" }));
+                  }}
+                  className="px-2.5 py-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 rounded-lg font-medium transition-colors"
+                >
+                  External Funded
+                </button>
+                <button
+                  onClick={async () => {
+                    await handleUpdateStartupStage(selectedStartupDossier.id, "GRADUATED");
+                    setSelectedStartupDossier((prev: any) => ({ ...prev, stage: "GRADUATED" }));
+                  }}
+                  className="px-2.5 py-1 bg-purple-50 hover:bg-purple-100 text-purple-700 dark:bg-purple-950/60 dark:text-purple-300 rounded-lg font-medium transition-colors"
+                >
+                  Graduate
+                </button>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => window.print()}
+                  className="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-colors"
+                >
+                  <Printer className="w-3.5 h-3.5" />
+                  Print Term Sheet
+                </button>
+                <button
+                  onClick={() => setSelectedStartupDossier(null)}
+                  className="px-4 py-2 bg-violet-600 hover:bg-violet-700 text-white rounded-xl text-xs font-semibold shadow-sm transition-colors"
+                >
+                  Done
+                </button>
+              </div>
             </div>
           </div>
         </div>

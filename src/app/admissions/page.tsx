@@ -21,6 +21,7 @@ import {
   Download,
   Search,
   Eye,
+  Printer,
 } from "lucide-react";
 
 interface AdmissionsSummary {
@@ -796,13 +797,63 @@ export default function AdmissionsPage() {
               </span>
             </div>
 
-            <div className="pt-2 flex justify-end">
-              <button
-                onClick={() => setSelectedApplicantDossier(null)}
-                className="px-4 py-2 rounded-xl text-xs font-semibold bg-charcoal-900 dark:bg-ivory-100 text-white dark:text-charcoal-900 hover:opacity-90 transition-opacity"
-              >
-                Close Dossier
-              </button>
+            {/* Stage Decision Actions */}
+            <div className="pt-2 border-t border-border dark:border-charcoal-800 flex flex-wrap items-center justify-between gap-2">
+              <div className="flex flex-wrap items-center gap-1.5 text-xs">
+                <span className="text-charcoal-400 text-[11px] font-semibold mr-1">Decision:</span>
+                <button
+                  onClick={async () => {
+                    await handleUpdateStage(selectedApplicantDossier.id, "SHORTLISTED");
+                    setSelectedApplicantDossier((prev: any) => ({ ...prev, stage: "SHORTLISTED" }));
+                  }}
+                  className="px-2.5 py-1 bg-blue-50 hover:bg-blue-100 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300 rounded-lg font-medium transition-colors"
+                >
+                  Shortlist
+                </button>
+                <button
+                  onClick={async () => {
+                    await handleUpdateStage(selectedApplicantDossier.id, "OFFER_ISSUED");
+                    setSelectedApplicantDossier((prev: any) => ({ ...prev, stage: "OFFER_ISSUED" }));
+                  }}
+                  className="px-2.5 py-1 bg-purple-50 hover:bg-purple-100 text-purple-700 dark:bg-purple-950/60 dark:text-purple-300 rounded-lg font-medium transition-colors"
+                >
+                  Issue Offer
+                </button>
+                <button
+                  onClick={async () => {
+                    await handleUpdateStage(selectedApplicantDossier.id, "ENROLLED", true);
+                    setSelectedApplicantDossier((prev: any) => ({ ...prev, stage: "ENROLLED", seatDepositPaid: true }));
+                  }}
+                  className="px-2.5 py-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 rounded-lg font-medium transition-colors"
+                >
+                  Confirm Enrolment
+                </button>
+                <button
+                  onClick={async () => {
+                    await handleUpdateStage(selectedApplicantDossier.id, "REJECTED");
+                    setSelectedApplicantDossier((prev: any) => ({ ...prev, stage: "REJECTED" }));
+                  }}
+                  className="px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300 rounded-lg font-medium transition-colors"
+                >
+                  Decline
+                </button>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => window.print()}
+                  className="px-3.5 py-2 rounded-xl text-xs font-semibold bg-ivory-100 hover:bg-ivory-200 dark:bg-charcoal-800 dark:hover:bg-charcoal-700 text-charcoal-700 dark:text-ivory-200 flex items-center gap-1.5 transition-colors"
+                >
+                  <Printer className="w-3.5 h-3.5" />
+                  Print Dossier
+                </button>
+                <button
+                  onClick={() => setSelectedApplicantDossier(null)}
+                  className="px-4 py-2 rounded-xl text-xs font-semibold bg-charcoal-900 dark:bg-ivory-100 text-white dark:text-charcoal-900 hover:opacity-90 transition-opacity"
+                >
+                  Close
+                </button>
+              </div>
             </div>
           </div>
         </div>

@@ -736,17 +736,27 @@ export default function ConvocationPage() {
               </div>
               <div className="grid grid-cols-3 gap-2 text-xs">
                 {Object.entries(selectedCandidateDossier.noDuesStatus).map(([dept, isCleared]) => (
-                  <div
+                  <button
                     key={dept}
-                    className={`p-2.5 rounded-xl border text-center ${
+                    type="button"
+                    onClick={async () => {
+                      const nextVal = !isCleared;
+                      await handleToggleClearance(selectedCandidateDossier.id, dept, Boolean(isCleared));
+                      setSelectedCandidateDossier((prev: any) => {
+                        const updatedStatus = { ...prev.noDuesStatus, [dept]: nextVal };
+                        const allCleared = Object.values(updatedStatus).every(Boolean);
+                        return { ...prev, noDuesStatus: updatedStatus, allClearancesGranted: allCleared };
+                      });
+                    }}
+                    className={`p-2.5 rounded-xl border text-center transition-all hover:scale-[1.02] active:scale-95 cursor-pointer ${
                       isCleared
-                        ? "bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-800/60 text-emerald-800 dark:text-emerald-300"
-                        : "bg-rose-50 dark:bg-rose-950/30 border-rose-200 dark:border-rose-800/60 text-rose-800 dark:text-rose-300"
+                        ? "bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/30 dark:hover:bg-emerald-900/50 border-emerald-200 dark:border-emerald-800/60 text-emerald-800 dark:text-emerald-300"
+                        : "bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/30 dark:hover:bg-rose-900/50 border-rose-200 dark:border-rose-800/60 text-rose-800 dark:text-rose-300"
                     }`}
                   >
                     <div className="font-semibold text-[11px]">{dept.replace(/_/g, " ")}</div>
-                    <div className="text-[10px] font-mono mt-0.5">{isCleared ? "CLEARED" : "PENDING"}</div>
-                  </div>
+                    <div className="text-[10px] font-mono mt-0.5">{isCleared ? "✓ CLEARED" : "✕ PENDING (Click)"}</div>
+                  </button>
                 ))}
               </div>
             </div>

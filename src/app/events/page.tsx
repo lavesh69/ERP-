@@ -19,6 +19,7 @@ import {
   Volume2,
   Download,
   Eye,
+  Printer,
 } from "lucide-react";
 import { CampusVenue, EventBooking, BookingStatus } from "@/lib/events/events-engine";
 
@@ -762,13 +763,47 @@ export default function EventsPage() {
               </div>
             </div>
 
-            <div className="pt-2 flex justify-end border-t border-slate-200 dark:border-slate-800">
-              <button
-                onClick={() => setSelectedBookingDossier(null)}
-                className="px-4 py-2 text-xs font-semibold bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-xl hover:opacity-90 transition-opacity"
-              >
-                Close Dossier
-              </button>
+            <div className="pt-2 flex flex-wrap items-center justify-between gap-2 border-t border-slate-200 dark:border-slate-800">
+              <div className="flex items-center gap-2 text-xs">
+                {selectedBookingDossier.status === "PENDING_APPROVAL" && (
+                  <>
+                    <button
+                      onClick={async () => {
+                        await handleDecideBooking(selectedBookingDossier.id, "CONFIRMED");
+                        setSelectedBookingDossier((prev: any) => ({ ...prev, status: "CONFIRMED" }));
+                      }}
+                      className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-semibold transition-colors"
+                    >
+                      Approve Booking
+                    </button>
+                    <button
+                      onClick={async () => {
+                        await handleDecideBooking(selectedBookingDossier.id, "CANCELLED");
+                        setSelectedBookingDossier((prev: any) => ({ ...prev, status: "CANCELLED" }));
+                      }}
+                      className="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300 rounded-lg font-semibold transition-colors"
+                    >
+                      Decline
+                    </button>
+                  </>
+                )}
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => window.print()}
+                  className="px-3.5 py-2 text-xs font-semibold bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl flex items-center gap-1.5 transition-colors"
+                >
+                  <Printer className="w-3.5 h-3.5" />
+                  Print Sanction Order
+                </button>
+                <button
+                  onClick={() => setSelectedBookingDossier(null)}
+                  className="px-4 py-2 text-xs font-semibold bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-xl hover:opacity-90 transition-opacity"
+                >
+                  Close Dossier
+                </button>
+              </div>
             </div>
           </div>
         </div>
