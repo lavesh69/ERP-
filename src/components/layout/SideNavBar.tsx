@@ -43,6 +43,9 @@ import {
   HeartPulse,
   CalendarDays,
   Compass,
+  MessageSquareHeart,
+  Globe2,
+  Rocket,
 } from "lucide-react";
 
 interface NavSection {
@@ -111,6 +114,13 @@ const NAV_SECTIONS: NavSection[] = [
         icon: Award,
         badge: "GPA",
         roles: ["SUPER_ADMIN", "INSTITUTION_ADMIN", "PRINCIPAL", "HOD", "FACULTY", "CLASS_TEACHER", "STUDENT", "EXAMINATION_CONTROLLER", "PLACEMENT_OFFICER"],
+      },
+      {
+        name: "Feedback (SET)",
+        href: "/feedback",
+        icon: MessageSquareHeart,
+        badge: "SET",
+        roles: ["SUPER_ADMIN", "INSTITUTION_ADMIN", "PRINCIPAL", "HOD", "FACULTY", "CLASS_TEACHER", "STUDENT"],
       },
     ],
   },
@@ -211,6 +221,20 @@ const NAV_SECTIONS: NavSection[] = [
         badge: "Passes",
         roles: ["SUPER_ADMIN", "INSTITUTION_ADMIN", "PRINCIPAL", "HR_STAFF", "FACULTY", "GUEST"],
       },
+      {
+        name: "Convocation",
+        href: "/convocation",
+        icon: GraduationCap,
+        badge: "Degree",
+        roles: ["SUPER_ADMIN", "INSTITUTION_ADMIN", "PRINCIPAL", "HOD", "FACULTY", "STUDENT", "ALUMNI"],
+      },
+      {
+        name: "International IRO",
+        href: "/international",
+        icon: Globe2,
+        badge: "MoU",
+        roles: ["SUPER_ADMIN", "INSTITUTION_ADMIN", "PRINCIPAL", "HOD", "FACULTY", "STUDENT", "RESEARCH_COORDINATOR"],
+      },
     ],
   },
   {
@@ -229,6 +253,13 @@ const NAV_SECTIONS: NavSection[] = [
         icon: GraduationCap,
         badge: "Network",
         roles: ["SUPER_ADMIN", "INSTITUTION_ADMIN", "PLACEMENT_OFFICER", "STUDENT", "ALUMNI", "FACULTY"],
+      },
+      {
+        name: "Venture Incubator",
+        href: "/incubation",
+        icon: Rocket,
+        badge: "AIC",
+        roles: ["SUPER_ADMIN", "INSTITUTION_ADMIN", "PRINCIPAL", "HOD", "FACULTY", "STUDENT", "ALUMNI", "PLACEMENT_OFFICER"],
       },
     ],
   },

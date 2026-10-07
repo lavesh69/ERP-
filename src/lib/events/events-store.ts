@@ -221,4 +221,10 @@ export const eventsStore = {
     writeStore(store);
     return target;
   },
+
+  deleteBooking(id: string) {
+    const store = readStore();
+    store.bookings = store.bookings.filter((b) => b.id !== id);
+    writeStore(store);
+  },
 };

@@ -7,7 +7,7 @@ export const ROLE_CONFIGS: Record<UserRole, RoleConfig> = {
     description: "Platform-wide system configuration, tenant management, and root telemetry",
     badgeColor: "bg-rose-primary text-white",
     dashboardPath: "/admin",
-    allowedNav: ["admin", "institution", "students", "faculty", "lms", "attendance", "timetable", "assignments", "examinations", "finance", "library", "research", "careers", "scholarships", "communication", "analytics", "ai-assistant", "documents", "hostel", "transport", "grievances", "inventory", "admissions", "hr", "alumni", "clinic", "events", "clubs", "security", "accreditation"],
+    allowedNav: ["admin", "institution", "students", "faculty", "lms", "attendance", "timetable", "assignments", "examinations", "finance", "library", "research", "careers", "scholarships", "communication", "analytics", "ai-assistant", "documents", "hostel", "transport", "grievances", "inventory", "admissions", "hr", "alumni", "clinic", "events", "clubs", "security", "accreditation", "feedback", "convocation", "international", "incubation"],
   },
   INSTITUTION_ADMIN: {
     role: "INSTITUTION_ADMIN",
@@ -15,7 +15,7 @@ export const ROLE_CONFIGS: Record<UserRole, RoleConfig> = {
     description: "Campus operations, department governance, and academic administration",
     badgeColor: "bg-rose-primary text-white",
     dashboardPath: "/institution",
-    allowedNav: ["institution", "students", "faculty", "lms", "attendance", "timetable", "assignments", "examinations", "finance", "library", "research", "careers", "scholarships", "communication", "analytics", "ai-assistant", "documents", "hostel", "transport", "grievances", "inventory", "admissions", "hr", "alumni", "clinic", "events", "clubs", "security", "accreditation"],
+    allowedNav: ["institution", "students", "faculty", "lms", "attendance", "timetable", "assignments", "examinations", "finance", "library", "research", "careers", "scholarships", "communication", "analytics", "ai-assistant", "documents", "hostel", "transport", "grievances", "inventory", "admissions", "hr", "alumni", "clinic", "events", "clubs", "security", "accreditation", "feedback", "convocation", "international", "incubation"],
   },
   PRINCIPAL: {
     role: "PRINCIPAL",
@@ -23,7 +23,7 @@ export const ROLE_CONFIGS: Record<UserRole, RoleConfig> = {
     description: "Executive oversight, accreditation evidence, and faculty governance",
     badgeColor: "bg-rose-accent text-white",
     dashboardPath: "/analytics",
-    allowedNav: ["analytics", "institution", "students", "faculty", "attendance", "timetable", "examinations", "finance", "research", "scholarships", "communication", "ai-assistant", "documents", "hostel", "transport", "grievances", "inventory", "admissions", "hr", "alumni", "clinic", "events", "clubs", "security", "accreditation"],
+    allowedNav: ["analytics", "institution", "students", "faculty", "attendance", "timetable", "examinations", "finance", "research", "scholarships", "communication", "ai-assistant", "documents", "hostel", "transport", "grievances", "inventory", "admissions", "hr", "alumni", "clinic", "events", "clubs", "security", "accreditation", "feedback", "convocation", "international", "incubation"],
   },
   HOD: {
     role: "HOD",
@@ -31,7 +31,7 @@ export const ROLE_CONFIGS: Record<UserRole, RoleConfig> = {
     description: "Department course scheduling, faculty workload, and cohort monitoring",
     badgeColor: "bg-rose-accent text-white",
     dashboardPath: "/institution",
-    allowedNav: ["institution", "faculty", "students", "lms", "timetable", "attendance", "assignments", "examinations", "research", "scholarships", "communication", "analytics", "ai-assistant", "documents", "hostel", "transport", "grievances", "inventory", "admissions", "hr", "clinic", "events", "clubs", "accreditation"],
+    allowedNav: ["institution", "faculty", "students", "lms", "timetable", "attendance", "assignments", "examinations", "research", "scholarships", "communication", "analytics", "ai-assistant", "documents", "hostel", "transport", "grievances", "inventory", "admissions", "hr", "clinic", "events", "clubs", "accreditation", "feedback", "convocation", "international", "incubation"],
   },
   FACULTY: {
     role: "FACULTY",
@@ -39,7 +39,7 @@ export const ROLE_CONFIGS: Record<UserRole, RoleConfig> = {
     description: "Course delivery, attendance taking, assignment grading, and research",
     badgeColor: "bg-academic-info text-white",
     dashboardPath: "/faculty",
-    allowedNav: ["faculty", "attendance", "lms", "assignments", "timetable", "examinations", "library", "research", "communication", "ai-assistant", "documents", "hostel", "grievances", "inventory", "hr", "alumni", "clinic", "events", "clubs", "accreditation"],
+    allowedNav: ["faculty", "attendance", "lms", "assignments", "timetable", "examinations", "library", "research", "communication", "ai-assistant", "documents", "hostel", "grievances", "inventory", "hr", "alumni", "clinic", "events", "clubs", "accreditation", "feedback", "convocation", "international", "incubation"],
   },
   CLASS_TEACHER: {
     role: "CLASS_TEACHER",
@@ -47,7 +47,7 @@ export const ROLE_CONFIGS: Record<UserRole, RoleConfig> = {
     description: "Section mentoring, daily attendance audits, and parent coordination",
     badgeColor: "bg-academic-info text-white",
     dashboardPath: "/students",
-    allowedNav: ["students", "attendance", "timetable", "lms", "assignments", "examinations", "communication", "ai-assistant", "documents"],
+    allowedNav: ["students", "attendance", "timetable", "lms", "assignments", "examinations", "communication", "ai-assistant", "documents", "feedback"],
   },
   STUDENT: {
     role: "STUDENT",
@@ -55,7 +55,7 @@ export const ROLE_CONFIGS: Record<UserRole, RoleConfig> = {
     description: "Enrolled courses, assignments, exams, grades, attendance, and career hub",
     badgeColor: "bg-academic-success text-white",
     dashboardPath: "/students/profile",
-    allowedNav: ["students/profile", "lms", "attendance", "timetable", "assignments", "examinations", "finance", "library", "careers", "scholarships", "communication", "ai-assistant", "documents", "hostel", "transport", "grievances", "alumni", "clinic", "events", "clubs"],
+    allowedNav: ["students/profile", "lms", "attendance", "timetable", "assignments", "examinations", "finance", "library", "careers", "scholarships", "communication", "ai-assistant", "documents", "hostel", "transport", "grievances", "alumni", "clinic", "events", "clubs", "feedback", "convocation", "international", "incubation"],
   },
   PARENT: {
     role: "PARENT",

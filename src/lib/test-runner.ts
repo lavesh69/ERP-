@@ -181,6 +181,7 @@ import { GET as handleClinicGet, POST as handleClinicPost } from "@/app/api/clin
 import { checkTriageUrgency } from "@/lib/clinic/clinic-engine";
 import { GET as handleEventsGet, POST as handleEventsPost } from "@/app/api/events/route";
 import { detectVenueBookingConflict } from "@/lib/events/events-engine";
+import { eventsStore } from "@/lib/events/events-store";
 import { GET as handleClubsGet, POST as handleClubsPost } from "@/app/api/clubs/route";
 import { calculateStudentActivityPoints } from "@/lib/clubs/clubs-engine";
 import { GET as handleSecurityGet, POST as handleSecurityPost } from "@/app/api/security/route";
@@ -191,6 +192,14 @@ import {
   calculateCadreRatio,
   generateAQARDossier,
 } from "@/lib/accreditation/accreditation-engine";
+import { GET as handleFeedbackGet, POST as handleFeedbackPost } from "@/app/api/feedback/route";
+import { calculateFacultyPerformanceIndex, validateSurveySubmission } from "@/lib/feedback/feedback-engine";
+import { GET as handleConvocationGet, POST as handleConvocationPost } from "@/app/api/convocation/route";
+import { evaluateGraduationEligibility, generateDegreeCertificateHash } from "@/lib/convocation/convocation-engine";
+import { GET as handleInternationalGet, POST as handleInternationalPost } from "@/app/api/international/route";
+import { evaluateExchangeApplication, checkVisaFrroCompliance } from "@/lib/international/international-engine";
+import { GET as handleIncubationGet, POST as handleIncubationPost } from "@/app/api/incubation/route";
+import { calculateIncubationPortfolioMetrics, validateStartupApplication } from "@/lib/incubation/incubation-engine";
 
 async function runTestSuite() {
   console.log("=================================================");
@@ -5547,6 +5556,7 @@ By breaking down large monolithic systems into decoupled microservices, systems 
   assert(decideBookingRes.status === 200, "POST /api/events (action: DECIDE_BOOKING) approves reservation with 200 OK");
   const decideBookingData = await decideBookingRes.json();
   assert(decideBookingData.booking.status === "CONFIRMED", "Venue booking status updated to CONFIRMED");
+  eventsStore.deleteBooking(reqVenueBookingData.booking.id);
 
   // 2. Student Clubs & Co-Curricular Activity Points
   const mockActivityClaims = [
@@ -5728,6 +5738,258 @@ By breaking down large monolithic systems into decoupled microservices, systems 
   const generateAqarData = await generateAqarRes.json();
   assert(generateAqarData.dossier.accreditationGrade === "A++", "Institutional CGPA qualifies for NAAC A++ premier accreditation rating");
   assert(generateAqarData.dossier.verificationHash.startsWith("AQAR-NAAC-"), "AQAR dossier certified with official SHA-256 verification hash stamp");
+
+  // =========================================================================
+  // GROUP 57: GLOBAL ACADEMIC OPERATIONS & STARTUP INCUBATION ECOSYSTEM
+  // =========================================================================
+  console.log("\n--- GROUP 57: COURSE FEEDBACK (SET), CONVOCATION, INTERNATIONAL IRO, INCUBATION ---");
+
+  // 1. Student Evaluation of Teaching (SET) & 360 Feedback
+  const sampleSurveyResponses = [
+    {
+      id: "surv-1",
+      surveyRef: "SET-TEST-01",
+      surveyType: "COURSE_FACULTY_EVALUATION" as const,
+      courseCode: "CS401",
+      courseName: "Compiler Design",
+      facultyId: "fac-test-01",
+      facultyName: "Dr. Donald Knuth",
+      departmentCode: "CSE",
+      semester: 7,
+      academicYear: "2025-2026",
+      ratingPedagogy: 5,
+      ratingSyllabus: 5,
+      ratingPunctuality: 5,
+      ratingDoubtClearing: 5,
+      ratingCourseMaterial: 5,
+      overallScore: 5.0,
+      isAnonymized: true,
+      submittedAt: new Date().toISOString(),
+    },
+    {
+      id: "surv-2",
+      surveyRef: "SET-TEST-02",
+      surveyType: "COURSE_FACULTY_EVALUATION" as const,
+      courseCode: "CS401",
+      courseName: "Compiler Design",
+      facultyId: "fac-test-01",
+      facultyName: "Dr. Donald Knuth",
+      departmentCode: "CSE",
+      semester: 7,
+      academicYear: "2025-2026",
+      ratingPedagogy: 4,
+      ratingSyllabus: 5,
+      ratingPunctuality: 4,
+      ratingDoubtClearing: 4,
+      ratingCourseMaterial: 5,
+      overallScore: 4.4,
+      isAnonymized: true,
+      submittedAt: new Date().toISOString(),
+    },
+  ];
+
+  const fpi = calculateFacultyPerformanceIndex(sampleSurveyResponses, "fac-test-01", "Dr. Donald Knuth", "CSE");
+  assert(fpi.overallFPI >= 4.5, "calculateFacultyPerformanceIndex correctly aggregates FPI (4.7 FPI)");
+  assert(fpi.performanceBand === "EXCELLENT", "calculateFacultyPerformanceIndex awards EXCELLENT band for FPI >= 4.5");
+
+  const invalidSurveyCheck = validateSurveySubmission({ ratingPedagogy: 6 });
+  assert(invalidSurveyCheck.isValid === false, "validateSurveySubmission rejects invalid Likert ratings outside 1-5 scale");
+
+  const feedbackSummaryReq = new NextRequest("http://localhost:3000/api/feedback?tab=summary", {
+    headers: { Cookie: `classroom_session=${adminToken}` },
+  });
+  const feedbackSummaryRes = await handleFeedbackGet(feedbackSummaryReq);
+  assert(feedbackSummaryRes.status === 200, "GET /api/feedback?tab=summary returns 200 OK");
+  const feedbackSummaryData = await feedbackSummaryRes.json();
+  assert(feedbackSummaryData.summary.totalResponses > 0, "Feedback portal tracks existing evaluation submissions");
+
+  const feedbackFacultyReq = new NextRequest("http://localhost:3000/api/feedback?tab=faculty", {
+    headers: { Cookie: `classroom_session=${adminToken}` },
+  });
+  const feedbackFacultyRes = await handleFeedbackGet(feedbackFacultyReq);
+  assert(feedbackFacultyRes.status === 200, "GET /api/feedback?tab=faculty returns 200 OK");
+
+  const submitFeedbackReq = new NextRequest("http://localhost:3000/api/feedback", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "SUBMIT_SURVEY",
+      courseCode: "CS301",
+      courseName: "Cloud Computing",
+      facultyId: "fac-01",
+      facultyName: "Dr. Sarah Jenkins",
+      departmentCode: "CSE",
+      semester: 5,
+      ratingPedagogy: 5,
+      ratingSyllabus: 5,
+      ratingPunctuality: 5,
+      ratingDoubtClearing: 5,
+      ratingCourseMaterial: 5,
+      qualitativeRemarks: "Brilliant lectures on Paxos and distributed storage systems.",
+    }),
+  });
+  const submitFeedbackRes = await handleFeedbackPost(submitFeedbackReq);
+  assert(submitFeedbackRes.status === 200, "POST /api/feedback (action: SUBMIT_SURVEY) records course evaluation with 200 OK");
+  const submitFeedbackData = await submitFeedbackRes.json();
+  assert(submitFeedbackData.survey.surveyRef.startsWith("SET-2026-"), "Survey response issued formal SET reference code");
+
+  // 2. Convocation, Multi-Department Clearance & Honors
+  const clearanceCheck = evaluateGraduationEligibility(9.1, {
+    LIBRARY: true,
+    HOSTEL: true,
+    FINANCE: true,
+    LABORATORY: true,
+    SPORTS_COUNCIL: true,
+    ALUMNI_ASSOCIATION: true,
+  });
+  assert(clearanceCheck.allClearancesGranted === true, "evaluateGraduationEligibility confirms 100% no-dues clearance");
+  assert(clearanceCheck.honorsCategory === "FIRST_CLASS_WITH_DISTINCTION", "evaluateGraduationEligibility grants Distinction for CGPA >= 8.5");
+
+  const certHash = generateDegreeCertificateHash("CS2026-001", "B.Tech CSE", 9.1, 2026);
+  assert(certHash.startsWith("DEG-CONF-"), "generateDegreeCertificateHash produces SHA-256 sealed degree stamp");
+
+  const convocationSummaryReq = new NextRequest("http://localhost:3000/api/convocation?tab=summary", {
+    headers: { Cookie: `classroom_session=${adminToken}` },
+  });
+  const convocationSummaryRes = await handleConvocationGet(convocationSummaryReq);
+  assert(convocationSummaryRes.status === 200, "GET /api/convocation?tab=summary returns 200 OK");
+  const convocationSummaryData = await convocationSummaryRes.json();
+  assert(convocationSummaryData.summary.totalCandidates > 0, "Convocation registry lists graduating candidates");
+
+  const convocationCandidatesReq = new NextRequest("http://localhost:3000/api/convocation?tab=candidates", {
+    headers: { Cookie: `classroom_session=${adminToken}` },
+  });
+  const convocationCandidatesRes = await handleConvocationGet(convocationCandidatesReq);
+  assert(convocationCandidatesRes.status === 200, "GET /api/convocation?tab=candidates returns 200 OK");
+  const convocationCandidatesData = await convocationCandidatesRes.json();
+  assert(Array.isArray(convocationCandidatesData.candidates), "Candidates list returned as array");
+
+  const updateClearanceReq = new NextRequest("http://localhost:3000/api/convocation", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "UPDATE_CLEARANCE",
+      candidateId: convocationCandidatesData.candidates[0].id,
+      department: "LIBRARY",
+      isCleared: true,
+    }),
+  });
+  const updateClearanceRes = await handleConvocationPost(updateClearanceReq);
+  assert(updateClearanceRes.status === 200, "POST /api/convocation (action: UPDATE_CLEARANCE) updates department no-dues with 200 OK");
+
+  const registerCeremonyReq = new NextRequest("http://localhost:3000/api/convocation", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "REGISTER_CEREMONY",
+      candidateId: convocationCandidatesData.candidates[0].id,
+      robeSize: "XL",
+      guestPassesCount: 3,
+      degreeDispatchMode: "CONVOCATION_IN_PERSON",
+    }),
+  });
+  const registerCeremonyRes = await handleConvocationPost(registerCeremonyReq);
+  assert(registerCeremonyRes.status === 200, "POST /api/convocation (action: REGISTER_CEREMONY) confirms robe & guest reservation with 200 OK");
+
+  // 3. International Relations, Study Abroad & Visa Compliance
+  const exchangeEligibility = evaluateExchangeApplication(8.6, 16, "Z9921448");
+  assert(exchangeEligibility.isEligible === true, "evaluateExchangeApplication grants clearance for valid GPA & credit mapping");
+
+  const expiredVisaCheck = checkVisaFrroCompliance("2020-01-01", "COMPLIANT");
+  assert(expiredVisaCheck.alertLevel === "OVERSTAY_RISK", "checkVisaFrroCompliance detects expired visa and flags OVERSTAY_RISK");
+
+  const intlPartnersReq = new NextRequest("http://localhost:3000/api/international?tab=partners", {
+    headers: { Cookie: `classroom_session=${adminToken}` },
+  });
+  const intlPartnersRes = await handleInternationalGet(intlPartnersReq);
+  assert(intlPartnersRes.status === 200, "GET /api/international?tab=partners returns 200 OK");
+  const intlPartnersData = await intlPartnersRes.json();
+  assert(Array.isArray(intlPartnersData.partners) && intlPartnersData.partners.length > 0, "International partners registry lists active global universities");
+
+  const applyExchangeReq = new NextRequest("http://localhost:3000/api/international", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "APPLY_EXCHANGE",
+      studentName: "Devansh Sharma",
+      studentRollOrId: "CS2026-044",
+      type: "OUTBOUND",
+      homeUniversity: "Apex Autonomous University",
+      hostUniversity: "National University of Singapore (NUS)",
+      program: "B.Tech Computer Science & Engineering",
+      targetSemester: "Autumn 2027",
+      creditsMapped: 18,
+      passportNumber: "N7710294",
+      visaExpiryDate: "2027-12-31",
+      scholarshipGrantAmount: 4000,
+    }),
+  });
+  const applyExchangeRes = await handleInternationalPost(applyExchangeReq);
+  assert(applyExchangeRes.status === 200, "POST /api/international (action: APPLY_EXCHANGE) registers exchange nomination with 200 OK");
+  const applyExchangeData = await applyExchangeRes.json();
+  assert(applyExchangeData.application.applicationRef.startsWith("IRO-2026-"), "Nomination assigned official IRO reference identifier");
+
+  // 4. University Incubation Center & Startup Accelerator
+  const mockStartups = [
+    {
+      id: "st-m1",
+      companyRef: "VENT-01",
+      startupName: "QuantumSec AI",
+      founderName: "Alex Mercer",
+      founderRollOrStaffId: "CS2026-001",
+      founderRole: "STUDENT" as const,
+      sector: "AI_ML" as const,
+      stage: "SEED_FUNDED" as const,
+      pitchDeckSummary: "Post-quantum lattice cryptographic protocols for distributed campus microservices.",
+      seedGrantDisbursed: 30000,
+      universityEquityPercentage: 3.0,
+      externalFundingRaised: 450000,
+      patentsFiled: 2,
+      labDesksAllocated: 4,
+      mentorName: "Dr. Arvind Gupta",
+      status: "ACTIVE" as const,
+      incubatedDate: new Date().toISOString(),
+    },
+  ];
+
+  const portfolioMetrics = calculateIncubationPortfolioMetrics(mockStartups);
+  assert(portfolioMetrics.totalVentures === 1, "calculateIncubationPortfolioMetrics counts active venture companies");
+  assert(portfolioMetrics.totalSeedCapitalDisbursed === 30000, "calculateIncubationPortfolioMetrics aggregates seed capital ($30,000)");
+  assert(portfolioMetrics.estimatedPortfolioValuation > 1000000, "calculateIncubationPortfolioMetrics computes aggregate portfolio valuation (> $1M)");
+
+  const invalidVentureCheck = validateStartupApplication({ startupName: "" });
+  assert(invalidVentureCheck.isValid === false, "validateStartupApplication intercepts incomplete pitch deck applications");
+
+  const incubationSummaryReq = new NextRequest("http://localhost:3000/api/incubation?tab=summary", {
+    headers: { Cookie: `classroom_session=${adminToken}` },
+  });
+  const incubationSummaryRes = await handleIncubationGet(incubationSummaryReq);
+  assert(incubationSummaryRes.status === 200, "GET /api/incubation?tab=summary returns 200 OK");
+  const incubationSummaryData = await incubationSummaryRes.json();
+  assert(incubationSummaryData.summary.totalVentures > 0, "Incubation center tracks active cohort startups");
+
+  const registerVentureReq = new NextRequest("http://localhost:3000/api/incubation", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "REGISTER_VENTURE",
+      startupName: "HyperSpeed Hyperloop Logistics",
+      founderName: "Rohan Varma",
+      founderRollOrStaffId: "ME2026-089",
+      founderRole: "STUDENT",
+      sector: "ROBOTICS_IOT",
+      stage: "INCUBATED_PROTOTYPE",
+      pitchDeckSummary: "Magnetic levitation freight pods for inter-warehouse rapid delivery.",
+      seedGrantDisbursed: 20000,
+      universityEquityPercentage: 2.5,
+      labDesksAllocated: 3,
+      mentorName: "Prof. Vikram Sarabhai Chair",
+    }),
+  });
+  const registerVentureRes = await handleIncubationPost(registerVentureReq);
+  assert(registerVentureRes.status === 200, "POST /api/incubation (action: REGISTER_VENTURE) onboards venture into incubator with 200 OK");
+  const registerVentureData = await registerVentureRes.json();
+  assert(registerVentureData.venture.companyRef.startsWith("VENT-2026-"), "Incubated company issued official VENT reference code");
 
   console.log("\n=================================================");
   console.log(`🎉 ALL ${passedTests}/${totalTests} TESTS PASSED SUCCESSFULLY!`);

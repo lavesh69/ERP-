@@ -1,0 +1,83 @@
+{
+  "candidates": [
+    {
+      "id": "cand-01",
+      "candidateRef": "CONV-2026-081",
+      "studentRoll": "CS2026-001",
+      "fullName": "Alex Mercer",
+      "program": "B.Tech Computer Science & Engineering",
+      "departmentCode": "CSE",
+      "graduatingYear": 2026,
+      "finalCgpa": 9.24,
+      "honorsCategory": "FIRST_CLASS_WITH_DISTINCTION",
+      "isMedalist": true,
+      "medalType": "GOLD_MEDAL",
+      "noDuesStatus": {
+        "LIBRARY": true,
+        "HOSTEL": true,
+        "FINANCE": true,
+        "LABORATORY": true,
+        "SPORTS_COUNCIL": true,
+        "ALUMNI_ASSOCIATION": true
+      },
+      "allClearancesGranted": true,
+      "convocationRegistered": true,
+      "robeSize": "XL",
+      "guestPassesCount": 3,
+      "degreeDispatchMode": "CONVOCATION_IN_PERSON",
+      "certificateHash": "DEG-CONF-A4F79BC8D10E3321"
+    },
+    {
+      "id": "cand-02",
+      "candidateRef": "CONV-2026-082",
+      "studentRoll": "CS2026-002",
+      "fullName": "Sophia Rodriguez",
+      "program": "B.Tech Computer Science & Engineering",
+      "departmentCode": "CSE",
+      "graduatingYear": 2026,
+      "finalCgpa": 8.82,
+      "honorsCategory": "FIRST_CLASS_WITH_DISTINCTION",
+      "isMedalist": false,
+      "noDuesStatus": {
+        "LIBRARY": true,
+        "HOSTEL": false,
+        "FINANCE": true,
+        "LABORATORY": true,
+        "SPORTS_COUNCIL": true,
+        "ALUMNI_ASSOCIATION": true
+      },
+      "allClearancesGranted": false,
+      "convocationRegistered": false,
+      "guestPassesCount": 0,
+      "degreeDispatchMode": "CONVOCATION_IN_PERSON",
+      "certificateHash": "DEG-CONF-E810BB421590FA7A"
+    },
+    {
+      "id": "cand-03",
+      "candidateRef": "CONV-2026-083",
+      "studentRoll": "ECE2026-015",
+      "fullName": "Tariq Mansoor",
+      "program": "B.Tech Electronics & Communication",
+      "departmentCode": "ECE",
+      "graduatingYear": 2026,
+      "finalCgpa": 7.65,
+      "honorsCategory": "FIRST_CLASS",
+      "isMedalist": false,
+      "noDuesStatus": {
+        "LIBRARY": true,
+        "HOSTEL": true,
+        "FINANCE": true,
+        "LABORATORY": true,
+        "SPORTS_COUNCIL": true,
+        "ALUMNI_ASSOCIATION": true
+      },
+      "allClearancesGranted": true,
+      "convocationRegistered": true,
+      "robeSize": "M",
+      "guestPassesCount": 1,
+      "degreeDispatchMode": "POSTAL_SPEEDPOST",
+      "courierTrackingAwb": "SP-IN-88992014-DEL",
+      "certificateHash": "DEG-CONF-C309117FF619A01B"
+    }
+  ]
+}

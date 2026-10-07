@@ -1,0 +1,107 @@
+{
+  "partners": [
+    {
+      "id": "part-01",
+      "institutionName": "Technical University of Munich (TUM)",
+      "country": "Germany",
+      "city": "Munich",
+      "qsWorldRanking": 37,
+      "mouSigningDate": "2023-09-15",
+      "mouExpiryDate": "2028-09-14",
+      "isActive": true,
+      "cooperationAreas": [
+        "Student Exchange",
+        "Joint Research",
+        "Faculty Mobility"
+      ],
+      "exchangeSeatsPerYear": 6
+    },
+    {
+      "id": "part-02",
+      "institutionName": "National University of Singapore (NUS)",
+      "country": "Singapore",
+      "city": "Singapore",
+      "qsWorldRanking": 8,
+      "mouSigningDate": "2022-04-10",
+      "mouExpiryDate": "2027-04-09",
+      "isActive": true,
+      "cooperationAreas": [
+        "Student Exchange",
+        "Dual Degree MS/PhD",
+        "AI Research Lab"
+      ],
+      "exchangeSeatsPerYear": 4
+    },
+    {
+      "id": "part-03",
+      "institutionName": "University of Waterloo",
+      "country": "Canada",
+      "city": "Waterloo",
+      "qsWorldRanking": 112,
+      "mouSigningDate": "2024-01-20",
+      "mouExpiryDate": "2029-01-19",
+      "isActive": true,
+      "cooperationAreas": [
+        "Co-op Internship Exchange",
+        "Quantum Computing Joint Grant"
+      ],
+      "exchangeSeatsPerYear": 8
+    }
+  ],
+  "students": [
+    {
+      "id": "ex-1791307374629",
+      "applicationRef": "IRO-2026-297",
+      "type": "OUTBOUND",
+      "studentName": "Devansh Sharma",
+      "studentRollOrId": "CS2026-044",
+      "homeUniversity": "Apex Autonomous University",
+      "hostUniversity": "National University of Singapore (NUS)",
+      "program": "B.Tech Computer Science & Engineering",
+      "targetSemester": "Autumn 2027",
+      "creditsMapped": 18,
+      "status": "NOMINATED",
+      "passportNumber": "N7710294",
+      "visaExpiryDate": "2027-12-31",
+      "frroStatus": "NOT_APPLICABLE",
+      "scholarshipGrantAmount": 4000,
+      "createdAt": "2026-10-06T17:22:54.629Z"
+    },
+    {
+      "id": "ex-01",
+      "applicationRef": "IRO-2026-301",
+      "type": "OUTBOUND",
+      "studentName": "Alex Mercer",
+      "studentRollOrId": "CS2026-001",
+      "homeUniversity": "Apex Autonomous University",
+      "hostUniversity": "Technical University of Munich (TUM)",
+      "program": "B.Tech Computer Science & Engineering",
+      "targetSemester": "Spring 2027",
+      "creditsMapped": 18,
+      "status": "STUDYING_ABROAD",
+      "passportNumber": "Z9921448",
+      "visaExpiryDate": "2027-08-31",
+      "frroStatus": "NOT_APPLICABLE",
+      "scholarshipGrantAmount": 3500,
+      "createdAt": "2026-08-10T10:00:00.000Z"
+    },
+    {
+      "id": "ex-02",
+      "applicationRef": "IRO-2026-302",
+      "type": "INBOUND",
+      "studentName": "Liam Van Der Bilt",
+      "studentRollOrId": "INB-TUM-901",
+      "homeUniversity": "Technical University of Munich (TUM)",
+      "hostUniversity": "Apex Autonomous University",
+      "program": "Exchange Fellow in Robotics",
+      "targetSemester": "Fall 2026",
+      "creditsMapped": 16,
+      "status": "STUDYING_ABROAD",
+      "passportNumber": "DE7739120",
+      "visaExpiryDate": "2026-12-20",
+      "frroStatus": "COMPLIANT",
+      "scholarshipGrantAmount": 1500,
+      "createdAt": "2026-07-15T12:00:00.000Z"
+    }
+  ]
+}
