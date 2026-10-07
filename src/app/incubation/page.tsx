@@ -49,10 +49,47 @@ export default function IncubationPage() {
   const [message, setMessage] = useState<{ text: string; type: "success" | "error" } | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [filterSector, setFilterSector] = useState("ALL");
+  const [filterStage, setFilterStage] = useState("ALL");
+
+  const handleUpdateStartupStage = async (id: string, stage: string) => {
+    try {
+      const res = await fetch("/api/incubation", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "UPDATE_STAGE",
+          id,
+          stage,
+        }),
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        setMessage({ text: data.message || `Startup stage transitioned to ${stage}`, type: "success" });
+        fetchData();
+      } else {
+        setMessage({ text: data.error || "Failed to update stage", type: "error" });
+      }
+    } catch (err: any) {
+      setMessage({ text: err.message || "Network error", type: "error" });
+    }
+  };
 
   const handleExportIncubationCsv = () => {
+    const filtered = startups.filter((s) => {
+      const q = searchQuery.toLowerCase();
+      const matchesSearch =
+        !q ||
+        s.startupName.toLowerCase().includes(q) ||
+        s.founderName.toLowerCase().includes(q) ||
+        s.pitchDeckSummary.toLowerCase().includes(q) ||
+        s.companyRef.toLowerCase().includes(q);
+      const matchesSector = filterSector === "ALL" || s.sector === filterSector;
+      const matchesStage = filterStage === "ALL" || s.stage === filterStage;
+      return matchesSearch && matchesSector && matchesStage;
+    });
     const headers = "Company Ref,Startup Name,Founder,Role,Staff/Roll ID,Sector,Stage,Seed Disbursed,Univ Equity %,External Funding,Patents,Lab Desks,Mentor,Status\n";
-    const rows = startups
+    const rows = filtered
       .map((s) => `"${s.companyRef}","${s.startupName}","${s.founderName}","${s.founderRole}","${s.founderRollOrStaffId}","${s.sector}","${s.stage}",${s.seedGrantDisbursed},${s.universityEquityPercentage},${s.externalFundingRaised},${s.patentsFiled},${s.labDesksAllocated},"${s.mentorName}","${s.status}"`)
       .join("\n");
     const blob = new Blob([headers + rows], { type: "text/csv;charset=utf-8;" });
@@ -243,7 +280,7 @@ export default function IncubationPage() {
             className="w-full pl-9 pr-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-violet-500 text-slate-900 dark:text-white"
           />
         </div>
-        <div className="flex items-center gap-2 w-full sm:w-auto">
+        <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
           <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Sector:</span>
           <select
             value={filterSector}
@@ -257,6 +294,20 @@ export default function IncubationPage() {
             <option value="CLEANTECH">CleanTech & Energy</option>
             <option value="HEALTH_TECH">HealthTech & Bio</option>
             <option value="EDTECH">EdTech & Platforms</option>
+          </select>
+
+          <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider sm:ml-2">Stage:</span>
+          <select
+            value={filterStage}
+            onChange={(e) => setFilterStage(e.target.value)}
+            className="px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-violet-500 text-slate-900 dark:text-white"
+          >
+            <option value="ALL">All Stages</option>
+            <option value="PRE_INCUBATION">Pre-Incubation</option>
+            <option value="INCUBATED_PROTOTYPE">Incubated Prototype</option>
+            <option value="SEED_FUNDED">Seed Funded</option>
+            <option value="ACCELERATOR_GROWTH">Accelerator Growth</option>
+            <option value="GRADUATED_VENTURE">Graduated Venture</option>
           </select>
         </div>
       </div>
@@ -300,7 +351,8 @@ export default function IncubationPage() {
                 s.pitchDeckSummary.toLowerCase().includes(q) ||
                 s.companyRef.toLowerCase().includes(q);
               const matchesSector = filterSector === "ALL" || s.sector === filterSector;
-              return matchesSearch && matchesSector;
+              const matchesStage = filterStage === "ALL" || s.stage === filterStage;
+              return matchesSearch && matchesSector && matchesStage;
             })
             .map((s) => (
             <div
@@ -356,6 +408,21 @@ export default function IncubationPage() {
                     {s.mentorName}
                   </span>
                 </div>
+              </div>
+
+              <div className="flex items-center justify-between border-t border-slate-100 dark:border-slate-800 pt-3">
+                <span className="text-xs font-semibold text-slate-500">Advance Stage:</span>
+                <select
+                  value={s.stage}
+                  onChange={(e) => handleUpdateStartupStage(s.id, e.target.value)}
+                  className="px-2.5 py-1 text-xs font-semibold bg-violet-50 dark:bg-violet-950/40 text-violet-700 dark:text-violet-300 border border-violet-200 dark:border-violet-800 rounded-lg focus:outline-none cursor-pointer"
+                >
+                  <option value="PRE_INCUBATION">Pre-Incubation</option>
+                  <option value="INCUBATED_PROTOTYPE">Incubated Prototype</option>
+                  <option value="SEED_FUNDED">Seed Funded</option>
+                  <option value="ACCELERATOR_GROWTH">Accelerator Growth</option>
+                  <option value="GRADUATED_VENTURE">Graduated Venture</option>
+                </select>
               </div>
             </div>
           ))}

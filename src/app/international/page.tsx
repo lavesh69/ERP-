@@ -62,11 +62,46 @@ export default function InternationalPage() {
   const [message, setMessage] = useState<{ text: string; type: "success" | "error" } | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [filterCountry, setFilterCountry] = useState("ALL");
+  const [filterStatus, setFilterStatus] = useState("ALL");
+
+  const handleUpdateStudentStatus = async (id: string, newStatus: string) => {
+    try {
+      const res = await fetch("/api/international", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "UPDATE_STATUS",
+          id,
+          status: newStatus,
+        }),
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        setMessage({ text: data.message || `Status updated to ${newStatus}`, type: "success" });
+        fetchData();
+      } else {
+        setMessage({ text: data.error || "Failed to update status", type: "error" });
+      }
+    } catch (err: any) {
+      setMessage({ text: err.message || "Network error", type: "error" });
+    }
+  };
 
   const handleExportInternationalCsv = () => {
     if (activeTab === "partners") {
+      const filtered = partners.filter((p) => {
+        const q = searchQuery.toLowerCase();
+        const matchesSearch =
+          !q ||
+          p.institutionName.toLowerCase().includes(q) ||
+          p.country.toLowerCase().includes(q) ||
+          p.city.toLowerCase().includes(q);
+        const matchesCountry = filterCountry === "ALL" || p.country.toLowerCase().includes(filterCountry.toLowerCase());
+        return matchesSearch && matchesCountry;
+      });
       const headers = "Partner University,Country,City,QS Rank,MoU Signed,MoU Expiry,Exchange Seats/Yr,Active\n";
-      const rows = partners
+      const rows = filtered
         .map((p) => `"${p.institutionName}","${p.country}","${p.city}",${p.qsWorldRanking},"${p.mouSigningDate}","${p.mouExpiryDate}",${p.exchangeSeatsPerYear},${p.isActive}`)
         .join("\n");
       const blob = new Blob([headers + rows], { type: "text/csv;charset=utf-8;" });
@@ -78,8 +113,19 @@ export default function InternationalPage() {
       link.click();
       document.body.removeChild(link);
     } else {
+      const filtered = students.filter((s) => {
+        const q = searchQuery.toLowerCase();
+        const matchesSearch =
+          !q ||
+          s.studentName.toLowerCase().includes(q) ||
+          s.studentRollOrId.toLowerCase().includes(q) ||
+          s.hostUniversity.toLowerCase().includes(q) ||
+          s.applicationRef.toLowerCase().includes(q);
+        const matchesStatus = filterStatus === "ALL" || s.status === filterStatus;
+        return matchesSearch && matchesStatus;
+      });
       const headers = "App Ref,Type,Student Name,Roll/ID,Home University,Host University,Program,Semester,Credits Mapped,Passport,Visa Expiry,FRRO Status,Grant Amount\n";
-      const rows = students
+      const rows = filtered
         .map((s) => `"${s.applicationRef}","${s.type}","${s.studentName}","${s.studentRollOrId}","${s.homeUniversity}","${s.hostUniversity}","${s.program}","${s.targetSemester}",${s.creditsMapped},"${s.passportNumber}","${s.visaExpiryDate}","${s.frroStatus}",${s.scholarshipGrantAmount}`)
         .join("\n");
       const blob = new Blob([headers + rows], { type: "text/csv;charset=utf-8;" });
@@ -274,7 +320,7 @@ export default function InternationalPage() {
             className="w-full pl-9 pr-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500 text-slate-900 dark:text-white"
           />
         </div>
-        <div className="flex items-center gap-2 w-full sm:w-auto">
+        <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
           <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Country:</span>
           <select
             value={filterCountry}
@@ -289,6 +335,25 @@ export default function InternationalPage() {
             <option value="UK">United Kingdom</option>
             <option value="Japan">Japan</option>
           </select>
+
+          {activeTab === "students" && (
+            <>
+              <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider sm:ml-2">Status:</span>
+              <select
+                value={filterStatus}
+                onChange={(e) => setFilterStatus(e.target.value)}
+                className="px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-cyan-500 text-slate-900 dark:text-white"
+              >
+                <option value="ALL">All Statuses</option>
+                <option value="APPLICATION_SUBMITTED">Submitted</option>
+                <option value="NOMINATED">Nominated</option>
+                <option value="VISA_GRANTED">Visa Granted</option>
+                <option value="STUDYING_ABROAD">Studying Abroad</option>
+                <option value="TRANSCRIPT_TRANSFERRED">Transcript Transferred</option>
+                <option value="REJECTED">Rejected</option>
+              </select>
+            </>
+          )}
         </div>
       </div>
 
@@ -410,19 +475,21 @@ export default function InternationalPage() {
                   <th className="py-3 px-4">Target Semester</th>
                   <th className="py-3 px-4">Status</th>
                   <th className="py-3 px-4">Grant</th>
+                  <th className="py-3 px-4">Action</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-slate-700 dark:text-slate-300">
                 {students
                   .filter((s) => {
                     const q = searchQuery.toLowerCase();
-                    return (
+                    const matchesSearch =
                       !q ||
                       s.studentName.toLowerCase().includes(q) ||
                       s.studentRollOrId.toLowerCase().includes(q) ||
                       s.hostUniversity.toLowerCase().includes(q) ||
-                      s.applicationRef.toLowerCase().includes(q)
-                    );
+                      s.applicationRef.toLowerCase().includes(q);
+                    const matchesStatus = filterStatus === "ALL" || s.status === filterStatus;
+                    return matchesSearch && matchesStatus;
                   })
                   .map((s) => (
                   <tr key={s.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/40">
@@ -456,6 +523,20 @@ export default function InternationalPage() {
                     </td>
                     <td className="py-3 px-4 font-semibold text-emerald-600 dark:text-emerald-400">
                       ${s.scholarshipGrantAmount}
+                    </td>
+                    <td className="py-3 px-4">
+                      <select
+                        value={s.status}
+                        onChange={(e) => handleUpdateStudentStatus(s.id, e.target.value)}
+                        className="px-2 py-1 text-xs font-semibold bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-cyan-500 cursor-pointer"
+                      >
+                        <option value="APPLICATION_SUBMITTED">Submitted</option>
+                        <option value="NOMINATED">Nominated</option>
+                        <option value="VISA_GRANTED">Visa Granted</option>
+                        <option value="STUDYING_ABROAD">Studying Abroad</option>
+                        <option value="TRANSCRIPT_TRANSFERRED">Transcript Transferred</option>
+                        <option value="REJECTED">Rejected</option>
+                      </select>
                     </td>
                   </tr>
                 ))}

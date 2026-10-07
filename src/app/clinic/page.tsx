@@ -205,6 +205,24 @@ export default function ClinicPage() {
     }
   };
 
+  const handleDischargeBed = async (bedId: string) => {
+    try {
+      const res = await fetch("/api/clinic", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "DISCHARGE_BED", bedId }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to discharge patient");
+      setStatusMessage({ type: "success", text: data.message });
+      fetchData();
+      setTimeout(() => setStatusMessage(null), 4000);
+    } catch (err: any) {
+      setStatusMessage({ type: "error", text: err.message });
+      setTimeout(() => setStatusMessage(null), 5000);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 p-6 md:p-8 space-y-6">
       {/* Top Banner */}
@@ -486,9 +504,15 @@ export default function ClinicPage() {
                 {bed.bedNumber}
               </h4>
               {bed.isOccupied ? (
-                <div className="mt-3 pt-3 border-t border-amber-200 dark:border-amber-900/60 text-xs text-slate-600 dark:text-slate-300 space-y-1">
+                <div className="mt-3 pt-3 border-t border-amber-200 dark:border-amber-900/60 text-xs text-slate-600 dark:text-slate-300 space-y-2">
                   <div>Patient: <span className="font-semibold text-slate-900 dark:text-white">{bed.patientName}</span></div>
                   <div>Admitted: {new Date(bed.admittedAt).toLocaleTimeString()}</div>
+                  <button
+                    onClick={() => handleDischargeBed(bed.id)}
+                    className="w-full mt-2 py-1.5 px-3 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-medium text-xs transition-colors shadow-sm"
+                  >
+                    Discharge & Sanitize Bed
+                  </button>
                 </div>
               ) : (
                 <p className="mt-3 pt-3 border-t border-slate-100 dark:border-slate-800 text-xs text-slate-400">

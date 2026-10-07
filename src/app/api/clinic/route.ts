@@ -82,6 +82,20 @@ export async function POST(request: NextRequest) {
       });
     }
 
+    if (action === "DISCHARGE_BED") {
+      const { bedId } = body;
+      if (!bedId) {
+        return NextResponse.json({ error: "Bed ID is required to discharge" }, { status: 400 });
+      }
+
+      const dischargedBed = clinicStore.dischargeBed(bedId);
+      return NextResponse.json({
+        success: true,
+        message: `Patient successfully discharged from ${dischargedBed.bedNumber}. Bed sanitized and marked vacant.`,
+        bed: dischargedBed,
+      });
+    }
+
     return NextResponse.json({ error: `Unknown action: ${action}` }, { status: 400 });
   } catch (error: any) {
     console.error("[Clinic API Error POST]:", error);

@@ -178,4 +178,28 @@ export const clinicStore = {
     writeStore(store);
     return newCase;
   },
+
+  dischargeBed(bedId: string) {
+    const store = readStore();
+    const bed = store.beds.find((b) => b.id === bedId);
+    if (!bed) {
+      throw new Error(`Bed with ID ${bedId} not found`);
+    }
+    const patientName = bed.patientName;
+    bed.isOccupied = false;
+    bed.patientName = undefined;
+    bed.admittedAt = undefined;
+
+    if (patientName) {
+      const activeCons = store.consultations.find(
+        (c) => c.patientName.toLowerCase() === patientName.toLowerCase() && c.status === "ADMITTED_SICK_BAY"
+      );
+      if (activeCons) {
+        activeCons.status = "TREATED_DISCHARGED";
+      }
+    }
+
+    writeStore(store);
+    return bed;
+  },
 };

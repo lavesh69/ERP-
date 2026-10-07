@@ -17,6 +17,7 @@ import {
   Lock,
   Download,
   Search,
+  Filter,
 } from "lucide-react";
 import { VisitorPass, SecurityGate, PassStatus } from "@/lib/security/security-engine";
 
@@ -37,10 +38,24 @@ export default function SecurityPage() {
   const [gates, setGates] = useState<SecurityGate[]>([]);
   const [statusMessage, setStatusMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string>("ALL");
+
+  const filteredPasses = passes.filter((p) => {
+    const q = searchQuery.toLowerCase();
+    const matchesSearch =
+      !q ||
+      p.passNumber.toLowerCase().includes(q) ||
+      p.visitorName.toLowerCase().includes(q) ||
+      p.contactPhone.toLowerCase().includes(q) ||
+      (p.vehicleNumber && p.vehicleNumber.toLowerCase().includes(q)) ||
+      p.hostName.toLowerCase().includes(q);
+    const matchesStatus = statusFilter === "ALL" || p.status === statusFilter;
+    return matchesSearch && matchesStatus;
+  });
 
   const handleExportSecurityCsv = () => {
     const headers = "Pass Ref,Visitor Name,Phone,ID Proof,Visitor Type,Host Name,Department,Purpose,Vehicle No,Entry Gate,Status,Check-In Time,Check-Out Time\n";
-    const rows = passes
+    const rows = filteredPasses
       .map((p) => `"${p.passNumber}","${p.visitorName}","${p.contactPhone}","${p.idProofType}: ${p.idProofNumber}","${p.visitorType}","${p.hostName}","${p.hostDepartment}","${(p.purposeOfVisit || "").replace(/"/g, '""')}","${p.vehicleNumber || "N/A"}","${p.entryGate}","${p.status}","${p.checkInTime}","${p.checkOutTime || "N/A"}"`)
       .join("\n");
     const blob = new Blob([headers + rows], { type: "text/csv;charset=utf-8;" });
@@ -310,9 +325,36 @@ export default function SecurityPage() {
       {/* Tab 1: Visitor Passes Ledger */}
       {activeTab === "passes" && (
         <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm overflow-hidden">
-          <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center">
-            <h3 className="font-semibold text-slate-900 dark:text-white">Active & Historical Passes</h3>
-            <span className="text-xs text-slate-400">{passes.length} badges issued</span>
+          <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <h3 className="font-semibold text-slate-900 dark:text-white">Active & Historical Passes</h3>
+              <p className="text-xs text-slate-400">{filteredPasses.length} of {passes.length} badges matching</p>
+            </div>
+            <div className="flex flex-wrap items-center gap-2.5">
+              <div className="relative">
+                <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
+                <input
+                  type="text"
+                  placeholder="Search visitor, vehicle, pass #..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-9 pr-3 py-1.5 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-emerald-500 w-48 sm:w-56"
+                />
+              </div>
+              <div className="flex items-center gap-1.5">
+                <Filter className="w-3.5 h-3.5 text-slate-400" />
+                <select
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                  className="px-2.5 py-1.5 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                >
+                  <option value="ALL">All Statuses</option>
+                  <option value="ACTIVE_ON_CAMPUS">ACTIVE_ON_CAMPUS</option>
+                  <option value="CHECKED_OUT">CHECKED_OUT</option>
+                  <option value="OVERSTAY_ALERT">OVERSTAY_ALERT</option>
+                </select>
+              </div>
+            </div>
           </div>
 
           <div className="overflow-x-auto">
@@ -329,19 +371,7 @@ export default function SecurityPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                {passes
-                  .filter((p) => {
-                    const q = searchQuery.toLowerCase();
-                    return (
-                      !q ||
-                      p.passNumber.toLowerCase().includes(q) ||
-                      p.visitorName.toLowerCase().includes(q) ||
-                      p.contactPhone.toLowerCase().includes(q) ||
-                      (p.vehicleNumber && p.vehicleNumber.toLowerCase().includes(q)) ||
-                      p.hostName.toLowerCase().includes(q)
-                    );
-                  })
-                  .map((p) => (
+                {filteredPasses.map((p) => (
                   <tr key={p.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/40">
                     <td className="p-4 font-mono font-medium text-xs text-emerald-600 dark:text-emerald-400">
                       {p.passNumber}

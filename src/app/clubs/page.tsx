@@ -18,6 +18,7 @@ import {
   Compass,
   Download,
   Search,
+  Filter,
 } from "lucide-react";
 import { StudentClub, ActivityPointClaim, DEGREE_REQUIRED_ACTIVITY_POINTS } from "@/lib/clubs/clubs-engine";
 
@@ -45,10 +46,36 @@ export default function ClubsPage() {
   const [clubs, setClubs] = useState<StudentClub[]>([]);
   const [statusMessage, setStatusMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState("ALL");
+
+  const filteredClaims = claims.filter((c) => {
+    const q = searchQuery.toLowerCase();
+    const matchesSearch =
+      !q ||
+      c.activityTitle.toLowerCase().includes(q) ||
+      c.clubName.toLowerCase().includes(q) ||
+      c.claimRef.toLowerCase().includes(q) ||
+      c.category.toLowerCase().includes(q) ||
+      c.studentRoll.toLowerCase().includes(q);
+    const matchesCategory = categoryFilter === "ALL" || c.category === categoryFilter;
+    return matchesSearch && matchesCategory;
+  });
+
+  const filteredClubs = clubs.filter((club) => {
+    const q = searchQuery.toLowerCase();
+    const matchesSearch =
+      !q ||
+      club.name.toLowerCase().includes(q) ||
+      club.code.toLowerCase().includes(q) ||
+      club.description.toLowerCase().includes(q) ||
+      club.presidentName.toLowerCase().includes(q);
+    const matchesCategory = categoryFilter === "ALL" || club.category === categoryFilter;
+    return matchesSearch && matchesCategory;
+  });
 
   const handleExportClubsCsv = () => {
     const headers = "Claim ID,Student Roll,Student Name,Club Code,Activity Title,Points Claimed,Awarded Points,Status,Submission Date\n";
-    const rows = claims
+    const rows = filteredClaims
       .map((c) => `"${c.id}","${c.studentRoll}","${c.studentName}","${c.clubCode}","${c.activityTitle}",${c.pointsClaimed},${c.pointsAwarded},"${c.status}","${c.submittedAt}"`)
       .join("\n");
     const blob = new Blob([headers + rows], { type: "text/csv;charset=utf-8;" });
@@ -395,9 +422,38 @@ export default function ClubsPage() {
       {/* Tab 1: Activity Portfolio */}
       {activeTab === "portfolio" && (
         <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm overflow-hidden">
-          <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center">
-            <h3 className="font-semibold text-slate-900 dark:text-white">Submitted Activity Records</h3>
-            <span className="text-xs text-slate-400">{claims.length} claims registered</span>
+          <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <h3 className="font-semibold text-slate-900 dark:text-white">Submitted Activity Records</h3>
+              <p className="text-xs text-slate-400">{filteredClaims.length} of {claims.length} claims matching</p>
+            </div>
+            <div className="flex flex-wrap items-center gap-2.5">
+              <div className="relative">
+                <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
+                <input
+                  type="text"
+                  placeholder="Search activity, club, roll #..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-9 pr-3 py-1.5 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-amber-500 w-48 sm:w-56"
+                />
+              </div>
+              <div className="flex items-center gap-1.5">
+                <Filter className="w-3.5 h-3.5 text-slate-400" />
+                <select
+                  value={categoryFilter}
+                  onChange={(e) => setCategoryFilter(e.target.value)}
+                  className="px-2.5 py-1.5 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-amber-500"
+                >
+                  <option value="ALL">All Categories</option>
+                  <option value="TECHNICAL">TECHNICAL</option>
+                  <option value="CULTURAL">CULTURAL</option>
+                  <option value="SPORTS">SPORTS</option>
+                  <option value="SOCIAL_SERVICE">SOCIAL_SERVICE</option>
+                  <option value="ENTREPRENEURSHIP">ENTREPRENEURSHIP</option>
+                </select>
+              </div>
+            </div>
           </div>
 
           <div className="overflow-x-auto">
@@ -413,7 +469,7 @@ export default function ClubsPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                {claims.map((c) => (
+                {filteredClaims.map((c) => (
                   <tr key={c.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/40">
                     <td className="p-4 font-mono font-medium text-xs text-amber-600 dark:text-amber-400">
                       {c.claimRef}
@@ -465,7 +521,7 @@ export default function ClubsPage() {
       {/* Tab 2: Clubs Directory */}
       {activeTab === "directory" && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {clubs.map((club) => (
+          {filteredClubs.map((club) => (
             <div
               key={club.id}
               className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-2xl shadow-sm flex flex-col justify-between"

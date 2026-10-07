@@ -307,6 +307,7 @@ export default function AdmissionsPage() {
                   <option value="MERIT_SHORTLISTED">Merit Shortlisted</option>
                   <option value="OFFER_EXTENDED">Offer Extended</option>
                   <option value="SEAT_CONFIRMED">Seat Confirmed (Enrolled)</option>
+                  <option value="REJECTED">Declined / Rejected</option>
                 </select>
               </div>
 
@@ -384,28 +385,57 @@ export default function AdmissionsPage() {
                   {/* Stage Transition Actions */}
                   <div className="flex flex-wrap items-center gap-2">
                     {lead.stage === "APPLICATION_SUBMITTED" && (
-                      <button
-                        onClick={() => handleUpdateStage(lead.id, "MERIT_SHORTLISTED")}
-                        className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-rose-primary text-white hover:bg-rose-accent transition-colors"
-                      >
-                        Shortlist for Merit
-                      </button>
+                      <>
+                        <button
+                          onClick={() => handleUpdateStage(lead.id, "MERIT_SHORTLISTED")}
+                          className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-rose-primary text-white hover:bg-rose-accent transition-colors"
+                        >
+                          Shortlist for Merit
+                        </button>
+                        <button
+                          onClick={() => handleUpdateStage(lead.id, "REJECTED")}
+                          className="px-2.5 py-1.5 rounded-lg text-xs font-medium text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors"
+                        >
+                          Decline
+                        </button>
+                      </>
                     )}
                     {lead.stage === "MERIT_SHORTLISTED" && (
-                      <button
-                        onClick={() => handleUpdateStage(lead.id, "OFFER_EXTENDED")}
-                        className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600 text-white hover:bg-emerald-700 transition-colors"
-                      >
-                        Release Offer Letter
-                      </button>
+                      <>
+                        <button
+                          onClick={() => handleUpdateStage(lead.id, "OFFER_EXTENDED")}
+                          className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600 text-white hover:bg-emerald-700 transition-colors"
+                        >
+                          Release Offer Letter
+                        </button>
+                        <button
+                          onClick={() => handleUpdateStage(lead.id, "REJECTED")}
+                          className="px-2.5 py-1.5 rounded-lg text-xs font-medium text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors"
+                        >
+                          Decline
+                        </button>
+                      </>
                     )}
                     {lead.stage === "OFFER_EXTENDED" && (
-                      <button
-                        onClick={() => handleUpdateStage(lead.id, "SEAT_CONFIRMED", true)}
-                        className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-blue-600 text-white hover:bg-blue-700 transition-colors"
-                      >
-                        Confirm Seat Deposit
-                      </button>
+                      <>
+                        <button
+                          onClick={() => handleUpdateStage(lead.id, "SEAT_CONFIRMED", true)}
+                          className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-blue-600 text-white hover:bg-blue-700 transition-colors"
+                        >
+                          Confirm Seat Deposit
+                        </button>
+                        <button
+                          onClick={() => handleUpdateStage(lead.id, "REJECTED")}
+                          className="px-2.5 py-1.5 rounded-lg text-xs font-medium text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors"
+                        >
+                          Decline Offer
+                        </button>
+                      </>
+                    )}
+                    {lead.stage === "REJECTED" && (
+                      <span className="text-xs text-rose-500 font-medium px-2 py-1 bg-rose-50 dark:bg-rose-950/40 rounded-lg">
+                        Application Closed
+                      </span>
                     )}
                   </div>
                 </div>

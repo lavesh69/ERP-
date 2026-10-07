@@ -15,6 +15,7 @@ import {
   AlertCircle,
   Copy,
   Download,
+  Search,
 } from "lucide-react";
 import { AccreditationCriterion } from "@/lib/accreditation/accreditation-engine";
 
@@ -58,6 +59,16 @@ export default function AccreditationPage() {
   const [summary, setSummary] = useState<AccreditationSummary | null>(null);
   const [criteria, setCriteria] = useState<AccreditationCriterion[]>([]);
   const [statusMessage, setStatusMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const filteredCriteria = criteria.filter((c) => {
+    const q = searchQuery.toLowerCase();
+    return (
+      c.name.toLowerCase().includes(q) ||
+      `criterion ${c.criterionNumber}`.toLowerCase().includes(q) ||
+      c.keyIndicators.some((ki) => ki.indicator.toLowerCase().includes(q))
+    );
+  });
 
   const fetchData = async () => {
     try {
@@ -273,7 +284,24 @@ export default function AccreditationPage() {
       {/* Tab 1: Criteria Matrix */}
       {activeTab === "criteria" && (
         <div className="space-y-4">
-          {criteria.map((c) => (
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 rounded-xl shadow-sm">
+            <div>
+              <h3 className="font-semibold text-slate-900 dark:text-white text-sm">NAAC 7 Quality Criteria Pillars</h3>
+              <p className="text-xs text-slate-400">Showing {filteredCriteria.length} of {criteria.length} criteria matching</p>
+            </div>
+            <div className="relative">
+              <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
+              <input
+                type="text"
+                placeholder="Search criteria or indicators..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-9 pr-3 py-1.5 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500 w-56 sm:w-64"
+              />
+            </div>
+          </div>
+
+          {filteredCriteria.map((c) => (
             <div
               key={c.criterionNumber}
               className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-2xl shadow-sm space-y-4"
