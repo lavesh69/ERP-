@@ -1,0 +1,103 @@
+{
+  "alerts": [
+    {
+      "id": "al-1791338601238",
+      "alertCode": "EMG-2026-167",
+      "category": "SEVERE_WEATHER_ALERT",
+      "severity": "CAMPUS_ALL_CLEAR",
+      "headline": "Flash Flood & Storm Warning on East Campus",
+      "instructions": "All students and staff in Basement labs must immediately proceed to Ground floor muster points. | [ALL CLEAR]: Weather services have downgraded warning; facilities team confirmed safe building egress.",
+      "affectedZones": [
+        "Engineering Block A",
+        "Central Library"
+      ],
+      "dispatchedChannels": [
+        "SMS_GATEWAY",
+        "CAMPUS_SIRENS",
+        "MOBILE_APP_PUSH"
+      ],
+      "initiatedBy": "Incident Commander",
+      "initiatedAt": "2026-10-07T02:03:21.238Z",
+      "isActive": false,
+      "cryptographicBroadcastSeal": "EOC-ALERT-B38113C3E77CC1C6",
+      "resolvedAt": "2026-10-07T02:03:21.243Z"
+    },
+    {
+      "id": "al-1791338584008",
+      "alertCode": "EMG-2026-758",
+      "category": "SEVERE_WEATHER_ALERT",
+      "severity": "CRITICAL_EVACUATION",
+      "headline": "Flash Flood & Storm Warning on East Campus",
+      "instructions": "All students and staff in Basement labs must immediately proceed to Ground floor muster points. | [ALL CLEAR]: Weather services have downgraded warning; facilities team confirmed safe building egress.",
+      "affectedZones": [
+        "Engineering Block A",
+        "Central Library"
+      ],
+      "dispatchedChannels": [
+        "SMS_GATEWAY",
+        "CAMPUS_SIRENS",
+        "MOBILE_APP_PUSH"
+      ],
+      "initiatedBy": "Incident Commander",
+      "initiatedAt": "2026-10-07T02:03:04.008Z",
+      "isActive": false,
+      "cryptographicBroadcastSeal": "EOC-ALERT-52875F3EB757D8D1",
+      "resolvedAt": "2026-10-07T02:03:04.013Z"
+    },
+    {
+      "id": "al-01",
+      "alertCode": "EMG-2026-001",
+      "category": "DRILL_SIMULATION",
+      "severity": "CAMPUS_ALL_CLEAR",
+      "headline": "Semester Evacuation Drill & Fire Safety Protocol Simulation Completed",
+      "instructions": "All building wardens have completed headcounts. Regular academic and lab sessions resume.",
+      "affectedZones": [
+        "Central Academic Block",
+        "Science Quad",
+        "Library"
+      ],
+      "dispatchedChannels": [
+        "SMS_GATEWAY",
+        "MOBILE_APP_PUSH",
+        "EMERGENCY_EMAILS"
+      ],
+      "initiatedBy": "Campus Emergency Operations Center (EOC)",
+      "initiatedAt": "2026-10-02T11:00:00.000Z",
+      "isActive": false,
+      "resolvedAt": "2026-10-02T11:45:00.000Z",
+      "cryptographicBroadcastSeal": "EOC-ALERT-91E8B03CA21F889D"
+    }
+  ],
+  "musterPoints": [
+    {
+      "id": "mp-01",
+      "name": "Central Sports Ground Pavilion Assembly",
+      "zone": "North Academic & Science Quad",
+      "capacity": 2500,
+      "currentEvacueesCount": 840,
+      "assignedWarden": "Chief Safety Officer Col. Rathore",
+      "wardenPhone": "+1 (555) 911-0021",
+      "status": "SAFE_ASSEMBLED"
+    },
+    {
+      "id": "mp-02",
+      "name": "Hostel Quadrangle Open Lawn",
+      "zone": "South Residential Blocks A-D",
+      "capacity": 1800,
+      "currentEvacueesCount": 620,
+      "assignedWarden": "Senior Hostel Warden Dr. K. Nair",
+      "wardenPhone": "+1 (555) 911-0022",
+      "status": "SAFE_ASSEMBLED"
+    },
+    {
+      "id": "mp-03",
+      "name": "East Gate Plaza Perimeter",
+      "zone": "Innovation Hub & Engineering Workshops",
+      "capacity": 1200,
+      "currentEvacueesCount": 310,
+      "assignedWarden": "Estate Safety Engineer Vikram Sen",
+      "wardenPhone": "+1 (555) 911-0023",
+      "status": "SAFE_ASSEMBLED"
+    }
+  ]
+}

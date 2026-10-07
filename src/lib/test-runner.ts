@@ -200,6 +200,12 @@ import { GET as handleInternationalGet, POST as handleInternationalPost } from "
 import { evaluateExchangeApplication, checkVisaFrroCompliance } from "@/lib/international/international-engine";
 import { GET as handleIncubationGet, POST as handleIncubationPost } from "@/app/api/incubation/route";
 import { calculateIncubationPortfolioMetrics, validateStartupApplication } from "@/lib/incubation/incubation-engine";
+import { GET as handleEmergencyGet, POST as handleEmergencyPost } from "@/app/api/emergency/route";
+import {
+  calculateMusterAccountability,
+  generateEmergencyDispatchSeal,
+  validateEmergencyBroadcast,
+} from "@/lib/emergency/emergency-engine";
 
 async function runTestSuite() {
   console.log("=================================================");
@@ -5990,6 +5996,107 @@ By breaking down large monolithic systems into decoupled microservices, systems 
   assert(registerVentureRes.status === 200, "POST /api/incubation (action: REGISTER_VENTURE) onboards venture into incubator with 200 OK");
   const registerVentureData = await registerVentureRes.json();
   assert(registerVentureData.venture.companyRef.startsWith("VENT-2026-"), "Incubated company issued official VENT reference code");
+
+  // =========================================================================
+  // GROUP 58: Campus Emergency Operations, Clery Act Compliance & Mass Dispatch
+  // =========================================================================
+  console.log("\n📌 Group 58: Campus Emergency Operations, Disaster Management & Clery Act Safety Suite");
+
+  // 1. Validation tests
+  const invalidAlertCheck = validateEmergencyBroadcast({ headline: "Hi", instructions: "run" });
+  assert(invalidAlertCheck.isValid === false, "validateEmergencyBroadcast intercepts insufficient headline and instructions");
+  assert(invalidAlertCheck.errors.length >= 2, "validateEmergencyBroadcast captures descriptive validation error messages");
+
+  const validAlertCheck = validateEmergencyBroadcast({
+    headline: "Severe Weather Tornado Warning Active",
+    instructions: "Move to lowest level interior rooms immediately. Stay away from windows.",
+    affectedZones: ["North Quad", "Science Complex"],
+  });
+  assert(validAlertCheck.isValid === true, "validateEmergencyBroadcast approves fully detailed disaster broadcast payload");
+
+  // 2. Cryptographic dispatch seal test
+  const dispatchSeal = generateEmergencyDispatchSeal(
+    "EOC-2026-9999",
+    "SEVERE_WEATHER_ALERT",
+    "CRITICAL_EVACUATION",
+    "2026-10-07T07:30:00Z"
+  );
+  assert(dispatchSeal.startsWith("EOC-ALERT-"), "generateEmergencyDispatchSeal prefixes statutory EOC-ALERT seal");
+  assert(dispatchSeal.length === 26, "generateEmergencyDispatchSeal produces deterministic 16-hex tamper-proof checksum");
+
+  // 3. Muster point accountability engine test
+  const mockMusterPoints = [
+    {
+      id: "mp-1",
+      name: "Main Athletics Field",
+      zone: "North Quad",
+      capacity: 1500,
+      currentEvacueesCount: 850,
+      assignedWarden: "Chief Officer Sarah Jenkins",
+      wardenPhone: "+1-800-555-0199",
+      status: "SAFE_ASSEMBLED" as const,
+    },
+    {
+      id: "mp-2",
+      name: "South Lawn Pavilion",
+      zone: "South Residences",
+      capacity: 1000,
+      currentEvacueesCount: 650,
+      assignedWarden: "Officer Mike Vance",
+      wardenPhone: "+1-800-555-0198",
+      status: "SAFE_ASSEMBLED" as const,
+    },
+  ];
+  const musterTelemetry = calculateMusterAccountability(mockMusterPoints, 2000);
+  assert(musterTelemetry.totalEvacuatedCount === 1500, "calculateMusterAccountability sums total evacuee count across assembly points");
+  assert(musterTelemetry.totalAccountedPercentage === 75, "calculateMusterAccountability calculates 75% campus headcount accounted");
+  assert(musterTelemetry.safePointsCount === 2, "calculateMusterAccountability tracks safe assembled muster locations");
+  assert(musterTelemetry.hasUnaccountedRisk === false, "calculateMusterAccountability reports no unaccounted risk when all zones assembled");
+
+  // 4. API Endpoints testing
+  const emergencySummaryReq = new NextRequest("http://localhost:3000/api/emergency?tab=summary", {
+    headers: { Cookie: `classroom_session=${adminToken}` },
+  });
+  const emergencySummaryRes = await handleEmergencyGet(emergencySummaryReq);
+  assert(emergencySummaryRes.status === 200, "GET /api/emergency?tab=summary returns 200 OK");
+  const emergencySummaryData = await emergencySummaryRes.json();
+  assert(typeof emergencySummaryData.summary.activeAlertsCount === "number", "Emergency summary reports active alerts tally");
+  assert(emergencySummaryData.summary.totalMusterPoints > 0, "Emergency summary incorporates muster evacuation points");
+
+  const broadcastAlertReq = new NextRequest("http://localhost:3000/api/emergency", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "BROADCAST_ALERT",
+      category: "SEVERE_WEATHER_ALERT",
+      severity: "CRITICAL_EVACUATION",
+      headline: "Flash Flood & Storm Warning on East Campus",
+      instructions: "All students and staff in Basement labs must immediately proceed to Ground floor muster points.",
+      affectedZones: ["Engineering Block A", "Central Library"],
+      dispatchedChannels: ["SMS_GATEWAY", "CAMPUS_SIRENS", "MOBILE_APP_PUSH"],
+    }),
+  });
+  const broadcastAlertRes = await handleEmergencyPost(broadcastAlertReq);
+  assert(broadcastAlertRes.status === 200, "POST /api/emergency (action: BROADCAST_ALERT) dispatches emergency alert with 200 OK");
+  const broadcastAlertData = await broadcastAlertRes.json();
+  assert(broadcastAlertData.alert.alertCode.startsWith("EMG-"), "Dispatched emergency alert assigned official EMG incident identifier");
+  assert(broadcastAlertData.alert.isActive === true, "Newly broadcast alert initialized in ACTIVE operational state");
+
+  // Resolve alert
+  const resolveAlertReq = new NextRequest("http://localhost:3000/api/emergency", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "RESOLVE_ALERT",
+      id: broadcastAlertData.alert.id,
+      allClearNotes: "Weather services have downgraded warning; facilities team confirmed safe building egress.",
+    }),
+  });
+  const resolveAlertRes = await handleEmergencyPost(resolveAlertReq);
+  assert(resolveAlertRes.status === 200, "POST /api/emergency (action: RESOLVE_ALERT) issues ALL CLEAR and deactivates emergency alert");
+  const resolveAlertData = await resolveAlertRes.json();
+  assert(resolveAlertData.alert.isActive === false, "Resolved alert deactivated in store ledger");
+  assert(resolveAlertData.alert.severity === "CAMPUS_ALL_CLEAR", "Resolved alert transitions severity to CAMPUS_ALL_CLEAR");
 
   console.log("\n=================================================");
   console.log(`🎉 ALL ${passedTests}/${totalTests} TESTS PASSED SUCCESSFULLY!`);

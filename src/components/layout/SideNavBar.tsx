@@ -46,6 +46,7 @@ import {
   MessageSquareHeart,
   Globe2,
   Rocket,
+  Siren,
 } from "lucide-react";
 
 interface NavSection {
@@ -234,6 +235,13 @@ const NAV_SECTIONS: NavSection[] = [
         icon: Globe2,
         badge: "MoU",
         roles: ["SUPER_ADMIN", "INSTITUTION_ADMIN", "PRINCIPAL", "HOD", "FACULTY", "STUDENT", "RESEARCH_COORDINATOR"],
+      },
+      {
+        name: "Emergency EOC",
+        href: "/emergency",
+        icon: Siren,
+        badge: "SOS",
+        roles: ["SUPER_ADMIN", "INSTITUTION_ADMIN", "PRINCIPAL", "HOD", "FACULTY", "STUDENT", "HR_STAFF", "PARENT"],
       },
     ],
   },
