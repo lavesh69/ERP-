@@ -21,6 +21,7 @@ import {
   TrendingUp,
   Filter,
   Download,
+  Eye,
 } from "lucide-react";
 
 export default function AlumniPage() {
@@ -30,6 +31,7 @@ export default function AlumniPage() {
   const [alumni, setAlumni] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusMessage, setStatusMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  const [selectedAlumniDossier, setSelectedAlumniDossier] = useState<any | null>(null);
 
   // Degree Verification Form
   const [verifyRoll, setVerifyRoll] = useState("CS2026-001");
@@ -336,15 +338,23 @@ export default function AlumniPage() {
                   )}
                 </div>
 
-                <div className="mt-4 pt-3 border-t border-border dark:border-charcoal-800 flex items-center justify-between">
-                  <a
-                    href={alum.linkedinUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="text-xs text-charcoal-500 hover:text-rose-primary flex items-center gap-1 font-medium"
-                  >
-                    LinkedIn <ExternalLink className="w-3 h-3" />
-                  </a>
+                <div className="mt-4 pt-3 border-t border-border dark:border-charcoal-800 flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <a
+                      href={alum.linkedinUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-xs text-charcoal-500 hover:text-rose-primary flex items-center gap-1 font-medium"
+                    >
+                      LinkedIn <ExternalLink className="w-3 h-3" />
+                    </a>
+                    <button
+                      onClick={() => setSelectedAlumniDossier(alum)}
+                      className="text-xs text-rose-primary hover:underline flex items-center gap-1 font-semibold ml-1"
+                    >
+                      <Eye className="w-3 h-3" /> Dossier
+                    </button>
+                  </div>
                   {alum.isAvailableForMentorship && (
                     <button
                       onClick={() => {
@@ -360,6 +370,26 @@ export default function AlumniPage() {
               </div>
             ))}
           </div>
+
+          {filteredAlumni.length === 0 && (
+            <div className="bg-white dark:bg-charcoal-900 rounded-xl p-12 border border-border dark:border-charcoal-800 text-center space-y-3">
+              <div className="w-12 h-12 rounded-full bg-rose-50 dark:bg-rose-950/50 flex items-center justify-center mx-auto text-rose-primary dark:text-rose-light">
+                <Search className="w-6 h-6" />
+              </div>
+              <h3 className="font-bold text-base text-charcoal-900 dark:text-ivory-100">
+                No Alumni Records Found
+              </h3>
+              <p className="text-xs text-charcoal-500 max-w-sm mx-auto">
+                No alumni match your search keyword. Try searching by full name, company, or job title.
+              </p>
+              <button
+                onClick={() => setSearchQuery("")}
+                className="px-4 py-2 text-xs font-semibold bg-rose-primary text-white rounded-lg hover:bg-rose-accent transition-colors shadow-sm"
+              >
+                Clear Search
+              </button>
+            </div>
+          )}
         </div>
       )}
 
@@ -647,6 +677,92 @@ export default function AlumniPage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL: Alumni Profile Dossier */}
+      {selectedAlumniDossier && (
+        <div className="fixed inset-0 z-50 bg-charcoal-950/70 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-charcoal-900 rounded-2xl max-w-lg w-full p-6 border border-border dark:border-charcoal-800 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-border dark:border-charcoal-800">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-rose-100 dark:bg-rose-950/60 text-rose-primary dark:text-rose-light flex items-center justify-center font-bold text-sm">
+                  {selectedAlumniDossier.fullName.split(" ").map((n: string) => n[0]).slice(-2).join("")}
+                </div>
+                <div>
+                  <h3 className="font-bold text-base text-charcoal-900 dark:text-ivory-100">
+                    {selectedAlumniDossier.fullName}
+                  </h3>
+                  <p className="text-xs text-charcoal-500">
+                    Class of {selectedAlumniDossier.graduationBatch} • Alumni Registry
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setSelectedAlumniDossier(null)}
+                className="text-charcoal-400 hover:text-charcoal-600 dark:hover:text-ivory-200 p-1.5 rounded-lg text-sm font-bold"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="space-y-3 text-xs">
+              <div className="p-3.5 rounded-xl bg-ivory-50 dark:bg-charcoal-800/60 border border-border dark:border-charcoal-700 space-y-2">
+                <div className="flex justify-between">
+                  <span className="text-charcoal-500">Current Corporate Role:</span>
+                  <span className="font-semibold text-charcoal-900 dark:text-ivory-100">{selectedAlumniDossier.jobTitle}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-charcoal-500">Company / Organization:</span>
+                  <span className="font-semibold text-rose-primary dark:text-rose-light">{selectedAlumniDossier.currentCompany}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-charcoal-500">Geographic Location:</span>
+                  <span className="font-medium text-charcoal-800 dark:text-ivory-200">{selectedAlumniDossier.location}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-charcoal-500">Degree Conferred:</span>
+                  <span className="font-medium text-charcoal-800 dark:text-ivory-200">{selectedAlumniDossier.degree}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-charcoal-500">Industry Mentorship:</span>
+                  <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${selectedAlumniDossier.isAvailableForMentorship ? 'bg-emerald-100 text-emerald-800' : 'bg-charcoal-100 text-charcoal-600'}`}>
+                    {selectedAlumniDossier.isAvailableForMentorship ? 'Active Mentor' : 'Not Currently Available'}
+                  </span>
+                </div>
+              </div>
+
+              {selectedAlumniDossier.mentorTopics && selectedAlumniDossier.mentorTopics.length > 0 && (
+                <div className="p-3 rounded-xl bg-ivory-50 dark:bg-charcoal-800 border border-border dark:border-charcoal-700 space-y-1.5">
+                  <span className="text-charcoal-500 text-[11px] font-semibold block">Mentorship Advisory Areas:</span>
+                  <div className="flex flex-wrap gap-1.5">
+                    {selectedAlumniDossier.mentorTopics.map((topic: string, i: number) => (
+                      <span key={i} className="px-2 py-0.5 rounded bg-white dark:bg-charcoal-700 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 text-[11px] font-medium">
+                        {topic}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="pt-2 flex justify-between items-center border-t border-border dark:border-charcoal-800">
+              <a
+                href={selectedAlumniDossier.linkedinUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="text-xs font-semibold text-rose-primary hover:underline flex items-center gap-1"
+              >
+                Open LinkedIn Profile <ExternalLink className="w-3.5 h-3.5" />
+              </a>
+              <button
+                onClick={() => setSelectedAlumniDossier(null)}
+                className="px-4 py-2 text-xs font-semibold bg-charcoal-900 dark:bg-ivory-100 text-white dark:text-charcoal-900 rounded-xl hover:opacity-90 transition-opacity"
+              >
+                Close Dossier
+              </button>
+            </div>
           </div>
         </div>
       )}

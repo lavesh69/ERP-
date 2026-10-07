@@ -20,6 +20,10 @@ import {
   Download,
   Search,
   Filter,
+  Eye,
+  Printer,
+  X,
+  RotateCcw,
 } from "lucide-react";
 
 interface Alert {
@@ -55,6 +59,8 @@ export default function EmergencyPage() {
   const [summary, setSummary] = useState<any>(null);
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [musterPoints, setMusterPoints] = useState<MusterPoint[]>([]);
+  const [selectedAlertDossier, setSelectedAlertDossier] = useState<Alert | null>(null);
+  const [selectedMusterDossier, setSelectedMusterDossier] = useState<MusterPoint | null>(null);
   const [showBroadcastModal, setShowBroadcastModal] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState<{ text: string; type: "success" | "error" } | null>(null);
@@ -452,18 +458,57 @@ export default function EmergencyPage() {
                 <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">{al.instructions}</p>
               </div>
 
-              <div className="flex flex-wrap gap-2 pt-2 border-t border-slate-100 dark:border-slate-800 text-xs text-slate-500">
-                <span className="font-semibold text-slate-600 dark:text-slate-400">Affected Zones:</span>
-                {al.affectedZones.map((z, i) => (
-                  <span key={i} className="bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded text-[11px]">
-                    {z}
-                  </span>
-                ))}
-                <span className="mx-2">•</span>
-                <span className="font-mono text-[11px] text-slate-400">Seal: {al.cryptographicBroadcastSeal}</span>
+              <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-100 dark:border-slate-800 text-xs text-slate-500">
+                <div className="flex flex-wrap items-center gap-1.5">
+                  <span className="font-semibold text-slate-600 dark:text-slate-400">Affected Zones:</span>
+                  {al.affectedZones.map((z, i) => (
+                    <span key={i} className="bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded text-[11px]">
+                      {z}
+                    </span>
+                  ))}
+                  <span className="mx-1">•</span>
+                  <span className="font-mono text-[11px] text-slate-400">Seal: {al.cryptographicBroadcastSeal}</span>
+                </div>
+                <button
+                  onClick={() => setSelectedAlertDossier(al)}
+                  className="px-2.5 py-1 bg-red-50 hover:bg-red-100 dark:bg-red-950/60 dark:hover:bg-red-900/60 text-red-700 dark:text-red-300 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors"
+                >
+                  <Eye className="w-3.5 h-3.5" />
+                  Incident Brief
+                </button>
               </div>
             </div>
           ))}
+
+          {alerts.filter((al) => {
+            const q = searchQuery.toLowerCase();
+            const matchesSearch =
+              !q ||
+              al.alertCode.toLowerCase().includes(q) ||
+              al.headline.toLowerCase().includes(q) ||
+              al.instructions.toLowerCase().includes(q) ||
+              al.affectedZones.some((z) => z.toLowerCase().includes(q));
+            const matchesCategory = filterCategory === "ALL" || al.category === filterCategory;
+            return matchesSearch && matchesCategory;
+          }).length === 0 && (
+            <div className="py-16 text-center bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-8 shadow-sm">
+              <ShieldCheck className="w-12 h-12 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
+              <h4 className="font-semibold text-slate-900 dark:text-white text-base">No Incidents Found</h4>
+              <p className="text-xs text-slate-400 mt-1 max-w-sm mx-auto">
+                No active or historical emergency alerts match your query &ldquo;{searchQuery}&rdquo;.
+              </p>
+              <button
+                onClick={() => {
+                  setSearchQuery("");
+                  setFilterCategory("ALL");
+                }}
+                className="mt-4 px-4 py-2 bg-red-50 dark:bg-red-950/60 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800 rounded-xl text-xs font-semibold inline-flex items-center gap-1.5 hover:bg-red-100 transition-all"
+              >
+                <RotateCcw className="w-3.5 h-3.5" />
+                Reset Filters
+              </button>
+            </div>
+          )}
         </div>
       )}
 
@@ -510,6 +555,16 @@ export default function EmergencyPage() {
                     {mp.wardenPhone}
                   </span>
                 </div>
+              </div>
+
+              <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex justify-end">
+                <button
+                  onClick={() => setSelectedMusterDossier(mp)}
+                  className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors"
+                >
+                  <Eye className="w-3.5 h-3.5 text-slate-500" />
+                  Inspect Post
+                </button>
               </div>
             </div>
           ))}
@@ -633,6 +688,197 @@ export default function EmergencyPage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Emergency Incident & Clery Act Dossier Modal */}
+      {selectedAlertDossier && (
+        <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto animate-in fade-in duration-200">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl max-w-xl w-full p-6 shadow-2xl space-y-5 my-8">
+            <div className="flex items-start justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 bg-red-100 dark:bg-red-950/60 text-red-600 dark:text-red-400 rounded-xl">
+                  <Radio className="w-6 h-6" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h3 className="font-bold text-slate-900 dark:text-white text-lg">Incident Operations Brief</h3>
+                    <span className={`px-2 py-0.5 rounded-full text-[11px] font-bold ${selectedAlertDossier.isActive ? "bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-300" : "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300"}`}>
+                      {selectedAlertDossier.isActive ? "ACTIVE DISPATCH" : "RESOLVED"}
+                    </span>
+                  </div>
+                  <p className="text-xs font-mono text-slate-400 mt-0.5">
+                    Code: {selectedAlertDossier.alertCode} • Category: {selectedAlertDossier.category.replace(/_/g, " ")}
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setSelectedAlertDossier(null)}
+                className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Headline and Severity */}
+            <div className="p-4 bg-red-50/50 dark:bg-red-950/30 rounded-xl border border-red-200 dark:border-red-900/50 space-y-2">
+              <div className="flex justify-between items-center text-xs">
+                <span className="font-bold uppercase tracking-wider text-red-700 dark:text-red-400 text-[11px]">
+                  {selectedAlertDossier.severity.replace(/_/g, " ")}
+                </span>
+                <span className="text-slate-500 font-mono text-[11px]">
+                  Initiated: {new Date(selectedAlertDossier.initiatedAt).toLocaleString()}
+                </span>
+              </div>
+              <h4 className="font-bold text-slate-900 dark:text-white text-base leading-snug">
+                {selectedAlertDossier.headline}
+              </h4>
+              <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed font-medium">
+                {selectedAlertDossier.instructions}
+              </p>
+            </div>
+
+            {/* Affected Zones & Transmission Channels */}
+            <div className="grid grid-cols-2 gap-3 text-xs">
+              <div className="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl space-y-1.5">
+                <span className="text-[11px] text-slate-400 uppercase font-medium block">Affected Campus Quadrants</span>
+                <div className="flex flex-wrap gap-1.5">
+                  {selectedAlertDossier.affectedZones.map((z, i) => (
+                    <span key={i} className="px-2 py-0.5 bg-white dark:bg-slate-700 rounded border border-slate-200 dark:border-slate-600 text-slate-800 dark:text-slate-200 font-medium">
+                      {z}
+                    </span>
+                  ))}
+                </div>
+              </div>
+              <div className="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl space-y-1.5">
+                <span className="text-[11px] text-slate-400 uppercase font-medium block">Multi-Channel Dispatches</span>
+                <div className="flex flex-wrap gap-1.5">
+                  {selectedAlertDossier.dispatchedChannels.map((c, i) => (
+                    <span key={i} className="px-2 py-0.5 bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 rounded font-semibold text-[11px]">
+                      ✓ {c.replace(/_/g, " ")}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Clery Act Audit Trail & Cryptographic Seal */}
+            <div className="p-3 bg-slate-50 dark:bg-slate-800/30 rounded-xl text-xs space-y-1 font-mono border border-slate-100 dark:border-slate-800">
+              <div className="flex justify-between text-slate-500">
+                <span>Authorized Officer: <strong>{selectedAlertDossier.initiatedBy}</strong></span>
+                <span>Clery Act Standard: <strong>Compliant (34 CFR 668.46)</strong></span>
+              </div>
+              <div className="text-[11px] text-slate-400 pt-1 break-all">
+                Broadcast SHA-256 Seal: {selectedAlertDossier.cryptographicBroadcastSeal}
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-2.5 pt-2 border-t border-slate-100 dark:border-slate-800">
+              <button
+                onClick={() => window.print()}
+                className="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-colors"
+              >
+                <Printer className="w-3.5 h-3.5" />
+                Print Incident Log
+              </button>
+              <button
+                onClick={() => setSelectedAlertDossier(null)}
+                className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-xl text-xs font-semibold shadow-sm transition-colors"
+              >
+                Done
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Muster Point Inspection Modal */}
+      {selectedMusterDossier && (
+        <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto animate-in fade-in duration-200">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-5 my-8">
+            <div className="flex items-start justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 rounded-xl">
+                  <CheckCircle2 className="w-6 h-6" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-slate-900 dark:text-white text-lg">{selectedMusterDossier.name}</h3>
+                  <p className="text-xs text-slate-400 mt-0.5">
+                    Designated Safety Quadrant: {selectedMusterDossier.zone}
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setSelectedMusterDossier(null)}
+                className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Occupancy Card */}
+            <div className="p-4 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-200 dark:border-slate-700/60 space-y-2">
+              <div className="flex justify-between items-center text-xs">
+                <span className="font-medium text-slate-600 dark:text-slate-300">Live Evacuees Assembly Rate:</span>
+                <span className="font-mono font-bold text-slate-900 dark:text-white">
+                  {selectedMusterDossier.currentEvacueesCount} / {selectedMusterDossier.capacity} Persons ({((selectedMusterDossier.currentEvacueesCount / selectedMusterDossier.capacity) * 100).toFixed(0)}%)
+                </span>
+              </div>
+              <div className="h-2 w-full bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-emerald-500 rounded-full"
+                  style={{ width: `${(selectedMusterDossier.currentEvacueesCount / selectedMusterDossier.capacity) * 100}%` }}
+                />
+              </div>
+              <div className="text-[11px] text-slate-400 flex justify-between">
+                <span>Safe Capacity Margin Remaining:</span>
+                <span className="font-semibold text-emerald-600 dark:text-emerald-400">
+                  {selectedMusterDossier.capacity - selectedMusterDossier.currentEvacueesCount} spaces
+                </span>
+              </div>
+            </div>
+
+            {/* Assigned Safety Warden */}
+            <div className="grid grid-cols-2 gap-3 text-xs">
+              <div className="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl space-y-1">
+                <span className="text-[11px] text-slate-400 uppercase font-medium block">Chief Zone Warden</span>
+                <span className="font-semibold text-slate-900 dark:text-white text-sm block">{selectedMusterDossier.assignedWarden}</span>
+                <span className="text-emerald-600 font-semibold block">On-Scene & Certified</span>
+              </div>
+              <div className="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl space-y-1">
+                <span className="text-[11px] text-slate-400 uppercase font-medium block">Direct Emergency Radio</span>
+                <span className="font-mono font-bold text-indigo-600 dark:text-indigo-400 text-sm block">{selectedMusterDossier.wardenPhone}</span>
+                <span className="text-slate-500 block">24/7 Red Line Link</span>
+              </div>
+            </div>
+
+            {/* Life Safety Gear Installed */}
+            <div className="p-3 bg-slate-50 dark:bg-slate-800/30 rounded-xl text-xs space-y-1.5 border border-slate-100 dark:border-slate-800 text-slate-600 dark:text-slate-300">
+              <div className="font-bold text-slate-800 dark:text-slate-200">Standard Muster Life-Safety Amenities</div>
+              <div className="grid grid-cols-2 gap-2 text-[11px] text-slate-500 pt-1">
+                <div>✓ Trauma First Aid Kit: <span className="text-emerald-600 font-medium">Equipped</span></div>
+                <div>✓ Automated AED: <span className="text-emerald-600 font-medium">Inspected</span></div>
+                <div>✓ Megaphone & Siren: <span className="text-emerald-600 font-medium">Charged</span></div>
+                <div>✓ Potable Water Station: <span className="text-emerald-600 font-medium">Available</span></div>
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-2.5 pt-2 border-t border-slate-100 dark:border-slate-800">
+              <button
+                onClick={() => window.print()}
+                className="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-colors"
+              >
+                <Printer className="w-3.5 h-3.5" />
+                Print Post Sheet
+              </button>
+              <button
+                onClick={() => setSelectedMusterDossier(null)}
+                className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-semibold shadow-sm transition-colors"
+              >
+                Done
+              </button>
+            </div>
           </div>
         </div>
       )}

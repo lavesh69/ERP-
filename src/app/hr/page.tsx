@@ -20,6 +20,7 @@ import {
   ChevronRight,
   Filter,
   Search,
+  Eye,
 } from "lucide-react";
 
 export default function HRPage() {
@@ -29,6 +30,7 @@ export default function HRPage() {
   const [leaveData, setLeaveData] = useState<any>(null);
   const [payrollData, setPayrollData] = useState<any>(null);
   const [statusMessage, setStatusMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  const [selectedStaffProfile, setSelectedStaffProfile] = useState<any | null>(null);
 
   // Apply Leave Modal
   const [showLeaveModal, setShowLeaveModal] = useState(false);
@@ -377,21 +379,53 @@ export default function HRPage() {
                       </span>
                     </td>
                     <td className="p-3.5 text-right">
-                      <button
-                        onClick={() => {
-                          setActiveTab("payroll");
-                          setStatusMessage({ type: "success", text: `Loaded salary record for ${m.name}` });
-                        }}
-                        className="px-2.5 py-1 rounded text-[11px] font-semibold text-rose-primary hover:bg-rose-50 dark:hover:bg-rose-950/50 border border-rose-200 dark:border-rose-900"
-                      >
-                        View Payslip
-                      </button>
+                      <div className="flex items-center justify-end gap-1.5">
+                        <button
+                          onClick={() => setSelectedStaffProfile(m)}
+                          className="px-2.5 py-1 rounded text-[11px] font-semibold text-charcoal-700 dark:text-ivory-200 hover:bg-ivory-100 dark:hover:bg-charcoal-800 border border-border dark:border-charcoal-700 flex items-center gap-1 transition-colors"
+                        >
+                          <Eye className="w-3 h-3 text-rose-primary dark:text-rose-light" />
+                          Profile
+                        </button>
+                        <button
+                          onClick={() => {
+                            setActiveTab("payroll");
+                            setStatusMessage({ type: "success", text: `Loaded salary record for ${m.name}` });
+                          }}
+                          className="px-2.5 py-1 rounded text-[11px] font-semibold text-rose-primary hover:bg-rose-50 dark:hover:bg-rose-950/50 border border-rose-200 dark:border-rose-900 transition-colors"
+                        >
+                          Payslip
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
+
+          {filteredStaff.length === 0 && (
+            <div className="p-12 text-center space-y-3">
+              <div className="w-12 h-12 rounded-full bg-rose-50 dark:bg-rose-950/50 flex items-center justify-center mx-auto text-rose-primary dark:text-rose-light">
+                <Search className="w-6 h-6" />
+              </div>
+              <h3 className="font-bold text-base text-charcoal-900 dark:text-ivory-100">
+                No Staff Records Found
+              </h3>
+              <p className="text-xs text-charcoal-500 max-w-sm mx-auto">
+                No faculty or administrative staff records match your search query or department filter.
+              </p>
+              <button
+                onClick={() => {
+                  setDeptFilter("ALL");
+                  setSearchStaff("");
+                }}
+                className="px-4 py-2 text-xs font-semibold bg-rose-primary text-white rounded-lg hover:bg-rose-accent transition-colors shadow-sm"
+              >
+                Reset Filters
+              </button>
+            </div>
+          )}
         </div>
       )}
 
@@ -740,6 +774,89 @@ export default function HRPage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL: Staff Profile Dossier */}
+      {selectedStaffProfile && (
+        <div className="fixed inset-0 z-50 bg-charcoal-950/70 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-charcoal-900 rounded-2xl max-w-lg w-full p-6 border border-border dark:border-charcoal-800 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-border dark:border-charcoal-800">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-rose-100 dark:bg-rose-950/60 text-rose-primary dark:text-rose-light flex items-center justify-center font-bold text-sm">
+                  {selectedStaffProfile.name.split(" ").map((n: string) => n[0]).slice(-2).join("")}
+                </div>
+                <div>
+                  <h3 className="font-bold text-base text-charcoal-900 dark:text-ivory-100">
+                    {selectedStaffProfile.name}
+                  </h3>
+                  <p className="text-xs text-charcoal-500 font-mono">
+                    ID: {selectedStaffProfile.id}
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setSelectedStaffProfile(null)}
+                className="text-charcoal-400 hover:text-charcoal-600 dark:hover:text-ivory-200 p-1.5 rounded-lg text-sm font-bold"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="space-y-3 text-xs">
+              <div className="p-3.5 rounded-xl bg-ivory-50 dark:bg-charcoal-800/60 border border-border dark:border-charcoal-700 space-y-2">
+                <div className="flex justify-between">
+                  <span className="text-charcoal-500">Official Designation:</span>
+                  <span className="font-semibold text-charcoal-900 dark:text-ivory-100">{selectedStaffProfile.designation}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-charcoal-500">Academic Department:</span>
+                  <span className="font-medium text-charcoal-800 dark:text-ivory-200">{selectedStaffProfile.department}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-charcoal-500">Official Institutional Email:</span>
+                  <span className="font-medium text-charcoal-800 dark:text-ivory-200">{selectedStaffProfile.email}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-charcoal-500">Date of Joining / Tenure:</span>
+                  <span className="font-medium text-charcoal-800 dark:text-ivory-200">{selectedStaffProfile.joinedDate}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-charcoal-500">Employment Status:</span>
+                  <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800">{selectedStaffProfile.status}</span>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2 text-xs">
+                <div className="p-3 rounded-xl bg-ivory-50 dark:bg-charcoal-800 border border-border dark:border-charcoal-700">
+                  <span className="text-charcoal-500 text-[11px] block">Base Pay Scale</span>
+                  <span className="font-bold text-base text-charcoal-900 dark:text-ivory-100">${selectedStaffProfile.basicPay.toLocaleString()} / mo</span>
+                </div>
+                <div className="p-3 rounded-xl bg-ivory-50 dark:bg-charcoal-800 border border-border dark:border-charcoal-700">
+                  <span className="text-charcoal-500 text-[11px] block">Provident Fund (UAN)</span>
+                  <span className="font-bold text-xs font-mono text-charcoal-800 dark:text-ivory-200 block mt-1">UAN-100984210</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="pt-2 flex justify-end gap-2 border-t border-border dark:border-charcoal-800">
+              <button
+                onClick={() => {
+                  setSelectedStaffProfile(null);
+                  setActiveTab("payroll");
+                }}
+                className="px-3.5 py-2 text-xs font-semibold bg-rose-primary text-white rounded-xl hover:bg-rose-accent transition-colors"
+              >
+                Access Payroll & Payslip
+              </button>
+              <button
+                onClick={() => setSelectedStaffProfile(null)}
+                className="px-3.5 py-2 text-xs font-semibold bg-ivory-100 dark:bg-charcoal-800 text-charcoal-700 dark:text-ivory-200 rounded-xl hover:bg-ivory-200 dark:hover:bg-charcoal-700 transition-colors"
+              >
+                Close
+              </button>
+            </div>
           </div>
         </div>
       )}

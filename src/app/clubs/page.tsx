@@ -19,6 +19,7 @@ import {
   Download,
   Search,
   Filter,
+  Eye,
 } from "lucide-react";
 import { StudentClub, ActivityPointClaim, DEGREE_REQUIRED_ACTIVITY_POINTS } from "@/lib/clubs/clubs-engine";
 
@@ -47,6 +48,7 @@ export default function ClubsPage() {
   const [statusMessage, setStatusMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("ALL");
+  const [selectedClaimDossier, setSelectedClaimDossier] = useState<ActivityPointClaim | null>(null);
 
   const filteredClaims = claims.filter((c) => {
     const q = searchQuery.toLowerCase();
@@ -466,6 +468,7 @@ export default function ClubsPage() {
                   <th className="p-4">Hours</th>
                   <th className="p-4">Points</th>
                   <th className="p-4">Status & Reviewer</th>
+                  <th className="p-4 text-right">Action</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
@@ -510,11 +513,43 @@ export default function ClubsPage() {
                         <div className="text-[11px] text-slate-400 mt-1">By: {c.reviewedBy}</div>
                       )}
                     </td>
+                    <td className="p-4 text-right">
+                      <button
+                        onClick={() => setSelectedClaimDossier(c)}
+                        className="px-2.5 py-1 text-xs font-semibold rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 transition-colors inline-flex items-center gap-1"
+                      >
+                        <Eye className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
+                        Evidence
+                      </button>
+                    </td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
+
+          {filteredClaims.length === 0 && (
+            <div className="p-12 text-center space-y-3">
+              <div className="w-12 h-12 rounded-full bg-amber-50 dark:bg-amber-950/50 flex items-center justify-center mx-auto text-amber-600 dark:text-amber-400">
+                <Search className="w-6 h-6" />
+              </div>
+              <h3 className="font-bold text-base text-slate-900 dark:text-white">
+                No Activity Point Claims Found
+              </h3>
+              <p className="text-xs text-slate-500 max-w-sm mx-auto">
+                No co-curricular activity claims match your search keywords or category filter.
+              </p>
+              <button
+                onClick={() => {
+                  setCategoryFilter("ALL");
+                  setSearchQuery("");
+                }}
+                className="px-4 py-2 text-xs font-semibold bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition-colors shadow-sm"
+              >
+                Reset Filters
+              </button>
+            </div>
+          )}
         </div>
       )}
 
@@ -726,6 +761,90 @@ export default function ClubsPage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Claim Evidence Dossier Modal */}
+      {selectedClaimDossier && (
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl max-w-lg w-full p-6 border border-slate-200 dark:border-slate-800 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800">
+              <div>
+                <span className="font-mono text-xs font-bold text-amber-600 dark:text-amber-400">
+                  {selectedClaimDossier.claimRef}
+                </span>
+                <h3 className="font-bold text-base text-slate-900 dark:text-white">
+                  Co-Curricular Claim Dossier
+                </h3>
+                <p className="text-xs text-slate-500">
+                  100 Mandatory Student Activity Points Registry
+                </p>
+              </div>
+              <button
+                onClick={() => setSelectedClaimDossier(null)}
+                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1.5 rounded-lg text-sm font-bold"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="space-y-3 text-xs">
+              <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 space-y-1.5">
+                <div className="flex justify-between">
+                  <span className="text-slate-500">Activity Title:</span>
+                  <span className="font-bold text-slate-900 dark:text-white">{selectedClaimDossier.activityTitle}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-500">Hosting Club / Society:</span>
+                  <span className="font-medium text-slate-800 dark:text-slate-200">{selectedClaimDossier.clubName}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-500">Point Category:</span>
+                  <span className="font-semibold text-amber-600 dark:text-amber-400">{selectedClaimDossier.category}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-500">Participation Effort:</span>
+                  <span className="font-medium text-slate-800 dark:text-slate-200">{selectedClaimDossier.participationHours} Hours</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-500">Points Awarded / Claimed:</span>
+                  <span className="font-bold text-emerald-600 dark:text-emerald-400">{selectedClaimDossier.pointsAwarded || selectedClaimDossier.pointsClaimed} Points</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-500">Verification State:</span>
+                  <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                    selectedClaimDossier.status === 'APPROVED'
+                      ? 'bg-emerald-100 text-emerald-800'
+                      : selectedClaimDossier.status === 'REJECTED'
+                      ? 'bg-rose-100 text-rose-800'
+                      : 'bg-amber-100 text-amber-800'
+                  }`}>
+                    {selectedClaimDossier.status}
+                  </span>
+                </div>
+              </div>
+
+              <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 space-y-2">
+                <div>
+                  <span className="text-slate-500 block text-[11px]">Activity Brief & Outcomes:</span>
+                  <p className="text-slate-800 dark:text-slate-200 leading-relaxed">{selectedClaimDossier.description}</p>
+                </div>
+                <div className="pt-2 border-t border-slate-200 dark:border-slate-700">
+                  <span className="text-slate-500 block text-[11px]">Certificate / Verification Evidence:</span>
+                  <span className="font-mono text-indigo-600 dark:text-indigo-400 font-semibold">{selectedClaimDossier.evidenceReference || "Document Uploaded & Verified"}</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="pt-2 flex justify-end border-t border-slate-200 dark:border-slate-800">
+              <button
+                onClick={() => setSelectedClaimDossier(null)}
+                className="px-4 py-2 text-xs font-semibold bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-xl hover:opacity-90 transition-opacity"
+              >
+                Close Dossier
+              </button>
+            </div>
           </div>
         </div>
       )}

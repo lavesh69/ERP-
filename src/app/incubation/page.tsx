@@ -17,6 +17,10 @@ import {
   Download,
   Search,
   Filter,
+  Eye,
+  Printer,
+  X,
+  RotateCcw,
 } from "lucide-react";
 
 interface Startup {
@@ -44,6 +48,7 @@ export default function IncubationPage() {
   const [loading, setLoading] = useState(true);
   const [summary, setSummary] = useState<any>(null);
   const [startups, setStartups] = useState<Startup[]>([]);
+  const [selectedStartupDossier, setSelectedStartupDossier] = useState<Startup | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState<{ text: string; type: "success" | "error" } | null>(null);
@@ -411,21 +416,62 @@ export default function IncubationPage() {
               </div>
 
               <div className="flex items-center justify-between border-t border-slate-100 dark:border-slate-800 pt-3">
-                <span className="text-xs font-semibold text-slate-500">Advance Stage:</span>
-                <select
-                  value={s.stage}
-                  onChange={(e) => handleUpdateStartupStage(s.id, e.target.value)}
-                  className="px-2.5 py-1 text-xs font-semibold bg-violet-50 dark:bg-violet-950/40 text-violet-700 dark:text-violet-300 border border-violet-200 dark:border-violet-800 rounded-lg focus:outline-none cursor-pointer"
+                <button
+                  onClick={() => setSelectedStartupDossier(s)}
+                  className="px-2.5 py-1 bg-violet-50 hover:bg-violet-100 dark:bg-violet-950/60 dark:hover:bg-violet-900/60 text-violet-700 dark:text-violet-300 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors"
                 >
-                  <option value="PRE_INCUBATION">Pre-Incubation</option>
-                  <option value="INCUBATED_PROTOTYPE">Incubated Prototype</option>
-                  <option value="SEED_FUNDED">Seed Funded</option>
-                  <option value="ACCELERATOR_GROWTH">Accelerator Growth</option>
-                  <option value="GRADUATED_VENTURE">Graduated Venture</option>
-                </select>
+                  <Eye className="w-3.5 h-3.5" />
+                  Term Sheet
+                </button>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[11px] font-semibold text-slate-400">Stage:</span>
+                  <select
+                    value={s.stage}
+                    onChange={(e) => handleUpdateStartupStage(s.id, e.target.value)}
+                    className="px-2.5 py-1 text-xs font-semibold bg-violet-50 dark:bg-violet-950/40 text-violet-700 dark:text-violet-300 border border-violet-200 dark:border-violet-800 rounded-lg focus:outline-none cursor-pointer"
+                  >
+                    <option value="PRE_INCUBATION">Pre-Incubation</option>
+                    <option value="INCUBATED_PROTOTYPE">Incubated Prototype</option>
+                    <option value="SEED_FUNDED">Seed Funded</option>
+                    <option value="ACCELERATOR_GROWTH">Accelerator Growth</option>
+                    <option value="GRADUATED_VENTURE">Graduated Venture</option>
+                  </select>
+                </div>
               </div>
             </div>
           ))}
+
+          {startups.filter((s) => {
+            const q = searchQuery.toLowerCase();
+            const matchesSearch =
+              !q ||
+              s.startupName.toLowerCase().includes(q) ||
+              s.founderName.toLowerCase().includes(q) ||
+              s.pitchDeckSummary.toLowerCase().includes(q) ||
+              s.companyRef.toLowerCase().includes(q);
+            const matchesSector = filterSector === "ALL" || s.sector === filterSector;
+            const matchesStage = filterStage === "ALL" || s.stage === filterStage;
+            return matchesSearch && matchesSector && matchesStage;
+          }).length === 0 && (
+            <div className="col-span-1 md:col-span-3 py-16 text-center bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-8 shadow-sm">
+              <Rocket className="w-12 h-12 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
+              <h4 className="font-semibold text-slate-900 dark:text-white text-base">No Ventures Found</h4>
+              <p className="text-xs text-slate-400 mt-1 max-w-sm mx-auto">
+                No startup ventures match your search &ldquo;{searchQuery}&rdquo; and active filters.
+              </p>
+              <button
+                onClick={() => {
+                  setSearchQuery("");
+                  setFilterSector("ALL");
+                  setFilterStage("ALL");
+                }}
+                className="mt-4 px-4 py-2 bg-violet-50 dark:bg-violet-950/60 text-violet-600 dark:text-violet-400 border border-violet-200 dark:border-violet-800 rounded-xl text-xs font-semibold inline-flex items-center gap-1.5 hover:bg-violet-100 transition-all"
+              >
+                <RotateCcw className="w-3.5 h-3.5" />
+                Reset Filters
+              </button>
+            </div>
+          )}
         </div>
       )}
 
@@ -630,6 +676,127 @@ export default function IncubationPage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Venture Term Sheet & Cap Table Dossier Modal */}
+      {selectedStartupDossier && (
+        <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto animate-in fade-in duration-200">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl max-w-xl w-full p-6 shadow-2xl space-y-5 my-8">
+            <div className="flex items-start justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 bg-violet-100 dark:bg-violet-950/60 text-violet-600 dark:text-violet-400 rounded-xl">
+                  <Rocket className="w-6 h-6" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h3 className="font-bold text-slate-900 dark:text-white text-lg">{selectedStartupDossier.startupName}</h3>
+                    <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-violet-100 dark:bg-violet-950/60 text-violet-700 dark:text-violet-300">
+                      {selectedStartupDossier.sector.replace(/_/g, " ")}
+                    </span>
+                  </div>
+                  <p className="text-xs font-mono text-slate-400 mt-0.5">
+                    Ref: {selectedStartupDossier.companyRef} • Stage: {selectedStartupDossier.stage.replace(/_/g, " ")}
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setSelectedStartupDossier(null)}
+                className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Founder Identity Card */}
+            <div className="p-3 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-200 dark:border-slate-700/60 flex items-center justify-between text-xs">
+              <div>
+                <span className="text-[11px] text-slate-400 uppercase font-medium">Founding Principal</span>
+                <div className="font-bold text-slate-900 dark:text-white text-sm">{selectedStartupDossier.founderName}</div>
+                <div className="text-slate-500 font-mono text-[11px]">
+                  {selectedStartupDossier.founderRole} • ID: {selectedStartupDossier.founderRollOrStaffId}
+                </div>
+              </div>
+              <div className="text-right">
+                <span className="text-[11px] text-slate-400 uppercase font-medium">Incubated Date</span>
+                <div className="font-semibold text-slate-800 dark:text-slate-200">
+                  {new Date(selectedStartupDossier.incubatedDate).toLocaleDateString()}
+                </div>
+              </div>
+            </div>
+
+            {/* Pitch Summary */}
+            <div className="p-3.5 bg-slate-50 dark:bg-slate-800/50 rounded-xl text-xs space-y-1">
+              <span className="text-[11px] text-slate-400 uppercase font-bold tracking-wider block">Executive Pitch Thesis</span>
+              <p className="text-slate-700 dark:text-slate-300 leading-relaxed">{selectedStartupDossier.pitchDeckSummary}</p>
+            </div>
+
+            {/* Cap Table & Capital Structure */}
+            <div className="space-y-2">
+              <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">
+                Capital Structure & Cap Table Ledger
+              </h4>
+              <div className="grid grid-cols-3 gap-2.5 text-xs">
+                <div className="p-3 bg-violet-50/50 dark:bg-violet-950/30 rounded-xl border border-violet-100 dark:border-violet-900/50">
+                  <span className="text-[10px] text-slate-400 uppercase font-medium block">Seed Grant</span>
+                  <span className="font-extrabold text-slate-900 dark:text-white text-sm block mt-0.5">
+                    ${selectedStartupDossier.seedGrantDisbursed.toLocaleString()}
+                  </span>
+                  <span className="text-violet-600 dark:text-violet-400 font-semibold text-[10px] block">Non-Dilutive</span>
+                </div>
+                <div className="p-3 bg-violet-50/50 dark:bg-violet-950/30 rounded-xl border border-violet-100 dark:border-violet-900/50">
+                  <span className="text-[10px] text-slate-400 uppercase font-medium block">University Equity</span>
+                  <span className="font-extrabold text-violet-600 dark:text-violet-400 text-sm block mt-0.5">
+                    {selectedStartupDossier.universityEquityPercentage}%
+                  </span>
+                  <span className="text-slate-500 text-[10px] block">Institutional Stake</span>
+                </div>
+                <div className="p-3 bg-emerald-50/50 dark:bg-emerald-950/30 rounded-xl border border-emerald-100 dark:border-emerald-900/50">
+                  <span className="text-[10px] text-slate-400 uppercase font-medium block">External Funding</span>
+                  <span className="font-extrabold text-emerald-600 dark:text-emerald-400 text-sm block mt-0.5">
+                    ${selectedStartupDossier.externalFundingRaised.toLocaleString()}
+                  </span>
+                  <span className="text-emerald-700 dark:text-emerald-300 font-semibold text-[10px] block">Angel & VC Rounds</span>
+                </div>
+              </div>
+            </div>
+
+            {/* IP & Mentorship Grid */}
+            <div className="grid grid-cols-2 gap-3 text-xs">
+              <div className="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl space-y-1">
+                <span className="text-[11px] text-slate-400 uppercase font-medium block">MakerSpace & IP</span>
+                <span className="font-semibold text-slate-900 dark:text-white block">
+                  {selectedStartupDossier.labDesksAllocated} Dedicated Hardware Desks
+                </span>
+                <span className="text-indigo-600 dark:text-indigo-400 font-medium block">
+                  {selectedStartupDossier.patentsFiled} Patents Under Review
+                </span>
+              </div>
+              <div className="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl space-y-1">
+                <span className="text-[11px] text-slate-400 uppercase font-medium block">Assigned Lead Mentor</span>
+                <span className="font-semibold text-slate-900 dark:text-white block truncate">
+                  {selectedStartupDossier.mentorName}
+                </span>
+                <span className="text-emerald-600 dark:text-emerald-400 font-medium block">Weekly Advisory Review</span>
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-2.5 pt-2 border-t border-slate-100 dark:border-slate-800">
+              <button
+                onClick={() => window.print()}
+                className="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-colors"
+              >
+                <Printer className="w-3.5 h-3.5" />
+                Print Term Sheet
+              </button>
+              <button
+                onClick={() => setSelectedStartupDossier(null)}
+                className="px-4 py-2 bg-violet-600 hover:bg-violet-700 text-white rounded-xl text-xs font-semibold shadow-sm transition-colors"
+              >
+                Done
+              </button>
+            </div>
           </div>
         </div>
       )}

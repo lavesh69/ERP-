@@ -17,6 +17,10 @@ import {
   PackageCheck,
   Download,
   Filter,
+  Eye,
+  Printer,
+  X,
+  RotateCcw,
 } from "lucide-react";
 
 interface Candidate {
@@ -53,6 +57,7 @@ export default function ConvocationPage() {
   const [candidates, setCandidates] = useState<Candidate[]>([]);
   const [searchRoll, setSearchRoll] = useState("");
   const [selectedCandidate, setSelectedCandidate] = useState<Candidate | null>(null);
+  const [selectedCandidateDossier, setSelectedCandidateDossier] = useState<Candidate | null>(null);
   const [showRegModal, setShowRegModal] = useState(false);
   const [regData, setRegData] = useState({
     robeSize: "L" as "S" | "M" | "L" | "XL",
@@ -393,114 +398,187 @@ export default function ConvocationPage() {
                     </td>
 
                     <td className="py-3 px-4 text-right">
-                      {c.allClearancesGranted && !c.convocationRegistered ? (
+                      <div className="flex items-center justify-end gap-2">
                         <button
-                          onClick={() => {
-                            setSelectedCandidate(c);
-                            setShowRegModal(true);
-                          }}
-                          className="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-xs font-semibold transition"
+                          onClick={() => setSelectedCandidateDossier(c)}
+                          className="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all"
                         >
-                          Register Gown
+                          <Eye className="w-3.5 h-3.5 text-slate-500" />
+                          Dossier
                         </button>
-                      ) : c.convocationRegistered ? (
-                        <span className="text-xs text-indigo-600 dark:text-indigo-400 font-semibold">
-                          Gown Confirmed ({c.robeSize})
-                        </span>
-                      ) : (
-                        <span className="text-xs text-slate-400">Clear Dues First</span>
-                      )}
+                        {c.allClearancesGranted && !c.convocationRegistered ? (
+                          <button
+                            onClick={() => {
+                              setSelectedCandidate(c);
+                              setShowRegModal(true);
+                            }}
+                            className="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-xs font-semibold transition"
+                          >
+                            Register Gown
+                          </button>
+                        ) : c.convocationRegistered ? (
+                          <span className="text-xs text-indigo-600 dark:text-indigo-400 font-semibold">
+                            Gown Confirmed ({c.robeSize})
+                          </span>
+                        ) : (
+                          <span className="text-xs text-slate-400">Clear Dues First</span>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
+
+          {filteredCandidates.length === 0 && (
+            <div className="py-16 text-center border-t border-slate-100 dark:border-slate-800">
+              <Search className="w-12 h-12 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
+              <h4 className="font-semibold text-slate-900 dark:text-white text-base">No Candidates Found</h4>
+              <p className="text-xs text-slate-400 mt-1 max-w-sm mx-auto">
+                No graduation candidates match query &ldquo;{searchRoll}&rdquo; and criteria.
+              </p>
+              <button
+                onClick={() => {
+                  setSearchRoll("");
+                  setFilterProgram("ALL");
+                  setFilterClearance("ALL");
+                }}
+                className="mt-4 px-4 py-2 bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-800 rounded-xl text-xs font-semibold inline-flex items-center gap-1.5 hover:bg-amber-100 transition-all"
+              >
+                <RotateCcw className="w-3.5 h-3.5" />
+                Reset Filters
+              </button>
+            </div>
+          )}
         </div>
       )}
 
       {/* Tab 2: Ceremony & Robes */}
       {activeTab === "ceremony" && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {candidates
-            .filter((c) => c.convocationRegistered)
-            .map((c) => (
-              <div
-                key={c.id}
-                className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-3"
-              >
-                <div className="flex justify-between items-start">
-                  <div>
-                    <h3 className="font-bold text-slate-900 dark:text-white">{c.fullName}</h3>
-                    <p className="text-xs text-slate-500">{c.studentRoll} • {c.program}</p>
-                  </div>
-                  <span className="px-2 py-1 bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-300 rounded-lg text-xs font-bold">
-                    Robe: {c.robeSize}
-                  </span>
-                </div>
-
-                <div className="space-y-1 text-xs text-slate-600 dark:text-slate-400">
-                  <div className="flex justify-between">
-                    <span>Guest Passes:</span>
-                    <span className="font-semibold">{c.guestPassesCount} Passes Issued</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Conferral Mode:</span>
-                    <span className="font-semibold">{c.degreeDispatchMode}</span>
-                  </div>
-                  {c.courierTrackingAwb && (
-                    <div className="flex justify-between">
-                      <span>SpeedPost Tracking:</span>
-                      <span className="font-mono text-indigo-600 dark:text-indigo-400 font-bold">
-                        {c.courierTrackingAwb}
-                      </span>
+        <div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {candidates
+              .filter((c) => c.convocationRegistered)
+              .map((c) => (
+                <div
+                  key={c.id}
+                  className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-3"
+                >
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h3 className="font-bold text-slate-900 dark:text-white">{c.fullName}</h3>
+                      <p className="text-xs text-slate-500">{c.studentRoll} • {c.program}</p>
                     </div>
-                  )}
-                </div>
+                    <span className="px-2 py-1 bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-300 rounded-lg text-xs font-bold">
+                      Robe: {c.robeSize}
+                    </span>
+                  </div>
 
-                <div className="p-3 bg-slate-50 dark:bg-slate-800 rounded-xl font-mono text-xs text-slate-500 break-all">
-                  Certificate Seal: {c.certificateHash}
+                  <div className="space-y-1 text-xs text-slate-600 dark:text-slate-400">
+                    <div className="flex justify-between">
+                      <span>Guest Passes:</span>
+                      <span className="font-semibold">{c.guestPassesCount} Passes Issued</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Conferral Mode:</span>
+                      <span className="font-semibold">{c.degreeDispatchMode}</span>
+                    </div>
+                    {c.courierTrackingAwb && (
+                      <div className="flex justify-between">
+                        <span>SpeedPost Tracking:</span>
+                        <span className="font-mono text-indigo-600 dark:text-indigo-400 font-bold">
+                          {c.courierTrackingAwb}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="p-3 bg-slate-50 dark:bg-slate-800 rounded-xl font-mono text-xs text-slate-500 break-all">
+                    Certificate Seal: {c.certificateHash}
+                  </div>
+
+                  <div className="pt-2 flex justify-end">
+                    <button
+                      onClick={() => setSelectedCandidateDossier(c)}
+                      className="px-3 py-1.5 bg-amber-50 hover:bg-amber-100 dark:bg-amber-950/60 dark:hover:bg-amber-900/60 text-amber-700 dark:text-amber-300 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors"
+                    >
+                      <Eye className="w-3.5 h-3.5" />
+                      Degree Dossier
+                    </button>
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
+          </div>
+
+          {candidates.filter((c) => c.convocationRegistered).length === 0 && (
+            <div className="py-16 text-center bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-8 shadow-sm">
+              <GraduationCap className="w-12 h-12 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
+              <h4 className="font-semibold text-slate-900 dark:text-white text-base">No Ceremony Registrations</h4>
+              <p className="text-xs text-slate-400 mt-1 max-w-sm mx-auto">
+                No students have confirmed gown sizes or convocation seating yet.
+              </p>
+            </div>
+          )}
         </div>
       )}
 
       {/* Tab 3: Medals & Honors */}
       {activeTab === "medals" && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {candidates
-            .filter((c) => c.isMedalist || c.honorsCategory === "FIRST_CLASS_WITH_DISTINCTION")
-            .map((c) => (
-              <div
-                key={c.id}
-                className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-amber-200 dark:border-amber-900/50 shadow-sm flex items-center justify-between"
-              >
-                <div className="flex items-center gap-4">
-                  <div className="p-3 bg-amber-100 dark:bg-amber-950 text-amber-600 dark:text-amber-400 rounded-xl">
-                    <Award className="w-8 h-8" />
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-slate-900 dark:text-white">{c.fullName}</h3>
-                    <p className="text-xs text-slate-500">{c.studentRoll} • {c.program}</p>
-                    <div className="mt-1 flex items-center gap-2">
-                      <span className="text-xs font-bold text-amber-600 dark:text-amber-400">
-                        CGPA: {c.finalCgpa}
-                      </span>
-                      <span className="text-xs px-2 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded">
-                        {c.honorsCategory}
-                      </span>
+        <div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {candidates
+              .filter((c) => c.isMedalist || c.honorsCategory === "FIRST_CLASS_WITH_DISTINCTION")
+              .map((c) => (
+                <div
+                  key={c.id}
+                  className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-amber-200 dark:border-amber-900/50 shadow-sm flex items-center justify-between"
+                >
+                  <div className="flex items-center gap-4">
+                    <div className="p-3 bg-amber-100 dark:bg-amber-950 text-amber-600 dark:text-amber-400 rounded-xl">
+                      <Award className="w-8 h-8" />
+                    </div>
+                    <div>
+                      <h3 className="font-bold text-slate-900 dark:text-white">{c.fullName}</h3>
+                      <p className="text-xs text-slate-500">{c.studentRoll} • {c.program}</p>
+                      <div className="mt-1 flex items-center gap-2">
+                        <span className="text-xs font-bold text-amber-600 dark:text-amber-400">
+                          CGPA: {c.finalCgpa}
+                        </span>
+                        <span className="text-xs px-2 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded">
+                          {c.honorsCategory}
+                        </span>
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                {c.isMedalist && (
-                  <span className="px-3 py-1.5 bg-amber-500 text-white font-bold rounded-xl text-xs uppercase tracking-wider">
-                    {c.medalType?.replace("_", " ")}
-                  </span>
-                )}
-              </div>
-            ))}
+                  <div className="flex items-center gap-2.5">
+                    {c.isMedalist && (
+                      <span className="px-3 py-1.5 bg-amber-500 text-white font-bold rounded-xl text-xs uppercase tracking-wider">
+                        {c.medalType?.replace("_", " ")}
+                      </span>
+                    )}
+                    <button
+                      onClick={() => setSelectedCandidateDossier(c)}
+                      className="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors"
+                    >
+                      <Eye className="w-3.5 h-3.5 text-slate-500" />
+                      Dossier
+                    </button>
+                  </div>
+                </div>
+              ))}
+          </div>
+
+          {candidates.filter((c) => c.isMedalist || c.honorsCategory === "FIRST_CLASS_WITH_DISTINCTION").length === 0 && (
+            <div className="py-16 text-center bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-8 shadow-sm">
+              <Award className="w-12 h-12 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
+              <h4 className="font-semibold text-slate-900 dark:text-white text-base">No Distinction Candidates</h4>
+              <p className="text-xs text-slate-400 mt-1 max-w-sm mx-auto">
+                No candidates currently classified with First Class with Distinction or Medals.
+              </p>
+            </div>
+          )}
         </div>
       )}
 
@@ -593,6 +671,129 @@ export default function ConvocationPage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Convocation Degree & Clearance Dossier Modal */}
+      {selectedCandidateDossier && (
+        <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto animate-in fade-in duration-200">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl max-w-xl w-full p-6 shadow-2xl space-y-5 my-8">
+            <div className="flex items-start justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 bg-amber-100 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 rounded-xl">
+                  <GraduationCap className="w-6 h-6" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h3 className="font-bold text-slate-900 dark:text-white text-lg">
+                      {selectedCandidateDossier.fullName}
+                    </h3>
+                    <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300">
+                      CGPA {selectedCandidateDossier.finalCgpa}
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-400 mt-0.5 font-mono">
+                    Roll: {selectedCandidateDossier.studentRoll} • {selectedCandidateDossier.program}
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setSelectedCandidateDossier(null)}
+                className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Honors & Medal Banner */}
+            <div className="p-4 bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent rounded-xl border border-amber-300 dark:border-amber-700/60 flex items-center justify-between">
+              <div>
+                <span className="text-[11px] uppercase font-bold text-amber-600 dark:text-amber-400 tracking-wider">
+                  Academic Degree Classification
+                </span>
+                <div className="font-bold text-slate-900 dark:text-white text-sm mt-0.5">
+                  {selectedCandidateDossier.honorsCategory.replace(/_/g, " ")}
+                </div>
+              </div>
+              {selectedCandidateDossier.isMedalist && (
+                <span className="px-3 py-1 bg-amber-500 text-white font-bold rounded-xl text-xs uppercase tracking-wider shadow-sm flex items-center gap-1.5">
+                  <Award className="w-3.5 h-3.5" />
+                  {selectedCandidateDossier.medalType?.replace(/_/g, " ")}
+                </span>
+              )}
+            </div>
+
+            {/* 6-Department Clearance Grid */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">
+                  6-Department Statutory Clearances
+                </h4>
+                <span className={`text-[11px] font-bold ${selectedCandidateDossier.allClearancesGranted ? "text-emerald-600" : "text-amber-600"}`}>
+                  {selectedCandidateDossier.allClearancesGranted ? "✓ 100% Cleared for Degree" : "Pending Verification"}
+                </span>
+              </div>
+              <div className="grid grid-cols-3 gap-2 text-xs">
+                {Object.entries(selectedCandidateDossier.noDuesStatus).map(([dept, isCleared]) => (
+                  <div
+                    key={dept}
+                    className={`p-2.5 rounded-xl border text-center ${
+                      isCleared
+                        ? "bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-800/60 text-emerald-800 dark:text-emerald-300"
+                        : "bg-rose-50 dark:bg-rose-950/30 border-rose-200 dark:border-rose-800/60 text-rose-800 dark:text-rose-300"
+                    }`}
+                  >
+                    <div className="font-semibold text-[11px]">{dept.replace(/_/g, " ")}</div>
+                    <div className="text-[10px] font-mono mt-0.5">{isCleared ? "CLEARED" : "PENDING"}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Ceremony Logistics & Degree Delivery */}
+            <div className="grid grid-cols-2 gap-3 text-xs">
+              <div className="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl space-y-1">
+                <span className="text-[11px] text-slate-400 uppercase font-medium block">Ceremony Allocation</span>
+                <span className="font-semibold text-slate-900 dark:text-white block">
+                  {selectedCandidateDossier.convocationRegistered ? `Gown Size: ${selectedCandidateDossier.robeSize}` : "Not Registered"}
+                </span>
+                <span className="text-slate-500 block">
+                  {selectedCandidateDossier.guestPassesCount} Guest Seat Passes Reserved
+                </span>
+              </div>
+              <div className="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl space-y-1">
+                <span className="text-[11px] text-slate-400 uppercase font-medium block">Conferral & Dispatch</span>
+                <span className="font-semibold text-slate-900 dark:text-white block truncate">
+                  {selectedCandidateDossier.degreeDispatchMode.replace(/_/g, " ")}
+                </span>
+                <span className="text-indigo-600 dark:text-indigo-400 font-mono block truncate">
+                  AWB: {selectedCandidateDossier.courierTrackingAwb || "Registrar Vault Delivery"}
+                </span>
+              </div>
+            </div>
+
+            {/* Cryptographic Proof Hash */}
+            <div className="p-3 bg-slate-50 dark:bg-slate-800/40 rounded-xl text-xs space-y-1 font-mono border border-slate-100 dark:border-slate-800">
+              <span className="text-[10px] text-slate-400 uppercase tracking-wider block">Registrar Cryptographic Degree Seal Hash</span>
+              <p className="text-slate-700 dark:text-slate-300 break-all text-[11px]">{selectedCandidateDossier.certificateHash}</p>
+            </div>
+
+            <div className="flex justify-end gap-2.5 pt-2 border-t border-slate-100 dark:border-slate-800">
+              <button
+                onClick={() => window.print()}
+                className="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-colors"
+              >
+                <Printer className="w-3.5 h-3.5" />
+                Print Degree Dossier
+              </button>
+              <button
+                onClick={() => setSelectedCandidateDossier(null)}
+                className="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-semibold shadow-sm transition-colors"
+              >
+                Close
+              </button>
+            </div>
           </div>
         </div>
       )}

@@ -18,6 +18,8 @@ import {
   FileHeart,
   Download,
   Filter,
+  Eye,
+  Printer,
 } from "lucide-react";
 import { checkTriageUrgency } from "@/lib/clinic/clinic-engine";
 
@@ -40,6 +42,7 @@ export default function ClinicPage() {
   const [statusMessage, setStatusMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState<string>("ALL");
+  const [selectedConsultation, setSelectedConsultation] = useState<any | null>(null);
 
   const handleExportClinicCsv = () => {
     const listToExport = filteredConsultations;
@@ -428,6 +431,7 @@ export default function ClinicPage() {
                   <th className="p-4">Vitals</th>
                   <th className="p-4">Diagnosis & Rx</th>
                   <th className="p-4">Status</th>
+                  <th className="p-4 text-right">Action</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
@@ -467,11 +471,43 @@ export default function ClinicPage() {
                         {c.status === "ADMITTED_SICK_BAY" ? "Admitted" : "Treated & Discharged"}
                       </span>
                     </td>
+                    <td className="p-4 text-right">
+                      <button
+                        onClick={() => setSelectedConsultation(c)}
+                        className="px-2.5 py-1 text-xs font-semibold rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 transition-colors inline-flex items-center gap-1"
+                      >
+                        <Eye className="w-3.5 h-3.5 text-rose-600 dark:text-rose-400" />
+                        Case Slip
+                      </button>
+                    </td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
+
+          {filteredConsultations.length === 0 && (
+            <div className="p-12 text-center space-y-3">
+              <div className="w-12 h-12 rounded-full bg-rose-50 dark:bg-rose-950/50 flex items-center justify-center mx-auto text-rose-600 dark:text-rose-400">
+                <Search className="w-6 h-6" />
+              </div>
+              <h3 className="font-bold text-base text-slate-900 dark:text-white">
+                No Clinic Records Found
+              </h3>
+              <p className="text-xs text-slate-500 max-w-sm mx-auto">
+                No outpatient consultations match your search term or status filter.
+              </p>
+              <button
+                onClick={() => {
+                  setFilterStatus("ALL");
+                  setSearchQuery("");
+                }}
+                className="px-4 py-2 text-xs font-semibold bg-rose-600 text-white rounded-lg hover:bg-rose-700 transition-colors shadow-sm"
+              >
+                Reset Filters
+              </button>
+            </div>
+          )}
         </div>
       )}
 
@@ -813,6 +849,115 @@ export default function ClinicPage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Case Slip Modal */}
+      {selectedConsultation && (
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl max-w-lg w-full p-6 border border-slate-200 dark:border-slate-800 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800">
+              <div>
+                <span className="font-mono text-xs font-bold text-rose-600 dark:text-rose-400">
+                  {selectedConsultation.caseNo}
+                </span>
+                <h3 className="font-bold text-base text-slate-900 dark:text-white">
+                  Outpatient Clinical Case Slip
+                </h3>
+                <p className="text-xs text-slate-400">
+                  Apex Campus Health Center • EMR Archive
+                </p>
+              </div>
+              <button
+                onClick={() => setSelectedConsultation(null)}
+                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1.5 rounded-lg text-sm font-bold"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="space-y-3 text-xs">
+              <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 space-y-1.5">
+                <div className="flex justify-between">
+                  <span className="text-slate-500">Patient Full Name:</span>
+                  <span className="font-bold text-slate-900 dark:text-white">{selectedConsultation.patientName}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-500">Roll / Institutional ID:</span>
+                  <span className="font-mono text-slate-700 dark:text-slate-300">{selectedConsultation.patientRoll}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-500">Clinical Status:</span>
+                  <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${selectedConsultation.status === 'ADMITTED_SICK_BAY' ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'}`}>
+                    {selectedConsultation.status === 'ADMITTED_SICK_BAY' ? 'Admitted to Sick Bay' : 'Treated & Discharged'}
+                  </span>
+                </div>
+              </div>
+
+              {/* Vitals */}
+              <div>
+                <span className="font-semibold text-slate-700 dark:text-slate-300 block mb-1.5">Recorded Vital Signs:</span>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                  <div className="p-2.5 bg-slate-50 dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 text-center">
+                    <span className="text-slate-400 text-[10px] block">Blood Pressure</span>
+                    <span className="font-bold font-mono text-slate-900 dark:text-white">{selectedConsultation.vitals?.bp || "120/80"}</span>
+                  </div>
+                  <div className="p-2.5 bg-slate-50 dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 text-center">
+                    <span className="text-slate-400 text-[10px] block">Heart Rate</span>
+                    <span className="font-bold font-mono text-slate-900 dark:text-white">{selectedConsultation.vitals?.pulseRate || 72} bpm</span>
+                  </div>
+                  <div className="p-2.5 bg-slate-50 dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 text-center">
+                    <span className="text-slate-400 text-[10px] block">Oxygen (SpO2)</span>
+                    <span className="font-bold font-mono text-emerald-600 dark:text-emerald-400">{selectedConsultation.vitals?.spo2Percent || 99}%</span>
+                  </div>
+                  <div className="p-2.5 bg-slate-50 dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 text-center">
+                    <span className="text-slate-400 text-[10px] block">Temperature</span>
+                    <span className="font-bold font-mono text-slate-900 dark:text-white">{selectedConsultation.vitals?.temperatureF || 98.4}°F</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Diagnosis and Prescriptions */}
+              <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 space-y-2">
+                <div>
+                  <span className="text-slate-500 block text-[11px]">Chief Complaint & Symptoms:</span>
+                  <p className="text-slate-800 dark:text-slate-200 font-medium">{selectedConsultation.chiefComplaint}</p>
+                </div>
+                <div className="pt-1.5 border-t border-slate-200 dark:border-slate-700">
+                  <span className="text-slate-500 block text-[11px]">Attending Physician Diagnosis:</span>
+                  <p className="text-slate-900 dark:text-white font-bold">{selectedConsultation.diagnosis}</p>
+                </div>
+                {selectedConsultation.prescriptions && selectedConsultation.prescriptions.length > 0 && (
+                  <div className="pt-1.5 border-t border-slate-200 dark:border-slate-700">
+                    <span className="text-slate-500 block text-[11px] mb-1">Dispensed Medications:</span>
+                    <div className="space-y-1">
+                      {selectedConsultation.prescriptions.map((rx: any, i: number) => (
+                        <div key={i} className="flex justify-between p-1.5 bg-white dark:bg-slate-900 rounded border border-slate-200 dark:border-slate-700">
+                          <span className="font-semibold text-rose-600 dark:text-rose-400">{rx.name}</span>
+                          <span className="text-slate-500">{rx.dosage} • {rx.frequency}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="pt-2 flex justify-between items-center border-t border-slate-200 dark:border-slate-800">
+              <button
+                onClick={() => window.print()}
+                className="px-3.5 py-2 text-xs font-semibold bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl flex items-center gap-1.5 transition-colors"
+              >
+                <Printer className="w-3.5 h-3.5" /> Print Case Slip
+              </button>
+              <button
+                onClick={() => setSelectedConsultation(null)}
+                className="px-4 py-2 text-xs font-semibold bg-rose-600 text-white rounded-xl hover:bg-rose-700 transition-colors shadow-sm"
+              >
+                Close Slip
+              </button>
+            </div>
           </div>
         </div>
       )}

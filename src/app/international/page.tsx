@@ -17,6 +17,10 @@ import {
   FileCheck,
   Download,
   Filter,
+  Eye,
+  Printer,
+  X,
+  RotateCcw,
 } from "lucide-react";
 
 interface Partner {
@@ -57,6 +61,8 @@ export default function InternationalPage() {
   const [summary, setSummary] = useState<any>(null);
   const [partners, setPartners] = useState<Partner[]>([]);
   const [students, setStudents] = useState<Student[]>([]);
+  const [selectedExchangeDossier, setSelectedExchangeDossier] = useState<Student | null>(null);
+  const [selectedPartnerDossier, setSelectedPartnerDossier] = useState<Partner | null>(null);
   const [showApplyModal, setShowApplyModal] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState<{ text: string; type: "success" | "error" } | null>(null);
@@ -455,8 +461,47 @@ export default function InternationalPage() {
                   ))}
                 </div>
               </div>
+
+              <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex justify-end">
+                <button
+                  onClick={() => setSelectedPartnerDossier(p)}
+                  className="px-3 py-1.5 bg-cyan-50 hover:bg-cyan-100 dark:bg-cyan-950/60 dark:hover:bg-cyan-900/60 text-cyan-700 dark:text-cyan-300 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors"
+                >
+                  <Eye className="w-3.5 h-3.5" />
+                  Inspect MoU
+                </button>
+              </div>
             </div>
           ))}
+
+          {partners.filter((p) => {
+            const q = searchQuery.toLowerCase();
+            const matchesSearch =
+              !q ||
+              p.institutionName.toLowerCase().includes(q) ||
+              p.country.toLowerCase().includes(q) ||
+              p.city.toLowerCase().includes(q);
+            const matchesCountry = filterCountry === "ALL" || p.country.toLowerCase().includes(filterCountry.toLowerCase());
+            return matchesSearch && matchesCountry;
+          }).length === 0 && (
+            <div className="col-span-1 md:col-span-3 py-16 text-center bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-8 shadow-sm">
+              <Search className="w-12 h-12 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
+              <h4 className="font-semibold text-slate-900 dark:text-white text-base">No Partner Universities Found</h4>
+              <p className="text-xs text-slate-400 mt-1 max-w-sm mx-auto">
+                No international partners match query &ldquo;{searchQuery}&rdquo; and country &ldquo;{filterCountry}&rdquo;.
+              </p>
+              <button
+                onClick={() => {
+                  setSearchQuery("");
+                  setFilterCountry("ALL");
+                }}
+                className="mt-4 px-4 py-2 bg-cyan-50 dark:bg-cyan-950/60 text-cyan-600 dark:text-cyan-400 border border-cyan-200 dark:border-cyan-800 rounded-xl text-xs font-semibold inline-flex items-center gap-1.5 hover:bg-cyan-100 transition-all"
+              >
+                <RotateCcw className="w-3.5 h-3.5" />
+                Reset Filters
+              </button>
+            </div>
+          )}
         </div>
       )}
 
@@ -525,24 +570,62 @@ export default function InternationalPage() {
                       ${s.scholarshipGrantAmount}
                     </td>
                     <td className="py-3 px-4">
-                      <select
-                        value={s.status}
-                        onChange={(e) => handleUpdateStudentStatus(s.id, e.target.value)}
-                        className="px-2 py-1 text-xs font-semibold bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-cyan-500 cursor-pointer"
-                      >
-                        <option value="APPLICATION_SUBMITTED">Submitted</option>
-                        <option value="NOMINATED">Nominated</option>
-                        <option value="VISA_GRANTED">Visa Granted</option>
-                        <option value="STUDYING_ABROAD">Studying Abroad</option>
-                        <option value="TRANSCRIPT_TRANSFERRED">Transcript Transferred</option>
-                        <option value="REJECTED">Rejected</option>
-                      </select>
+                      <div className="flex items-center gap-1.5">
+                        <button
+                          onClick={() => setSelectedExchangeDossier(s)}
+                          className="px-2 py-1 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-lg text-xs font-semibold inline-flex items-center gap-1 transition-colors"
+                        >
+                          <Eye className="w-3 h-3 text-slate-500" />
+                          Dossier
+                        </button>
+                        <select
+                          value={s.status}
+                          onChange={(e) => handleUpdateStudentStatus(s.id, e.target.value)}
+                          className="px-2 py-1 text-xs font-semibold bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-cyan-500 cursor-pointer"
+                        >
+                          <option value="APPLICATION_SUBMITTED">Submitted</option>
+                          <option value="NOMINATED">Nominated</option>
+                          <option value="VISA_GRANTED">Visa Granted</option>
+                          <option value="STUDYING_ABROAD">Studying Abroad</option>
+                          <option value="TRANSCRIPT_TRANSFERRED">Transcript Transferred</option>
+                          <option value="REJECTED">Rejected</option>
+                        </select>
+                      </div>
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
+
+          {students.filter((s) => {
+            const q = searchQuery.toLowerCase();
+            return (
+              !q ||
+              s.studentName.toLowerCase().includes(q) ||
+              s.studentRollOrId.toLowerCase().includes(q) ||
+              s.hostUniversity.toLowerCase().includes(q) ||
+              s.applicationRef.toLowerCase().includes(q)
+            );
+          }).length === 0 && (
+            <div className="py-16 text-center border-t border-slate-100 dark:border-slate-800">
+              <Search className="w-12 h-12 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
+              <h4 className="font-semibold text-slate-900 dark:text-white text-base">No Exchange Students Found</h4>
+              <p className="text-xs text-slate-400 mt-1 max-w-sm mx-auto">
+                No outbound or inbound students match query &ldquo;{searchQuery}&rdquo;.
+              </p>
+              <button
+                onClick={() => {
+                  setSearchQuery("");
+                  setFilterStatus("ALL");
+                }}
+                className="mt-4 px-4 py-2 bg-cyan-50 dark:bg-cyan-950/60 text-cyan-600 dark:text-cyan-400 border border-cyan-200 dark:border-cyan-800 rounded-xl text-xs font-semibold inline-flex items-center gap-1.5 hover:bg-cyan-100 transition-all"
+              >
+                <RotateCcw className="w-3.5 h-3.5" />
+                Reset Filters
+              </button>
+            </div>
+          )}
         </div>
       )}
 
@@ -578,6 +661,16 @@ export default function InternationalPage() {
                       Verified &amp; Certified
                     </span>
                   </div>
+                </div>
+
+                <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex justify-end">
+                  <button
+                    onClick={() => setSelectedExchangeDossier(s)}
+                    className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors"
+                  >
+                    <Eye className="w-3.5 h-3.5 text-slate-500" />
+                    Visa Portfolio
+                  </button>
                 </div>
               </div>
             ))}
@@ -705,6 +798,183 @@ export default function InternationalPage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Partner University MoU Dossier Modal */}
+      {selectedPartnerDossier && (
+        <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto animate-in fade-in duration-200">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl max-w-xl w-full p-6 shadow-2xl space-y-5 my-8">
+            <div className="flex items-start justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 bg-cyan-100 dark:bg-cyan-950/60 text-cyan-600 dark:text-cyan-400 rounded-xl">
+                  <Building2 className="w-6 h-6" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h3 className="font-bold text-slate-900 dark:text-white text-lg">{selectedPartnerDossier.institutionName}</h3>
+                    <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-amber-300">
+                      QS #{selectedPartnerDossier.qsWorldRanking}
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-400 mt-0.5">
+                    {selectedPartnerDossier.city}, {selectedPartnerDossier.country}
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setSelectedPartnerDossier(null)}
+                className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3 text-xs">
+              <div className="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl space-y-1">
+                <span className="text-[11px] text-slate-400 uppercase font-medium block">Exchange Quota</span>
+                <span className="font-bold text-slate-900 dark:text-white text-sm block">
+                  {selectedPartnerDossier.exchangeSeatsPerYear} Students / Year
+                </span>
+                <span className="text-emerald-600 dark:text-emerald-400 font-semibold block">Full Tuition Waiver</span>
+              </div>
+              <div className="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl space-y-1">
+                <span className="text-[11px] text-slate-400 uppercase font-medium block">Bilateral MoU Validity</span>
+                <span className="font-semibold text-slate-900 dark:text-white block">
+                  Until {new Date(selectedPartnerDossier.mouExpiryDate).toLocaleDateString()}
+                </span>
+                <span className="text-slate-400 block">Signed: {new Date(selectedPartnerDossier.mouSigningDate).toLocaleDateString()}</span>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <span className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider block">
+                Approved Areas of Academic & Research Cooperation
+              </span>
+              <div className="flex flex-wrap gap-2">
+                {selectedPartnerDossier.cooperationAreas.map((area, i) => (
+                  <span
+                    key={i}
+                    className="px-3 py-1.5 bg-cyan-50 dark:bg-cyan-950/40 text-cyan-700 dark:text-cyan-300 rounded-xl text-xs font-medium border border-cyan-200 dark:border-cyan-800/60"
+                  >
+                    ✓ {area}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            <div className="p-3 bg-slate-50 dark:bg-slate-800/30 rounded-xl text-xs space-y-1 border border-slate-100 dark:border-slate-800 text-slate-600 dark:text-slate-300">
+              <div className="font-bold text-slate-800 dark:text-slate-200">Credit Reciprocity & Accreditation Status</div>
+              <p className="text-[11px] text-slate-500">
+                Course syllabi mapped to European Credit Transfer and Accumulation System (ECTS) and ABET engineering criteria. Grades directly convert to 10-point CGPA scale without loss of academic terms.
+              </p>
+            </div>
+
+            <div className="flex justify-end gap-2.5 pt-2 border-t border-slate-100 dark:border-slate-800">
+              <button
+                onClick={() => window.print()}
+                className="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-colors"
+              >
+                <Printer className="w-3.5 h-3.5" />
+                Print Agreement Brief
+              </button>
+              <button
+                onClick={() => setSelectedPartnerDossier(null)}
+                className="px-4 py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded-xl text-xs font-semibold shadow-sm transition-colors"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Exchange Student & Visa Dossier Modal */}
+      {selectedExchangeDossier && (
+        <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto animate-in fade-in duration-200">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl max-w-xl w-full p-6 shadow-2xl space-y-5 my-8">
+            <div className="flex items-start justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 bg-cyan-100 dark:bg-cyan-950/60 text-cyan-600 dark:text-cyan-400 rounded-xl">
+                  <Plane className="w-6 h-6" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h3 className="font-bold text-slate-900 dark:text-white text-lg">{selectedExchangeDossier.studentName}</h3>
+                    <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-cyan-100 dark:bg-cyan-950/60 text-cyan-700 dark:text-cyan-300">
+                      {selectedExchangeDossier.type}
+                    </span>
+                  </div>
+                  <p className="text-xs font-mono text-slate-400 mt-0.5">
+                    Ref: {selectedExchangeDossier.applicationRef} • Roll: {selectedExchangeDossier.studentRollOrId}
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setSelectedExchangeDossier(null)}
+                className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3 text-xs">
+              <div className="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl space-y-1">
+                <span className="text-[11px] text-slate-400 uppercase font-medium block">Host Institution</span>
+                <span className="font-bold text-slate-900 dark:text-white text-sm block">{selectedExchangeDossier.hostUniversity}</span>
+                <span className="text-slate-500 block">Home: {selectedExchangeDossier.homeUniversity}</span>
+              </div>
+              <div className="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl space-y-1">
+                <span className="text-[11px] text-slate-400 uppercase font-medium block">Academic Progression</span>
+                <span className="font-semibold text-slate-900 dark:text-white block">
+                  {selectedExchangeDossier.creditsMapped} ECTS Credits Mapped
+                </span>
+                <span className="text-indigo-600 dark:text-indigo-400 font-medium block">
+                  Target: {selectedExchangeDossier.targetSemester}
+                </span>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3 text-xs">
+              <div className="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl space-y-1">
+                <span className="text-[11px] text-slate-400 uppercase font-medium block">Travel & Visa Document</span>
+                <span className="font-semibold text-slate-900 dark:text-white block">Passport: {selectedExchangeDossier.passportNumber}</span>
+                <span className="text-slate-500 block">Visa Expiry: {selectedExchangeDossier.visaExpiryDate}</span>
+              </div>
+              <div className="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl space-y-1">
+                <span className="text-[11px] text-slate-400 uppercase font-medium block">FRRO / Global Grant</span>
+                <span className="font-semibold text-emerald-600 dark:text-emerald-400 block">
+                  Status: {selectedExchangeDossier.frroStatus}
+                </span>
+                <span className="text-slate-900 dark:text-white font-bold block">
+                  Grant Disbursed: ${selectedExchangeDossier.scholarshipGrantAmount}
+                </span>
+              </div>
+            </div>
+
+            <div className="p-3 bg-slate-50 dark:bg-slate-800/30 rounded-xl text-xs space-y-1 border border-slate-100 dark:border-slate-800 text-slate-600 dark:text-slate-300">
+              <div className="font-bold text-slate-800 dark:text-slate-200">International Affairs Office Verification</div>
+              <p className="text-[11px] text-slate-500">
+                Dean of International Affairs & Host Exchange Coordinator have reviewed and endorsed the learning agreement, emergency health coverage, and credit equivalence transcript transfer.
+              </p>
+            </div>
+
+            <div className="flex justify-end gap-2.5 pt-2 border-t border-slate-100 dark:border-slate-800">
+              <button
+                onClick={() => window.print()}
+                className="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-colors"
+              >
+                <Printer className="w-3.5 h-3.5" />
+                Print Exchange Dossier
+              </button>
+              <button
+                onClick={() => setSelectedExchangeDossier(null)}
+                className="px-4 py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded-xl text-xs font-semibold shadow-sm transition-colors"
+              >
+                Done
+              </button>
+            </div>
           </div>
         </div>
       )}

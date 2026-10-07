@@ -20,6 +20,7 @@ import {
   Building,
   Download,
   Search,
+  Eye,
 } from "lucide-react";
 
 interface AdmissionsSummary {
@@ -40,6 +41,7 @@ export default function AdmissionsPage() {
   const [selectedStage, setSelectedStage] = useState<string>("ALL");
   const [searchQuery, setSearchQuery] = useState("");
   const [statusMessage, setStatusMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  const [selectedApplicantDossier, setSelectedApplicantDossier] = useState<any | null>(null);
 
   const handleExportAdmissionsCsv = () => {
     const listToExport = filteredApplicants;
@@ -437,10 +439,41 @@ export default function AdmissionsPage() {
                         Application Closed
                       </span>
                     )}
+
+                    <button
+                      onClick={() => setSelectedApplicantDossier(lead)}
+                      className="px-2.5 py-1.5 rounded-lg text-xs font-semibold text-charcoal-700 dark:text-ivory-200 bg-ivory-100 dark:bg-charcoal-800 hover:bg-ivory-200 dark:hover:bg-charcoal-700 transition-colors border border-border dark:border-charcoal-700 flex items-center gap-1"
+                    >
+                      <Eye className="w-3.5 h-3.5 text-rose-primary dark:text-rose-light" />
+                      View Dossier
+                    </button>
                   </div>
                 </div>
               );
             })}
+
+            {filteredApplicants.length === 0 && (
+              <div className="bg-white dark:bg-charcoal-900 rounded-xl p-12 border border-border dark:border-charcoal-800 text-center space-y-3">
+                <div className="w-12 h-12 rounded-full bg-rose-50 dark:bg-rose-950/50 flex items-center justify-center mx-auto text-rose-primary dark:text-rose-light">
+                  <Search className="w-6 h-6" />
+                </div>
+                <h3 className="font-bold text-base text-charcoal-900 dark:text-ivory-100">
+                  No Applicant Dossiers Found
+                </h3>
+                <p className="text-xs text-charcoal-500 max-w-sm mx-auto">
+                  No applicant records match your current stage filter or search keyword. Try clearing filters or searching with a different term.
+                </p>
+                <button
+                  onClick={() => {
+                    setSelectedStage("ALL");
+                    setSearchQuery("");
+                  }}
+                  className="px-4 py-2 text-xs font-semibold bg-rose-primary text-white rounded-lg hover:bg-rose-accent transition-colors shadow-sm"
+                >
+                  Reset Filters
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -664,6 +697,113 @@ export default function AdmissionsPage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Applicant Dossier Inspection Modal */}
+      {selectedApplicantDossier && (
+        <div className="fixed inset-0 z-50 bg-charcoal-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-charcoal-900 rounded-2xl border border-border dark:border-charcoal-800 p-6 max-w-2xl w-full shadow-2xl space-y-5">
+            <div className="flex items-center justify-between pb-3 border-b border-border dark:border-charcoal-800">
+              <div>
+                <span className="font-mono text-xs font-bold text-rose-primary dark:text-rose-light">
+                  {selectedApplicantDossier.applicationNo}
+                </span>
+                <h2 className="text-lg font-bold text-charcoal-900 dark:text-ivory-100">
+                  {selectedApplicantDossier.fullName}
+                </h2>
+                <p className="text-xs text-charcoal-500">
+                  {selectedApplicantDossier.programName} • Enrolment Cohort 2026-27
+                </p>
+              </div>
+              <button
+                onClick={() => setSelectedApplicantDossier(null)}
+                className="text-charcoal-400 hover:text-charcoal-600 dark:hover:text-ivory-200 p-1.5 rounded-lg text-sm font-bold"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+              <div className="p-3 rounded-xl bg-ivory-50 dark:bg-charcoal-800 border border-border dark:border-charcoal-700">
+                <span className="text-charcoal-500 block text-[11px]">Merit Rank</span>
+                <span className="font-bold text-base text-rose-primary dark:text-rose-light">#{selectedApplicantDossier.meritRank}</span>
+              </div>
+              <div className="p-3 rounded-xl bg-ivory-50 dark:bg-charcoal-800 border border-border dark:border-charcoal-700">
+                <span className="text-charcoal-500 block text-[11px]">High School GPA</span>
+                <span className="font-bold text-base text-charcoal-900 dark:text-ivory-100">{selectedApplicantDossier.highSchoolGpa} / 4.0</span>
+              </div>
+              <div className="p-3 rounded-xl bg-ivory-50 dark:bg-charcoal-800 border border-border dark:border-charcoal-700">
+                <span className="text-charcoal-500 block text-[11px]">Entrance Score</span>
+                <span className="font-bold text-base text-charcoal-900 dark:text-ivory-100">{selectedApplicantDossier.entranceExamScore} pts</span>
+              </div>
+              <div className="p-3 rounded-xl bg-ivory-50 dark:bg-charcoal-800 border border-border dark:border-charcoal-700">
+                <span className="text-charcoal-500 block text-[11px]">Current Stage</span>
+                <span className="font-bold text-xs text-emerald-600 dark:text-emerald-400 block mt-1">{selectedApplicantDossier.stage.replace(/_/g, " ")}</span>
+              </div>
+            </div>
+
+            <div className="space-y-2 text-xs">
+              <h4 className="font-bold text-charcoal-800 dark:text-ivory-200">Candidate Contact & Origin</h4>
+              <div className="p-3.5 rounded-xl bg-ivory-50 dark:bg-charcoal-800/60 border border-border dark:border-charcoal-700 space-y-1.5">
+                <div className="flex justify-between">
+                  <span className="text-charcoal-500">Email Address:</span>
+                  <span className="font-medium text-charcoal-800 dark:text-ivory-200">{selectedApplicantDossier.email}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-charcoal-500">Phone Number:</span>
+                  <span className="font-medium text-charcoal-800 dark:text-ivory-200">{selectedApplicantDossier.phone}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-charcoal-500">Lead Source Channel:</span>
+                  <span className="font-medium text-charcoal-800 dark:text-ivory-200">{selectedApplicantDossier.source}</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-2 text-xs">
+              <h4 className="font-bold text-charcoal-800 dark:text-ivory-200">Institutional Document Verification Ledger</h4>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                <div className="p-2.5 rounded-lg border border-border dark:border-charcoal-700 bg-ivory-50 dark:bg-charcoal-800 flex items-center justify-between">
+                  <span>High School Transcripts</span>
+                  <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${selectedApplicantDossier.documentsStatus?.transcriptsVerified ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>
+                    {selectedApplicantDossier.documentsStatus?.transcriptsVerified ? 'Verified' : 'Pending'}
+                  </span>
+                </div>
+                <div className="p-2.5 rounded-lg border border-border dark:border-charcoal-700 bg-ivory-50 dark:bg-charcoal-800 flex items-center justify-between">
+                  <span>National Identity Proof</span>
+                  <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${selectedApplicantDossier.documentsStatus?.identityProofVerified ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>
+                    {selectedApplicantDossier.documentsStatus?.identityProofVerified ? 'Verified' : 'Pending'}
+                  </span>
+                </div>
+                <div className="p-2.5 rounded-lg border border-border dark:border-charcoal-700 bg-ivory-50 dark:bg-charcoal-800 flex items-center justify-between">
+                  <span>Letters of Reference</span>
+                  <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${selectedApplicantDossier.documentsStatus?.recommendationLettersVerified ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>
+                    {selectedApplicantDossier.documentsStatus?.recommendationLettersVerified ? 'Verified' : 'Pending'}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div className="p-3.5 rounded-xl bg-rose-50/50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-900/50 text-xs flex justify-between items-center">
+              <div>
+                <span className="font-semibold text-charcoal-800 dark:text-ivory-200 block">Seat Reservation Commitment Fee</span>
+                <span className="text-[11px] text-charcoal-500">Required to confirm enrolment and assign institutional student roll number</span>
+              </div>
+              <span className={`px-3 py-1 rounded-full font-bold text-xs ${selectedApplicantDossier.seatDepositPaid ? 'bg-emerald-600 text-white' : 'bg-amber-500 text-white'}`}>
+                {selectedApplicantDossier.seatDepositPaid ? `Paid ($${selectedApplicantDossier.depositAmount})` : 'Awaiting Payment'}
+              </span>
+            </div>
+
+            <div className="pt-2 flex justify-end">
+              <button
+                onClick={() => setSelectedApplicantDossier(null)}
+                className="px-4 py-2 rounded-xl text-xs font-semibold bg-charcoal-900 dark:bg-ivory-100 text-white dark:text-charcoal-900 hover:opacity-90 transition-opacity"
+              >
+                Close Dossier
+              </button>
+            </div>
           </div>
         </div>
       )}

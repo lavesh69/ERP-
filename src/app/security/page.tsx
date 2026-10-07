@@ -18,6 +18,10 @@ import {
   Download,
   Search,
   Filter,
+  Eye,
+  Printer,
+  X,
+  RotateCcw,
 } from "lucide-react";
 import { VisitorPass, SecurityGate, PassStatus } from "@/lib/security/security-engine";
 
@@ -39,6 +43,7 @@ export default function SecurityPage() {
   const [statusMessage, setStatusMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
+  const [selectedPassDossier, setSelectedPassDossier] = useState<VisitorPass | null>(null);
 
   const filteredPasses = passes.filter((p) => {
     const q = searchQuery.toLowerCase();
@@ -410,20 +415,49 @@ export default function SecurityPage() {
                       </span>
                     </td>
                     <td className="p-4 text-right">
-                      {p.status === "ACTIVE_ON_CAMPUS" && (
+                      <div className="flex items-center justify-end gap-2">
                         <button
-                          onClick={() => handleCheckOut(p.id)}
-                          className="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 dark:bg-rose-950 dark:hover:bg-rose-900 rounded-lg text-xs font-semibold transition-all"
+                          onClick={() => setSelectedPassDossier(p)}
+                          className="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all"
                         >
-                          Check Out
+                          <Eye className="w-3.5 h-3.5 text-slate-500" />
+                          View Pass
                         </button>
-                      )}
+                        {p.status === "ACTIVE_ON_CAMPUS" && (
+                          <button
+                            onClick={() => handleCheckOut(p.id)}
+                            className="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 dark:bg-rose-950 dark:hover:bg-rose-900 rounded-lg text-xs font-semibold transition-all"
+                          >
+                            Check Out
+                          </button>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
+
+          {filteredPasses.length === 0 && (
+            <div className="py-16 text-center border-t border-slate-100 dark:border-slate-800">
+              <Search className="w-12 h-12 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
+              <h4 className="font-semibold text-slate-900 dark:text-white text-base">No Visitor Passes Found</h4>
+              <p className="text-xs text-slate-400 mt-1 max-w-sm mx-auto">
+                No gate passes match your current filter or query &ldquo;{searchQuery}&rdquo;.
+              </p>
+              <button
+                onClick={() => {
+                  setSearchQuery("");
+                  setStatusFilter("ALL");
+                }}
+                className="mt-4 px-4 py-2 bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 rounded-xl text-xs font-semibold inline-flex items-center gap-1.5 hover:bg-emerald-100 transition-all"
+              >
+                <RotateCcw className="w-3.5 h-3.5" />
+                Reset Filters
+              </button>
+            </div>
+          )}
         </div>
       )}
 
@@ -601,6 +635,109 @@ export default function SecurityPage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+      {/* Visitor Pass QR & Access Slip Modal */}
+      {selectedPassDossier && (
+        <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto animate-in fade-in duration-200">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-5 my-8">
+            <div className="flex items-start justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 rounded-xl">
+                  <ShieldCheck className="w-6 h-6" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h3 className="font-bold text-slate-900 dark:text-white text-lg">Visitor Gate Pass</h3>
+                    <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300">
+                      {selectedPassDossier.status}
+                    </span>
+                  </div>
+                  <p className="text-xs font-mono text-slate-400 mt-0.5">{selectedPassDossier.passNumber}</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setSelectedPassDossier(null)}
+                className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* QR Code & Seal Card */}
+            <div className="p-4 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-dashed border-emerald-300 dark:border-emerald-700/60 flex flex-col sm:flex-row items-center gap-4 text-center sm:text-left">
+              <div className="p-3 bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 flex items-center justify-center shrink-0">
+                <QrCode className="w-20 h-20 text-emerald-600 dark:text-emerald-400" />
+              </div>
+              <div className="space-y-1 text-xs">
+                <div className="font-bold text-slate-800 dark:text-slate-200">Cryptographic Perimeter Access Seal</div>
+                <div className="font-mono text-[10px] text-slate-500 break-all bg-slate-100 dark:bg-slate-800 p-1.5 rounded">
+                  {selectedPassDossier.digitalSeal}
+                </div>
+                <div className="text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold pt-0.5">
+                  Verified with Gate Kiosk NFC & Optical Scanner
+                </div>
+              </div>
+            </div>
+
+            {/* Detailed Information Grid */}
+            <div className="grid grid-cols-2 gap-3 text-xs">
+              <div className="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl space-y-1">
+                <span className="text-[11px] text-slate-400 font-medium uppercase tracking-wider block">Visitor Full Name</span>
+                <span className="font-semibold text-slate-900 dark:text-white text-sm">{selectedPassDossier.visitorName}</span>
+                <span className="text-slate-500 font-mono block">{selectedPassDossier.contactPhone}</span>
+              </div>
+              <div className="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl space-y-1">
+                <span className="text-[11px] text-slate-400 font-medium uppercase tracking-wider block">ID Proof Verified</span>
+                <span className="font-semibold text-slate-900 dark:text-white">{selectedPassDossier.idProofType}</span>
+                <span className="text-slate-500 font-mono block">{selectedPassDossier.idProofNumber}</span>
+              </div>
+              <div className="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl space-y-1">
+                <span className="text-[11px] text-slate-400 font-medium uppercase tracking-wider block">Host Officer / Dept</span>
+                <span className="font-semibold text-slate-900 dark:text-white">{selectedPassDossier.hostName}</span>
+                <span className="text-slate-500 block truncate">{selectedPassDossier.hostDepartment}</span>
+              </div>
+              <div className="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl space-y-1">
+                <span className="text-[11px] text-slate-400 font-medium uppercase tracking-wider block">Entry Gate & Vehicle</span>
+                <span className="font-semibold text-slate-900 dark:text-white truncate block">{selectedPassDossier.entryGate}</span>
+                <span className="text-slate-500 font-mono block">{selectedPassDossier.vehicleNumber || "Pedestrian Access"}</span>
+              </div>
+            </div>
+
+            <div className="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl text-xs space-y-1">
+              <span className="text-[11px] text-slate-400 font-medium uppercase tracking-wider block">Purpose of Visit</span>
+              <p className="text-slate-700 dark:text-slate-300 leading-relaxed">{selectedPassDossier.purposeOfVisit}</p>
+            </div>
+
+            <div className="flex justify-between items-center text-xs text-slate-500 border-t border-slate-100 dark:border-slate-800 pt-3">
+              <div>
+                <span>Checked In: </span>
+                <strong className="text-slate-800 dark:text-slate-200">{new Date(selectedPassDossier.checkInTime).toLocaleString()}</strong>
+              </div>
+              {selectedPassDossier.checkOutTime && (
+                <div>
+                  <span>Checked Out: </span>
+                  <strong className="text-slate-800 dark:text-slate-200">{new Date(selectedPassDossier.checkOutTime).toLocaleString()}</strong>
+                </div>
+              )}
+            </div>
+
+            <div className="flex justify-end gap-2.5 pt-2 border-t border-slate-100 dark:border-slate-800">
+              <button
+                onClick={() => window.print()}
+                className="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-colors"
+              >
+                <Printer className="w-3.5 h-3.5" />
+                Print Pass Slip
+              </button>
+              <button
+                onClick={() => setSelectedPassDossier(null)}
+                className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-semibold shadow-sm transition-colors"
+              >
+                Done
+              </button>
+            </div>
           </div>
         </div>
       )}
