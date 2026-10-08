@@ -62,7 +62,7 @@ interface AccreditationSummary {
 
 export default function AccreditationPage() {
   const { currentUser } = useApp();
-  const [activeTab, setActiveTab] = useState<"criteria" | "ratios" | "dossier" | "dvv">("criteria");
+  const [activeTab, setActiveTab] = useState<"criteria" | "ratios" | "dossier" | "dvv" | "nirf">("criteria");
   const [loading, setLoading] = useState(true);
   const [summary, setSummary] = useState<AccreditationSummary | null>(null);
   const [criteria, setCriteria] = useState<AccreditationCriterion[]>([]);
@@ -76,6 +76,76 @@ export default function AccreditationPage() {
   const [dvvBundleHash, setDvvBundleHash] = useState<string>("sha256:9b7e41f8a29c4e0193bb28e93214da88c91a348e");
   const [showDvvModal, setShowDvvModal] = useState(false);
   const [copiedHash, setCopiedHash] = useState(false);
+
+  const handleExportNirfXml = () => {
+    const xmlContent = `<?xml version="1.0" encoding="UTF-8"?>
+<NIRF_DCS_Submission year="2026" instituteCode="APEX-TECH-2026" category="OVERALL_ENGINEERING">
+  <InstituteDetails>
+    <Name>Apex Institute of Technology</Name>
+    <ApprovalId>AICTE-1-987654321</ApprovalId>
+    <Status>Accredited NAAC A++ (CGPA: 3.86)</Status>
+  </InstituteDetails>
+  <Pillars>
+    <TLR weightage="0.30" score="84.50">
+      <Metric name="SS_StudentStrength" score="18.2" max="20" />
+      <Metric name="FSR_FacultyStudentRatio" score="28.5" max="30" />
+      <Metric name="FQE_FacultyPhDExperience" score="17.8" max="20" />
+      <Metric name="FRU_FinancialResourceUtilization" score="20.0" max="30" />
+    </TLR>
+    <RPC weightage="0.30" score="78.40">
+      <Metric name="PU_Publications" score="31.2" max="35" />
+      <Metric name="QP_QualityOfPublications" score="34.0" max="40" />
+      <Metric name="IPR_PatentsGranted" score="8.2" max="15" />
+      <Metric name="FPPP_ProjectFootprint" score="5.0" max="10" />
+    </RPC>
+    <GO weightage="0.20" score="86.20">
+      <Metric name="GPH_PlacementHigherStudies" score="37.0" max="40" />
+      <Metric name="GUE_UniversityExams" score="14.8" max="15" />
+      <Metric name="GMS_MedianSalary" score="34.4" max="45" />
+    </GO>
+    <OI weightage="0.10" score="77.80">
+      <Metric name="RD_RegionalDiversity" score="26.5" max="30" />
+      <Metric name="WD_WomenDiversity" score="27.1" max="30" />
+      <Metric name="ES_EconomicallyChallenged" score="18.2" max="20" />
+      <Metric name="PCS_PhysicalFacilities" score="6.0" max="20" />
+    </OI>
+    <PR weightage="0.10" score="81.50">
+      <Metric name="PeerPerception" score="81.5" max="100" />
+    </PR>
+  </Pillars>
+  <Summary compositeScore="82.04" projectedRank="22" status="VERIFIED_BY_IQAC" />
+</NIRF_DCS_Submission>`;
+
+    const blob = new Blob([xmlContent], { type: "application/xml" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "NIRF_DCS_Apex_Tech_2026.xml";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    setStatusMessage({ type: "success", text: "NIRF Data Capturing System (DCS) XML bundle successfully generated & exported!" });
+  };
+
+  const handleExportNirfCsv = () => {
+    const csvContent = `Pillar Code,Pillar Name,Weightage,Score (Out of 100),Weighted Score,Key Indicators
+TLR,Teaching Learning & Resources,0.30,84.50,25.35,"SS: 18.2/20, FSR: 28.5/30, FQE: 17.8/20, FRU: 20.0/30"
+RPC,Research and Professional Practice,0.30,78.40,23.52,"PU: 31.2/35, QP: 34.0/40, IPR: 8.2/15, FPPP: 5.0/10"
+GO,Graduation Outcomes,0.20,86.20,17.24,"GPH: 37.0/40, GUE: 14.8/15, GMS: 34.4/45"
+OI,Outreach and Inclusivity,0.10,77.80,7.78,"RD: 26.5/30, WD: 27.1/30, ES: 18.2/20, PCS: 6.0/20"
+PR,Peer Perception,0.10,81.50,8.15,"Academic Peers & Employers: 81.5/100"
+TOTAL,Composite Institutional NIRF Score,1.00,82.04,82.04,"Projected National Rank: #22 (Top 25 Engineering)"`;
+
+    const blob = new Blob([csvContent], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "NIRF_Pillars_Apex_Tech_2026.csv";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    setStatusMessage({ type: "success", text: "NIRF 5-Pillar CSV breakdown successfully downloaded!" });
+  };
 
   const filteredCriteria = criteria.filter((c) => {
     const q = searchQuery.toLowerCase();
@@ -349,6 +419,18 @@ export default function AccreditationPage() {
         >
           <Database className="w-4 h-4" />
           NAAC DVV Live Ledger
+        </button>
+
+        <button
+          onClick={() => setActiveTab("nirf")}
+          className={`pb-3 text-sm font-semibold border-b-2 transition-all flex items-center gap-2 ${
+            activeTab === "nirf"
+              ? "border-blue-600 text-blue-600 dark:text-blue-400"
+              : "border-transparent text-slate-500 hover:text-slate-900 dark:hover:text-slate-200"
+          }`}
+        >
+          <Award className="w-4 h-4 text-amber-500" />
+          NIRF 2026 Rankings & DCS
         </button>
       </div>
 
@@ -649,6 +731,293 @@ export default function AccreditationPage() {
                 </div>
                 <div className="text-2xl font-bold text-slate-900 dark:text-white">24 Active Societies</div>
                 <p className="text-[11px] text-slate-400">Cryptographically signed activity points verified for degree clearance</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Tab 5: NIRF 2026 Rankings & Data Capturing System (DCS) */}
+      {activeTab === "nirf" && (
+        <div className="space-y-6">
+          {/* Executive NIRF Standings Banner */}
+          <div className="bg-gradient-to-r from-amber-950/70 via-slate-900 to-amber-950/70 border border-amber-500/30 text-white p-6 rounded-2xl shadow-xl flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <span className="px-3 py-1 rounded-full text-xs font-bold bg-amber-500/20 text-amber-300 border border-amber-400/30 flex items-center gap-1.5">
+                  <Award className="w-3.5 h-3.5 text-amber-400" />
+                  NATIONAL INSTITUTIONAL RANKING FRAMEWORK (NIRF 2026)
+                </span>
+                <span className="text-xs px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-medium">
+                  DCS Validation Locked
+                </span>
+              </div>
+              <h2 className="text-2xl font-bold tracking-tight">
+                Projected National Rank: <span className="text-amber-400">#22</span> in Engineering
+              </h2>
+              <p className="text-xs text-amber-100/70 max-w-xl">
+                Automated aggregation of 5 statutory NIRF ranking pillars. Institutional score evaluated across Ministry of Education (MoE) weighted rubric.
+              </p>
+            </div>
+
+            <div className="flex flex-col sm:flex-row items-center gap-4 w-full lg:w-auto">
+              <div className="bg-white/10 backdrop-blur-md px-5 py-3 rounded-xl border border-white/10 text-center w-full sm:w-auto">
+                <span className="text-[11px] uppercase tracking-wider text-amber-200/80 font-semibold block">Composite Score</span>
+                <span className="text-3xl font-extrabold text-white">82.04</span>
+                <span className="text-xs text-amber-300/80"> / 100 Points</span>
+              </div>
+
+              <div className="flex flex-col gap-2 w-full sm:w-auto">
+                <button
+                  type="button"
+                  onClick={handleExportNirfXml}
+                  className="px-4 py-2 rounded-xl text-xs font-bold bg-amber-500 text-slate-950 hover:bg-amber-400 transition-colors shadow-sm flex items-center justify-center gap-1.5"
+                >
+                  <Download className="w-3.5 h-3.5" /> Export NIRF DCS XML
+                </button>
+                <button
+                  type="button"
+                  onClick={handleExportNirfCsv}
+                  className="px-4 py-2 rounded-xl text-xs font-semibold bg-white/10 hover:bg-white/20 text-white border border-white/20 transition-colors flex items-center justify-center gap-1.5"
+                >
+                  <FileText className="w-3.5 h-3.5" /> Export 5-Pillar CSV
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* 5-Pillar Metric Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            {/* Pillar 1: TLR */}
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm space-y-4">
+              <div className="flex items-start justify-between">
+                <div>
+                  <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300">
+                    Weightage: 30%
+                  </span>
+                  <h3 className="font-bold text-base text-slate-900 dark:text-white mt-1.5">
+                    1. Teaching, Learning & Resources (TLR)
+                  </h3>
+                </div>
+                <div className="text-right">
+                  <span className="text-xl font-bold text-blue-600 dark:text-blue-400">84.50</span>
+                  <span className="text-xs text-slate-400 block">/ 100</span>
+                </div>
+              </div>
+
+              <div className="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden">
+                <div className="bg-blue-600 h-full rounded-full" style={{ width: "84.5%" }} />
+              </div>
+
+              <div className="space-y-2 text-xs">
+                <div className="flex justify-between p-2 rounded-lg bg-slate-50 dark:bg-slate-800/60">
+                  <span className="text-slate-500">Student Strength (SS):</span>
+                  <span className="font-bold text-slate-900 dark:text-white">18.2 / 20</span>
+                </div>
+                <div className="flex justify-between p-2 rounded-lg bg-slate-50 dark:bg-slate-800/60">
+                  <span className="text-slate-500">Faculty-Student Ratio (FSR):</span>
+                  <span className="font-bold text-emerald-600 dark:text-emerald-400">28.5 / 30 (1:14.9)</span>
+                </div>
+                <div className="flex justify-between p-2 rounded-lg bg-slate-50 dark:bg-slate-800/60">
+                  <span className="text-slate-500">Faculty Ph.D. & Exp (FQE):</span>
+                  <span className="font-bold text-slate-900 dark:text-white">17.8 / 20</span>
+                </div>
+                <div className="flex justify-between p-2 rounded-lg bg-slate-50 dark:bg-slate-800/60">
+                  <span className="text-slate-500">Financial Utilization (FRU):</span>
+                  <span className="font-bold text-slate-900 dark:text-white">20.0 / 30</span>
+                </div>
+              </div>
+              <p className="text-[11px] text-slate-400 border-t border-slate-100 dark:border-slate-800 pt-2">
+                Weighted Contribution: <span className="font-bold text-slate-700 dark:text-slate-200">25.35 / 30 pts</span>
+              </p>
+            </div>
+
+            {/* Pillar 2: RPC */}
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm space-y-4">
+              <div className="flex items-start justify-between">
+                <div>
+                  <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300">
+                    Weightage: 30%
+                  </span>
+                  <h3 className="font-bold text-base text-slate-900 dark:text-white mt-1.5">
+                    2. Research & Professional Practice (RPC)
+                  </h3>
+                </div>
+                <div className="text-right">
+                  <span className="text-xl font-bold text-indigo-600 dark:text-indigo-400">78.40</span>
+                  <span className="text-xs text-slate-400 block">/ 100</span>
+                </div>
+              </div>
+
+              <div className="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden">
+                <div className="bg-indigo-600 h-full rounded-full" style={{ width: "78.4%" }} />
+              </div>
+
+              <div className="space-y-2 text-xs">
+                <div className="flex justify-between p-2 rounded-lg bg-slate-50 dark:bg-slate-800/60">
+                  <span className="text-slate-500">Combined Publications (PU):</span>
+                  <span className="font-bold text-slate-900 dark:text-white">31.2 / 35</span>
+                </div>
+                <div className="flex justify-between p-2 rounded-lg bg-slate-50 dark:bg-slate-800/60">
+                  <span className="text-slate-500">Quality of Publications (QP):</span>
+                  <span className="font-bold text-slate-900 dark:text-white">34.0 / 40 (Scopus/WoS)</span>
+                </div>
+                <div className="flex justify-between p-2 rounded-lg bg-slate-50 dark:bg-slate-800/60">
+                  <span className="text-slate-500">IPR Patents Granted (IPR):</span>
+                  <span className="font-bold text-slate-900 dark:text-white">8.2 / 15</span>
+                </div>
+                <div className="flex justify-between p-2 rounded-lg bg-slate-50 dark:bg-slate-800/60">
+                  <span className="text-slate-500">Project Footprint (FPPP):</span>
+                  <span className="font-bold text-slate-900 dark:text-white">5.0 / 10</span>
+                </div>
+              </div>
+              <p className="text-[11px] text-slate-400 border-t border-slate-100 dark:border-slate-800 pt-2">
+                Weighted Contribution: <span className="font-bold text-slate-700 dark:text-slate-200">23.52 / 30 pts</span>
+              </p>
+            </div>
+
+            {/* Pillar 3: GO */}
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm space-y-4">
+              <div className="flex items-start justify-between">
+                <div>
+                  <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300">
+                    Weightage: 20%
+                  </span>
+                  <h3 className="font-bold text-base text-slate-900 dark:text-white mt-1.5">
+                    3. Graduation Outcomes (GO)
+                  </h3>
+                </div>
+                <div className="text-right">
+                  <span className="text-xl font-bold text-emerald-600 dark:text-emerald-400">86.20</span>
+                  <span className="text-xs text-slate-400 block">/ 100</span>
+                </div>
+              </div>
+
+              <div className="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden">
+                <div className="bg-emerald-600 h-full rounded-full" style={{ width: "86.2%" }} />
+              </div>
+
+              <div className="space-y-2 text-xs">
+                <div className="flex justify-between p-2 rounded-lg bg-slate-50 dark:bg-slate-800/60">
+                  <span className="text-slate-500">Placement & Higher Studies (GPH):</span>
+                  <span className="font-bold text-emerald-600 dark:text-emerald-400">37.0 / 40 (92.4%)</span>
+                </div>
+                <div className="flex justify-between p-2 rounded-lg bg-slate-50 dark:bg-slate-800/60">
+                  <span className="text-slate-500">University Exams (GUE):</span>
+                  <span className="font-bold text-slate-900 dark:text-white">14.8 / 15</span>
+                </div>
+                <div className="flex justify-between p-2 rounded-lg bg-slate-50 dark:bg-slate-800/60">
+                  <span className="text-slate-500">Median Salary (GMS):</span>
+                  <span className="font-bold text-slate-900 dark:text-white">34.4 / 45 (₹18.5 LPA)</span>
+                </div>
+              </div>
+              <p className="text-[11px] text-slate-400 border-t border-slate-100 dark:border-slate-800 pt-2">
+                Weighted Contribution: <span className="font-bold text-slate-700 dark:text-slate-200">17.24 / 20 pts</span>
+              </p>
+            </div>
+
+            {/* Pillar 4: OI */}
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm space-y-4">
+              <div className="flex items-start justify-between">
+                <div>
+                  <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-purple-100 dark:bg-purple-950 text-purple-700 dark:text-purple-300">
+                    Weightage: 10%
+                  </span>
+                  <h3 className="font-bold text-base text-slate-900 dark:text-white mt-1.5">
+                    4. Outreach & Inclusivity (OI)
+                  </h3>
+                </div>
+                <div className="text-right">
+                  <span className="text-xl font-bold text-purple-600 dark:text-purple-400">77.80</span>
+                  <span className="text-xs text-slate-400 block">/ 100</span>
+                </div>
+              </div>
+
+              <div className="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden">
+                <div className="bg-purple-600 h-full rounded-full" style={{ width: "77.8%" }} />
+              </div>
+
+              <div className="space-y-2 text-xs">
+                <div className="flex justify-between p-2 rounded-lg bg-slate-50 dark:bg-slate-800/60">
+                  <span className="text-slate-500">Regional Diversity (RD):</span>
+                  <span className="font-bold text-slate-900 dark:text-white">26.5 / 30</span>
+                </div>
+                <div className="flex justify-between p-2 rounded-lg bg-slate-50 dark:bg-slate-800/60">
+                  <span className="text-slate-500">Women Diversity (WD):</span>
+                  <span className="font-bold text-slate-900 dark:text-white">27.1 / 30 (38.2%)</span>
+                </div>
+                <div className="flex justify-between p-2 rounded-lg bg-slate-50 dark:bg-slate-800/60">
+                  <span className="text-slate-500">Economically Challenged (ES):</span>
+                  <span className="font-bold text-slate-900 dark:text-white">18.2 / 20</span>
+                </div>
+                <div className="flex justify-between p-2 rounded-lg bg-slate-50 dark:bg-slate-800/60">
+                  <span className="text-slate-500">Facilities for Divyangjan (PCS):</span>
+                  <span className="font-bold text-slate-900 dark:text-white">6.0 / 20</span>
+                </div>
+              </div>
+              <p className="text-[11px] text-slate-400 border-t border-slate-100 dark:border-slate-800 pt-2">
+                Weighted Contribution: <span className="font-bold text-slate-700 dark:text-slate-200">7.78 / 10 pts</span>
+              </p>
+            </div>
+
+            {/* Pillar 5: PR */}
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm space-y-4">
+              <div className="flex items-start justify-between">
+                <div>
+                  <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-300">
+                    Weightage: 10%
+                  </span>
+                  <h3 className="font-bold text-base text-slate-900 dark:text-white mt-1.5">
+                    5. Perception (PR)
+                  </h3>
+                </div>
+                <div className="text-right">
+                  <span className="text-xl font-bold text-amber-600 dark:text-amber-400">81.50</span>
+                  <span className="text-xs text-slate-400 block">/ 100</span>
+                </div>
+              </div>
+
+              <div className="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden">
+                <div className="bg-amber-600 h-full rounded-full" style={{ width: "81.5%" }} />
+              </div>
+
+              <div className="space-y-2 text-xs">
+                <div className="flex justify-between p-2 rounded-lg bg-slate-50 dark:bg-slate-800/60">
+                  <span className="text-slate-500">Academic Peer Perception:</span>
+                  <span className="font-bold text-slate-900 dark:text-white">82.4 / 100</span>
+                </div>
+                <div className="flex justify-between p-2 rounded-lg bg-slate-50 dark:bg-slate-800/60">
+                  <span className="text-slate-500">Employer Reputation Survey:</span>
+                  <span className="font-bold text-slate-900 dark:text-white">80.6 / 100</span>
+                </div>
+                <div className="flex justify-between p-2 rounded-lg bg-slate-50 dark:bg-slate-800/60">
+                  <span className="text-slate-500">Industry Collaboration Index:</span>
+                  <span className="font-bold text-emerald-600 dark:text-emerald-400">Verified Strong</span>
+                </div>
+              </div>
+              <p className="text-[11px] text-slate-400 border-t border-slate-100 dark:border-slate-800 pt-2">
+                Weighted Contribution: <span className="font-bold text-slate-700 dark:text-slate-200">8.15 / 10 pts</span>
+              </p>
+            </div>
+
+            {/* Statutory Attestation Card */}
+            <div className="bg-gradient-to-br from-slate-50 to-amber-50/30 dark:from-slate-900 dark:to-amber-950/20 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm flex flex-col justify-between">
+              <div>
+                <div className="flex items-center gap-2 text-xs font-bold text-amber-600 dark:text-amber-400">
+                  <ShieldCheck className="w-4 h-4" /> STATUTORY REGISTRAR ENDORSEMENT
+                </div>
+                <h4 className="font-bold text-slate-900 dark:text-white text-sm mt-2">
+                  DCS Integrity Clearance 2026
+                </h4>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-2 leading-relaxed">
+                  All 5 pillars compiled from primary academic ledgers, audited balance sheets, Scopus APIs, and placement verifications.
+                </p>
+              </div>
+
+              <div className="pt-4 border-t border-slate-200 dark:border-slate-800/60 text-[11px] space-y-1 text-slate-500">
+                <p>• Institutional Code: <span className="font-mono font-bold text-slate-700 dark:text-slate-300">APEX-TECH-2026</span></p>
+                <p>• MoE Portal Lock Date: <span className="font-bold text-slate-700 dark:text-slate-300">Nov 30, 2026</span></p>
+                <p>• IQAC Convener: <span className="text-emerald-600 dark:text-emerald-400 font-semibold">Dr. S. K. Mukherjee</span></p>
               </div>
             </div>
           </div>

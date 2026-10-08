@@ -24,6 +24,9 @@ import {
   Eye,
   Printer,
   PlusCircle,
+  CreditCard,
+  Receipt,
+  X,
 } from "lucide-react";
 
 export default function AlumniPage() {
@@ -34,6 +37,15 @@ export default function AlumniPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusMessage, setStatusMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
   const [selectedAlumniDossier, setSelectedAlumniDossier] = useState<any | null>(null);
+
+  // Giving & Endowment Gateway State
+  const [givingModalCampaign, setGivingModalCampaign] = useState<any | null>(null);
+  const [donationAmount, setDonationAmount] = useState<number>(250);
+  const [customDonationAmount, setCustomDonationAmount] = useState<string>("");
+  const [donorPan, setDonorPan] = useState("ABCDE1234F");
+  const [donorName, setDonorName] = useState(currentUser?.fullName || "Distinguished Alumnus");
+  const [isAnonymousDonor, setIsAnonymousDonor] = useState(false);
+  const [donationSuccessReceipt, setDonationSuccessReceipt] = useState<any | null>(null);
 
   // Degree Verification Form
   const [verifyRoll, setVerifyRoll] = useState("CS2026-001");
@@ -175,10 +187,42 @@ export default function AlumniPage() {
     });
   };
 
-  const handlePledgeDonation = (campaignTitle: string) => {
+  const handlePledgeDonation = (campaign: any) => {
+    setGivingModalCampaign(campaign);
+    setDonationAmount(250);
+    setCustomDonationAmount("");
+    setDonationSuccessReceipt(null);
+  };
+
+  const handleExecuteDonation = (e: React.FormEvent) => {
+    e.preventDefault();
+    const finalAmount = customDonationAmount ? Number(customDonationAmount) : donationAmount;
+    if (!finalAmount || finalAmount <= 0) return;
+
+    // Update campaign in state
+    setCampaigns((prev) =>
+      prev.map((c) =>
+        c.id === givingModalCampaign?.id
+          ? { ...c, raised: c.raised + finalAmount, donorsCount: c.donorsCount + 1 }
+          : c
+      )
+    );
+
+    const receipt = {
+      receiptNo: `ENDOW-80G-${Date.now().toString().slice(-6)}`,
+      date: new Date().toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" }),
+      campaignTitle: givingModalCampaign?.title,
+      donorName: isAnonymousDonor ? "Anonymous Benefactor" : donorName,
+      pan: donorPan,
+      amount: finalAmount,
+      taxDeductibleEligible: "100% Tax Deductible under Sec 80G(5)(vi) / US 501(c)(3)",
+      exemptionNumber: "CIT(E)/BLR/80G/2026-27/AAATE1234F",
+    };
+
+    setDonationSuccessReceipt(receipt);
     setStatusMessage({
       type: "success",
-      text: `Thank you for contributing to "${campaignTitle}"! Endowment acknowledgment receipt sent.`,
+      text: `Endowment gift of $${finalAmount.toLocaleString()} successfully processed for "${givingModalCampaign?.title}"!`,
     });
   };
 
@@ -680,7 +724,7 @@ export default function AlumniPage() {
                   <div className="mt-5 pt-3 border-t border-border dark:border-charcoal-800 flex justify-between items-center">
                     <span className="text-xs text-charcoal-500">Goal: ${camp.target.toLocaleString()}</span>
                     <button
-                      onClick={() => handlePledgeDonation(camp.title)}
+                      onClick={() => handlePledgeDonation(camp)}
                       className="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-rose-primary text-white hover:bg-rose-accent transition-colors shadow-sm"
                     >
                       Pledge Contribution
@@ -1112,6 +1156,210 @@ export default function AlumniPage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL: INSTITUTIONAL GIVING & ENDOWMENT GATEWAY */}
+      {givingModalCampaign && (
+        <div className="fixed inset-0 z-50 bg-charcoal-950/70 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-charcoal-900 rounded-2xl max-w-lg w-full p-6 border border-border dark:border-charcoal-800 shadow-2xl animate-in zoom-in-95 duration-200 max-h-[92vh] overflow-y-auto">
+            <div className="flex items-start justify-between pb-3 border-b border-border dark:border-charcoal-800">
+              <div>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-rose-primary bg-rose-50 dark:bg-rose-950/60 px-2 py-0.5 rounded border border-rose-200 dark:border-rose-900">
+                  {givingModalCampaign.category}
+                </span>
+                <h3 className="font-bold text-base text-charcoal-900 dark:text-ivory-100 mt-1">
+                  Institutional Giving & Endowment Gateway
+                </h3>
+                <p className="text-xs text-charcoal-500">{givingModalCampaign.title}</p>
+              </div>
+              <button
+                onClick={() => setGivingModalCampaign(null)}
+                className="text-charcoal-400 hover:text-charcoal-900 dark:hover:text-white p-1"
+                aria-label="Close"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {donationSuccessReceipt ? (
+              <div className="mt-4 space-y-4">
+                {/* Printable Receipt Card */}
+                <div className="p-5 rounded-xl border border-emerald-300 dark:border-emerald-800 bg-emerald-50/50 dark:bg-emerald-950/20 text-xs space-y-3">
+                  <div className="flex items-center justify-between border-b border-emerald-200 dark:border-emerald-800/60 pb-2">
+                    <div>
+                      <h4 className="font-bold text-emerald-950 dark:text-emerald-200 uppercase tracking-wide">
+                        Official 80G Tax Exemption Receipt
+                      </h4>
+                      <p className="text-[10px] text-emerald-700 dark:text-emerald-400 font-mono">
+                        Ref: {donationSuccessReceipt.receiptNo}
+                      </p>
+                    </div>
+                    <CheckCircle2 className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2 text-[11px]">
+                    <div>
+                      <span className="text-charcoal-500">Benefactor:</span>
+                      <p className="font-bold text-charcoal-900 dark:text-ivory-100">{donationSuccessReceipt.donorName}</p>
+                    </div>
+                    <div>
+                      <span className="text-charcoal-500">Tax ID / PAN:</span>
+                      <p className="font-mono font-bold text-charcoal-900 dark:text-ivory-100">{donationSuccessReceipt.pan}</p>
+                    </div>
+                    <div>
+                      <span className="text-charcoal-500">Amount Contributed:</span>
+                      <p className="text-base font-bold text-emerald-700 dark:text-emerald-300">
+                        ${donationSuccessReceipt.amount.toLocaleString()} USD
+                      </p>
+                    </div>
+                    <div>
+                      <span className="text-charcoal-500">Transaction Date:</span>
+                      <p className="font-medium text-charcoal-900 dark:text-ivory-100">{donationSuccessReceipt.date}</p>
+                    </div>
+                  </div>
+
+                  <div className="p-2.5 rounded bg-white dark:bg-charcoal-800 text-[10px] text-charcoal-600 dark:text-ivory-300 space-y-1">
+                    <p className="font-semibold text-emerald-700 dark:text-emerald-400">
+                      ✓ {donationSuccessReceipt.taxDeductibleEligible}
+                    </p>
+                    <p className="text-charcoal-400">Statutory Exemption Order: {donationSuccessReceipt.exemptionNumber}</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-end gap-2 pt-2 border-t border-border dark:border-charcoal-800">
+                  <button
+                    type="button"
+                    onClick={() => window.print()}
+                    className="px-3.5 py-2 text-xs font-semibold rounded-lg bg-ivory-100 dark:bg-charcoal-800 text-charcoal-800 dark:text-ivory-200 hover:bg-ivory-200 flex items-center gap-1.5"
+                  >
+                    <Printer className="w-3.5 h-3.5" /> Print Tax Receipt
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setGivingModalCampaign(null)}
+                    className="px-4 py-2 text-xs font-bold rounded-lg bg-rose-primary text-white hover:bg-rose-accent"
+                  >
+                    Done
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <form onSubmit={handleExecuteDonation} className="mt-4 space-y-4 text-xs">
+                {/* Giving Tiers */}
+                <div>
+                  <label className="block font-medium text-charcoal-700 dark:text-ivory-300 mb-2">
+                    Select Contribution Tier
+                  </label>
+                  <div className="grid grid-cols-3 gap-2">
+                    {[50, 100, 250, 500, 1000, 2500].map((tier) => (
+                      <button
+                        key={tier}
+                        type="button"
+                        onClick={() => {
+                          setDonationAmount(tier);
+                          setCustomDonationAmount("");
+                        }}
+                        className={`py-2 px-3 rounded-xl font-bold border transition-all text-xs ${
+                          donationAmount === tier && !customDonationAmount
+                            ? "bg-rose-50 dark:bg-rose-950/70 border-rose-500 text-rose-700 dark:text-rose-300 ring-2 ring-rose-500/20"
+                            : "bg-ivory-50 dark:bg-charcoal-800 border-border dark:border-charcoal-700 text-charcoal-700 dark:text-ivory-200 hover:border-charcoal-400"
+                        }`}
+                      >
+                        ${tier.toLocaleString()}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Custom Amount */}
+                <div>
+                  <label className="block font-medium text-charcoal-700 dark:text-ivory-300 mb-1">
+                    Or Custom Amount ($ USD)
+                  </label>
+                  <input
+                    type="number"
+                    min="10"
+                    placeholder="e.g. 5000"
+                    value={customDonationAmount}
+                    onChange={(e) => setCustomDonationAmount(e.target.value)}
+                    className="w-full p-2.5 bg-ivory-50 dark:bg-charcoal-800 border border-border dark:border-charcoal-700 rounded-lg text-charcoal-900 dark:text-ivory-100 font-semibold"
+                  />
+                </div>
+
+                {/* Donor Details & 80G Tax Section */}
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block font-medium text-charcoal-700 dark:text-ivory-300 mb-1">
+                      Donor Name (on Receipt)
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={donorName}
+                      onChange={(e) => setDonorName(e.target.value)}
+                      className="w-full p-2 bg-ivory-50 dark:bg-charcoal-800 border border-border dark:border-charcoal-700 rounded-lg text-charcoal-900 dark:text-ivory-100"
+                    />
+                  </div>
+                  <div>
+                    <label className="block font-medium text-charcoal-700 dark:text-ivory-300 mb-1">
+                      PAN / Tax ID (Sec 80G Exemption)
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g. ABCDE1234F"
+                      value={donorPan}
+                      onChange={(e) => setDonorPan(e.target.value.toUpperCase())}
+                      className="w-full p-2 bg-ivory-50 dark:bg-charcoal-800 border border-border dark:border-charcoal-700 rounded-lg text-charcoal-900 dark:text-ivory-100 font-mono uppercase"
+                    />
+                  </div>
+                </div>
+
+                {/* Anonymity Checkbox */}
+                <div className="p-3 bg-ivory-50 dark:bg-charcoal-800/60 rounded-xl border border-border dark:border-charcoal-700 flex items-center justify-between">
+                  <div>
+                    <p className="font-semibold text-charcoal-900 dark:text-ivory-100">
+                      Donor Honour Roll Anonymity
+                    </p>
+                    <p className="text-[11px] text-charcoal-500">
+                      Hide personal name from public university endowment ledger.
+                    </p>
+                  </div>
+                  <input
+                    type="checkbox"
+                    checked={isAnonymousDonor}
+                    onChange={(e) => setIsAnonymousDonor(e.target.checked)}
+                    className="w-4 h-4 rounded text-rose-600 focus:ring-rose-500"
+                  />
+                </div>
+
+                <div className="p-3 rounded-lg bg-rose-50/50 dark:bg-rose-950/20 border border-rose-100 dark:border-rose-900/30 text-[11px] text-charcoal-600 dark:text-ivory-300 flex items-center gap-2">
+                  <CreditCard className="w-4 h-4 text-rose-primary shrink-0" />
+                  <span>
+                    Secured payment tokenization. Digital 80G tax clearance certificate issued instantly upon authorization.
+                  </span>
+                </div>
+
+                <div className="pt-2 flex justify-end gap-2 border-t border-border dark:border-charcoal-800">
+                  <button
+                    type="button"
+                    onClick={() => setGivingModalCampaign(null)}
+                    className="px-3.5 py-2 rounded-lg font-medium bg-ivory-100 dark:bg-charcoal-800 hover:bg-ivory-200 text-charcoal-700 dark:text-ivory-200"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-5 py-2 rounded-lg font-bold bg-rose-primary text-white hover:bg-rose-accent shadow-sm flex items-center gap-1.5"
+                  >
+                    <Heart className="w-3.5 h-3.5" />
+                    Authorize Contribution (${customDonationAmount || donationAmount})
+                  </button>
+                </div>
+              </form>
+            )}
           </div>
         </div>
       )}

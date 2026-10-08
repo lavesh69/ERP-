@@ -26,6 +26,8 @@ import {
   Wifi,
   Radio,
   Phone,
+  Calculator,
+  Scale,
 } from "lucide-react";
 
 export default function HRPage() {
@@ -141,6 +143,7 @@ export default function HRPage() {
   const [deptFilter, setDeptFilter] = useState("ALL");
   const [selectedPayrollStaffId, setSelectedPayrollStaffId] = useState<string>("fac-01");
   const [selectedPayPeriod, setSelectedPayPeriod] = useState<string>("October 2026");
+  const [taxRegime, setTaxRegime] = useState<"NEW_REGIME" | "OLD_REGIME">("NEW_REGIME");
   const [leaveStatusFilter, setLeaveStatusFilter] = useState<string>("ALL");
   const [leaveSearch, setLeaveSearch] = useState<string>("");
 
@@ -681,7 +684,13 @@ export default function HRPage() {
         const specialAllowance = Math.round(basicPay * 0.10);
         const grossSalary = basicPay + houseRentAllowance + dearnessAllowance + specialAllowance;
         const providentFund = Math.round(basicPay * 0.12);
-        const taxDeductedAtSource = Math.round(grossSalary * 0.08);
+        
+        // Income Tax Calculations
+        const isNewRegime = taxRegime === "NEW_REGIME";
+        const oldRegimeTax = Math.round(grossSalary * 0.092);
+        const newRegimeTax = Math.round(grossSalary * 0.065);
+        const taxDeductedAtSource = isNewRegime ? newRegimeTax : oldRegimeTax;
+        const monthlyTaxSavings = Math.abs(oldRegimeTax - newRegimeTax);
         const professionalTax = 200;
         const totalDeductions = providentFund + taxDeductedAtSource + professionalTax;
         const netPay = grossSalary - totalDeductions;
@@ -689,14 +698,14 @@ export default function HRPage() {
 
         return (
           <div className="space-y-6">
-            {/* Staff Selector Bar */}
-            <div className="bg-white dark:bg-charcoal-900 rounded-xl p-4 border border-border dark:border-charcoal-800 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            {/* Staff Selector & Tax Regime Control Bar */}
+            <div className="bg-white dark:bg-charcoal-900 rounded-xl p-4 border border-border dark:border-charcoal-800 shadow-sm flex flex-col lg:flex-row lg:items-center justify-between gap-4">
               <div>
                 <span className="text-xs font-semibold text-charcoal-700 dark:text-ivory-200 block">
-                  Select Staff for Verified Payslip Calculation:
+                  Faculty Compensation & Income Tax Engine (Section 192)
                 </span>
                 <span className="text-[11px] text-charcoal-500">
-                  Switch faculty members to inspect real-time compensation breakdown
+                  Switch faculty members and toggle between Indian Income Tax Regimes
                 </span>
               </div>
               <div className="flex flex-wrap items-center gap-2">
@@ -723,6 +732,54 @@ export default function HRPage() {
               </div>
             </div>
 
+            {/* Income Tax Regime Switcher */}
+            <div className="max-w-2xl mx-auto bg-ivory-50/70 dark:bg-charcoal-850 p-4 rounded-xl border border-border dark:border-charcoal-800 space-y-3">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <Calculator className="w-4 h-4 text-rose-primary" />
+                  <span className="text-xs font-bold text-charcoal-900 dark:text-ivory-100">
+                    Statutory Tax Regime Selector (Finance Act 2026):
+                  </span>
+                </div>
+                <div className="flex items-center gap-1.5 p-1 bg-white dark:bg-charcoal-900 rounded-lg border border-border dark:border-charcoal-700">
+                  <button
+                    type="button"
+                    onClick={() => setTaxRegime("NEW_REGIME")}
+                    className={`px-3 py-1 text-xs font-semibold rounded-md transition-all ${
+                      isNewRegime
+                        ? "bg-rose-primary text-white shadow-xs"
+                        : "text-charcoal-600 dark:text-ivory-400 hover:text-charcoal-900"
+                    }`}
+                  >
+                    Section 115BAC (New)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setTaxRegime("OLD_REGIME")}
+                    className={`px-3 py-1 text-xs font-semibold rounded-md transition-all ${
+                      !isNewRegime
+                        ? "bg-rose-primary text-white shadow-xs"
+                        : "text-charcoal-600 dark:text-ivory-400 hover:text-charcoal-900"
+                    }`}
+                  >
+                    Old Regime (80C / 80D)
+                  </button>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between text-xs pt-1 border-t border-border dark:border-charcoal-700/60">
+                <span className="text-[11px] text-charcoal-500">
+                  {isNewRegime
+                    ? "✓ Default Regime: Standard Deduction ₹75,000 / $900 applied with concessional slabs."
+                    : "⚠️ Old Regime: Higher base rates; requires Section 80C, 80D & HRA rent receipts proof submission."}
+                </span>
+                <span className="px-2 py-0.5 rounded font-bold text-[11px] bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-200">
+                  {isNewRegime ? `Saving $${monthlyTaxSavings}/mo` : `+$${monthlyTaxSavings}/mo extra tax`}
+                </span>
+              </div>
+            </div>
+
+            {/* Official Payslip Voucher */}
             <div className="max-w-2xl mx-auto bg-white dark:bg-charcoal-900 rounded-2xl p-6 border border-border dark:border-charcoal-800 shadow-xl space-y-6">
               <div className="flex justify-between items-start pb-4 border-b border-border dark:border-charcoal-800">
                 <div>
@@ -747,9 +804,9 @@ export default function HRPage() {
               </div>
 
               {/* Employee Header */}
-              <div className="p-3.5 bg-ivory-50 dark:bg-charcoal-800/60 rounded-xl grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
+              <div className="p-3.5 bg-ivory-50 dark:bg-charcoal-800/60 rounded-xl grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
                 <div>
-                  <span className="text-charcoal-500">Employee Name:</span>
+                  <span className="text-charcoal-500">Employee:</span>
                   <p className="font-bold text-charcoal-900 dark:text-ivory-100">{activeStaffForPayroll.name}</p>
                 </div>
                 <div>
@@ -759,6 +816,10 @@ export default function HRPage() {
                 <div>
                   <span className="text-charcoal-500">Pay Period:</span>
                   <p className="font-bold text-charcoal-900 dark:text-ivory-100">{selectedPayPeriod}</p>
+                </div>
+                <div>
+                  <span className="text-charcoal-500">Tax Regime:</span>
+                  <p className="font-bold text-rose-primary">{isNewRegime ? "Sec 115BAC (New)" : "Old Regime"}</p>
                 </div>
               </div>
 
@@ -801,7 +862,9 @@ export default function HRPage() {
                     <span className="font-semibold">${providentFund.toLocaleString()}</span>
                   </div>
                   <div className="flex justify-between py-1">
-                    <span className="text-charcoal-600 dark:text-ivory-400">TDS Tax (8%):</span>
+                    <span className="text-charcoal-600 dark:text-ivory-400">
+                      TDS Tax ({isNewRegime ? "New Slab 6.5%" : "Old Slab 9.2%"}):
+                    </span>
                     <span className="font-semibold">${taxDeductedAtSource.toLocaleString()}</span>
                   </div>
                   <div className="flex justify-between py-1">
@@ -828,6 +891,35 @@ export default function HRPage() {
                   <Printer className="w-4 h-4" />
                   Print Payslip
                 </button>
+              </div>
+
+              {/* Form-16 Section 192 Tax Estimation Summary */}
+              <div className="p-4 rounded-xl border border-border dark:border-charcoal-800 bg-ivory-50/50 dark:bg-charcoal-800/40 text-xs space-y-2">
+                <div className="flex items-center justify-between pb-1.5 border-b border-border dark:border-charcoal-700">
+                  <span className="font-bold text-charcoal-800 dark:text-ivory-100 flex items-center gap-1.5">
+                    <FileText className="w-3.5 h-3.5 text-rose-primary" />
+                    Annual Form-16 (Section 192) Tax Summary
+                  </span>
+                  <span className="font-mono text-[10px] text-emerald-600 font-semibold">TRACES 24Q VALIDATED</span>
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[11px] text-charcoal-600 dark:text-ivory-300">
+                  <div>
+                    <span className="text-charcoal-400 block">Annual Gross Pay:</span>
+                    <span className="font-semibold text-charcoal-900 dark:text-ivory-100">${(grossSalary * 12).toLocaleString()}</span>
+                  </div>
+                  <div>
+                    <span className="text-charcoal-400 block">Standard Deduction:</span>
+                    <span className="font-semibold text-emerald-600">{isNewRegime ? "$900 (₹75k)" : "$600 (₹50k)"}</span>
+                  </div>
+                  <div>
+                    <span className="text-charcoal-400 block">Annual TDS Deposited:</span>
+                    <span className="font-semibold text-charcoal-900 dark:text-ivory-100">${(taxDeductedAtSource * 12).toLocaleString()}</span>
+                  </div>
+                  <div>
+                    <span className="text-charcoal-400 block">Form-16 Clearance:</span>
+                    <span className="font-semibold text-emerald-600">Part A & B Generated</span>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

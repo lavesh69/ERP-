@@ -20,6 +20,8 @@ import {
   Calendar,
   Sparkles,
   Search,
+  QrCode,
+  Activity,
 } from "lucide-react";
 
 interface HostelSummary {
@@ -45,6 +47,42 @@ export default function HostelPage() {
   const [subscriptions, setSubscriptions] = useState<any[]>([]);
   const [selectedBlockId, setSelectedBlockId] = useState<string>("all");
   const [statusMessage, setStatusMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+
+  // Mess Biometric State
+  const [punchedMeals, setPunchedMeals] = useState<any[]>([
+    {
+      id: "tok-101",
+      studentRoll: "CS2026-001",
+      studentName: "Alex Rivera",
+      plan: "All-Access Premium Buffet",
+      mealType: "Dinner (Executive)",
+      timestamp: "Just now",
+      lane: "Turnstile Gate #02 (Optical)",
+      tokenHash: "0x89f4b...3e1a",
+    },
+    {
+      id: "tok-102",
+      studentRoll: "ME2025-042",
+      studentName: "Priya Sharma",
+      plan: "South Indian Vegetarian",
+      mealType: "Dinner (Executive)",
+      timestamp: "3 mins ago",
+      lane: "Turnstile Gate #01 (Biometric)",
+      tokenHash: "0x12c8a...9f00",
+    },
+    {
+      id: "tok-103",
+      studentRoll: "EE2024-019",
+      studentName: "Marcus Vance",
+      plan: "Continental & Halal Fusion",
+      mealType: "Dinner (Executive)",
+      timestamp: "7 mins ago",
+      lane: "Turnstile Gate #03 (RFID Card)",
+      tokenHash: "0x44d1e...bc27",
+    },
+  ]);
+  const [hasPunchedThisSession, setHasPunchedThisSession] = useState(false);
+  const [diningHeadcount, setDiningHeadcount] = useState(384);
 
   // New Gate Pass Form
   const [showPassModal, setShowPassModal] = useState(false);
@@ -192,6 +230,33 @@ export default function HostelPage() {
     } catch (err: any) {
       setStatusMessage({ type: "error", text: err.message });
     }
+  };
+
+  const handleBiometricPunch = () => {
+    if (hasPunchedThisSession) {
+      setStatusMessage({
+        type: "error",
+        text: "Double-Punch Lockout Active: You have already punched your meal token for this dining session.",
+      });
+      return;
+    }
+    const newPunch = {
+      id: `tok-${Date.now()}`,
+      studentRoll: currentUser?.email?.split("@")[0] || "CS2026-001",
+      studentName: currentUser?.fullName || "Alex Rivera",
+      plan: "All-Access Premium Buffet",
+      mealType: "Dinner (Executive)",
+      timestamp: "Just now",
+      lane: "Turnstile Gate #01 (Biometric Optical)",
+      tokenHash: `0x${Math.random().toString(16).substring(2, 8)}...${Math.random().toString(16).substring(2, 6)}`,
+    };
+    setPunchedMeals((prev) => [newPunch, ...prev]);
+    setHasPunchedThisSession(true);
+    setDiningHeadcount((prev) => prev + 1);
+    setStatusMessage({
+      type: "success",
+      text: "Biometric Turnstile Token Validated! Meal voucher deducted & barrier opened.",
+    });
   };
 
   const filteredRooms = selectedBlockId === "all" ? rooms : rooms.filter((r) => r.blockId === selectedBlockId);
@@ -650,6 +715,133 @@ export default function HostelPage() {
       {/* TAB 4: DINING & MESS MANAGEMENT */}
       {activeTab === "mess" && (
         <div className="space-y-6">
+          {/* Live Dining Session & Turnstile Card */}
+          <div className="bg-white dark:bg-charcoal-900 rounded-2xl border border-border dark:border-charcoal-800 p-6 shadow-sm">
+            <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 pb-6 border-b border-border dark:border-charcoal-800">
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <span className="px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-200 border border-emerald-300 dark:border-emerald-800 flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
+                    SESSION ACTIVE: EXECUTIVE DINNER (19:30 – 22:00)
+                  </span>
+                  <span className="text-xs px-2.5 py-1 rounded-full bg-ivory-100 dark:bg-charcoal-800 text-charcoal-600 dark:text-ivory-300 font-medium">
+                    Closing in 1h 42m
+                  </span>
+                </div>
+                <h3 className="text-xl font-bold text-charcoal-900 dark:text-ivory-100">
+                  Smart Dining Hall Headcount & Biometric Turnstile Terminal
+                </h3>
+                <p className="text-xs text-charcoal-500 max-w-xl">
+                  Automated optical turnstile with biometric token validation, anti-passback double-punch prevention, and HACCP dietary compliance tracking.
+                </p>
+              </div>
+
+              {/* Headcount Gauge */}
+              <div className="w-full lg:w-72 bg-ivory-50 dark:bg-charcoal-800/60 p-4 rounded-xl border border-border dark:border-charcoal-700/80">
+                <div className="flex justify-between items-center text-xs mb-1.5">
+                  <span className="text-charcoal-500 font-medium">Live Seating Occupancy:</span>
+                  <span className="font-bold text-charcoal-900 dark:text-ivory-100">
+                    {diningHeadcount} / 450 ({Math.round((diningHeadcount / 450) * 100)}%)
+                  </span>
+                </div>
+                <div className="w-full bg-border dark:bg-charcoal-700 h-2.5 rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-gradient-to-r from-emerald-500 to-rose-500 transition-all duration-500"
+                    style={{ width: `${Math.min(100, (diningHeadcount / 450) * 100)}%` }}
+                  />
+                </div>
+                <p className="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium mt-2 flex items-center gap-1">
+                  <CheckCircle2 className="w-3.5 h-3.5" /> Normal dining throughput • Lane 1-4 active
+                </p>
+              </div>
+            </div>
+
+            {/* Turnstile Punch Station */}
+            <div className="mt-6 bg-gradient-to-r from-rose-50/50 via-ivory-50 to-rose-50/50 dark:from-rose-950/20 dark:via-charcoal-850 dark:to-rose-950/20 p-5 rounded-xl border border-rose-100 dark:border-rose-900/40 flex flex-col md:flex-row items-center justify-between gap-4">
+              <div className="flex items-center gap-4">
+                <div className="p-3 bg-white dark:bg-charcoal-800 rounded-xl shadow-xs border border-border dark:border-charcoal-700">
+                  <QrCode className="w-7 h-7 text-rose-primary" />
+                </div>
+                <div>
+                  <h4 className="font-bold text-sm text-charcoal-900 dark:text-ivory-100">
+                    Biometric Turnstile Gate #01 (Optical/RFID)
+                  </h4>
+                  <p className="text-xs text-charcoal-500">
+                    Resident: <span className="font-semibold text-charcoal-700 dark:text-ivory-200">{currentUser?.fullName || "Alex Rivera"}</span> • Plan: All-Access Buffet
+                  </p>
+                </div>
+              </div>
+
+              <div>
+                <button
+                  type="button"
+                  onClick={handleBiometricPunch}
+                  disabled={hasPunchedThisSession}
+                  className={`px-5 py-2.5 rounded-xl text-xs font-bold transition-all shadow-sm flex items-center gap-2 ${
+                    hasPunchedThisSession
+                      ? "bg-emerald-600 text-white cursor-not-allowed opacity-90"
+                      : "bg-rose-primary text-white hover:bg-rose-accent active:scale-95 hover:shadow-md"
+                  }`}
+                >
+                  {hasPunchedThisSession ? (
+                    <>
+                      <CheckCircle2 className="w-4 h-4 text-emerald-200" />
+                      Turnstile Token Redeemed (Gate Passed)
+                    </>
+                  ) : (
+                    <>
+                      <Utensils className="w-4 h-4" />
+                      Punch Biometric Meal Token
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+
+            {/* Recent Biometric Token Logs */}
+            <div className="mt-6">
+              <div className="flex items-center justify-between mb-3">
+                <h4 className="text-xs font-bold text-charcoal-500 uppercase tracking-wider flex items-center gap-1.5">
+                  <Clock className="w-3.5 h-3.5 text-rose-primary" /> Recent Biometric Turnstile Token Log
+                </h4>
+                <span className="text-[11px] text-charcoal-400">Anti-Passback Verification: Active</span>
+              </div>
+              <div className="overflow-x-auto border border-border dark:border-charcoal-800 rounded-xl">
+                <table className="w-full text-left text-xs">
+                  <thead className="bg-ivory-50 dark:bg-charcoal-800 text-charcoal-500">
+                    <tr>
+                      <th className="p-3">Student / Resident</th>
+                      <th className="p-3">Plan Enrolled</th>
+                      <th className="p-3">Meal Session</th>
+                      <th className="p-3">Verified Lane</th>
+                      <th className="p-3">Cryptographic Token</th>
+                      <th className="p-3">Time</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border dark:divide-charcoal-800">
+                    {punchedMeals.map((punch) => (
+                      <tr key={punch.id} className="hover:bg-ivory-50/50 dark:hover:bg-charcoal-800/40">
+                        <td className="p-3 font-semibold text-charcoal-900 dark:text-ivory-100">
+                          {punch.studentName} <span className="font-normal text-charcoal-400">({punch.studentRoll})</span>
+                        </td>
+                        <td className="p-3 text-charcoal-600 dark:text-ivory-300">{punch.plan}</td>
+                        <td className="p-3">
+                          <span className="px-2 py-0.5 rounded text-[11px] font-medium bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300">
+                            {punch.mealType}
+                          </span>
+                        </td>
+                        <td className="p-3 text-charcoal-500 font-mono text-[11px]">{punch.lane}</td>
+                        <td className="p-3 font-mono text-emerald-600 dark:text-emerald-400 text-[11px]">{punch.tokenHash}</td>
+                        <td className="p-3 text-charcoal-500 font-medium">{punch.timestamp}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          {/* Mess Subscriptions Plans Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {messPlans.map((plan) => (
               <div

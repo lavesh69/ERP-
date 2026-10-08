@@ -22,6 +22,9 @@ import {
   ArrowRight,
   User,
   Users,
+  Radio,
+  Compass,
+  X,
 } from "lucide-react";
 
 interface FleetSummary {
@@ -45,6 +48,9 @@ export default function TransportPage() {
   const [passes, setPasses] = useState<any[]>([]);
   const [maintenance, setMaintenance] = useState<any[]>([]);
   const [statusMessage, setStatusMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  const [selectedTelematicsVehicle, setSelectedTelematicsVehicle] = useState<any | null>(null);
+  const [panicBeaconActive, setPanicBeaconActive] = useState(false);
+  const [pingSent, setPingSent] = useState(false);
 
   // New Pass Modal
   const [showPassModal, setShowPassModal] = useState(false);
@@ -358,12 +364,25 @@ export default function TransportPage() {
                   </div>
                 </div>
 
-                {/* Statutory Check */}
-                <div className="mt-4 pt-3 border-t border-border dark:border-charcoal-800 flex items-center justify-between text-[11px]">
-                  <span className="text-charcoal-500">Fitness Expiry: {veh.nextFcDate}</span>
-                  <span className="text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1">
-                    <ShieldCheck className="w-3.5 h-3.5" /> Insured
-                  </span>
+                {/* Statutory Check & Live Telematics */}
+                <div className="mt-4 pt-3 border-t border-border dark:border-charcoal-800 flex items-center justify-between text-[11px] gap-2">
+                  <span className="text-charcoal-500 truncate">FC: {veh.nextFcDate}</span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1">
+                      <ShieldCheck className="w-3.5 h-3.5" /> Insured
+                    </span>
+                    <button
+                      onClick={() => {
+                        setSelectedTelematicsVehicle(veh);
+                        setPanicBeaconActive(false);
+                        setPingSent(false);
+                      }}
+                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 font-bold border border-rose-200 dark:border-rose-800 hover:bg-rose-100 dark:hover:bg-rose-900 transition-colors shadow-xs"
+                    >
+                      <Radio className="w-3 h-3 text-rose-500 animate-pulse" />
+                      Live Radar
+                    </button>
+                  </div>
                 </div>
               </div>
             );
@@ -785,6 +804,220 @@ export default function TransportPage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL: LIVE GPS TELEMATICS RADAR */}
+      {selectedTelematicsVehicle && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-in fade-in">
+          <div className="bg-white dark:bg-charcoal-900 border border-border dark:border-charcoal-700 rounded-2xl w-full max-w-3xl max-h-[92vh] overflow-y-auto shadow-2xl flex flex-col">
+            {/* Header */}
+            <div className="p-5 border-b border-border dark:border-charcoal-800 flex items-start justify-between bg-gradient-to-r from-charcoal-900 via-rose-950 to-charcoal-900 text-white rounded-t-2xl">
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-rose-500/20 text-rose-300 border border-rose-400/30 flex items-center gap-1.5">
+                    <Radio className="w-3 h-3 text-rose-400 animate-pulse" />
+                    LIVE TELEMATICS RADAR
+                  </span>
+                  <span className="text-xs px-2 py-0.5 rounded-full font-mono bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                    Dual GNSS Lock • 14 Satellites
+                  </span>
+                </div>
+                <h2 className="text-xl font-bold tracking-tight mt-1 flex items-center gap-2">
+                  <span>{selectedTelematicsVehicle.vehicleCode}</span>
+                  <span className="text-sm font-normal text-rose-200">({selectedTelematicsVehicle.registrationNumber})</span>
+                </h2>
+                <p className="text-xs text-rose-200/80">
+                  Assigned Route: {selectedTelematicsVehicle.currentRoute || "Campus Express Corridor A"} • Driver: {selectedTelematicsVehicle.driverName} ({selectedTelematicsVehicle.driverPhone})
+                </p>
+              </div>
+              <button
+                onClick={() => setSelectedTelematicsVehicle(null)}
+                className="p-1.5 rounded-lg text-rose-200 hover:text-white hover:bg-white/10 transition-colors"
+                aria-label="Close modal"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-6 space-y-6">
+              {/* Emergency Banner if Active */}
+              {panicBeaconActive && (
+                <div className="p-4 bg-rose-600 text-white rounded-xl shadow-lg animate-pulse flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <AlertTriangle className="w-6 h-6 text-white" />
+                    <div>
+                      <h4 className="font-bold text-sm tracking-wide">SOS PANIC BEACON ACTIVE</h4>
+                      <p className="text-xs text-rose-100">
+                        Geo-coordinate emergency broadcast sent to Campus Security QRF and Central Fleet Dispatch.
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setPanicBeaconActive(false)}
+                    className="px-3 py-1 bg-white text-rose-700 font-bold text-xs rounded-lg shadow hover:bg-rose-50"
+                  >
+                    Reset Beacon
+                  </button>
+                </div>
+              )}
+
+              {/* Ping Ack Banner */}
+              {pingSent && (
+                <div className="p-3 bg-emerald-100 dark:bg-emerald-950/60 border border-emerald-300 dark:border-emerald-800 text-emerald-900 dark:text-emerald-200 rounded-lg text-xs flex items-center justify-between">
+                  <span className="flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                    High-priority dispatch tone transmitted to vehicle cockpit telematics terminal.
+                  </span>
+                  <button
+                    onClick={() => setPingSent(false)}
+                    className="text-xs text-emerald-700 hover:underline"
+                  >
+                    Dismiss
+                  </button>
+                </div>
+              )}
+
+              {/* Simulated GPS Radar Grid */}
+              <div className="relative h-48 md:h-56 bg-charcoal-950 rounded-xl overflow-hidden border border-charcoal-800 flex items-center justify-center p-4">
+                {/* Radar Grid Circles */}
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-20">
+                  <div className="w-72 h-72 border border-rose-500 rounded-full animate-ping [animation-duration:4s]" />
+                  <div className="w-48 h-48 border border-rose-400 rounded-full" />
+                  <div className="w-24 h-24 border border-rose-300 rounded-full" />
+                  <div className="absolute w-full h-px bg-rose-500/30" />
+                  <div className="absolute h-full w-px bg-rose-500/30" />
+                </div>
+
+                {/* Satellite Radar Readout Overlay */}
+                <div className="absolute top-3 left-3 bg-black/60 backdrop-blur-md px-3 py-1.5 rounded-md border border-white/10 text-[11px] font-mono text-rose-300 space-y-0.5">
+                  <div>LAT: 12.9731° N | LNG: 77.5960° E</div>
+                  <div>ALT: 924m ASL | HEADING: 048° NNE</div>
+                  <div>ACCURACY: ±1.8m (Differential GPS Lock)</div>
+                </div>
+
+                <div className="absolute top-3 right-3 bg-black/60 backdrop-blur-md px-3 py-1.5 rounded-md border border-white/10 text-[11px] font-mono text-emerald-400 flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
+                  <span>TRANSPONDER ONLINE</span>
+                </div>
+
+                {/* Central Bus Marker on Radar */}
+                <div className="relative z-10 flex flex-col items-center">
+                  <div className="p-3 bg-rose-600 text-white rounded-full shadow-lg shadow-rose-600/50 ring-4 ring-rose-400/30 animate-bounce">
+                    <Bus className="w-6 h-6" />
+                  </div>
+                  <span className="mt-2 px-2.5 py-0.5 bg-black/80 text-white text-xs font-mono font-bold rounded-md border border-white/10">
+                    {selectedTelematicsVehicle.vehicleCode} • {selectedTelematicsVehicle.speedKmH} km/h
+                  </span>
+                </div>
+              </div>
+
+              {/* Real-time Telematics Telemetry Cards */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
+                <div className="p-3 bg-ivory-50 dark:bg-charcoal-800/60 rounded-xl border border-border dark:border-charcoal-700">
+                  <p className="text-[11px] text-charcoal-500 uppercase tracking-wider font-semibold">Live Velocity</p>
+                  <p className="text-xl font-bold text-charcoal-900 dark:text-ivory-100 flex items-center justify-center gap-1 mt-1">
+                    <Gauge className="w-4 h-4 text-rose-primary" />
+                    {selectedTelematicsVehicle.speedKmH} <span className="text-xs font-normal text-charcoal-400">km/h</span>
+                  </p>
+                </div>
+
+                <div className="p-3 bg-ivory-50 dark:bg-charcoal-800/60 rounded-xl border border-border dark:border-charcoal-700">
+                  <p className="text-[11px] text-charcoal-500 uppercase tracking-wider font-semibold">Bearing</p>
+                  <p className="text-xl font-bold text-charcoal-900 dark:text-ivory-100 flex items-center justify-center gap-1 mt-1">
+                    <Compass className="w-4 h-4 text-blue-500" />
+                    048° <span className="text-xs font-normal text-charcoal-400">NNE</span>
+                  </p>
+                </div>
+
+                <div className="p-3 bg-ivory-50 dark:bg-charcoal-800/60 rounded-xl border border-border dark:border-charcoal-700">
+                  <p className="text-[11px] text-charcoal-500 uppercase tracking-wider font-semibold">Fuel / Energy</p>
+                  <p className="text-xl font-bold text-emerald-600 dark:text-emerald-400 flex items-center justify-center gap-1 mt-1">
+                    <BatteryCharging className="w-4 h-4" />
+                    {selectedTelematicsVehicle.batteryOrFuelLevel}%
+                  </p>
+                </div>
+
+                <div className="p-3 bg-ivory-50 dark:bg-charcoal-800/60 rounded-xl border border-border dark:border-charcoal-700">
+                  <p className="text-[11px] text-charcoal-500 uppercase tracking-wider font-semibold">Delay Index</p>
+                  <p className="text-xl font-bold text-emerald-600 dark:text-emerald-400 flex items-center justify-center gap-1 mt-1">
+                    <Clock className="w-4 h-4" />
+                    -1 min <span className="text-xs font-normal text-emerald-500">(On-Time)</span>
+                  </p>
+                </div>
+              </div>
+
+              {/* Route Waypoint Sequence Track */}
+              <div className="bg-ivory-50 dark:bg-charcoal-800/50 p-4 rounded-xl border border-border dark:border-charcoal-700">
+                <h4 className="text-xs font-bold uppercase tracking-wider text-charcoal-500 mb-3 flex items-center gap-1.5">
+                  <MapPin className="w-3.5 h-3.5 text-rose-primary" /> Active Corridor Stoppage Timeline
+                </h4>
+                <div className="relative flex items-center justify-between">
+                  <div className="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-1 bg-border dark:bg-charcoal-700 z-0" />
+                  
+                  {[
+                    { label: "City North Terminal", status: "completed", time: "07:30 AM" },
+                    { label: "Metro Junction", status: "completed", time: "07:45 AM" },
+                    { label: "Tech Hub Stop", status: "current", time: "LIVE (07:58)" },
+                    { label: "South Gate", status: "upcoming", time: "ETA 08:10 AM" },
+                    { label: "Main Quad Terminal", status: "upcoming", time: "ETA 08:20 AM" },
+                  ].map((stop, idx) => (
+                    <div key={idx} className="relative z-10 flex flex-col items-center">
+                      <div
+                        className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold border-2 ${
+                          stop.status === "completed"
+                            ? "bg-emerald-500 border-white text-white"
+                            : stop.status === "current"
+                            ? "bg-rose-600 border-white text-white ring-4 ring-rose-500/30 animate-pulse"
+                            : "bg-white dark:bg-charcoal-800 border-charcoal-400 text-charcoal-500"
+                        }`}
+                      >
+                        {idx + 1}
+                      </div>
+                      <span className="text-[11px] font-semibold mt-1 text-charcoal-800 dark:text-ivory-200 text-center max-w-[80px] truncate">
+                        {stop.label}
+                      </span>
+                      <span className="text-[10px] text-charcoal-500">{stop.time}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Control Action Buttons */}
+              <div className="pt-2 flex flex-col sm:flex-row justify-between items-center gap-3 border-t border-border dark:border-charcoal-800">
+                <div className="flex items-center gap-2 w-full sm:w-auto">
+                  <button
+                    type="button"
+                    onClick={() => setPingSent(true)}
+                    className="flex-1 sm:flex-initial px-3.5 py-2 text-xs font-semibold rounded-lg bg-ivory-100 dark:bg-charcoal-800 text-charcoal-800 dark:text-ivory-200 hover:bg-ivory-200 border border-border dark:border-charcoal-700 transition-colors"
+                  >
+                    Ping Cabin Headunit
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setPanicBeaconActive(!panicBeaconActive)}
+                    className={`flex-1 sm:flex-initial px-3.5 py-2 text-xs font-bold rounded-lg border transition-colors flex items-center justify-center gap-1.5 ${
+                      panicBeaconActive
+                        ? "bg-rose-100 text-rose-800 border-rose-300 dark:bg-rose-950 dark:text-rose-200"
+                        : "bg-red-50 text-red-700 border-red-200 hover:bg-red-100 dark:bg-red-950/40 dark:text-red-300"
+                    }`}
+                  >
+                    <AlertTriangle className="w-3.5 h-3.5" />
+                    {panicBeaconActive ? "Disengage SOS" : "Simulate SOS Panic Beacon"}
+                  </button>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setSelectedTelematicsVehicle(null)}
+                  className="w-full sm:w-auto px-5 py-2 text-xs font-bold rounded-lg bg-charcoal-900 dark:bg-ivory-100 text-white dark:text-charcoal-950 hover:opacity-90 transition-opacity"
+                >
+                  Close Radar Console
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}
