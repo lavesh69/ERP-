@@ -22,6 +22,8 @@ import {
   Printer,
   Pill,
   PackageCheck,
+  Phone,
+  QrCode,
 } from "lucide-react";
 import { checkTriageUrgency } from "@/lib/clinic/clinic-engine";
 
@@ -45,6 +47,11 @@ export default function ClinicPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState<string>("ALL");
   const [selectedConsultation, setSelectedConsultation] = useState<any | null>(null);
+
+  // Profile Search & Filter States
+  const [profileSearchQuery, setProfileSearchQuery] = useState("");
+  const [profileBloodFilter, setProfileBloodFilter] = useState("ALL");
+  const [selectedMedicalCard, setSelectedMedicalCard] = useState<any | null>(null);
 
   // Pharmacy Medication Stock Tracker
   const [pharmacyStock, setPharmacyStock] = useState([
@@ -124,6 +131,21 @@ export default function ClinicPage() {
       c.diagnosis?.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesStatus = filterStatus === "ALL" || c.status === filterStatus;
     return matchesSearch && matchesStatus;
+  });
+
+  const filteredProfiles = profiles.filter((p: any) => {
+    const q = profileSearchQuery.toLowerCase();
+    const matchesSearch =
+      !q ||
+      p.name?.toLowerCase().includes(q) ||
+      p.rollOrEmpId?.toLowerCase().includes(q) ||
+      p.bloodGroup?.toLowerCase().includes(q) ||
+      p.emergencyContactName?.toLowerCase().includes(q) ||
+      p.emergencyContactPhone?.toLowerCase().includes(q) ||
+      (p.knownAllergies || []).some((a: string) => a.toLowerCase().includes(q)) ||
+      (p.chronicConditions || []).some((c: string) => c.toLowerCase().includes(q));
+    const matchesBlood = profileBloodFilter === "ALL" || p.bloodGroup === profileBloodFilter;
+    return matchesSearch && matchesBlood;
   });
 
   // New Consultation Modal
@@ -657,43 +679,127 @@ export default function ClinicPage() {
 
       {/* Tab 3: Emergency Medical Profiles */}
       {activeTab === "profiles" && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {profiles.map((p) => (
-            <div
-              key={p.id}
-              className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 rounded-2xl shadow-sm"
-            >
-              <div className="flex items-start justify-between">
-                <div>
-                  <h4 className="font-semibold text-slate-900 dark:text-white">{p.name}</h4>
-                  <p className="text-xs text-slate-400">{p.rollOrEmpId} ({p.role})</p>
-                </div>
-                <span className="px-2.5 py-1 bg-rose-100 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 font-bold rounded-lg text-xs">
-                  Blood Group: {p.bloodGroup}
-                </span>
-              </div>
-
-              <div className="mt-4 grid grid-cols-2 gap-3 text-xs">
-                <div className="bg-slate-50 dark:bg-slate-800/40 p-3 rounded-xl">
-                  <span className="text-slate-400 block mb-1">Known Allergies</span>
-                  <div className="font-medium text-slate-900 dark:text-slate-200">
-                    {p.knownAllergies?.join(", ") || "None"}
-                  </div>
-                </div>
-                <div className="bg-slate-50 dark:bg-slate-800/40 p-3 rounded-xl">
-                  <span className="text-slate-400 block mb-1">Chronic Conditions</span>
-                  <div className="font-medium text-slate-900 dark:text-slate-200">
-                    {p.chronicConditions?.join(", ") || "None"}
-                  </div>
-                </div>
-              </div>
-
-              <div className="mt-3 pt-3 border-t border-slate-100 dark:border-slate-800 flex justify-between items-center text-xs text-slate-500">
-                <span>Contact: {p.emergencyContactName}</span>
-                <span className="font-mono text-indigo-600 dark:text-indigo-400">{p.emergencyContactPhone}</span>
-              </div>
+        <div className="space-y-4">
+          {/* Search & Filter Toolbar */}
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 rounded-2xl shadow-sm flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between">
+            <div className="relative flex-1">
+              <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+              <input
+                type="text"
+                placeholder="Search profiles by student name, roll number, allergies, or contact..."
+                value={profileSearchQuery}
+                onChange={(e) => setProfileSearchQuery(e.target.value)}
+                className="w-full pl-9 pr-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-rose-500"
+              />
             </div>
-          ))}
+            <div className="flex items-center gap-2">
+              <label className="text-xs font-semibold text-slate-500 whitespace-nowrap">Blood Group:</label>
+              <select
+                value={profileBloodFilter}
+                onChange={(e) => setProfileBloodFilter(e.target.value)}
+                className="px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-medium text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-rose-500"
+              >
+                <option value="ALL">All Blood Groups ({profiles.length})</option>
+                <option value="O+">O+ Positive</option>
+                <option value="O-">O- Negative (Universal Donor)</option>
+                <option value="A+">A+ Positive</option>
+                <option value="A-">A- Negative</option>
+                <option value="B+">B+ Positive</option>
+                <option value="B-">B- Negative</option>
+                <option value="AB+">AB+ Positive (Universal Recipient)</option>
+                <option value="AB-">AB- Negative</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {filteredProfiles.map((p) => (
+              <div
+                key={p.id}
+                className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 rounded-2xl shadow-sm hover:border-rose-300 dark:hover:border-rose-900/60 transition-all flex flex-col justify-between"
+              >
+                <div>
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <h4 className="font-semibold text-slate-900 dark:text-white">{p.name}</h4>
+                      <p className="text-xs text-slate-400">{p.rollOrEmpId} • <span className="font-medium text-slate-600 dark:text-slate-300">{p.role}</span></p>
+                    </div>
+                    <span className="px-2.5 py-1 bg-rose-100 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 font-bold rounded-lg text-xs flex items-center gap-1">
+                      <HeartPulse className="w-3 h-3 text-rose-600" />
+                      Blood: {p.bloodGroup}
+                    </span>
+                  </div>
+
+                  <div className="mt-4 grid grid-cols-2 gap-3 text-xs">
+                    <div className="bg-slate-50 dark:bg-slate-800/40 p-3 rounded-xl border border-slate-100 dark:border-slate-800/80">
+                      <span className="text-slate-400 block mb-1 font-medium">Known Allergies</span>
+                      <div className="font-medium text-slate-900 dark:text-slate-200">
+                        {p.knownAllergies?.length > 0 ? (
+                          <span className="text-amber-600 dark:text-amber-400 font-semibold">{p.knownAllergies.join(", ")}</span>
+                        ) : (
+                          <span className="text-slate-400">No recorded allergies</span>
+                        )}
+                      </div>
+                    </div>
+                    <div className="bg-slate-50 dark:bg-slate-800/40 p-3 rounded-xl border border-slate-100 dark:border-slate-800/80">
+                      <span className="text-slate-400 block mb-1 font-medium">Chronic Conditions</span>
+                      <div className="font-medium text-slate-900 dark:text-slate-200">
+                        {p.chronicConditions?.length > 0 ? (
+                          <span className="text-rose-600 dark:text-rose-400 font-semibold">{p.chronicConditions.join(", ")}</span>
+                        ) : (
+                          <span className="text-slate-400">None declared</span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 text-xs">
+                  <div>
+                    <span className="text-slate-400 block text-[11px]">Emergency Contact:</span>
+                    <span className="font-medium text-slate-700 dark:text-slate-200">{p.emergencyContactName}</span>
+                    <a
+                      href={`tel:${p.emergencyContactPhone}`}
+                      className="ml-2 font-mono text-indigo-600 dark:text-indigo-400 hover:underline inline-flex items-center gap-0.5"
+                    >
+                      <Phone className="w-2.5 h-2.5" />
+                      {p.emergencyContactPhone}
+                    </a>
+                  </div>
+                  <button
+                    onClick={() => setSelectedMedicalCard(p)}
+                    className="px-3 py-1.5 text-xs font-semibold rounded-xl bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 dark:hover:bg-rose-900/60 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800 transition-colors inline-flex items-center gap-1.5 self-end sm:self-auto"
+                  >
+                    <QrCode className="w-3.5 h-3.5" />
+                    Medical ID Card
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {filteredProfiles.length === 0 && (
+            <div className="p-12 text-center space-y-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl">
+              <div className="w-12 h-12 rounded-full bg-rose-50 dark:bg-rose-950/50 flex items-center justify-center mx-auto text-rose-600 dark:text-rose-400">
+                <FileHeart className="w-6 h-6" />
+              </div>
+              <h3 className="font-bold text-base text-slate-900 dark:text-white">
+                No Emergency Profiles Found
+              </h3>
+              <p className="text-xs text-slate-500 max-w-sm mx-auto">
+                No registered student or staff medical record matches your query or blood group filter.
+              </p>
+              <button
+                onClick={() => {
+                  setProfileSearchQuery("");
+                  setProfileBloodFilter("ALL");
+                }}
+                className="px-4 py-2 text-xs font-semibold bg-rose-600 text-white rounded-lg hover:bg-rose-700 transition-colors shadow-sm"
+              >
+                Reset Search
+              </button>
+            </div>
+          )}
         </div>
       )}
 
@@ -1221,6 +1327,138 @@ export default function ClinicPage() {
               >
                 Close Slip
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Emergency Medical ID Card Modal */}
+      {selectedMedicalCard && (
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-md w-full border-2 border-rose-300 dark:border-rose-900/60 shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+            {/* ID Card Top Header */}
+            <div className="bg-gradient-to-r from-rose-600 to-rose-800 text-white p-4 flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-white/10 flex items-center justify-center backdrop-blur-sm">
+                  <HeartPulse className="w-5 h-5 text-rose-100" />
+                </div>
+                <div>
+                  <h3 className="text-xs font-black tracking-wider uppercase">APEX UNIVERSITY HEALTH CENTER</h3>
+                  <p className="text-[10px] text-rose-100 tracking-tight">Emergency Health & Triage ID Profile</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setSelectedMedicalCard(null)}
+                className="w-7 h-7 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center text-xs font-bold text-white transition-colors"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* ID Body */}
+            <div className="p-5 space-y-4">
+              {/* Member Core */}
+              <div className="flex items-center gap-4">
+                <div className="w-16 h-16 rounded-2xl bg-rose-50 dark:bg-rose-950/40 border-2 border-rose-200 dark:border-rose-800 flex items-center justify-center text-rose-600 dark:text-rose-400 font-black text-xl shadow-inner">
+                  {selectedMedicalCard.name?.charAt(0) || "U"}
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-center gap-2">
+                    <h4 className="font-bold text-base text-slate-900 dark:text-white leading-tight">
+                      {selectedMedicalCard.name}
+                    </h4>
+                    <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
+                      {selectedMedicalCard.role}
+                    </span>
+                  </div>
+                  <p className="text-xs font-mono text-slate-500 mt-0.5">ID: {selectedMedicalCard.rollOrEmpId}</p>
+                  <p className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold mt-0.5 flex items-center gap-1">
+                    <CheckCircle2 className="w-3 h-3" /> EMR Validated • Campus Citizen
+                  </p>
+                </div>
+                <div className="text-right">
+                  <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Blood Group</span>
+                  <div className="mt-0.5 px-3 py-1.5 bg-rose-600 text-white font-black text-base rounded-xl shadow-md inline-block">
+                    {selectedMedicalCard.bloodGroup}
+                  </div>
+                </div>
+              </div>
+
+              {/* Medical Warnings Section */}
+              <div className="p-3.5 rounded-2xl bg-amber-50/60 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/60 space-y-2">
+                <div className="flex items-center gap-1.5 text-amber-900 dark:text-amber-300 font-bold text-xs uppercase tracking-wide">
+                  <AlertTriangle className="w-3.5 h-3.5 text-amber-600" />
+                  Clinical Alerts & Sensitivities
+                </div>
+                <div className="grid grid-cols-2 gap-2 text-xs">
+                  <div>
+                    <span className="text-slate-500 text-[10px] block">Known Allergies</span>
+                    <span className="font-semibold text-slate-900 dark:text-white">
+                      {selectedMedicalCard.knownAllergies?.length > 0 ? selectedMedicalCard.knownAllergies.join(", ") : "None Recorded"}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-slate-500 text-[10px] block">Chronic Conditions</span>
+                    <span className="font-semibold text-slate-900 dark:text-white">
+                      {selectedMedicalCard.chronicConditions?.length > 0 ? selectedMedicalCard.chronicConditions.join(", ") : "None Recorded"}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Emergency Contact */}
+              <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/80 space-y-2 text-xs">
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Primary Emergency Contact</span>
+                <div className="flex justify-between items-center">
+                  <div>
+                    <p className="font-bold text-slate-900 dark:text-white">{selectedMedicalCard.emergencyContactName}</p>
+                    <p className="text-[11px] text-slate-500">Designated Guardian / Relation</p>
+                  </div>
+                  <a
+                    href={`tel:${selectedMedicalCard.emergencyContactPhone}`}
+                    className="px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs flex items-center gap-1.5 transition-colors shadow-sm"
+                  >
+                    <Phone className="w-3 h-3" />
+                    Call Contact
+                  </a>
+                </div>
+              </div>
+
+              {/* Barcode & Campus Emergency Protocol */}
+              <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-[10px] text-slate-500">
+                <div className="flex items-center gap-2">
+                  <div className="w-9 h-9 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 flex items-center justify-center font-mono text-[9px] text-slate-700 dark:text-slate-300">
+                    <QrCode className="w-6 h-6 text-slate-700 dark:text-slate-300" />
+                  </div>
+                  <div>
+                    <span className="font-mono font-bold text-slate-700 dark:text-slate-300 block">ABHA-APEX-EMR-2026</span>
+                    <span>24x7 Ambulance: <span className="font-bold text-rose-600">Ext 911 / 1800-555-AMBU</span></span>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <span className="text-slate-400 block">Apex Health Authority</span>
+                  <span className="font-semibold text-emerald-600 dark:text-emerald-400">Authenticated</span>
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div className="pt-3 flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => window.print()}
+                  className="flex-1 py-2.5 px-4 rounded-xl bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 dark:text-slate-900 text-white text-xs font-bold flex items-center justify-center gap-2 transition-colors shadow"
+                >
+                  <Printer className="w-3.5 h-3.5" />
+                  Print Medical ID Card
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSelectedMedicalCard(null)}
+                  className="py-2.5 px-4 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-semibold transition-colors"
+                >
+                  Close
+                </button>
+              </div>
             </div>
           </div>
         </div>

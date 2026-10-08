@@ -85,6 +85,7 @@ export default function InternationalPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [filterCountry, setFilterCountry] = useState("ALL");
   const [filterStatus, setFilterStatus] = useState("ALL");
+  const [filterVisaCompliance, setFilterVisaCompliance] = useState<"ALL" | "EXPIRING_SOON" | "COMPLIANT">("ALL");
 
   const handleUpdateStudentStatus = async (id: string, newStatus: string) => {
     try {
@@ -251,6 +252,27 @@ export default function InternationalPage() {
     }
   };
 
+  const availableCountries = Array.from(new Set(partners.map((p) => p.country))).filter(Boolean);
+
+  const filteredVisaStudents = students.filter((s) => {
+    const q = searchQuery.toLowerCase();
+    const matchesSearch =
+      !q ||
+      s.studentName.toLowerCase().includes(q) ||
+      s.passportNumber.toLowerCase().includes(q) ||
+      s.studentRollOrId.toLowerCase().includes(q) ||
+      s.hostUniversity.toLowerCase().includes(q);
+
+    const now = new Date();
+    const expiry = new Date(s.visaExpiryDate);
+    const daysUntilExpiry = Math.round((expiry.getTime() - now.getTime()) / (1000 * 3600 * 24));
+    const isExpiringSoon = daysUntilExpiry <= 180;
+
+    if (filterVisaCompliance === "EXPIRING_SOON") return matchesSearch && isExpiringSoon;
+    if (filterVisaCompliance === "COMPLIANT") return matchesSearch && !isExpiringSoon;
+    return matchesSearch;
+  });
+
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6">
       {/* Header */}
@@ -375,13 +397,10 @@ export default function InternationalPage() {
             onChange={(e) => setFilterCountry(e.target.value)}
             className="px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-cyan-500 text-slate-900 dark:text-white"
           >
-            <option value="ALL">All Countries</option>
-            <option value="Singapore">Singapore</option>
-            <option value="Germany">Germany</option>
-            <option value="Canada">Canada</option>
-            <option value="USA">United States</option>
-            <option value="UK">United Kingdom</option>
-            <option value="Japan">Japan</option>
+            <option value="ALL">All Countries ({partners.length})</option>
+            {availableCountries.map((c) => (
+              <option key={c} value={c}>{c}</option>
+            ))}
           </select>
 
           {activeTab === "students" && (
@@ -399,6 +418,21 @@ export default function InternationalPage() {
                 <option value="STUDYING_ABROAD">Studying Abroad</option>
                 <option value="TRANSCRIPT_TRANSFERRED">Transcript Transferred</option>
                 <option value="REJECTED">Rejected</option>
+              </select>
+            </>
+          )}
+
+          {activeTab === "visa" && (
+            <>
+              <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider sm:ml-2">Compliance:</span>
+              <select
+                value={filterVisaCompliance}
+                onChange={(e) => setFilterVisaCompliance(e.target.value as any)}
+                className="px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-cyan-500 text-slate-900 dark:text-white"
+              >
+                <option value="ALL">All Compliance Records ({students.length})</option>
+                <option value="EXPIRING_SOON">Expiring Soon (&lt; 6 Mos)</option>
+                <option value="COMPLIANT">Active & Compliant</option>
               </select>
             </>
           )}
@@ -686,48 +720,98 @@ export default function InternationalPage() {
       {activeTab === "visa" && (
         <div className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {students.map((s) => (
-              <div
-                key={s.id}
-                className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-3"
-              >
-                <div className="flex justify-between items-start">
-                  <div>
-                    <h3 className="font-bold text-slate-900 dark:text-white">{s.studentName}</h3>
-                    <p className="text-xs text-slate-500">
-                      Passport: {s.passportNumber} • Visa Valid Until: {s.visaExpiryDate}
-                    </p>
-                  </div>
-                  <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 rounded-lg text-xs font-bold">
-                    <ShieldCheck className="w-3.5 h-3.5" />
-                    {s.frroStatus}
-                  </span>
-                </div>
-                <div className="p-3 bg-slate-50 dark:bg-slate-800 rounded-xl text-xs space-y-1">
-                  <div className="flex justify-between">
-                    <span className="text-slate-500">Host University:</span>
-                    <span className="font-medium text-slate-700 dark:text-slate-300">{s.hostUniversity}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-slate-500">Immigration Clearance:</span>
-                    <span className="font-medium text-emerald-600 dark:text-emerald-400">
-                      Verified &amp; Certified
+            {filteredVisaStudents.map((s) => {
+              const now = new Date();
+              const expiry = new Date(s.visaExpiryDate);
+              const daysUntilExpiry = Math.round((expiry.getTime() - now.getTime()) / (1000 * 3600 * 24));
+              const isExpiringSoon = daysUntilExpiry <= 180;
+
+              return (
+                <div
+                  key={s.id}
+                  className={`bg-white dark:bg-slate-900 p-5 rounded-2xl border transition-all shadow-sm space-y-3 ${
+                    isExpiringSoon
+                      ? "border-amber-300 dark:border-amber-800 bg-amber-50/20"
+                      : "border-slate-200 dark:border-slate-800"
+                  }`}
+                >
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h3 className="font-bold text-slate-900 dark:text-white">{s.studentName}</h3>
+                      <p className="text-xs text-slate-500">
+                        Passport: <span className="font-mono">{s.passportNumber}</span> • Roll: {s.studentRollOrId}
+                      </p>
+                    </div>
+                    <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 rounded-lg text-xs font-bold">
+                      <ShieldCheck className="w-3.5 h-3.5" />
+                      {s.frroStatus}
                     </span>
                   </div>
-                </div>
 
-                <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex justify-end">
-                  <button
-                    onClick={() => setSelectedExchangeDossier(s)}
-                    className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors"
-                  >
-                    <Eye className="w-3.5 h-3.5 text-slate-500" />
-                    Visa Portfolio
-                  </button>
+                  <div className="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl text-xs space-y-1.5 border border-slate-100 dark:border-slate-800">
+                    <div className="flex justify-between">
+                      <span className="text-slate-500">Host University:</span>
+                      <span className="font-semibold text-slate-700 dark:text-slate-300">{s.hostUniversity}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-slate-500">Visa Validity Date:</span>
+                      <div className="flex items-center gap-1.5">
+                        <span className="font-mono font-medium text-slate-900 dark:text-white">{s.visaExpiryDate}</span>
+                        {isExpiringSoon ? (
+                          <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300">
+                            {daysUntilExpiry > 0 ? `${daysUntilExpiry}d left` : "Expired"}
+                          </span>
+                        ) : (
+                          <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
+                            Valid
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-slate-500">Immigration FRRO Status:</span>
+                      <span className="font-medium text-emerald-600 dark:text-emerald-400">
+                        Verified &amp; Certified
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex justify-between items-center">
+                    <span className="text-[11px] text-slate-400">
+                      Scholarship Grant: ${s.scholarshipGrantAmount}
+                    </span>
+                    <button
+                      onClick={() => setSelectedExchangeDossier(s)}
+                      className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors"
+                    >
+                      <Eye className="w-3.5 h-3.5 text-slate-500" />
+                      Visa Portfolio
+                    </button>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
+
+          {filteredVisaStudents.length === 0 && (
+            <div className="py-16 text-center bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800">
+              <Search className="w-12 h-12 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
+              <h4 className="font-semibold text-slate-900 dark:text-white text-base">No Visa Records Found</h4>
+              <p className="text-xs text-slate-400 mt-1 max-w-sm mx-auto">
+                No visa profiles match your search or compliance filter.
+              </p>
+              <button
+                onClick={() => {
+                  setSearchQuery("");
+                  setFilterVisaCompliance("ALL");
+                }}
+                className="mt-4 px-4 py-2 bg-cyan-50 dark:bg-cyan-950/60 text-cyan-600 dark:text-cyan-400 border border-cyan-200 dark:border-cyan-800 rounded-xl text-xs font-semibold inline-flex items-center gap-1.5 hover:bg-cyan-100 transition-all"
+              >
+                <RotateCcw className="w-3.5 h-3.5" />
+                Reset Filters
+              </button>
+            </div>
+          )}
         </div>
       )}
 

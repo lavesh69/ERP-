@@ -51,6 +51,29 @@ export default function AdmissionsPage() {
   const [targetOfferApplicant, setTargetOfferApplicant] = useState<any | null>(null);
   const [dispatchLog, setDispatchLog] = useState<string[]>([]);
   const [dispatching, setDispatching] = useState(false);
+  const [quotaSearchQuery, setQuotaSearchQuery] = useState("");
+  const [showQuotaModal, setShowQuotaModal] = useState(false);
+  const [editingQuota, setEditingQuota] = useState<any | null>(null);
+
+  const handleSaveQuota = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingQuota || !summary) return;
+    const exists = summary.quotas.some((q) => q.programCode === editingQuota.programCode);
+    const updatedQuotas = exists
+      ? summary.quotas.map((q) => (q.programCode === editingQuota.programCode ? editingQuota : q))
+      : [...summary.quotas, editingQuota];
+    setSummary({
+      ...summary,
+      quotas: updatedQuotas,
+      totalSeatCapacity: updatedQuotas.reduce((acc, q) => acc + q.totalSeats, 0),
+    });
+    setStatusMessage({
+      type: "success",
+      text: `Updated institutional intake quota for ${editingQuota.programName} (${editingQuota.programCode})!`,
+    });
+    setShowQuotaModal(false);
+    setEditingQuota(null);
+  };
 
   const handleExportAdmissionsCsv = () => {
     const listToExport = filteredApplicants;
@@ -647,54 +670,109 @@ export default function AdmissionsPage() {
 
       {/* TAB 2: PROGRAM QUOTAS & CUTOFFS */}
       {activeTab === "quotas" && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-          {summary?.quotas.map((q) => {
-            const fillRate = Math.round((q.confirmedSeats / q.totalSeats) * 100);
-            return (
-              <div
-                key={q.programCode}
-                className="bg-white dark:bg-charcoal-900 rounded-xl p-5 border border-border dark:border-charcoal-800 shadow-sm flex flex-col justify-between"
+        <div className="space-y-4">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-white dark:bg-charcoal-900 p-4 rounded-xl border border-border dark:border-charcoal-800 shadow-sm">
+            <div className="relative">
+              <Search className="w-3.5 h-3.5 text-charcoal-400 absolute left-3 top-2.5" />
+              <input
+                type="text"
+                placeholder="Search program name or code..."
+                value={quotaSearchQuery}
+                onChange={(e) => setQuotaSearchQuery(e.target.value)}
+                className="pl-8 pr-3 py-1.5 text-xs bg-ivory-50 dark:bg-charcoal-800 border border-border dark:border-charcoal-700 rounded-lg text-charcoal-900 dark:text-ivory-100 focus:outline-none focus:ring-1 focus:ring-rose-500 w-56 sm:w-72"
+              />
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-charcoal-500">
+                Total Seat Capacity: <strong>{summary?.totalSeatCapacity} Seats</strong>
+              </span>
+              <button
+                type="button"
+                onClick={() => {
+                  setEditingQuota({
+                    programCode: `NEW-${Math.random().toString(36).substring(2, 5).toUpperCase()}`,
+                    programName: "New Academic Degree Program",
+                    totalSeats: 60,
+                    confirmedSeats: 0,
+                    cutoffScore: 1300,
+                    applicationFee: 75,
+                  });
+                  setShowQuotaModal(true);
+                }}
+                className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-rose-primary hover:bg-rose-600 text-white shadow-sm transition-all flex items-center gap-1.5"
               >
-                <div>
-                  <div className="flex items-start justify-between">
+                <PlusCircle className="w-3.5 h-3.5" />
+                Add Quota Program
+              </button>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            {summary?.quotas
+              .filter((q) =>
+                q.programName.toLowerCase().includes(quotaSearchQuery.toLowerCase()) ||
+                q.programCode.toLowerCase().includes(quotaSearchQuery.toLowerCase())
+              )
+              .map((q) => {
+                const fillRate = Math.round((q.confirmedSeats / q.totalSeats) * 100);
+                return (
+                  <div
+                    key={q.programCode}
+                    className="bg-white dark:bg-charcoal-900 rounded-xl p-5 border border-border dark:border-charcoal-800 shadow-sm flex flex-col justify-between space-y-4"
+                  >
                     <div>
-                      <span className="font-mono text-xs font-bold text-rose-primary dark:text-rose-light">
-                        {q.programCode}
-                      </span>
-                      <h3 className="font-bold text-base text-charcoal-900 dark:text-ivory-100 mt-1">
-                        {q.programName}
-                      </h3>
-                    </div>
-                    <span className="text-sm font-bold text-emerald-600 dark:text-emerald-400">
-                      Cutoff: {q.cutoffScore}
-                    </span>
-                  </div>
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <span className="font-mono text-xs font-bold text-rose-primary dark:text-rose-light">
+                            {q.programCode}
+                          </span>
+                          <h3 className="font-bold text-base text-charcoal-900 dark:text-ivory-100 mt-1">
+                            {q.programName}
+                          </h3>
+                        </div>
+                        <span className="text-sm font-bold text-emerald-600 dark:text-emerald-400">
+                          Cutoff: {q.cutoffScore}
+                        </span>
+                      </div>
 
-                  <div className="mt-4 p-3 bg-ivory-50 dark:bg-charcoal-800/60 rounded-lg space-y-2 text-xs">
-                    <div className="flex justify-between items-center">
-                      <span className="text-charcoal-500">Seat Capacity:</span>
-                      <span className="font-bold text-charcoal-900 dark:text-ivory-100">
-                        {q.confirmedSeats} / {q.totalSeats} Enrolled ({fillRate}%)
-                      </span>
+                      <div className="mt-4 p-3 bg-ivory-50 dark:bg-charcoal-800/60 rounded-lg space-y-2 text-xs">
+                        <div className="flex justify-between items-center">
+                          <span className="text-charcoal-500">Seat Capacity:</span>
+                          <span className="font-bold text-charcoal-900 dark:text-ivory-100">
+                            {q.confirmedSeats} / {q.totalSeats} Enrolled ({fillRate}%)
+                          </span>
+                        </div>
+                        <div className="w-full bg-border dark:bg-charcoal-700 h-2 rounded-full overflow-hidden">
+                          <div
+                            className={`h-full ${fillRate >= 90 ? "bg-emerald-500" : "bg-rose-500"}`}
+                            style={{ width: `${Math.min(100, fillRate)}%` }}
+                          />
+                        </div>
+                      </div>
                     </div>
-                    <div className="w-full bg-border dark:bg-charcoal-700 h-2 rounded-full overflow-hidden">
-                      <div
-                        className={`h-full ${fillRate >= 90 ? "bg-emerald-500" : "bg-rose-500"}`}
-                        style={{ width: `${Math.min(100, fillRate)}%` }}
-                      />
+
+                    <div className="pt-3 border-t border-border dark:border-charcoal-800 flex justify-between items-center text-xs">
+                      <span className="text-charcoal-500">App Fee: ${q.applicationFee}</span>
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setEditingQuota({ ...q });
+                            setShowQuotaModal(true);
+                          }}
+                          className="px-2.5 py-1 rounded-lg text-xs font-semibold bg-ivory-100 dark:bg-charcoal-800 hover:bg-ivory-200 dark:hover:bg-charcoal-700 text-charcoal-800 dark:text-ivory-200 border border-border dark:border-charcoal-700 transition-colors"
+                        >
+                          Adjust Quota
+                        </button>
+                        <span className="text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1">
+                          <CheckCircle2 className="w-3.5 h-3.5" /> Active
+                        </span>
+                      </div>
                     </div>
                   </div>
-                </div>
-
-                <div className="mt-4 pt-3 border-t border-border dark:border-charcoal-800 flex justify-between items-center text-xs">
-                  <span className="text-charcoal-500">App Fee: ${q.applicationFee}</span>
-                  <span className="text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1">
-                    <CheckCircle2 className="w-3.5 h-3.5" /> Admissions Active
-                  </span>
-                </div>
-              </div>
-            );
-          })}
+                );
+              })}
+          </div>
         </div>
       )}
 
@@ -1168,6 +1246,128 @@ export default function AdmissionsPage() {
                 Close Simulator
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Program Quota & Cutoff Adjustment Modal */}
+      {showQuotaModal && editingQuota && (
+        <div className="fixed inset-0 z-50 bg-charcoal-900/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
+          <div className="bg-white dark:bg-charcoal-900 rounded-2xl border border-border dark:border-charcoal-800 p-6 max-w-lg w-full shadow-2xl space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-border dark:border-charcoal-800">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-lg bg-rose-100 dark:bg-rose-950/60 flex items-center justify-center text-rose-primary">
+                  <GraduationCap className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-base text-charcoal-900 dark:text-ivory-100">
+                    Adjust Program Intake Quota
+                  </h3>
+                  <p className="text-xs text-charcoal-500 font-mono">
+                    {editingQuota.programCode} • Academic Cohort 2026-27
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => {
+                  setShowQuotaModal(false);
+                  setEditingQuota(null);
+                }}
+                className="text-charcoal-400 hover:text-charcoal-600 dark:hover:text-ivory-200 p-1.5 rounded-lg text-sm font-bold"
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveQuota} className="space-y-3.5 text-xs">
+              <div>
+                <label className="block font-medium text-charcoal-700 dark:text-ivory-300 mb-1">
+                  Program Full Name
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={editingQuota.programName}
+                  onChange={(e) => setEditingQuota({ ...editingQuota, programName: e.target.value })}
+                  className="w-full p-2 bg-ivory-50 dark:bg-charcoal-800 border rounded-lg text-charcoal-900 dark:text-ivory-100"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block font-medium text-charcoal-700 dark:text-ivory-300 mb-1">
+                    Total Seat Capacity
+                  </label>
+                  <input
+                    type="number"
+                    required
+                    min={1}
+                    value={editingQuota.totalSeats}
+                    onChange={(e) => setEditingQuota({ ...editingQuota, totalSeats: Number(e.target.value) })}
+                    className="w-full p-2 bg-ivory-50 dark:bg-charcoal-800 border rounded-lg text-charcoal-900 dark:text-ivory-100"
+                  />
+                </div>
+                <div>
+                  <label className="block font-medium text-charcoal-700 dark:text-ivory-300 mb-1">
+                    Confirmed / Enrolled
+                  </label>
+                  <input
+                    type="number"
+                    min={0}
+                    value={editingQuota.confirmedSeats}
+                    onChange={(e) => setEditingQuota({ ...editingQuota, confirmedSeats: Number(e.target.value) })}
+                    className="w-full p-2 bg-ivory-50 dark:bg-charcoal-800 border rounded-lg text-charcoal-900 dark:text-ivory-100"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block font-medium text-charcoal-700 dark:text-ivory-300 mb-1">
+                    Entrance Exam Cutoff Score
+                  </label>
+                  <input
+                    type="number"
+                    required
+                    value={editingQuota.cutoffScore}
+                    onChange={(e) => setEditingQuota({ ...editingQuota, cutoffScore: Number(e.target.value) })}
+                    className="w-full p-2 bg-ivory-50 dark:bg-charcoal-800 border rounded-lg text-charcoal-900 dark:text-ivory-100"
+                  />
+                </div>
+                <div>
+                  <label className="block font-medium text-charcoal-700 dark:text-ivory-300 mb-1">
+                    Application Fee ($)
+                  </label>
+                  <input
+                    type="number"
+                    required
+                    min={0}
+                    value={editingQuota.applicationFee}
+                    onChange={(e) => setEditingQuota({ ...editingQuota, applicationFee: Number(e.target.value) })}
+                    className="w-full p-2 bg-ivory-50 dark:bg-charcoal-800 border rounded-lg text-charcoal-900 dark:text-ivory-100"
+                  />
+                </div>
+              </div>
+
+              <div className="pt-2 flex justify-end gap-2 border-t border-border dark:border-charcoal-800">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowQuotaModal(false);
+                    setEditingQuota(null);
+                  }}
+                  className="px-3.5 py-2 rounded-lg font-medium bg-ivory-100 dark:bg-charcoal-800 hover:bg-ivory-200 text-charcoal-700 dark:text-ivory-200"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 rounded-lg font-semibold bg-rose-primary text-white hover:bg-rose-accent shadow-sm"
+                >
+                  Save Quota Settings
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

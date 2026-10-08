@@ -151,6 +151,7 @@ export default function FeedbackPage() {
   const [message, setMessage] = useState<{ text: string; type: "success" | "error" } | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedDept, setSelectedDept] = useState("ALL");
+  const [facultySortBy, setFacultySortBy] = useState<"FPI_DESC" | "FPI_ASC" | "SUBMISSIONS_DESC" | "NAME_ASC">("FPI_DESC");
   const [selectedFacultyDossier, setSelectedFacultyDossier] = useState<FacultyIndex | null>(null);
   const [selectedSurveyDossier, setSelectedSurveyDossier] = useState<SurveyRecord | null>(null);
   const [sentimentFilter, setSentimentFilter] = useState<"ALL" | "POSITIVE" | "CRITICAL">("ALL");
@@ -368,20 +369,37 @@ export default function FeedbackPage() {
             className="w-full pl-9 pr-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-rose-500 text-slate-900 dark:text-white"
           />
         </div>
-        <div className="flex items-center gap-2 w-full sm:w-auto">
-          <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Dept:</span>
-          <select
-            value={selectedDept}
-            onChange={(e) => setSelectedDept(e.target.value)}
-            className="px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-rose-500 text-slate-900 dark:text-white"
-          >
-            <option value="ALL">All Departments</option>
-            <option value="CSE">Computer Science (CSE)</option>
-            <option value="ECE">Electronics (ECE)</option>
-            <option value="ME">Mechanical (ME)</option>
-            <option value="CIVIL">Civil (CIVIL)</option>
-            <option value="HUM">Humanities (HUM)</option>
-          </select>
+        <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+          <div className="flex items-center gap-1.5">
+            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Dept:</span>
+            <select
+              value={selectedDept}
+              onChange={(e) => setSelectedDept(e.target.value)}
+              className="px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-rose-500 text-slate-900 dark:text-white"
+            >
+              <option value="ALL">All Departments</option>
+              <option value="CSE">Computer Science (CSE)</option>
+              <option value="ECE">Electronics (ECE)</option>
+              <option value="ME">Mechanical (ME)</option>
+              <option value="CIVIL">Civil (CIVIL)</option>
+              <option value="HUM">Humanities (HUM)</option>
+            </select>
+          </div>
+          {activeTab === "faculty" && (
+            <div className="flex items-center gap-1.5">
+              <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Sort:</span>
+              <select
+                value={facultySortBy}
+                onChange={(e) => setFacultySortBy(e.target.value as any)}
+                className="px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-rose-500 text-slate-900 dark:text-white"
+              >
+                <option value="FPI_DESC">Highest FPI (Score)</option>
+                <option value="FPI_ASC">Lowest FPI (Attention)</option>
+                <option value="SUBMISSIONS_DESC">Most Evaluations</option>
+                <option value="NAME_ASC">Faculty Name (A-Z)</option>
+              </select>
+            </div>
+          )}
         </div>
       </div>
 
@@ -414,13 +432,20 @@ export default function FeedbackPage() {
       {/* Tab 1: Faculty FPI Cards */}
       {activeTab === "faculty" && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {facultyIndices
+          {[...facultyIndices]
             .filter((fac) => {
               const matchesSearch =
                 fac.facultyName.toLowerCase().includes(searchQuery.toLowerCase()) ||
                 fac.departmentCode.toLowerCase().includes(searchQuery.toLowerCase());
               const matchesDept = selectedDept === "ALL" || fac.departmentCode === selectedDept;
               return matchesSearch && matchesDept;
+            })
+            .sort((a, b) => {
+              if (facultySortBy === "FPI_DESC") return b.overallFPI - a.overallFPI;
+              if (facultySortBy === "FPI_ASC") return a.overallFPI - b.overallFPI;
+              if (facultySortBy === "SUBMISSIONS_DESC") return b.totalSubmissions - a.totalSubmissions;
+              if (facultySortBy === "NAME_ASC") return a.facultyName.localeCompare(b.facultyName);
+              return 0;
             })
             .map((fac) => (
             <div

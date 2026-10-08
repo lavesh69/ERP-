@@ -89,6 +89,8 @@ export default function ConvocationPage() {
 
   const [showNadModal, setShowNadModal] = useState(false);
   const [copiedXml, setCopiedXml] = useState(false);
+  const [copiedNadUri, setCopiedNadUri] = useState(false);
+  const [copiedHash, setCopiedHash] = useState(false);
 
   const generateNadXml = (cands: Candidate[]) => {
     const awardList = cands
@@ -216,11 +218,13 @@ ${awardList}
     }
   };
 
+  const availablePrograms = Array.from(new Set(candidates.map((c) => c.program))).filter(Boolean);
+
   const filteredCandidates = candidates.filter((c) => {
     const matchesSearch =
       c.fullName.toLowerCase().includes(searchRoll.toLowerCase()) ||
       c.studentRoll.toLowerCase().includes(searchRoll.toLowerCase());
-    const matchesProgram = filterProgram === "ALL" || c.program.includes(filterProgram);
+    const matchesProgram = filterProgram === "ALL" || c.program === filterProgram;
     const matchesClearance =
       filterClearance === "ALL" ||
       (filterClearance === "CLEARED" && c.allClearancesGranted) ||
@@ -264,10 +268,12 @@ ${awardList}
             onChange={(e) => setFilterProgram(e.target.value)}
             className="px-2.5 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold text-slate-800 dark:text-slate-200"
           >
-            <option value="ALL">All Programs</option>
-            <option value="Computer Science">Computer Science</option>
-            <option value="Mechanical">Mechanical</option>
-            <option value="Electronics">Electronics</option>
+            <option value="ALL">All Programs ({candidates.length})</option>
+            {availablePrograms.map((prog) => (
+              <option key={prog} value={prog}>
+                {prog}
+              </option>
+            ))}
           </select>
           <select
             value={filterClearance}
@@ -869,9 +875,9 @@ ${awardList}
             </div>
 
             {/* DigiLocker / APAAR ID Integration Card */}
-            <div className="p-3.5 bg-indigo-50/70 dark:bg-indigo-950/40 rounded-xl border border-indigo-200 dark:border-indigo-800/60 flex items-center justify-between">
+            <div className="p-3.5 bg-indigo-50/70 dark:bg-indigo-950/40 rounded-xl border border-indigo-200 dark:border-indigo-800/60 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
               <div className="flex items-center gap-2.5">
-                <FileCode className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+                <FileCode className="w-5 h-5 text-indigo-600 dark:text-indigo-400 shrink-0" />
                 <div className="text-xs">
                   <div className="font-bold text-indigo-950 dark:text-indigo-200">
                     National Academic Depository (NAD) / DigiLocker
@@ -881,20 +887,51 @@ ${awardList}
                   </div>
                 </div>
               </div>
-              <button
-                type="button"
-                onClick={() => handleDownloadNadXml([selectedCandidateDossier])}
-                className="px-2.5 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-semibold flex items-center gap-1 transition-colors"
-              >
-                <Download className="w-3.5 h-3.5" />
-                Export XML
-              </button>
+              <div className="flex items-center gap-1.5 self-end sm:self-auto">
+                <button
+                  type="button"
+                  onClick={() => {
+                    const nadUri = `nad://in.gov.abc/apex/student/${selectedCandidateDossier.studentRoll}`;
+                    navigator.clipboard?.writeText(nadUri);
+                    setCopiedNadUri(true);
+                    setTimeout(() => setCopiedNadUri(false), 2000);
+                  }}
+                  className="px-2.5 py-1.5 bg-white dark:bg-slate-800 border border-indigo-200 dark:border-indigo-800 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-50 rounded-lg text-xs font-semibold flex items-center gap-1 transition-colors shadow-xs"
+                >
+                  {copiedNadUri ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5 text-indigo-500" />}
+                  {copiedNadUri ? "Copied URI!" : "Copy URI"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleDownloadNadXml([selectedCandidateDossier])}
+                  className="px-2.5 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-semibold flex items-center gap-1 transition-colors shadow-xs"
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  XML
+                </button>
+              </div>
             </div>
 
             {/* Cryptographic Proof Hash */}
-            <div className="p-3 bg-slate-50 dark:bg-slate-800/40 rounded-xl text-xs space-y-1 font-mono border border-slate-100 dark:border-slate-800">
-              <span className="text-[10px] text-slate-400 uppercase tracking-wider block">Registrar Cryptographic Degree Seal Hash</span>
-              <p className="text-slate-700 dark:text-slate-300 break-all text-[11px]">{selectedCandidateDossier.certificateHash}</p>
+            <div className="p-3 bg-slate-50 dark:bg-slate-800/40 rounded-xl text-xs space-y-1.5 font-mono border border-slate-100 dark:border-slate-800">
+              <div className="flex justify-between items-center">
+                <span className="text-[10px] text-slate-400 uppercase tracking-wider block font-sans font-semibold">Registrar Cryptographic Degree Seal Hash</span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    navigator.clipboard?.writeText(selectedCandidateDossier.certificateHash);
+                    setCopiedHash(true);
+                    setTimeout(() => setCopiedHash(false), 2000);
+                  }}
+                  className="px-2 py-0.5 rounded text-[10px] font-sans font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 flex items-center gap-1 transition-colors"
+                >
+                  {copiedHash ? <Check className="w-3 h-3 text-emerald-500" /> : <Copy className="w-3 h-3 text-slate-400" />}
+                  {copiedHash ? "Copied" : "Copy Hash"}
+                </button>
+              </div>
+              <p className="text-slate-700 dark:text-slate-300 break-all text-[11px] select-all bg-white dark:bg-slate-900 p-2 rounded-lg border border-slate-200 dark:border-slate-700/60 font-mono">
+                {selectedCandidateDossier.certificateHash}
+              </p>
             </div>
 
             <div className="flex justify-end gap-2.5 pt-2 border-t border-slate-100 dark:border-slate-800">

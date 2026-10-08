@@ -248,7 +248,7 @@ button, a, input, select, textarea {
     radial-gradient(at 0% 100%, rgba(142, 70, 98, 0.2) 0px, transparent 50%);
 }
 
-/* Print Styles for Receipts and Hall Tickets */
+/* Print Styles for Receipts, Slips, and Modal Dossiers */
 @media print {
   body {
     background-color: #ffffff !important;
@@ -272,6 +272,25 @@ button, a, input, select, textarea {
 
   .print-only {
     display: block !important;
+  }
+
+  /* Modal dossiers print as full-width publication-grade documents */
+  .fixed.inset-0 {
+    position: static !important;
+    background: transparent !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    padding: 0 !important;
+    display: block !important;
+  }
+
+  .fixed.inset-0 > div {
+    max-width: 100% !important;
+    box-shadow: none !important;
+    border: 1px solid #cbd5e1 !important;
+    background: #ffffff !important;
+    color: #000000 !important;
+    page-break-inside: avoid;
   }
 }
 
