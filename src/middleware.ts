@@ -49,7 +49,7 @@ export async function middleware(req: NextRequest) {
 
   // Role-Based Access Control (RBAC) Route Matrix
   const ROUTE_PERMISSIONS: Record<string, string[]> = {
-    "/admin": ["SUPER_ADMIN"],
+    "/admin": ["SUPER_ADMIN", "INSTITUTION_ADMIN"],
     "/institution": ["SUPER_ADMIN", "INSTITUTION_ADMIN", "PRINCIPAL", "HOD", "GUEST"],
     "/faculty": ["SUPER_ADMIN", "INSTITUTION_ADMIN", "PRINCIPAL", "HOD", "FACULTY", "HR_STAFF"],
     "/analytics": ["SUPER_ADMIN", "INSTITUTION_ADMIN", "PRINCIPAL", "HOD", "ACCOUNTANT", "PLACEMENT_OFFICER", "LIBRARIAN", "EXAMINATION_CONTROLLER", "RESEARCH_COORDINATOR"],

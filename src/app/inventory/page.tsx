@@ -18,6 +18,7 @@ import {
   DollarSign,
   Tag,
   Filter,
+  Download,
 } from "lucide-react";
 
 interface InventorySummary {
@@ -165,6 +166,21 @@ export default function InventoryPage() {
     }
   };
 
+  const handleExportInventoryCsv = () => {
+    const headers = "Asset Tag,Asset Name,Category,Department,Room Location,Cost,Current Valuation,Status,Serial Number,Warranty Expiry\n";
+    const rows = assets
+      .map((a) => `"${a.assetTag}","${a.name}","${a.category}","${a.department}","${a.locationRoom}",${a.purchaseCost},${a.currentDepreciatedValue},"${a.status}","${a.serialNumber}","${a.warrantyExpiry}"`)
+      .join("\n");
+    const blob = new Blob([headers + rows], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", `Campus_Fixed_Assets_Ledger_${new Date().toISOString().split("T")[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
       {/* Top Banner */}
@@ -187,6 +203,13 @@ export default function InventoryPage() {
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-3">
+            <button
+              onClick={handleExportInventoryCsv}
+              className="inline-flex items-center gap-2 px-3.5 py-2.5 rounded-xl font-medium text-sm bg-white/10 hover:bg-white/20 text-white border border-white/20 shadow-md transition-all active:scale-95"
+            >
+              <Download className="w-4 h-4" />
+              Export Assets (CSV)
+            </button>
             <button
               onClick={() => setShowAssetModal(true)}
               className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium text-sm bg-rose-primary hover:bg-rose-600 text-white shadow-md transition-all active:scale-95"
