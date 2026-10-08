@@ -58,6 +58,7 @@ export default function ClubsPage() {
   const [selectedClaimIds, setSelectedClaimIds] = useState<string[]>([]);
   const [uploadedFileName, setUploadedFileName] = useState<string | null>(null);
   const [uploadedCertHash, setUploadedCertHash] = useState<string | null>(null);
+  const [showHonoursCertModal, setShowHonoursCertModal] = useState(false);
 
   const filteredClaims = claims.filter((c) => {
     const q = searchQuery.toLowerCase();
@@ -323,15 +324,24 @@ export default function ClubsPage() {
               Student Activity Points Portfolio: {progress?.totalPoints ?? 40} / {DEGREE_REQUIRED_ACTIVITY_POINTS} Points
             </h3>
           </div>
-          <span
-            className={`px-3 py-1 rounded-full text-xs font-bold w-fit ${
-              progress?.isEligibleForDegree
-                ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300"
-                : "bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300"
-            }`}
-          >
-            {progress?.isEligibleForDegree ? "✓ Degree Clearance Qualified" : "⏳ In Progress"}
-          </span>
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              onClick={() => setShowHonoursCertModal(true)}
+              className="px-3.5 py-1.5 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-sm transition-all"
+            >
+              <Award className="w-3.5 h-3.5" />
+              Official Honours Certificate
+            </button>
+            <span
+              className={`px-3 py-1 rounded-full text-xs font-bold w-fit ${
+                progress?.isEligibleForDegree
+                  ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300"
+                  : "bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300"
+              }`}
+            >
+              {progress?.isEligibleForDegree ? "✓ Degree Clearance Qualified" : "⏳ In Progress"}
+            </span>
+          </div>
         </div>
 
         {/* Progress Bar */}
@@ -1100,6 +1110,139 @@ export default function ClubsPage() {
                   Close Dossier
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Official Honours Certificate & Co-Curricular Transcript Modal */}
+      {showHonoursCertModal && (
+        <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto animate-in fade-in duration-200">
+          <div className="bg-white dark:bg-slate-900 border-2 border-amber-400/80 dark:border-amber-600/80 rounded-3xl max-w-2xl w-full p-8 shadow-2xl space-y-6 my-8 relative text-slate-900 dark:text-white">
+            {/* Ambient Watermark Seal */}
+            <div className="absolute top-6 right-8 text-amber-500/20 dark:text-amber-400/10 pointer-events-none select-none">
+              <Award className="w-36 h-36" />
+            </div>
+
+            {/* Close Button */}
+            <button
+              onClick={() => setShowHonoursCertModal(false)}
+              className="absolute top-5 right-5 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 p-1.5 rounded-lg text-sm font-bold"
+            >
+              ✕
+            </button>
+
+            {/* Institutional Crest & Header */}
+            <div className="text-center space-y-1.5 border-b border-amber-200 dark:border-amber-800/60 pb-5">
+              <div className="flex items-center justify-center gap-2 text-amber-600 dark:text-amber-400 font-bold uppercase tracking-widest text-xs">
+                <Building className="w-4 h-4" />
+                Apex Autonomous University of Technology
+              </div>
+              <h2 className="text-2xl font-serif font-black tracking-wide text-slate-900 dark:text-amber-100 uppercase">
+                Official Co-Curricular Honours Certificate
+              </h2>
+              <p className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider font-medium">
+                Directorate of Student Affairs &bull; Statutory 100 Activity Points Degree Registry
+              </p>
+            </div>
+
+            {/* Certificate Body */}
+            <div className="text-center space-y-3 px-4">
+              <p className="text-xs text-slate-500 dark:text-slate-400 italic">This is proudly presented and certified to</p>
+              <h3 className="text-xl font-bold text-slate-900 dark:text-white">
+                {currentUser?.fullName || "Alex Mercer"}
+              </h3>
+              <p className="text-xs font-mono text-slate-600 dark:text-slate-300">
+                Enrollment Roll: <strong className="text-amber-600 dark:text-amber-400">CS2026-001</strong> &bull; Dept of Computer Science & Engineering
+              </p>
+              <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed max-w-lg mx-auto pt-1">
+                for exemplary leadership, technical innovation, societal enrichment, and active contribution to campus student bodies. The candidate has accumulated co-curricular credits under AICTE / NBA Criterion V Statutory Guidelines.
+              </p>
+            </div>
+
+            {/* Scorecard Matrix */}
+            <div className="bg-amber-50/60 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/40 rounded-2xl p-4 space-y-2">
+              <div className="flex items-center justify-between text-xs font-bold text-amber-900 dark:text-amber-200 border-b border-amber-200/60 dark:border-amber-900/30 pb-1.5">
+                <span>Accreditation Category</span>
+                <span>Points Conferred</span>
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 text-center text-xs">
+                <div className="p-2 bg-white/80 dark:bg-slate-800/60 rounded-xl border border-amber-100 dark:border-amber-900/20">
+                  <span className="text-[10px] text-slate-400 block">Technical</span>
+                  <span className="font-bold text-slate-900 dark:text-white">{progress?.byCategory?.TECHNICAL ?? 25} pts</span>
+                </div>
+                <div className="p-2 bg-white/80 dark:bg-slate-800/60 rounded-xl border border-amber-100 dark:border-amber-900/20">
+                  <span className="text-[10px] text-slate-400 block">Social Service</span>
+                  <span className="font-bold text-slate-900 dark:text-white">{progress?.byCategory?.SOCIAL_SERVICE ?? 15} pts</span>
+                </div>
+                <div className="p-2 bg-white/80 dark:bg-slate-800/60 rounded-xl border border-amber-100 dark:border-amber-900/20">
+                  <span className="text-[10px] text-slate-400 block">Cultural</span>
+                  <span className="font-bold text-slate-900 dark:text-white">{progress?.byCategory?.CULTURAL ?? 0} pts</span>
+                </div>
+                <div className="p-2 bg-white/80 dark:bg-slate-800/60 rounded-xl border border-amber-100 dark:border-amber-900/20">
+                  <span className="text-[10px] text-slate-400 block">Sports</span>
+                  <span className="font-bold text-slate-900 dark:text-white">{progress?.byCategory?.SPORTS ?? 0} pts</span>
+                </div>
+                <div className="p-2 bg-white/80 dark:bg-slate-800/60 rounded-xl border border-amber-100 dark:border-amber-900/20">
+                  <span className="text-[10px] text-slate-400 block">Entrepreneurship</span>
+                  <span className="font-bold text-slate-900 dark:text-white">{progress?.byCategory?.ENTREPRENEURSHIP ?? 0} pts</span>
+                </div>
+              </div>
+              <div className="flex items-center justify-between text-xs pt-1 px-1">
+                <span className="font-semibold text-slate-600 dark:text-slate-300">Composite Accredited Balance:</span>
+                <span className="font-bold text-amber-600 dark:text-amber-400 text-sm">
+                  {progress?.totalPoints ?? 40} / {DEGREE_REQUIRED_ACTIVITY_POINTS} Points
+                </span>
+              </div>
+            </div>
+
+            {/* Cryptographic Digital Signature & Verification */}
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-3 border-t border-slate-200 dark:border-slate-800 text-xs">
+              <div className="space-y-1 text-left">
+                <div className="flex items-center gap-1.5 text-slate-700 dark:text-slate-300">
+                  <ShieldCheck className="w-4 h-4 text-emerald-500" />
+                  <span className="font-bold">Cryptographically Verified Credential</span>
+                </div>
+                <p className="font-mono text-[10px] text-slate-400">
+                  Digest: sha256:7f83b1657ff1fc53b92dc18148a1d65dfc2d4b1fa3d677284addd200126d9069
+                </p>
+                <p className="text-[10px] text-slate-500">
+                  AICTE Activity ID: APEX-ACT-2026-9918 &bull; Verified by Registrar Examination Vault
+                </p>
+              </div>
+
+              {/* Signatures */}
+              <div className="flex items-center gap-6 text-center">
+                <div className="space-y-1">
+                  <div className="w-24 border-b border-slate-400 dark:border-slate-600 pb-1 font-serif text-[11px] italic text-slate-700 dark:text-slate-300">
+                    Dr. H. Mehta
+                  </div>
+                  <span className="text-[10px] text-slate-400 uppercase tracking-wider block">Faculty Advisor</span>
+                </div>
+                <div className="space-y-1">
+                  <div className="w-28 border-b border-slate-400 dark:border-slate-600 pb-1 font-serif text-[11px] italic text-amber-700 dark:text-amber-300 font-bold">
+                    Prof. R. Sengupta
+                  </div>
+                  <span className="text-[10px] text-slate-400 uppercase tracking-wider block">Dean Student Affairs</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex items-center justify-end gap-3 pt-2 border-t border-slate-100 dark:border-slate-800">
+              <button
+                onClick={() => window.print()}
+                className="px-4 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-colors shadow-xs"
+              >
+                <Printer className="w-3.5 h-3.5" />
+                Print Certificate
+              </button>
+              <button
+                onClick={() => setShowHonoursCertModal(false)}
+                className="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-semibold shadow-sm transition-colors"
+              >
+                Close
+              </button>
             </div>
           </div>
         </div>

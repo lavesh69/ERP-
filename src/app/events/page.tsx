@@ -25,7 +25,7 @@ import {
   Calendar,
   ShieldCheck,
 } from "lucide-react";
-import { CampusVenue, EventBooking, BookingStatus } from "@/lib/events/events-engine";
+import { CampusVenue, EventBooking, BookingStatus, detectVenueBookingConflict } from "@/lib/events/events-engine";
 
 interface EventsSummary {
   totalVenues: number;
@@ -46,6 +46,7 @@ export default function EventsPage() {
   const [statusMessage, setStatusMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
   const [selectedBookingDossier, setSelectedBookingDossier] = useState<EventBooking | null>(null);
   const [selectedBookingIds, setSelectedBookingIds] = useState<string[]>([]);
+  const [selectedCalendarDate, setSelectedCalendarDate] = useState("2026-11-20");
 
   // New Booking Modal
   const [showModal, setShowModal] = useState(false);
@@ -683,170 +684,309 @@ export default function EventsPage() {
         </div>
       )}
 
-      {/* Tab 3: Highlights & Public Calendar */}
+      {/* Tab 3: Highlights & Public Calendar with Availability Matrix */}
       {activeTab === "calendar" && (
-        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-2xl shadow-sm space-y-6">
-          <div>
-            <h3 className="font-bold text-lg text-slate-900 dark:text-white">Institutional Flagship Events 2026</h3>
-            <p className="text-xs text-slate-500">Major academic conventions, research symposiums, and cultural festivals.</p>
+        <div className="space-y-6">
+          {/* Interactive Venue Availability & Clash Heatmap Matrix */}
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-2xl shadow-sm space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-4">
+              <div>
+                <h3 className="font-bold text-lg text-slate-900 dark:text-white flex items-center gap-2">
+                  <Calendar className="w-5 h-5 text-indigo-600" />
+                  Campus Facility Availability & Clash Heatmap
+                </h3>
+                <p className="text-xs text-slate-500">
+                  Real-time slot allocation grid across all campus auditoriums and arenas.
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Date:</span>
+                <input
+                  type="date"
+                  value={selectedCalendarDate}
+                  onChange={(e) => setSelectedCalendarDate(e.target.value)}
+                  className="px-3 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-medium text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                />
+              </div>
+            </div>
+
+            {/* Matrix Grid */}
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs border-collapse">
+                <thead>
+                  <tr className="bg-slate-50 dark:bg-slate-800/60 text-slate-600 dark:text-slate-300">
+                    <th className="p-3 border border-slate-200 dark:border-slate-800 w-1/4">Facility / Hall</th>
+                    <th className="p-3 border border-slate-200 dark:border-slate-800 text-center w-1/4">Morning (09:00 - 13:00)</th>
+                    <th className="p-3 border border-slate-200 dark:border-slate-800 text-center w-1/4">Afternoon (14:00 - 18:00)</th>
+                    <th className="p-3 border border-slate-200 dark:border-slate-800 text-center w-1/4">Evening (18:30 - 22:00)</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                  {venues.map((venue) => {
+                    const slots = ["09:00 - 13:00", "14:00 - 18:00", "18:30 - 22:00"];
+                    return (
+                      <tr key={venue.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/40">
+                        <td className="p-3 border border-slate-200 dark:border-slate-800">
+                          <div className="font-bold text-slate-900 dark:text-white text-xs">{venue.name}</div>
+                          <div className="text-[11px] text-slate-500 flex items-center gap-1 mt-0.5">
+                            <MapPin className="w-3 h-3 text-slate-400" />
+                            {venue.building} &bull; {venue.seatingCapacity} seats
+                          </div>
+                        </td>
+                        {slots.map((slot) => {
+                          const conflict = detectVenueBookingConflict(
+                            bookings,
+                            venue.id,
+                            selectedCalendarDate,
+                            slot
+                          );
+                          const isBooked = conflict.hasConflict;
+                          const b = conflict.conflictingBooking;
+                          return (
+                            <td key={slot} className="p-2.5 border border-slate-200 dark:border-slate-800 text-center">
+                              {isBooked && b ? (
+                                <div
+                                  onClick={() => setSelectedBookingDossier(b)}
+                                  className={`p-2 rounded-xl text-left border cursor-pointer transition-all hover:scale-[1.01] ${
+                                    b.status === "CONFIRMED"
+                                      ? "bg-rose-50/80 dark:bg-rose-950/30 border-rose-200 dark:border-rose-900/50 text-rose-900 dark:text-rose-200"
+                                      : "bg-amber-50/80 dark:bg-amber-950/30 border-amber-200 dark:border-amber-900/50 text-amber-900 dark:text-amber-200"
+                                  }`}
+                                >
+                                  <div className="flex items-center justify-between text-[10px] font-bold">
+                                    <span className="truncate">{b.bookingRef}</span>
+                                    <span className="uppercase text-[9px] px-1.5 py-0.2 bg-white/80 dark:bg-slate-900/80 rounded">
+                                      {b.status === "CONFIRMED" ? "Booked" : "Tentative"}
+                                    </span>
+                                  </div>
+                                  <div className="font-semibold text-[11px] truncate mt-1">{b.eventTitle}</div>
+                                  <div className="text-[10px] opacity-80 truncate">{b.organizingDepartmentOrClub}</div>
+                                </div>
+                              ) : (
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setBookingForm((prev) => ({
+                                      ...prev,
+                                      venueId: venue.id,
+                                      eventDate: selectedCalendarDate,
+                                      timeSlot: slot,
+                                    }));
+                                    setShowModal(true);
+                                  }}
+                                  className="w-full py-3 rounded-xl border border-dashed border-emerald-300 dark:border-emerald-800/80 bg-emerald-50/40 dark:bg-emerald-950/20 hover:bg-emerald-100/60 dark:hover:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 text-[11px] font-semibold flex items-center justify-center gap-1 transition-all"
+                                >
+                                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
+                                  Available &bull; Reserve
+                                </button>
+                              )}
+                            </td>
+                          );
+                        })}
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {bookings
-              .filter((b) => b.status === "CONFIRMED")
-              .map((b) => (
-                <div key={b.id} className="p-5 border border-indigo-100 dark:border-indigo-950/60 rounded-xl bg-indigo-50/20 dark:bg-indigo-950/10 space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="px-2 py-0.5 bg-indigo-100 dark:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300 text-xs font-semibold rounded">
-                      {b.category}
-                    </span>
-                    <span className="text-xs font-mono text-slate-500">{b.eventDate}</span>
+          {/* Institutional Flagship Events */}
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-2xl shadow-sm space-y-4">
+            <div>
+              <h3 className="font-bold text-lg text-slate-900 dark:text-white">Institutional Flagship Events 2026</h3>
+              <p className="text-xs text-slate-500">Major academic conventions, research symposiums, and cultural festivals.</p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {bookings
+                .filter((b) => b.status === "CONFIRMED")
+                .map((b) => (
+                  <div key={b.id} className="p-5 border border-indigo-100 dark:border-indigo-950/60 rounded-xl bg-indigo-50/20 dark:bg-indigo-950/10 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="px-2 py-0.5 bg-indigo-100 dark:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300 text-xs font-semibold rounded">
+                        {b.category}
+                      </span>
+                      <span className="text-xs font-mono text-slate-500">{b.eventDate}</span>
+                    </div>
+                    <h4 className="font-semibold text-slate-900 dark:text-white">{b.eventTitle}</h4>
+                    <p className="text-xs text-slate-500">Venue: {b.venueName} ({b.timeSlot})</p>
+                    <div className="text-xs text-slate-400 pt-2 border-t border-indigo-100 dark:border-indigo-950/60 flex justify-between">
+                      <span>Host: {b.organizingDepartmentOrClub}</span>
+                      <span>Expected: {b.expectedAttendees} Attendees</span>
+                    </div>
                   </div>
-                  <h4 className="font-semibold text-slate-900 dark:text-white">{b.eventTitle}</h4>
-                  <p className="text-xs text-slate-500">Venue: {b.venueName} ({b.timeSlot})</p>
-                  <div className="text-xs text-slate-400 pt-2 border-t border-indigo-100 dark:border-indigo-950/60 flex justify-between">
-                    <span>Host: {b.organizingDepartmentOrClub}</span>
-                    <span>Expected: {b.expectedAttendees} Attendees</span>
-                  </div>
-                </div>
-              ))}
+                ))}
+            </div>
           </div>
         </div>
       )}
 
       {/* Book Venue Modal */}
-      {showModal && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl max-w-lg w-full p-6 shadow-xl space-y-4 max-h-[90vh] overflow-y-auto">
-            <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
-              <CalendarDays className="w-5 h-5 text-indigo-600" />
-              Book Campus Facility or Auditorium
-            </h3>
+      {showModal && (() => {
+        const bookingConflict = detectVenueBookingConflict(
+          bookings,
+          bookingForm.venueId,
+          bookingForm.eventDate,
+          bookingForm.timeSlot
+        );
+        return (
+          <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl max-w-lg w-full p-6 shadow-xl space-y-4 max-h-[90vh] overflow-y-auto">
+              <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                <CalendarDays className="w-5 h-5 text-indigo-600" />
+                Book Campus Facility or Auditorium
+              </h3>
 
-            <form onSubmit={handleCreateBooking} className="space-y-3">
-              <div>
-                <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Event Title</label>
-                <input
-                  type="text"
-                  required
-                  value={bookingForm.eventTitle}
-                  onChange={(e) => setBookingForm({ ...bookingForm, eventTitle: e.target.value })}
-                  className="w-full mt-1 p-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm"
-                  placeholder="e.g. International Conference on Robotics"
-                />
-              </div>
+              {/* Real-time Conflict Alert Banner */}
+              {bookingConflict.hasConflict ? (
+                <div className="p-3 bg-rose-50 dark:bg-rose-950/40 border border-rose-300 dark:border-rose-800 rounded-xl text-xs text-rose-800 dark:text-rose-200 flex items-start gap-2.5">
+                  <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
+                  <div>
+                    <span className="font-bold">Scheduling Clash Detected:</span>
+                    <p className="mt-0.5">
+                      &ldquo;{bookingConflict.conflictingBooking?.eventTitle}&rdquo; ({bookingConflict.conflictingBooking?.organizingDepartmentOrClub}) is already scheduled for this venue during this time slot ({bookingConflict.conflictingBooking?.status}).
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <div className="p-2.5 bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/60 rounded-xl text-xs text-emerald-800 dark:text-emerald-300 flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                  <span>Venue &amp; time slot available with zero scheduling clashes.</span>
+                </div>
+              )}
 
-              <div className="grid grid-cols-2 gap-3">
+              <form onSubmit={handleCreateBooking} className="space-y-3">
                 <div>
-                  <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Organizing Dept / Club</label>
+                  <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Event Title</label>
                   <input
                     type="text"
                     required
-                    value={bookingForm.organizingDepartmentOrClub}
-                    onChange={(e) => setBookingForm({ ...bookingForm, organizingDepartmentOrClub: e.target.value })}
+                    value={bookingForm.eventTitle}
+                    onChange={(e) => setBookingForm({ ...bookingForm, eventTitle: e.target.value })}
                     className="w-full mt-1 p-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm"
+                    placeholder="e.g. International Conference on Robotics"
                   />
                 </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Organizing Dept / Club</label>
+                    <input
+                      type="text"
+                      required
+                      value={bookingForm.organizingDepartmentOrClub}
+                      onChange={(e) => setBookingForm({ ...bookingForm, organizingDepartmentOrClub: e.target.value })}
+                      className="w-full mt-1 p-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Category</label>
+                    <select
+                      value={bookingForm.category}
+                      onChange={(e) => setBookingForm({ ...bookingForm, category: e.target.value as any })}
+                      className="w-full mt-1 p-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm"
+                    >
+                      <option value="ACADEMIC_SYMPOSIUM">Academic Symposium</option>
+                      <option value="GUEST_LECTURE">Guest Lecture</option>
+                      <option value="CULTURAL_FEST">Cultural Fest</option>
+                      <option value="SPORTS_TOURNAMENT">Sports Tournament</option>
+                      <option value="HACKATHON">Hackathon / Sprint</option>
+                    </select>
+                  </div>
+                </div>
+
                 <div>
-                  <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Category</label>
+                  <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Target Venue</label>
                   <select
-                    value={bookingForm.category}
-                    onChange={(e) => setBookingForm({ ...bookingForm, category: e.target.value as any })}
+                    value={bookingForm.venueId}
+                    onChange={(e) => setBookingForm({ ...bookingForm, venueId: e.target.value })}
                     className="w-full mt-1 p-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm"
                   >
-                    <option value="ACADEMIC_SYMPOSIUM">Academic Symposium</option>
-                    <option value="GUEST_LECTURE">Guest Lecture</option>
-                    <option value="CULTURAL_FEST">Cultural Fest</option>
-                    <option value="SPORTS_TOURNAMENT">Sports Tournament</option>
-                    <option value="HACKATHON">Hackathon / Sprint</option>
+                    {venues.map((v) => (
+                      <option key={v.id} value={v.id}>
+                        {v.name} (Cap: {v.seatingCapacity})
+                      </option>
+                    ))}
                   </select>
                 </div>
-              </div>
 
-              <div>
-                <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Target Venue</label>
-                <select
-                  value={bookingForm.venueId}
-                  onChange={(e) => setBookingForm({ ...bookingForm, venueId: e.target.value })}
-                  className="w-full mt-1 p-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm"
-                >
-                  {venues.map((v) => (
-                    <option key={v.id} value={v.id}>
-                      {v.name} (Cap: {v.seatingCapacity})
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Event Date</label>
-                  <input
-                    type="date"
-                    required
-                    value={bookingForm.eventDate}
-                    onChange={(e) => setBookingForm({ ...bookingForm, eventDate: e.target.value })}
-                    className="w-full mt-1 p-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm"
-                  />
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Event Date</label>
+                    <input
+                      type="date"
+                      required
+                      value={bookingForm.eventDate}
+                      onChange={(e) => setBookingForm({ ...bookingForm, eventDate: e.target.value })}
+                      className="w-full mt-1 p-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Time Slot</label>
+                    <select
+                      value={bookingForm.timeSlot}
+                      onChange={(e) => setBookingForm({ ...bookingForm, timeSlot: e.target.value })}
+                      className="w-full mt-1 p-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm"
+                    >
+                      <option value="09:00 - 13:00">Morning (09:00 - 13:00)</option>
+                      <option value="14:00 - 18:00">Afternoon (14:00 - 18:00)</option>
+                      <option value="18:30 - 22:00">Evening (18:30 - 22:00)</option>
+                      <option value="FULL_DAY">Full Day Booking</option>
+                    </select>
+                  </div>
                 </div>
-                <div>
-                  <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Time Slot</label>
-                  <select
-                    value={bookingForm.timeSlot}
-                    onChange={(e) => setBookingForm({ ...bookingForm, timeSlot: e.target.value })}
-                    className="w-full mt-1 p-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm"
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Expected Attendees</label>
+                    <input
+                      type="number"
+                      required
+                      min={1}
+                      value={bookingForm.expectedAttendees}
+                      onChange={(e) => setBookingForm({ ...bookingForm, expectedAttendees: Number(e.target.value) })}
+                      className="w-full mt-1 p-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Contact Email</label>
+                    <input
+                      type="email"
+                      required
+                      value={bookingForm.contactPersonEmail}
+                      onChange={(e) => setBookingForm({ ...bookingForm, contactPersonEmail: e.target.value })}
+                      className="w-full mt-1 p-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex justify-end gap-3 pt-3">
+                  <button
+                    type="button"
+                    onClick={() => setShowModal(false)}
+                    className="px-4 py-2 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
                   >
-                    <option value="09:00 - 13:00">Morning (09:00 - 13:00)</option>
-                    <option value="14:00 - 18:00">Afternoon (14:00 - 18:00)</option>
-                    <option value="18:30 - 22:00">Evening (18:30 - 22:00)</option>
-                    <option value="FULL_DAY">Full Day Booking</option>
-                  </select>
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={bookingConflict.hasConflict}
+                    className={`px-4 py-2 rounded-xl text-xs font-semibold shadow-sm transition-all ${
+                      bookingConflict.hasConflict
+                        ? "bg-slate-300 dark:bg-slate-700 text-slate-500 cursor-not-allowed"
+                        : "bg-indigo-600 hover:bg-indigo-700 text-white"
+                    }`}
+                  >
+                    {bookingConflict.hasConflict ? "Conflict: Select Another Slot" : "Submit Request"}
+                  </button>
                 </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Expected Attendees</label>
-                  <input
-                    type="number"
-                    required
-                    min={1}
-                    value={bookingForm.expectedAttendees}
-                    onChange={(e) => setBookingForm({ ...bookingForm, expectedAttendees: Number(e.target.value) })}
-                    className="w-full mt-1 p-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm"
-                  />
-                </div>
-                <div>
-                  <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Contact Email</label>
-                  <input
-                    type="email"
-                    required
-                    value={bookingForm.contactPersonEmail}
-                    onChange={(e) => setBookingForm({ ...bookingForm, contactPersonEmail: e.target.value })}
-                    className="w-full mt-1 p-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm"
-                  />
-                </div>
-              </div>
-
-              <div className="flex justify-end gap-3 pt-3">
-                <button
-                  type="button"
-                  onClick={() => setShowModal(false)}
-                  className="px-4 py-2 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-semibold shadow-sm"
-                >
-                  Submit Request
-                </button>
-              </div>
-            </form>
+              </form>
+            </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
 
       {/* Booking Dossier Inspection Modal */}
       {selectedBookingDossier && (

@@ -25,6 +25,7 @@ import {
   Radio,
   Compass,
   X,
+  Download,
 } from "lucide-react";
 
 interface FleetSummary {
@@ -154,6 +155,21 @@ export default function TransportPage() {
     }
   };
 
+  const handleExportTransportCsv = () => {
+    const headers = "Pass ID,Student Name,Roll No,Route ID,Boarding Stop,Fee,Validity,Status,Cryptographic Hash\n";
+    const rows = passes
+      .map((p) => `"${p.id}","${p.studentName}","${p.studentRoll}","${p.routeId}","${p.stopName}",${p.feeAmount},"${p.validUntil}","${p.status}","${p.qrToken}"`)
+      .join("\n");
+    const blob = new Blob([headers + rows], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", `Campus_Transit_Pass_Manifest_${new Date().toISOString().split("T")[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
       {/* Top Banner */}
@@ -176,6 +192,13 @@ export default function TransportPage() {
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-3">
+            <button
+              onClick={handleExportTransportCsv}
+              className="inline-flex items-center gap-2 px-3.5 py-2.5 rounded-xl font-medium text-sm bg-white/10 hover:bg-white/20 text-white border border-white/20 shadow-md transition-all active:scale-95"
+            >
+              <Download className="w-4 h-4" />
+              Export Manifest (CSV)
+            </button>
             <button
               onClick={() => setShowPassModal(true)}
               className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium text-sm bg-rose-primary hover:bg-rose-600 text-white shadow-md transition-all active:scale-95"

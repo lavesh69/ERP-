@@ -25,6 +25,8 @@ import {
   Copy,
   Check,
   FileText,
+  CheckSquare,
+  Square,
 } from "lucide-react";
 
 interface Candidate {
@@ -71,6 +73,47 @@ export default function ConvocationPage() {
   const [message, setMessage] = useState<{ text: string; type: "success" | "error" } | null>(null);
   const [filterProgram, setFilterProgram] = useState("ALL");
   const [filterClearance, setFilterClearance] = useState("ALL");
+  const [selectedCandidateIds, setSelectedCandidateIds] = useState<string[]>([]);
+
+  const handleToggleSelectCandidate = (id: string) => {
+    setSelectedCandidateIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
+  };
+
+  const handleSelectAllCandidates = () => {
+    if (selectedCandidateIds.length === filteredCandidates.length) {
+      setSelectedCandidateIds([]);
+    } else {
+      setSelectedCandidateIds(filteredCandidates.map((c) => c.id));
+    }
+  };
+
+  const handleBulkClearAll = async (isCleared: boolean = true) => {
+    if (selectedCandidateIds.length === 0) return;
+    try {
+      setLoading(true);
+      const res = await fetch("/api/convocation", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "BULK_CLEAR_ALL",
+          candidateIds: selectedCandidateIds,
+          isCleared,
+        }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setMessage({ text: data.message, type: "success" });
+        setSelectedCandidateIds([]);
+        fetchData();
+      } else {
+        setMessage({ text: data.error || "Bulk clearance failed", type: "error" });
+      }
+    } catch (err: any) {
+      setMessage({ text: err.message || "Bulk clearance failed", type: "error" });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleExportConvocationCsv = () => {
     const headers = "Candidate Ref,Student Roll,Full Name,Program,Final CGPA,Honors,Medalist,All Clearances,Registered For Ceremony,Gown Size,Guest Passes,Dispatch Mode,Certificate Seal Hash\n";
@@ -400,33 +443,97 @@ ${awardList}
 
       {/* Tab 1: Clearance Matrix */}
       {activeTab === "clearance" && (
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm">
-              <thead className="bg-slate-50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 text-xs uppercase font-medium">
-                <tr>
-                  <th className="py-3 px-4">Candidate</th>
-                  <th className="py-3 px-4">CGPA</th>
-                  <th className="py-3 px-4 text-center">Library</th>
-                  <th className="py-3 px-4 text-center">Hostel</th>
-                  <th className="py-3 px-4 text-center">Finance</th>
-                  <th className="py-3 px-4 text-center">Labs</th>
-                  <th className="py-3 px-4 text-center">Sports</th>
-                  <th className="py-3 px-4 text-center">Alumni</th>
-                  <th className="py-3 px-4">Overall Standing</th>
-                  <th className="py-3 px-4 text-right">Action</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-slate-700 dark:text-slate-300">
-                {filteredCandidates.map((c) => (
-                  <tr key={c.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/40">
-                    <td className="py-3 px-4">
-                      <div className="font-semibold text-slate-900 dark:text-white">{c.fullName}</div>
-                      <div className="text-xs font-mono text-slate-400">{c.studentRoll} • {c.program}</div>
-                    </td>
-                    <td className="py-3 px-4 font-bold text-slate-800 dark:text-slate-200">
-                      {c.finalCgpa}
-                    </td>
+        <div className="space-y-4">
+          {/* Sticky Bulk Action Bar */}
+          {selectedCandidateIds.length > 0 && (
+            <div className="bg-slate-900 text-white p-3.5 px-5 rounded-xl flex flex-wrap items-center justify-between gap-3 shadow-xl border border-amber-500/40 animate-in slide-in-from-top-2">
+              <div className="flex items-center gap-3">
+                <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-500 text-slate-950">
+                  {selectedCandidateIds.length} Candidates Selected
+                </span>
+                <span className="text-xs text-slate-300 hidden sm:inline">Statutory Convocation Clearance Automation:</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => handleBulkClearAll(true)}
+                  className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold rounded-lg shadow-sm transition-all"
+                >
+                  Clear All 6 Departments
+                </button>
+                <button
+                  onClick={() => handleBulkClearAll(false)}
+                  className="px-3.5 py-1.5 bg-rose-600 hover:bg-rose-500 text-white text-xs font-semibold rounded-lg shadow-sm transition-all"
+                >
+                  Revoke Clearances
+                </button>
+                <button
+                  onClick={() => setSelectedCandidateIds([])}
+                  className="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white text-xs font-semibold rounded-lg transition-all"
+                >
+                  Clear Selection
+                </button>
+              </div>
+            </div>
+          )}
+
+          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-sm">
+                <thead className="bg-slate-50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 text-xs uppercase font-medium">
+                  <tr>
+                    <th className="py-3 px-3 w-10">
+                      <button
+                        onClick={handleSelectAllCandidates}
+                        className="text-slate-400 hover:text-amber-600 transition-colors"
+                      >
+                        {selectedCandidateIds.length > 0 && selectedCandidateIds.length === filteredCandidates.length ? (
+                          <CheckSquare className="w-4 h-4 text-amber-600" />
+                        ) : (
+                          <Square className="w-4 h-4" />
+                        )}
+                      </button>
+                    </th>
+                    <th className="py-3 px-4">Candidate</th>
+                    <th className="py-3 px-4">CGPA</th>
+                    <th className="py-3 px-4 text-center">Library</th>
+                    <th className="py-3 px-4 text-center">Hostel</th>
+                    <th className="py-3 px-4 text-center">Finance</th>
+                    <th className="py-3 px-4 text-center">Labs</th>
+                    <th className="py-3 px-4 text-center">Sports</th>
+                    <th className="py-3 px-4 text-center">Alumni</th>
+                    <th className="py-3 px-4">Overall Standing</th>
+                    <th className="py-3 px-4 text-right">Action</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-slate-700 dark:text-slate-300">
+                  {filteredCandidates.map((c) => {
+                    const isSelected = selectedCandidateIds.includes(c.id);
+                    return (
+                      <tr
+                        key={c.id}
+                        className={`transition-colors ${
+                          isSelected ? "bg-amber-50/40 dark:bg-amber-950/20" : "hover:bg-slate-50/50 dark:hover:bg-slate-800/40"
+                        }`}
+                      >
+                        <td className="py-3 px-3">
+                          <button
+                            onClick={() => handleToggleSelectCandidate(c.id)}
+                            className="text-slate-400 hover:text-amber-600 transition-colors"
+                          >
+                            {isSelected ? (
+                              <CheckSquare className="w-4 h-4 text-amber-600" />
+                            ) : (
+                              <Square className="w-4 h-4" />
+                            )}
+                          </button>
+                        </td>
+                        <td className="py-3 px-4">
+                          <div className="font-semibold text-slate-900 dark:text-white">{c.fullName}</div>
+                          <div className="text-xs font-mono text-slate-400">{c.studentRoll} • {c.program}</div>
+                        </td>
+                        <td className="py-3 px-4 font-bold text-slate-800 dark:text-slate-200">
+                          {c.finalCgpa}
+                        </td>
 
                     {/* Department Toggles */}
                     {[
@@ -495,7 +602,8 @@ ${awardList}
                       </div>
                     </td>
                   </tr>
-                ))}
+                );
+              })}
               </tbody>
             </table>
           </div>
@@ -520,6 +628,7 @@ ${awardList}
               </button>
             </div>
           )}
+        </div>
         </div>
       )}
 

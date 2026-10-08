@@ -56,6 +56,33 @@ export async function POST(request: NextRequest) {
       });
     }
 
+    if (action === "BULK_CLEAR_ALL") {
+      const { candidateIds, isCleared = true } = body;
+      if (!Array.isArray(candidateIds) || candidateIds.length === 0) {
+        return NextResponse.json({ error: "candidateIds array is required" }, { status: 400 });
+      }
+
+      const departments: NoDuesDepartment[] = [
+        "LIBRARY",
+        "HOSTEL",
+        "FINANCE",
+        "LABORATORY",
+        "SPORTS_COUNCIL",
+        "ALUMNI_ASSOCIATION",
+      ];
+
+      for (const id of candidateIds) {
+        for (const dept of departments) {
+          convocationStore.updateClearance(id, dept, Boolean(isCleared));
+        }
+      }
+
+      return NextResponse.json({
+        success: true,
+        message: `Clearance successfully updated for ${candidateIds.length} candidates across all departments.`,
+      });
+    }
+
     if (action === "REGISTER_CEREMONY") {
       const { candidateId, robeSize, guestPassesCount, degreeDispatchMode } = body;
       if (!candidateId) {
