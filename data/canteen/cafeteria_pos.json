@@ -1,0 +1,226 @@
+{
+  "menu": [
+    {
+      "id": "dish-01",
+      "name": "Crisp Masala Dosa & Coconut Chutney",
+      "category": "BREAKFAST",
+      "price": 4.5,
+      "calories": 380,
+      "isVeg": true,
+      "isGlutenFree": true,
+      "availableStock": 44,
+      "prepTimeMins": 6,
+      "description": "Traditional fermented crepe with spiced potato filling, lentil sambar, and fresh coconut chutney."
+    },
+    {
+      "id": "dish-02",
+      "name": "Avocado & Multigrain Sourdough Toast",
+      "category": "BREAKFAST",
+      "price": 5.8,
+      "calories": 320,
+      "isVeg": true,
+      "isGlutenFree": false,
+      "availableStock": 30,
+      "prepTimeMins": 5,
+      "description": "Hass avocado smash, cherry tomatoes, micro-greens, chili flakes, and cold-pressed extra virgin olive oil."
+    },
+    {
+      "id": "dish-03",
+      "name": "Gourmet Paneer Tikka Rice Bowl",
+      "category": "LUNCH_SPECIAL",
+      "price": 7.5,
+      "calories": 520,
+      "isVeg": true,
+      "isGlutenFree": true,
+      "availableStock": 50,
+      "prepTimeMins": 8,
+      "description": "Char-grilled cottage cheese cubes over saffron basmati rice, roasted pepper gravy, and pickled onions."
+    },
+    {
+      "id": "dish-04",
+      "name": "Herb Grilled Chicken Caesar Salad",
+      "category": "LUNCH_SPECIAL",
+      "price": 8.2,
+      "calories": 440,
+      "isVeg": false,
+      "isGlutenFree": false,
+      "availableStock": 35,
+      "prepTimeMins": 7,
+      "description": "Tender chicken breast, crisp romaine hearts, parmesan shavings, garlic herb croutons, and light Greek yogurt dressing."
+    },
+    {
+      "id": "dish-05",
+      "name": "Mediterranean Quinoa & Edamame Bowl",
+      "category": "HEALTHY_BOWLS",
+      "price": 6.9,
+      "calories": 390,
+      "isVeg": true,
+      "isGlutenFree": true,
+      "availableStock": 28,
+      "prepTimeMins": 5,
+      "description": "Organic tricolor quinoa, steamed edamame, cucumber ribbons, Kalamata olives, and lemon-tahini vinaigrette."
+    },
+    {
+      "id": "dish-06",
+      "name": "Steamed Vegetable Momos & Chili Chutney",
+      "category": "SNACKS",
+      "price": 4.2,
+      "calories": 260,
+      "isVeg": true,
+      "isGlutenFree": false,
+      "availableStock": 60,
+      "prepTimeMins": 6,
+      "description": "Handcrafted steamed dumplings packed with finely shredded Asian greens and fiery smoked tomato chili chutney."
+    },
+    {
+      "id": "dish-07",
+      "name": "Artisanal Cold Brew / Iced Latte",
+      "category": "BEVERAGES",
+      "price": 3.5,
+      "calories": 110,
+      "isVeg": true,
+      "isGlutenFree": true,
+      "availableStock": 80,
+      "prepTimeMins": 3,
+      "description": "Single-origin Arabica cold brewed for 18 hours, poured over ice with choice of organic dairy or oat milk."
+    },
+    {
+      "id": "dish-08",
+      "name": "Immunity Booster Green Vitality Juice",
+      "category": "BEVERAGES",
+      "price": 4,
+      "calories": 95,
+      "isVeg": true,
+      "isGlutenFree": true,
+      "availableStock": 40,
+      "prepTimeMins": 3,
+      "description": "Cold-pressed granny smith apples, English cucumber, celery, baby spinach, ginger root, and lemon."
+    }
+  ],
+  "wallets": {
+    "usr-stu-01": {
+      "userId": "usr-stu-01",
+      "userFullName": "Alex Mercer",
+      "userRole": "STUDENT",
+      "rfidCardId": "RFID-APEX-882194",
+      "currentBalance": 42.5,
+      "dailySpendingLimit": 25,
+      "autoRechargeThreshold": 10,
+      "status": "ACTIVE"
+    },
+    "usr-admin-01": {
+      "userId": "usr-admin-01",
+      "userFullName": "Provost Elena Evans",
+      "userRole": "SUPER_ADMIN",
+      "rfidCardId": "RFID-APEX-100001",
+      "currentBalance": 170.73,
+      "dailySpendingLimit": 100,
+      "autoRechargeThreshold": 20,
+      "status": "ACTIVE"
+    }
+  },
+  "orders": [
+    {
+      "orderId": "ord-1791481052109",
+      "orderToken": "#CAN-102",
+      "userId": "usr-admin-01",
+      "customerName": "provost.evans",
+      "items": [
+        {
+          "menuItemId": "dish-01",
+          "name": "Crisp Masala Dosa & Coconut Chutney",
+          "quantity": 1,
+          "unitPrice": 4.5,
+          "subtotal": 4.5,
+          "calories": 380
+        }
+      ],
+      "subtotalAmount": 4.5,
+      "discountApplied": 0.23,
+      "totalAmount": 4.27,
+      "paymentMethod": "MEAL_WALLET",
+      "status": "PREPARING",
+      "counterNo": 2,
+      "placedAt": "2026-10-08T17:37:32.109Z"
+    },
+    {
+      "orderId": "ord-101",
+      "orderToken": "#CAN-101",
+      "userId": "usr-stu-01",
+      "customerName": "Alex Mercer",
+      "items": [
+        {
+          "menuItemId": "dish-01",
+          "name": "Crisp Masala Dosa & Coconut Chutney",
+          "quantity": 1,
+          "unitPrice": 4.5,
+          "subtotal": 4.5,
+          "calories": 380
+        },
+        {
+          "menuItemId": "dish-07",
+          "name": "Artisanal Cold Brew / Iced Latte",
+          "quantity": 1,
+          "unitPrice": 3.5,
+          "subtotal": 3.5,
+          "calories": 110
+        }
+      ],
+      "subtotalAmount": 8,
+      "discountApplied": 0.8,
+      "totalAmount": 7.2,
+      "paymentMethod": "MEAL_WALLET",
+      "status": "READY_FOR_PICKUP",
+      "counterNo": 2,
+      "placedAt": "2026-10-08T17:20:30.081Z"
+    }
+  ],
+  "transactions": [
+    {
+      "id": "tx-1791481052109",
+      "userId": "usr-admin-01",
+      "type": "DEBIT_PURCHASE",
+      "amount": 4.27,
+      "balanceAfter": 170.73,
+      "reference": "ORD-#CAN-102",
+      "timestamp": "2026-10-08T17:37:32.109Z"
+    },
+    {
+      "id": "tx-1791481052104",
+      "userId": "usr-admin-01",
+      "type": "CREDIT_TOPUP",
+      "amount": 25,
+      "balanceAfter": 175,
+      "reference": "NET_BANKING_UPI_TEST",
+      "timestamp": "2026-10-08T17:37:32.104Z"
+    },
+    {
+      "id": "tx-1791481019208",
+      "userId": "usr-admin-01",
+      "type": "CREDIT_TOPUP",
+      "amount": 25,
+      "balanceAfter": 150,
+      "reference": "NET_BANKING_UPI_TEST",
+      "timestamp": "2026-10-08T17:36:59.208Z"
+    },
+    {
+      "id": "tx-init-01",
+      "userId": "usr-stu-01",
+      "type": "CREDIT_TOPUP",
+      "amount": 50,
+      "balanceAfter": 50,
+      "reference": "TOPUP-UPI-99214A",
+      "timestamp": "2026-10-08T15:35:30.081Z"
+    },
+    {
+      "id": "tx-init-02",
+      "userId": "usr-stu-01",
+      "type": "DEBIT_PURCHASE",
+      "amount": 7.2,
+      "balanceAfter": 42.8,
+      "reference": "ORD-#CAN-101",
+      "timestamp": "2026-10-08T17:20:30.081Z"
+    }
+  ],
+  "orderCounter": 103
+}

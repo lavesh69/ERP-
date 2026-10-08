@@ -50,6 +50,7 @@ import {
   CheckCheck,
   Bell,
   ExternalLink,
+  Fingerprint,
 } from "lucide-react";
 import QRScannerModal from "@/components/attendance/QRScannerModal";
 import ProjectorModeModal from "@/components/attendance/ProjectorModeModal";
@@ -127,6 +128,18 @@ export default function AttendancePage() {
   const [isScannerModalOpen, setIsScannerModalOpen] = useState(false);
   const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
   const [isStartingSession, setIsStartingSession] = useState(false);
+
+  // Biometric Terminal Simulator State
+  const [isBiometricSimulatorOpen, setIsBiometricSimulatorOpen] = useState(false);
+  const [simulatedTerminal, setSimulatedTerminal] = useState("BIO-CS-LAB-01");
+  const [simulatedPunchType, setSimulatedPunchType] = useState("FINGERPRINT");
+  const [simulatedStudentId, setSimulatedStudentId] = useState("");
+  const [isPunching, setIsPunching] = useState(false);
+  const [biometricLogs, setBiometricLogs] = useState<string[]>([
+    "Terminal Daemon listening on port 4370 (eSSL/ZKTeco push protocol initialized)",
+    "Heartbeat ACK from BIO-GATE-MAIN (0ms latency, 100% signal)",
+    "Heartbeat ACK from BIO-CS-LAB-01 (2ms latency, 100% signal)",
+  ]);
 
   // Session Configurator Modal
   const [isConfigModalOpen, setIsConfigModalOpen] = useState(false);
@@ -555,6 +568,56 @@ export default function AttendancePage() {
     showToast(data.message || "Attendance recorded successfully!", "success");
     fetchRoster();
     triggerRefresh();
+  };
+
+  const handleSimulateBiometricPunch = async (studentIdToPunch?: string) => {
+    const targetStudentId = studentIdToPunch || simulatedStudentId || studentRoster[0]?.studentId || "stu-mercer-01";
+    const studentObj = studentRoster.find((s) => s.studentId === targetStudentId);
+    const studentName = studentObj ? studentObj.name : "Alex Mercer";
+
+    setIsPunching(true);
+    try {
+      const res = await fetch("/api/attendance/biometric-push", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-device-key": "apex-biometric-secret-2026",
+          "x-device-nonce": `NONCE-${Date.now()}-${Math.random()}`,
+        },
+        body: JSON.stringify({
+          deviceSerialNumber: simulatedTerminal,
+          courseCode: selectedCourse,
+          punches: [
+            {
+              studentId: targetStudentId,
+              status: "PRESENT",
+              timestamp: new Date().toISOString(),
+              method: simulatedPunchType,
+            },
+          ],
+        }),
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        const timestamp = new Date().toLocaleTimeString();
+        setBiometricLogs((prev) => [
+          `[PUNCH VERIFIED] ${timestamp} • ${studentName} (${targetStudentId}) via ${simulatedTerminal} [${simulatedPunchType}]`,
+          ...prev.slice(0, 7),
+        ]);
+        showToast(`Biometric punch processed: ${studentName} verified PRESENT!`, "success");
+        setStudentRoster((prev) =>
+          prev.map((s) => (s.studentId === targetStudentId ? { ...s, status: "PRESENT" } : s))
+        );
+        fetchRoster();
+      } else {
+        showToast(data.error || "Biometric terminal communication failed", "danger");
+      }
+    } catch {
+      showToast("Network error connecting to hardware terminal daemon", "danger");
+    } finally {
+      setIsPunching(false);
+    }
   };
 
   // Open Missing Attendance Scanner
@@ -1326,6 +1389,14 @@ export default function AttendancePage() {
                 >
                   <Scan className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
                   <span>Scanner</span>
+                </button>
+                <button
+                  onClick={() => setIsBiometricSimulatorOpen(true)}
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-cyan-50 dark:bg-cyan-950/40 hover:bg-cyan-100 dark:hover:bg-cyan-900/40 text-cyan-800 dark:text-cyan-200 text-xs font-bold border border-cyan-200 dark:border-cyan-800 transition-all shadow-xs"
+                  title="Biometric Machine Sync & Live Punch Simulator"
+                >
+                  <Fingerprint className="h-4 w-4 text-cyan-600 dark:text-cyan-400" />
+                  <span>Biometric Sync</span>
                 </button>
                 <button
                   onClick={handleExportCSV}
@@ -4402,6 +4473,122 @@ export default function AttendancePage() {
           )}
         </div>
       </Modal>
+
+      {/* Biometric Machine Sync & Punch Simulator Modal */}
+      {isBiometricSimulatorOpen && (
+        <Modal
+          isOpen={isBiometricSimulatorOpen}
+          onClose={() => setIsBiometricSimulatorOpen(false)}
+          title="Hardware Biometric Sync & Turnstile Daemon"
+          description="Live TCP/IP listener status and on-demand biometric turnstile punch simulator for campus attendance terminals."
+          maxWidth="2xl"
+        >
+          <div className="space-y-5 text-xs">
+            {/* Connected Hardware Devices */}
+            <div>
+              <span className="text-[11px] font-bold uppercase tracking-wider text-charcoal-500 mb-2 block">
+                Connected Biometric Turnstiles (Port 4370 Active)
+              </span>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                {[
+                  { id: "BIO-GATE-MAIN", name: "Main Campus Turnstile", type: "RFID + Fingerprint", ping: "0ms" },
+                  { id: "BIO-CS-LAB-01", name: "CS Lab 01 Facial Hub", type: "AI Face Recognition", ping: "2ms" },
+                  { id: "BIO-LIB-02", name: "Library Turnstile Gate", type: "Optical Fingerprint", ping: "1ms" },
+                ].map((term) => (
+                  <div
+                    key={term.id}
+                    onClick={() => setSimulatedTerminal(term.id)}
+                    className={`p-3 rounded-xl border transition-all cursor-pointer ${
+                      simulatedTerminal === term.id
+                        ? "border-cyan-500 bg-cyan-50/70 dark:bg-cyan-950/40 ring-2 ring-cyan-500/20"
+                        : "border-border dark:border-charcoal-700 hover:border-cyan-300 bg-surface-soft/40"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="font-mono font-bold text-cyan-600 dark:text-cyan-400 text-[11px]">
+                        {term.id}
+                      </span>
+                      <span className="flex items-center gap-1 text-[10px] text-emerald-600 font-bold">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" /> {term.ping}
+                      </span>
+                    </div>
+                    <strong className="text-charcoal-900 dark:text-white block text-xs">{term.name}</strong>
+                    <span className="text-[10px] text-charcoal-500">{term.type}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Punch Trigger Panel */}
+            <div className="p-4 rounded-2xl bg-surface-soft dark:bg-charcoal-800 border border-border dark:border-charcoal-700 space-y-3">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-charcoal-600 dark:text-charcoal-300 block">
+                Simulate Live Scholar Biometric Punch
+              </span>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[11px] font-bold text-charcoal-600 dark:text-charcoal-400 mb-1">
+                    Select Target Student
+                  </label>
+                  <select
+                    value={simulatedStudentId || studentRoster[0]?.studentId || ""}
+                    onChange={(e) => setSimulatedStudentId(e.target.value)}
+                    className="w-full px-3 py-2 rounded-xl bg-white dark:bg-charcoal-900 border border-border dark:border-charcoal-700 text-xs"
+                  >
+                    {studentRoster.map((s) => (
+                      <option key={s.studentId} value={s.studentId}>
+                        {s.name} ({s.rollNo}) — Currently {s.status}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-bold text-charcoal-600 dark:text-charcoal-400 mb-1">
+                    Biometric Capture Sensor
+                  </label>
+                  <select
+                    value={simulatedPunchType}
+                    onChange={(e) => setSimulatedPunchType(e.target.value)}
+                    className="w-full px-3 py-2 rounded-xl bg-white dark:bg-charcoal-900 border border-border dark:border-charcoal-700 text-xs"
+                  >
+                    <option value="FINGERPRINT">Optical Fingerprint (ZKTeco Live20R)</option>
+                    <option value="FACE">Facial Biometric Geometry (Dual IR Cam)</option>
+                    <option value="RFID">13.56 MHz Mifare RFID Smart Card</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="flex justify-end pt-2">
+                <button
+                  type="button"
+                  onClick={() => handleSimulateBiometricPunch()}
+                  disabled={isPunching}
+                  className="px-5 py-2.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-xs shadow-md transition-all active:scale-95 disabled:opacity-50 flex items-center gap-2"
+                >
+                  <Fingerprint className="w-4 h-4" />
+                  {isPunching ? "Verifying with Terminal..." : "Simulate Live Punch Now"}
+                </button>
+              </div>
+            </div>
+
+            {/* Terminal Console Logs */}
+            <div>
+              <span className="text-[11px] font-bold uppercase tracking-wider text-charcoal-500 mb-1 block">
+                Live Terminal Daemon Output (TCP/IP 4370 Stream)
+              </span>
+              <div className="p-3 rounded-xl bg-black text-emerald-400 font-mono text-[11px] space-y-1 max-h-36 overflow-y-auto border border-emerald-900/60 shadow-inner">
+                {biometricLogs.map((log, idx) => (
+                  <div key={idx} className="flex items-start gap-1.5">
+                    <span className="text-emerald-600">›</span>
+                    <span>{log}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </Modal>
+      )}
     </AppShell>
   );
 }

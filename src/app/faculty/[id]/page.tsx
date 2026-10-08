@@ -28,6 +28,7 @@ import {
   Printer,
   Sparkles,
   MapPin,
+  PlusCircle,
 } from "lucide-react";
 
 interface CourseAllocation {
@@ -270,6 +271,94 @@ export default function FacultyDetailPage({
       showToast("Network error booking advising slot", "error");
     } finally {
       setIsSubmittingAdvising(false);
+    }
+  };
+
+  // Add Publication Modal State
+  const [isAddPubModalOpen, setIsAddPubModalOpen] = useState(false);
+  const [newPubTitle, setNewPubTitle] = useState("");
+  const [newPubJournal, setNewPubJournal] = useState("");
+  const [newPubDoi, setNewPubDoi] = useState("");
+  const [newPubYear, setNewPubYear] = useState(new Date().getFullYear());
+  const [newPubCitations, setNewPubCitations] = useState(0);
+  const [isSubmittingPub, setIsSubmittingPub] = useState(false);
+
+  const handleAddPublication = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!faculty || !newPubTitle.trim() || !newPubJournal.trim()) return;
+    setIsSubmittingPub(true);
+    try {
+      const res = await fetch("/api/faculty", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "ADD_PUBLICATION",
+          facultyId: faculty.id,
+          title: newPubTitle.trim(),
+          journalName: newPubJournal.trim(),
+          doi: newPubDoi.trim() || undefined,
+          year: Number(newPubYear),
+          citationCount: Number(newPubCitations),
+        }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        showToast(data.message || "Peer-reviewed paper recorded successfully!", "success");
+        setIsAddPubModalOpen(false);
+        setNewPubTitle("");
+        setNewPubJournal("");
+        setNewPubDoi("");
+        loadFaculty();
+      } else {
+        showToast(data.error || "Failed to add publication", "error");
+      }
+    } catch {
+      showToast("Network error recording publication", "error");
+    } finally {
+      setIsSubmittingPub(false);
+    }
+  };
+
+  // Add Research Grant Modal State
+  const [isAddGrantModalOpen, setIsAddGrantModalOpen] = useState(false);
+  const [newGrantTitle, setNewGrantTitle] = useState("");
+  const [newGrantAmount, setNewGrantAmount] = useState("75000");
+  const [newGrantAgency, setNewGrantAgency] = useState("National Science Foundation (NSF)");
+  const [newGrantAbstract, setNewGrantAbstract] = useState("");
+  const [isSubmittingGrant, setIsSubmittingGrant] = useState(false);
+
+  const handleAddGrant = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!faculty || !newGrantTitle.trim() || !newGrantAbstract.trim()) return;
+    setIsSubmittingGrant(true);
+    try {
+      const res = await fetch("/api/faculty", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "ADD_RESEARCH_PROJECT",
+          facultyId: faculty.id,
+          title: newGrantTitle.trim(),
+          grantAmount: parseFloat(newGrantAmount) || 50000,
+          fundingAgency: newGrantAgency.trim(),
+          abstract: newGrantAbstract.trim(),
+          startDate: new Date().toISOString().split("T")[0],
+        }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        showToast(data.message || "Funded research project registered successfully!", "success");
+        setIsAddGrantModalOpen(false);
+        setNewGrantTitle("");
+        setNewGrantAbstract("");
+        loadFaculty();
+      } else {
+        showToast(data.error || "Failed to register research project", "error");
+      }
+    } catch {
+      showToast("Network error registering research project", "error");
+    } finally {
+      setIsSubmittingGrant(false);
     }
   };
 
@@ -630,9 +719,19 @@ export default function FacultyDetailPage({
                   <FlaskConical className="h-4 w-4 text-rose-primary" />
                   Sponsored Research Projects & External Grants ({faculty.researchProjects.length})
                 </span>
-                <span className="text-xs font-mono font-bold text-academic-success">
-                  Total Funding: ${faculty.stats?.totalGrantAmount.toLocaleString()}
-                </span>
+                <div className="flex items-center gap-3">
+                  <span className="text-xs font-mono font-bold text-academic-success">
+                    Total Funding: ${faculty.stats?.totalGrantAmount.toLocaleString()}
+                  </span>
+                  {isOwnerOrAdmin && (
+                    <button
+                      onClick={() => setIsAddGrantModalOpen(true)}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-rose-primary hover:bg-rose-600 text-white font-bold text-xs shadow-xs"
+                    >
+                      <PlusCircle className="w-3.5 h-3.5" /> Add Grant
+                    </button>
+                  )}
+                </div>
               </div>
               <div className="divide-y divide-border/60 dark:divide-charcoal-700">
                 {faculty.researchProjects.map((rp) => (
@@ -665,6 +764,14 @@ export default function FacultyDetailPage({
                   <Bookmark className="h-4 w-4 text-rose-primary" />
                   Peer-Reviewed Journal Publications & Citations ({faculty.publications.length})
                 </span>
+                {isOwnerOrAdmin && (
+                  <button
+                    onClick={() => setIsAddPubModalOpen(true)}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-rose-primary hover:bg-rose-600 text-white font-bold text-xs shadow-xs"
+                  >
+                    <PlusCircle className="w-3.5 h-3.5" /> Add Publication
+                  </button>
+                )}
               </div>
               <div className="divide-y divide-border/60 dark:divide-charcoal-700">
                 {faculty.publications.map((p) => (
@@ -1291,6 +1398,190 @@ export default function FacultyDetailPage({
                 className="px-4 py-2 rounded-xl bg-rose-primary text-white font-bold hover:bg-rose-deep disabled:opacity-50"
               >
                 {isSubmittingAdvising ? "Reserving..." : "Confirm Reservation"}
+              </button>
+            </div>
+          </form>
+        </Modal>
+      )}
+
+      {/* Add Publication Modal */}
+      {isAddPubModalOpen && (
+        <Modal
+          isOpen={isAddPubModalOpen}
+          onClose={() => setIsAddPubModalOpen(false)}
+          title="Submit New Journal Publication"
+          description="Record a peer-reviewed research publication into the institutional faculty Scopus profile."
+        >
+          <form onSubmit={handleAddPublication} className="space-y-4 text-xs">
+            <div>
+              <label className="block font-bold text-charcoal-700 dark:text-charcoal-300 mb-1">
+                Paper / Article Title *
+              </label>
+              <input
+                type="text"
+                required
+                value={newPubTitle}
+                onChange={(e) => setNewPubTitle(e.target.value)}
+                placeholder="e.g. Distributed Consensus in Asynchronous Byzantine Networks"
+                className="w-full px-3 py-2 rounded-xl bg-ivory-100 dark:bg-charcoal-900 border border-border dark:border-charcoal-700 outline-none focus:ring-2 focus:ring-rose-primary"
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block font-bold text-charcoal-700 dark:text-charcoal-300 mb-1">
+                  Journal / Conference Name *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={newPubJournal}
+                  onChange={(e) => setNewPubJournal(e.target.value)}
+                  placeholder="e.g. IEEE Transactions on Software Engineering"
+                  className="w-full px-3 py-2 rounded-xl bg-ivory-100 dark:bg-charcoal-900 border border-border dark:border-charcoal-700 outline-none focus:ring-2 focus:ring-rose-primary"
+                />
+              </div>
+
+              <div>
+                <label className="block font-bold text-charcoal-700 dark:text-charcoal-300 mb-1">
+                  DOI Identifier (Optional)
+                </label>
+                <input
+                  type="text"
+                  value={newPubDoi}
+                  onChange={(e) => setNewPubDoi(e.target.value)}
+                  placeholder="10.1109/TSE.2026.104928"
+                  className="w-full px-3 py-2 rounded-xl bg-ivory-100 dark:bg-charcoal-900 border border-border dark:border-charcoal-700 outline-none focus:ring-2 focus:ring-rose-primary"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block font-bold text-charcoal-700 dark:text-charcoal-300 mb-1">
+                  Publication Year
+                </label>
+                <input
+                  type="number"
+                  value={newPubYear}
+                  onChange={(e) => setNewPubYear(parseInt(e.target.value) || 2026)}
+                  className="w-full px-3 py-2 rounded-xl bg-ivory-100 dark:bg-charcoal-900 border border-border dark:border-charcoal-700 outline-none focus:ring-2 focus:ring-rose-primary"
+                />
+              </div>
+
+              <div>
+                <label className="block font-bold text-charcoal-700 dark:text-charcoal-300 mb-1">
+                  Initial Scopus Citations
+                </label>
+                <input
+                  type="number"
+                  value={newPubCitations}
+                  onChange={(e) => setNewPubCitations(parseInt(e.target.value) || 0)}
+                  className="w-full px-3 py-2 rounded-xl bg-ivory-100 dark:bg-charcoal-900 border border-border dark:border-charcoal-700 outline-none focus:ring-2 focus:ring-rose-primary"
+                />
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-2 pt-3 border-t border-border dark:border-charcoal-700">
+              <button
+                type="button"
+                onClick={() => setIsAddPubModalOpen(false)}
+                className="px-4 py-2 rounded-xl bg-ivory-100 dark:bg-charcoal-700 text-charcoal-700 dark:text-charcoal-300 font-bold"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={isSubmittingPub}
+                className="px-4 py-2 rounded-xl bg-rose-primary text-white font-bold hover:bg-rose-deep disabled:opacity-50"
+              >
+                {isSubmittingPub ? "Recording..." : "Record Publication"}
+              </button>
+            </div>
+          </form>
+        </Modal>
+      )}
+
+      {/* Add Research Grant Modal */}
+      {isAddGrantModalOpen && (
+        <Modal
+          isOpen={isAddGrantModalOpen}
+          onClose={() => setIsAddGrantModalOpen(false)}
+          title="Register Funded Research Project"
+          description="Submit a sponsored research grant project to the institutional grants management ledger."
+        >
+          <form onSubmit={handleAddGrant} className="space-y-4 text-xs">
+            <div>
+              <label className="block font-bold text-charcoal-700 dark:text-charcoal-300 mb-1">
+                Project Title *
+              </label>
+              <input
+                type="text"
+                required
+                value={newGrantTitle}
+                onChange={(e) => setNewGrantTitle(e.target.value)}
+                placeholder="e.g. Next-Generation Post-Quantum Cryptographic Protocols"
+                className="w-full px-3 py-2 rounded-xl bg-ivory-100 dark:bg-charcoal-900 border border-border dark:border-charcoal-700 outline-none focus:ring-2 focus:ring-rose-primary"
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block font-bold text-charcoal-700 dark:text-charcoal-300 mb-1">
+                  Funding Agency / Sponsor *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={newGrantAgency}
+                  onChange={(e) => setNewGrantAgency(e.target.value)}
+                  placeholder="e.g. DARPA / NSF / DST SERB"
+                  className="w-full px-3 py-2 rounded-xl bg-ivory-100 dark:bg-charcoal-900 border border-border dark:border-charcoal-700 outline-none focus:ring-2 focus:ring-rose-primary"
+                />
+              </div>
+
+              <div>
+                <label className="block font-bold text-charcoal-700 dark:text-charcoal-300 mb-1">
+                  Sanctioned Grant Amount ($) *
+                </label>
+                <input
+                  type="number"
+                  required
+                  value={newGrantAmount}
+                  onChange={(e) => setNewGrantAmount(e.target.value)}
+                  className="w-full px-3 py-2 rounded-xl bg-ivory-100 dark:bg-charcoal-900 border border-border dark:border-charcoal-700 outline-none focus:ring-2 focus:ring-rose-primary"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block font-bold text-charcoal-700 dark:text-charcoal-300 mb-1">
+                Project Abstract & Deliverables *
+              </label>
+              <textarea
+                required
+                rows={3}
+                value={newGrantAbstract}
+                onChange={(e) => setNewGrantAbstract(e.target.value)}
+                placeholder="Summarize research scope, experimental testbed, and milestone outputs..."
+                className="w-full px-3 py-2 rounded-xl bg-ivory-100 dark:bg-charcoal-900 border border-border dark:border-charcoal-700 outline-none focus:ring-2 focus:ring-rose-primary"
+              />
+            </div>
+
+            <div className="flex justify-end gap-2 pt-3 border-t border-border dark:border-charcoal-700">
+              <button
+                type="button"
+                onClick={() => setIsAddGrantModalOpen(false)}
+                className="px-4 py-2 rounded-xl bg-ivory-100 dark:bg-charcoal-700 text-charcoal-700 dark:text-charcoal-300 font-bold"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={isSubmittingGrant}
+                className="px-4 py-2 rounded-xl bg-rose-primary text-white font-bold hover:bg-rose-deep disabled:opacity-50"
+              >
+                {isSubmittingGrant ? "Registering..." : "Register Research Project"}
               </button>
             </div>
           </form>

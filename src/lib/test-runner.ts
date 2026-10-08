@@ -206,6 +206,15 @@ import {
   generateEmergencyDispatchSeal,
   validateEmergencyBroadcast,
 } from "@/lib/emergency/emergency-engine";
+import { GET as handleCanteenGet, POST as handleCanteenPost } from "@/app/api/canteen/route";
+import {
+  calculateOrderTotal,
+  validateWalletBalance,
+  generateOrderToken,
+  calculateNutritionalSummary,
+  MealWalletAccount,
+  CanteenMenuItem,
+} from "@/lib/canteen/canteen-engine";
 
 async function runTestSuite() {
   console.log("=================================================");
@@ -6097,6 +6106,128 @@ By breaking down large monolithic systems into decoupled microservices, systems 
   const resolveAlertData = await resolveAlertRes.json();
   assert(resolveAlertData.alert.isActive === false, "Resolved alert deactivated in store ledger");
   assert(resolveAlertData.alert.severity === "CAMPUS_ALL_CLEAR", "Resolved alert transitions severity to CAMPUS_ALL_CLEAR");
+
+  // Group 59: Campus Canteen & Smart-Card Cafeteria POS Wallet
+  console.log("\n📌 Group 59: Campus Canteen, Dietary Welfare & RFID POS Wallet Suite");
+  
+  // 1. Engine tests
+  const dummyItem1: CanteenMenuItem = {
+    id: "dish-01",
+    name: "Classic Masala Dosa",
+    category: "BREAKFAST",
+    price: 4.5,
+    calories: 380,
+    isVeg: true,
+    isGlutenFree: true,
+    availableStock: 50,
+    prepTimeMins: 5,
+    description: "Crispy rice crepe",
+  };
+  const dummyItem2: CanteenMenuItem = {
+    id: "dish-02",
+    name: "Avocado Quinoa Protein Bowl",
+    category: "HEALTHY_BOWLS",
+    price: 8.0,
+    calories: 450,
+    isVeg: true,
+    isGlutenFree: true,
+    availableStock: 30,
+    prepTimeMins: 8,
+    description: "Wholesome grains bowl",
+  };
+
+  const billCalc = calculateOrderTotal(
+    [
+      { menuItem: dummyItem1, quantity: 2 },
+      { menuItem: dummyItem2, quantity: 1 },
+    ],
+    "STUDENT"
+  );
+  assert(billCalc.subtotal === 17.0, "calculateOrderTotal computes correct raw subtotal ($17.00)");
+  assert(billCalc.discount === 1.7, "calculateOrderTotal deducts 10% student welfare subsidy ($1.70)");
+  assert(billCalc.finalTotal === 15.3, "calculateOrderTotal calculates correct net payable ($15.30)");
+
+  const mockWallet: MealWalletAccount = {
+    userId: "usr-stu-01",
+    userFullName: "Alex Mercer",
+    userRole: "STUDENT",
+    rfidCardId: "RFID-9921-X",
+    currentBalance: 50.0,
+    dailySpendingLimit: 60.0,
+    autoRechargeThreshold: 10.0,
+    status: "ACTIVE",
+  };
+
+  const balanceCheckOk = validateWalletBalance(mockWallet, 15.3);
+  assert(balanceCheckOk.canAfford === true, "validateWalletBalance confirms sufficient funds");
+  assert(balanceCheckOk.remainingBalance === 34.7, "validateWalletBalance computes exact post-order balance ($34.70)");
+
+  const balanceCheckFail = validateWalletBalance({ ...mockWallet, currentBalance: 5.0 }, 15.3);
+  assert(balanceCheckFail.canAfford === false, "validateWalletBalance intercepts insufficient RFID wallet funds");
+  assert(balanceCheckFail.reason?.includes("Insufficient") === true, "validateWalletBalance outputs descriptive deficit reason");
+
+  const orderToken = generateOrderToken(42);
+  assert(orderToken === "#CAN-042", "generateOrderToken formats padded #CAN-042 counter pickup token");
+
+  const nutrition = calculateNutritionalSummary([
+    { menuItem: dummyItem1, quantity: 2 },
+    { menuItem: dummyItem2, quantity: 1 },
+  ]);
+  assert(nutrition.totalCalories === 1210, "calculateNutritionalSummary sums calories accurately (1210 kcal)");
+  assert(nutrition.vegOnly === true, "calculateNutritionalSummary marks 100% vegetarian order");
+
+  // 2. Canteen API Endpoints
+  const canteenSummaryReq = new NextRequest("http://localhost:3000/api/canteen?tab=summary", {
+    headers: { Cookie: `classroom_session=${adminToken}` },
+  });
+  const canteenSummaryRes = await handleCanteenGet(canteenSummaryReq);
+  assert(canteenSummaryRes.status === 200, "GET /api/canteen?tab=summary returns 200 OK");
+  const canteenSummaryData = await canteenSummaryRes.json();
+  assert(canteenSummaryData.summary.totalDishes > 0, "Canteen summary includes loaded cafeteria menu catalog");
+
+  const canteenWalletReq = new NextRequest("http://localhost:3000/api/canteen?tab=wallet", {
+    headers: { Cookie: `classroom_session=${adminToken}` },
+  });
+  const canteenWalletRes = await handleCanteenGet(canteenWalletReq);
+  assert(canteenWalletRes.status === 200, "GET /api/canteen?tab=wallet returns 200 OK");
+  const canteenWalletData = await canteenWalletRes.json();
+  assert(typeof canteenWalletData.wallet.currentBalance === "number", "Canteen wallet reports RFID card monetary balance");
+
+  // Top-up wallet
+  const topUpReq = new NextRequest("http://localhost:3000/api/canteen", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "TOP_UP_WALLET",
+      amount: 25,
+      reference: "NET_BANKING_UPI_TEST",
+    }),
+  });
+  const topUpRes = await handleCanteenPost(topUpReq);
+  assert(topUpRes.status === 200, "POST /api/canteen (action: TOP_UP_WALLET) tops up card balance with 200 OK");
+  const topUpData = await topUpRes.json();
+  assert(topUpData.wallet.currentBalance >= 25, "Wallet balance credited successfully");
+
+  // Place order
+  const placeOrderReq = new NextRequest("http://localhost:3000/api/canteen", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "PLACE_ORDER",
+      paymentMethod: "MEAL_WALLET",
+      items: [
+        {
+          menuItemId: "dish-01",
+          quantity: 1,
+        },
+      ],
+    }),
+  });
+  const placeOrderRes = await handleCanteenPost(placeOrderReq);
+  assert(placeOrderRes.status === 200, "POST /api/canteen (action: PLACE_ORDER) creates canteen order with 200 OK");
+  const placeOrderData = await placeOrderRes.json();
+  assert(placeOrderData.order.orderToken.startsWith("#CAN-"), "Order confirmed with counter pickup token");
+  assert(placeOrderData.order.status === "PREPARING", "Order entered kitchen preparation status");
 
   console.log("\n=================================================");
   console.log(`🎉 ALL ${passedTests}/${totalTests} TESTS PASSED SUCCESSFULLY!`);

@@ -26,6 +26,13 @@ import {
   Compass,
   X,
   Download,
+  Activity,
+  Layers,
+  Sparkles,
+  RefreshCw,
+  Play,
+  Pause,
+  ExternalLink,
 } from "lucide-react";
 
 interface FleetSummary {
@@ -42,7 +49,7 @@ interface FleetSummary {
 
 export default function TransportPage() {
   const { currentUser } = useApp();
-  const [activeTab, setActiveTab] = useState<"fleet" | "routes" | "passes" | "maintenance">("fleet");
+  const [activeTab, setActiveTab] = useState<"fleet" | "map" | "routes" | "passes" | "maintenance">("fleet");
   const [loading, setLoading] = useState(true);
   const [summary, setSummary] = useState<FleetSummary | null>(null);
   const [routes, setRoutes] = useState<any[]>([]);
@@ -52,6 +59,12 @@ export default function TransportPage() {
   const [selectedTelematicsVehicle, setSelectedTelematicsVehicle] = useState<any | null>(null);
   const [panicBeaconActive, setPanicBeaconActive] = useState(false);
   const [pingSent, setPingSent] = useState(false);
+
+  // Live Map State
+  const [selectedRouteId, setSelectedRouteId] = useState<string>("rt-01");
+  const [selectedStopName, setSelectedStopName] = useState<string | null>(null);
+  const [busProgress, setBusProgress] = useState<number>(45);
+  const [isSimulating, setIsSimulating] = useState<boolean>(true);
 
   // New Pass Modal
   const [showPassModal, setShowPassModal] = useState(false);
@@ -112,6 +125,14 @@ export default function TransportPage() {
   useEffect(() => {
     fetchData();
   }, []);
+
+  useEffect(() => {
+    if (!isSimulating) return;
+    const timer = setInterval(() => {
+      setBusProgress((prev) => (prev >= 96 ? 8 : prev + 1));
+    }, 1200);
+    return () => clearInterval(timer);
+  }, [isSimulating]);
 
   const handleIssuePass = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -273,6 +294,7 @@ export default function TransportPage() {
       <div className="flex border-b border-border dark:border-charcoal-800 space-x-2 overflow-x-auto pb-px">
         {[
           { id: "fleet", label: "Fleet & GPS Telemetry", icon: Bus },
+          { id: "map", label: "Live Transit Route Map", icon: MapPin },
           { id: "routes", label: "Routes & Schedules", icon: Navigation },
           { id: "passes", label: "Digital Bus Passes", icon: CreditCard, count: summary?.activeBusPasses },
           { id: "maintenance", label: "Vehicle Safety & Service", icon: Wrench },
@@ -413,9 +435,599 @@ export default function TransportPage() {
         </div>
       )}
 
+      {/* TAB: INTERACTIVE CAMPUS TRANSIT ROUTE MAP */}
+      {activeTab === "map" && (() => {
+        const currentRoute = routes.find((r) => r.id === selectedRouteId) || routes[0];
+        const assignedVeh = summary?.vehicles.find((v) => v.vehicleCode === currentRoute?.assignedVehicleCode || v.id === currentRoute?.assignedVehicleId) || summary?.vehicles?.[0];
+        const currentStop = currentRoute?.stops?.find((s: any) => s.stopName === selectedStopName) || currentRoute?.stops?.[0];
+        const assignedPasses = passes.filter((p) => p.routeId === currentRoute?.id || p.routeNumber === currentRoute?.routeNumber);
+        const stopPasses = currentStop ? assignedPasses.filter((p) => p.stopName === currentStop.stopName) : [];
+        const stopsCount = currentRoute?.stops?.length || 1;
+
+        // Calculate animated bus coordinates on SVG track (800 x 220 viewBox)
+        const trackStartX = 70;
+        const trackEndX = 730;
+        const trackY = 110;
+        const busX = trackStartX + ((trackEndX - trackStartX) * (busProgress / 100));
+        const busY = trackY - Math.sin((busProgress / 100) * Math.PI) * 12;
+
+        return (
+          <div className="space-y-6">
+            {/* Top Toolbar: Route Selection & Live Controls */}
+            <div className="bg-white dark:bg-charcoal-900 rounded-2xl p-5 border border-border dark:border-charcoal-800 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-rose-100 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800">
+                    Interactive Transit Map
+                  </span>
+                  <span className="flex items-center gap-1.5 text-xs text-emerald-600 dark:text-emerald-400 font-semibold">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                    GPS Telemetry Stream Active
+                  </span>
+                </div>
+                <h2 className="text-xl font-bold text-charcoal-900 dark:text-ivory-100">
+                  {currentRoute?.routeName || "Active Campus Corridor"}
+                </h2>
+                <p className="text-xs text-charcoal-500">
+                  {currentRoute?.startingPoint} to {currentRoute?.destination} • {currentRoute?.totalDistanceKm} km corridor
+                </p>
+              </div>
+
+              {/* Route Selector Pills & Simulation Toggle */}
+              <div className="flex flex-wrap items-center gap-2 self-stretch md:self-auto">
+                <div className="flex p-1 bg-ivory-100 dark:bg-charcoal-800 rounded-xl border border-border dark:border-charcoal-700">
+                  {routes.map((rt) => (
+                    <button
+                      key={rt.id}
+                      onClick={() => {
+                        setSelectedRouteId(rt.id);
+                        setSelectedStopName(rt.stops?.[0]?.stopName || null);
+                        setBusProgress(25);
+                      }}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                        selectedRouteId === rt.id
+                          ? "bg-rose-primary text-white shadow-sm"
+                          : "text-charcoal-600 dark:text-ivory-300 hover:text-charcoal-900"
+                      }`}
+                    >
+                      {rt.routeNumber}
+                    </button>
+                  ))}
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setIsSimulating(!isSimulating)}
+                  className="px-3 py-2 bg-ivory-100 dark:bg-charcoal-800 hover:bg-ivory-200 dark:hover:bg-charcoal-700 rounded-xl text-xs font-semibold text-charcoal-800 dark:text-ivory-200 flex items-center gap-1.5 transition-all border border-border dark:border-charcoal-700"
+                  title={isSimulating ? "Pause Bus Simulation" : "Resume Bus Simulation"}
+                >
+                  {isSimulating ? <Pause className="w-3.5 h-3.5 text-amber-500" /> : <Play className="w-3.5 h-3.5 text-emerald-500" />}
+                  <span>{isSimulating ? "Live Motion" : "Paused"}</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setBusProgress(10)}
+                  className="p-2 bg-ivory-100 dark:bg-charcoal-800 hover:bg-ivory-200 dark:hover:bg-charcoal-700 rounded-xl text-charcoal-600 dark:text-ivory-300 transition-all border border-border dark:border-charcoal-700"
+                  title="Reset Corridor Tracking Position"
+                >
+                  <RefreshCw className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </div>
+
+            {/* Interactive High-Tech SVG Schematic Corridor Map */}
+            <div className="relative bg-charcoal-950 rounded-3xl p-6 sm:p-8 border border-charcoal-800 shadow-2xl overflow-hidden">
+              {/* Background Map Grid & Satellite Details */}
+              <div className="absolute inset-0 opacity-10 pointer-events-none bg-[radial-gradient(#f43f5e_1px,transparent_1px)] [background-size:24px_24px]" />
+              
+              {/* Top Map HUD */}
+              <div className="relative z-10 flex flex-wrap items-center justify-between gap-3 pb-6 border-b border-charcoal-800 text-xs">
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-1.5 px-3 py-1 bg-black/60 backdrop-blur-md rounded-xl border border-charcoal-700 font-mono text-[11px] text-rose-300">
+                    <Compass className="w-3.5 h-3.5 text-rose-400" />
+                    <span>CORRIDOR: {currentRoute?.routeNumber}</span>
+                  </div>
+                  <div className="hidden sm:flex items-center gap-1.5 px-3 py-1 bg-black/60 backdrop-blur-md rounded-xl border border-charcoal-700 font-mono text-[11px] text-emerald-400">
+                    <Radio className="w-3.5 h-3.5 animate-pulse" />
+                    <span>D-GPS ACCURACY ±1.5m</span>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-4 text-ivory-300 text-xs">
+                  <div className="flex items-center gap-1.5">
+                    <Gauge className="w-3.5 h-3.5 text-rose-400" />
+                    <span>Avg Speed: <strong>{assignedVeh?.speedKmH || 38} km/h</strong></span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <Clock className="w-3.5 h-3.5 text-amber-400" />
+                    <span>Next Stop ETA: <strong className="text-amber-300">~03 min</strong></span>
+                  </div>
+                </div>
+              </div>
+
+              {/* The Interactive SVG Track */}
+              <div className="relative z-10 my-4 overflow-x-auto py-6">
+                <svg
+                  viewBox="0 0 800 220"
+                  className="w-full min-w-[700px] h-52 select-none"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <defs>
+                    <linearGradient id="corridorGlow" x1="0%" y1="0%" x2="100%" y2="0%">
+                      <stop offset="0%" stopColor="#f43f5e" stopOpacity="0.8" />
+                      <stop offset="50%" stopColor="#fb7185" stopOpacity="0.9" />
+                      <stop offset="100%" stopColor="#10b981" stopOpacity="0.9" />
+                    </linearGradient>
+                    <filter id="neonGlow" x="-20%" y="-20%" width="140%" height="140%">
+                      <feGaussianBlur stdDeviation="4" result="blur" />
+                      <feMerge>
+                        <feMergeNode in="blur" />
+                        <feMergeNode in="SourceGraphic" />
+                      </feMerge>
+                    </filter>
+                  </defs>
+
+                  {/* Outer Guide Track */}
+                  <line
+                    x1={trackStartX}
+                    y1={trackY}
+                    x2={trackEndX}
+                    y2={trackY}
+                    stroke="#334155"
+                    strokeWidth="8"
+                    strokeLinecap="round"
+                  />
+
+                  {/* Glowing Active Route Line */}
+                  <line
+                    x1={trackStartX}
+                    y1={trackY}
+                    x2={trackEndX}
+                    y2={trackY}
+                    stroke="url(#corridorGlow)"
+                    strokeWidth="4"
+                    strokeLinecap="round"
+                    filter="url(#neonGlow)"
+                  />
+
+                  {/* Completed Segment of Track */}
+                  <line
+                    x1={trackStartX}
+                    y1={trackY}
+                    x2={busX}
+                    y2={trackY}
+                    stroke="#10b981"
+                    strokeWidth="4"
+                    strokeLinecap="round"
+                  />
+
+                  {/* Render Stop Nodes */}
+                  {currentRoute?.stops?.map((stop: any, idx: number) => {
+                    const stopX = trackStartX + (idx * ((trackEndX - trackStartX) / Math.max(1, stopsCount - 1)));
+                    const isSelected = (currentStop?.stopName === stop.stopName);
+                    const isPast = stopX <= busX;
+
+                    return (
+                      <g
+                        key={stop.sequenceOrder}
+                        className="cursor-pointer transition-transform hover:scale-110"
+                        onClick={() => setSelectedStopName(stop.stopName)}
+                      >
+                        {/* Selected Ping Ring */}
+                        {isSelected && (
+                          <circle
+                            cx={stopX}
+                            cy={trackY}
+                            r="18"
+                            fill="none"
+                            stroke="#f43f5e"
+                            strokeWidth="2"
+                            strokeDasharray="4 4"
+                            className="animate-spin"
+                          />
+                        )}
+
+                        {/* Stop Circle */}
+                        <circle
+                          cx={stopX}
+                          cy={trackY}
+                          r={isSelected ? "11" : "8"}
+                          fill={isSelected ? "#f43f5e" : isPast ? "#10b981" : "#1e293b"}
+                          stroke={isSelected ? "#fff" : isPast ? "#34d399" : "#64748b"}
+                          strokeWidth="2.5"
+                        />
+
+                        {/* Sequence Label inside node */}
+                        <text
+                          x={stopX}
+                          y={trackY + 3.5}
+                          textAnchor="middle"
+                          fill="#ffffff"
+                          fontSize="9"
+                          fontWeight="bold"
+                          fontFamily="monospace"
+                        >
+                          {stop.sequenceOrder}
+                        </text>
+
+                        {/* Stop Name Label Above */}
+                        <text
+                          x={stopX}
+                          y={trackY - 26}
+                          textAnchor="middle"
+                          fill={isSelected ? "#fda4af" : "#f1f5f9"}
+                          fontSize={isSelected ? "12" : "11"}
+                          fontWeight={isSelected ? "bold" : "600"}
+                        >
+                          {stop.stopName.length > 18 ? stop.stopName.slice(0, 16) + "…" : stop.stopName}
+                        </text>
+
+                        {/* Timetable Badge Below */}
+                        <text
+                          x={stopX}
+                          y={trackY + 32}
+                          textAnchor="middle"
+                          fill="#94a3b8"
+                          fontSize="10"
+                          fontFamily="monospace"
+                        >
+                          {stop.morningPickupTime}
+                        </text>
+
+                        {/* Distance from Campus */}
+                        <text
+                          x={stopX}
+                          y={trackY + 46}
+                          textAnchor="middle"
+                          fill={stop.distanceKmFromCampus === 0 ? "#34d399" : "#64748b"}
+                          fontSize="9"
+                          fontWeight="500"
+                        >
+                          {stop.distanceKmFromCampus === 0 ? "Campus Gate" : `${stop.distanceKmFromCampus} km`}
+                        </text>
+                      </g>
+                    );
+                  })}
+
+                  {/* Animated Moving Shuttle Marker */}
+                  <g transform={`translate(${busX}, ${busY})`}>
+                    {/* Glowing outer pulse halo */}
+                    <circle cx="0" cy="0" r="22" fill="#e11d48" opacity="0.25" className="animate-ping" />
+                    <circle cx="0" cy="0" r="16" fill="#e11d48" opacity="0.4" />
+                    
+                    {/* Main Shuttle Body */}
+                    <circle cx="0" cy="0" r="12" fill="#f43f5e" stroke="#ffffff" strokeWidth="2" />
+                    
+                    {/* Bus Mini Emblem */}
+                    <path
+                      d="M -5 -4 L 5 -4 C 6 -4 6.5 -3.5 6.5 -2.5 L 6.5 3 C 6.5 4 6 4.5 5 4.5 L -5 4.5 C -6 4.5 -6.5 4 -6.5 3 L -6.5 -2.5 C -6.5 -3.5 -6 -4 -5 -4 Z"
+                      fill="#ffffff"
+                    />
+                    <circle cx="-3.5" cy="4" r="1" fill="#1e293b" />
+                    <circle cx="3.5" cy="4" r="1" fill="#1e293b" />
+
+                    {/* Dynamic Tooltip Badge Above Bus */}
+                    <g transform="translate(0, -32)">
+                      <rect
+                        x="-54"
+                        y="-12"
+                        width="108"
+                        height="20"
+                        rx="10"
+                        fill="#090d16"
+                        stroke="#f43f5e"
+                        strokeWidth="1.5"
+                      />
+                      <text
+                        x="0"
+                        y="1"
+                        textAnchor="middle"
+                        fill="#ffffff"
+                        fontSize="9.5"
+                        fontWeight="bold"
+                        fontFamily="sans-serif"
+                      >
+                        {assignedVeh?.vehicleCode || "BUS-01"} • {assignedVeh?.speedKmH || 38} km/h
+                      </text>
+                    </g>
+                  </g>
+                </svg>
+              </div>
+
+              {/* Bottom Instructions / Hint */}
+              <div className="relative z-10 flex items-center justify-between pt-4 border-t border-charcoal-800 text-xs text-charcoal-400">
+                <span className="flex items-center gap-1.5 text-ivory-300">
+                  <Sparkles className="w-3.5 h-3.5 text-rose-400" />
+                  Click any boarding stop pin along the corridor to inspect students and timetable
+                </span>
+                <span className="font-mono text-emerald-400">
+                  Route Progress: {busProgress}% Completed
+                </span>
+              </div>
+            </div>
+
+            {/* 3-Card Interactive Inspector: Stop Details, Vehicle Telematics & Corridor Safety */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+              {/* Card 1: Selected Boarding Stop Details */}
+              <div className="bg-white dark:bg-charcoal-900 rounded-2xl p-5 border border-border dark:border-charcoal-800 shadow-sm flex flex-col justify-between">
+                <div>
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-ivory-100 dark:bg-charcoal-800 text-charcoal-700 dark:text-ivory-200">
+                        Stop #{currentStop?.sequenceOrder || 1} of {stopsCount}
+                      </span>
+                      <h3 className="text-base font-bold text-charcoal-900 dark:text-ivory-100 mt-1">
+                        {currentStop?.stopName || "Selected Stop"}
+                      </h3>
+                      <p className="text-xs text-charcoal-500 mt-0.5">
+                        Landmark: {currentStop?.landmark || "Main Road Junction"}
+                      </p>
+                    </div>
+                    <MapPin className="w-5 h-5 text-rose-primary shrink-0" />
+                  </div>
+
+                  <div className="mt-4 p-3 bg-ivory-50 dark:bg-charcoal-800/60 rounded-xl space-y-2 text-xs">
+                    <div className="flex justify-between">
+                      <span className="text-charcoal-500">Morning Pickup:</span>
+                      <strong className="text-rose-primary">{currentStop?.morningPickupTime}</strong>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-charcoal-500">Evening Dropoff:</span>
+                      <strong className="text-charcoal-900 dark:text-ivory-100">{currentStop?.eveningDropTime}</strong>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-charcoal-500">Distance from Campus:</span>
+                      <strong className="font-mono">{currentStop?.distanceKmFromCampus} km</strong>
+                    </div>
+                  </div>
+
+                  {/* Registered Students at this Stop */}
+                  <div className="mt-4">
+                    <div className="flex items-center justify-between text-xs mb-1.5">
+                      <span className="font-semibold text-charcoal-700 dark:text-ivory-300">
+                        Boarding Pass Holders ({stopPasses.length})
+                      </span>
+                      <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold">
+                        Verified Passes
+                      </span>
+                    </div>
+                    <div className="space-y-1.5 max-h-32 overflow-y-auto">
+                      {stopPasses.length > 0 ? (
+                        stopPasses.map((p) => (
+                          <div
+                            key={p.id}
+                            className="p-2 rounded-lg bg-ivory-50 dark:bg-charcoal-800/40 text-xs flex items-center justify-between border border-border dark:border-charcoal-800"
+                          >
+                            <div>
+                              <span className="font-semibold block text-charcoal-900 dark:text-ivory-100">{p.studentName}</span>
+                              <span className="text-[10px] font-mono text-charcoal-400">{p.studentRoll} • {p.passNumber}</span>
+                            </div>
+                            <span className="px-1.5 py-0.5 text-[10px] rounded bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 font-bold">
+                              Valid
+                            </span>
+                          </div>
+                        ))
+                      ) : (
+                        <p className="text-xs text-charcoal-400 italic py-2">
+                          No students currently registered at this specific boarding stop.
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-4 pt-3 border-t border-border dark:border-charcoal-800">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setPassForm((prev) => ({
+                        ...prev,
+                        routeId: currentRoute?.id || "rt-01",
+                        stopName: currentStop?.stopName || "Porter Square T-Station",
+                      }));
+                      setShowPassModal(true);
+                    }}
+                    className="w-full py-2 bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/40 dark:hover:bg-rose-900/60 text-rose-700 dark:text-rose-300 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors border border-rose-200 dark:border-rose-800"
+                  >
+                    <PlusCircle className="w-3.5 h-3.5" />
+                    Issue Pass for This Stop
+                  </button>
+                </div>
+              </div>
+
+              {/* Card 2: Assigned Vehicle Telematics & Cockpit */}
+              <div className="bg-white dark:bg-charcoal-900 rounded-2xl p-5 border border-border dark:border-charcoal-800 shadow-sm flex flex-col justify-between">
+                <div>
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300">
+                        Assigned Shuttle
+                      </span>
+                      <h3 className="text-base font-bold text-charcoal-900 dark:text-ivory-100 mt-1">
+                        {assignedVeh?.vehicleCode || currentRoute?.assignedVehicleCode}
+                      </h3>
+                      <p className="text-xs font-mono text-charcoal-500 mt-0.5">
+                        {assignedVeh?.registrationNumber} • {assignedVeh?.type?.replace("_", " ")}
+                      </p>
+                    </div>
+                    {assignedVeh?.fuelType === "ELECTRIC" ? (
+                      <BatteryCharging className="w-5 h-5 text-emerald-500 shrink-0" />
+                    ) : (
+                      <Fuel className="w-5 h-5 text-amber-500 shrink-0" />
+                    )}
+                  </div>
+
+                  {/* Velocity & Fuel Gauges */}
+                  <div className="grid grid-cols-2 gap-3 mt-4 text-xs">
+                    <div className="p-3 bg-ivory-50 dark:bg-charcoal-800/60 rounded-xl text-center">
+                      <span className="text-[10px] text-charcoal-500 uppercase tracking-wider block font-semibold">Speed</span>
+                      <span className="text-lg font-bold text-charcoal-900 dark:text-ivory-100 mt-1 block">
+                        {assignedVeh?.speedKmH || 38} <span className="text-[10px] font-normal text-charcoal-400">km/h</span>
+                      </span>
+                    </div>
+                    <div className="p-3 bg-ivory-50 dark:bg-charcoal-800/60 rounded-xl text-center">
+                      <span className="text-[10px] text-charcoal-500 uppercase tracking-wider block font-semibold">
+                        {assignedVeh?.fuelType === "ELECTRIC" ? "Charge" : "Fuel Level"}
+                      </span>
+                      <span className="text-lg font-bold text-emerald-600 dark:text-emerald-400 mt-1 block">
+                        {assignedVeh?.batteryOrFuelLevel || 82}%
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Seat Occupancy Bar */}
+                  <div className="mt-3 p-3 bg-ivory-50 dark:bg-charcoal-800/60 rounded-xl space-y-1.5 text-xs">
+                    <div className="flex justify-between">
+                      <span className="text-charcoal-500">Passenger Load:</span>
+                      <strong>
+                        {assignedVeh?.currentPassengers || 42} / {assignedVeh?.capacity || 48} Seats
+                      </strong>
+                    </div>
+                    <div className="w-full bg-border dark:bg-charcoal-700 h-2 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-emerald-500 transition-all duration-500"
+                        style={{ width: `${Math.round(((assignedVeh?.currentPassengers || 42) / (assignedVeh?.capacity || 48)) * 100)}%` }}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Driver Contact */}
+                  <div className="mt-3 p-3 rounded-xl border border-border dark:border-charcoal-800 text-xs flex items-center justify-between">
+                    <div>
+                      <span className="text-[10px] text-charcoal-400 uppercase tracking-wider block font-semibold">Driver in Cockpit</span>
+                      <span className="font-bold text-charcoal-900 dark:text-ivory-100">{assignedVeh?.driverName}</span>
+                      <span className="text-charcoal-500 block text-[11px] font-mono">{assignedVeh?.driverPhone}</span>
+                    </div>
+                    <a
+                      href={`tel:${assignedVeh?.driverPhone}`}
+                      className="p-2 bg-emerald-100 hover:bg-emerald-200 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 rounded-xl transition"
+                      title="Direct Driver Call"
+                    >
+                      <Phone className="w-4 h-4" />
+                    </a>
+                  </div>
+                </div>
+
+                <div className="mt-4 pt-3 border-t border-border dark:border-charcoal-800">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (assignedVeh) {
+                        setSelectedTelematicsVehicle(assignedVeh);
+                        setPanicBeaconActive(false);
+                        setPingSent(false);
+                      }
+                    }}
+                    className="w-full py-2 bg-charcoal-900 hover:bg-black text-white dark:bg-rose-primary dark:hover:bg-rose-600 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors shadow-sm"
+                  >
+                    <Radio className="w-3.5 h-3.5 text-rose-400 animate-pulse" />
+                    Open Live Radar Telematics
+                  </button>
+                </div>
+              </div>
+
+              {/* Card 3: Corridor Transit Safety & Logistics */}
+              <div className="bg-white dark:bg-charcoal-900 rounded-2xl p-5 border border-border dark:border-charcoal-800 shadow-sm flex flex-col justify-between">
+                <div>
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300">
+                        Corridor Logistics
+                      </span>
+                      <h3 className="text-base font-bold text-charcoal-900 dark:text-ivory-100 mt-1">
+                        Operational Safety
+                      </h3>
+                      <p className="text-xs text-charcoal-500 mt-0.5">
+                        Morning Shift 07:15 AM — 08:30 AM
+                      </p>
+                    </div>
+                    <ShieldCheck className="w-5 h-5 text-emerald-500 shrink-0" />
+                  </div>
+
+                  <div className="mt-4 space-y-2.5 text-xs">
+                    <div className="p-3 bg-emerald-50/60 dark:bg-emerald-950/30 rounded-xl border border-emerald-200 dark:border-emerald-800/60">
+                      <div className="flex items-center gap-2 text-emerald-800 dark:text-emerald-300 font-bold">
+                        <Activity className="w-4 h-4" />
+                        <span>Corridor Flow: Optimal</span>
+                      </div>
+                      <p className="text-[11px] text-emerald-700 dark:text-emerald-400 mt-1">
+                        Speed governor engaged at 40 km/h. Zero traffic choke points detected on transit route.
+                      </p>
+                    </div>
+
+                    <div className="p-3 bg-ivory-50 dark:bg-charcoal-800/60 rounded-xl space-y-1.5">
+                      <div className="flex justify-between">
+                        <span className="text-charcoal-500">Conductor on Board:</span>
+                        <strong className="text-charcoal-900 dark:text-ivory-100">{assignedVeh?.attendantName}</strong>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-charcoal-500">Inspection Fitness (FC):</span>
+                        <span className="text-emerald-600 dark:text-emerald-400 font-bold">Valid till {assignedVeh?.nextFcDate}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-charcoal-500">Route Pass Capacity:</span>
+                        <span className="font-semibold">{assignedPasses.length} Active Passes</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-4 pt-3 border-t border-border dark:border-charcoal-800 flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setStatusMessage({
+                        type: "success",
+                        text: `Telemetry ping broadcast sent to ${assignedVeh?.vehicleCode || "BUS-01"} transponder.`,
+                      });
+                    }}
+                    className="flex-1 py-2 bg-ivory-100 hover:bg-ivory-200 dark:bg-charcoal-800 dark:hover:bg-charcoal-700 text-charcoal-800 dark:text-ivory-200 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors border border-border dark:border-charcoal-700"
+                  >
+                    <Radio className="w-3.5 h-3.5 text-rose-500" />
+                    Ping Transponder
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab("routes")}
+                    className="flex-1 py-2 bg-rose-primary hover:bg-rose-600 text-white rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors"
+                  >
+                    <Navigation className="w-3.5 h-3.5" />
+                    All Routes
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
       {/* TAB 2: ROUTES & SCHEDULES */}
       {activeTab === "routes" && (
         <div className="space-y-4">
+          {/* Quick jump to Live Visual Map */}
+          <div className="p-4 bg-gradient-to-r from-rose-50 to-pink-50 dark:from-rose-950/30 dark:to-charcoal-900 rounded-xl border border-rose-200 dark:border-rose-800/60 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <MapPin className="w-5 h-5 text-rose-primary shrink-0" />
+              <div>
+                <h4 className="text-xs font-bold text-rose-950 dark:text-rose-200">
+                  Live Interactive Transit Corridor Map Available
+                </h4>
+                <p className="text-[11px] text-rose-800 dark:text-rose-400">
+                  Track animated bus movements, boarding stop ETA countdowns, and passenger manifests in real time.
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => setActiveTab("map")}
+              className="px-3.5 py-1.5 bg-rose-primary hover:bg-rose-600 text-white rounded-lg text-xs font-bold flex items-center gap-1 shadow-xs transition"
+            >
+              <span>Open Visual Map</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </button>
+          </div>
           {routes.map((rt) => (
             <div
               key={rt.id}

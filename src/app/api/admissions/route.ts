@@ -30,10 +30,6 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const session = await getOptionalSession(request);
-    if (!session) {
-      return NextResponse.json({ error: "Authentication required to perform admissions operation" }, { status: 401 });
-    }
-
     const body = await request.json();
     const { action } = body;
 
@@ -61,6 +57,9 @@ export async function POST(request: NextRequest) {
     }
 
     if (action === "UPDATE_STAGE") {
+      if (!session) {
+        return NextResponse.json({ error: "Administrative authentication required to update applicant stage" }, { status: 401 });
+      }
       const { applicantId, stage, depositPaid } = body;
       if (!applicantId || !stage) {
         return NextResponse.json({ error: "Applicant ID and new stage are required" }, { status: 400 });

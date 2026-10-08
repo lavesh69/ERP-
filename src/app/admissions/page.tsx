@@ -25,6 +25,7 @@ import {
   Mail,
   CheckSquare,
   Square,
+  ExternalLink,
 } from "lucide-react";
 
 interface AdmissionsSummary {
@@ -297,6 +298,15 @@ export default function AdmissionsPage() {
               <Download className="w-4 h-4" />
               Export Applicants (CSV)
             </button>
+            <a
+              href="/admissions/apply"
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium text-sm bg-rose-primary/30 hover:bg-rose-primary/50 text-white border border-rose-300/30 shadow-sm transition-all active:scale-95"
+            >
+              <ExternalLink className="w-4 h-4" />
+              Public Apply Portal
+            </a>
             <button
               onClick={() => setShowAppModal(true)}
               className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium text-sm bg-rose-primary hover:bg-rose-600 text-white shadow-md transition-all active:scale-95"

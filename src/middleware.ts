@@ -80,6 +80,7 @@ export async function middleware(req: NextRequest) {
     "/international": ["SUPER_ADMIN", "INSTITUTION_ADMIN", "PRINCIPAL", "HOD", "FACULTY", "STUDENT", "RESEARCH_COORDINATOR"],
     "/incubation": ["SUPER_ADMIN", "INSTITUTION_ADMIN", "PRINCIPAL", "HOD", "FACULTY", "STUDENT", "ALUMNI", "PLACEMENT_OFFICER", "RESEARCH_COORDINATOR"],
     "/emergency": ["SUPER_ADMIN", "INSTITUTION_ADMIN", "PRINCIPAL", "HOD", "FACULTY", "CLASS_TEACHER", "STUDENT", "PARENT", "ACCOUNTANT", "LIBRARIAN", "EXAMINATION_CONTROLLER", "PLACEMENT_OFFICER", "RESEARCH_COORDINATOR", "HR_STAFF", "ALUMNI", "GUEST"],
+    "/canteen": ["SUPER_ADMIN", "INSTITUTION_ADMIN", "PRINCIPAL", "HOD", "FACULTY", "CLASS_TEACHER", "STUDENT", "PARENT", "ACCOUNTANT", "LIBRARIAN", "EXAMINATION_CONTROLLER", "PLACEMENT_OFFICER", "RESEARCH_COORDINATOR", "HR_STAFF", "ALUMNI", "GUEST"],
   };
 
   const getRoleDefaultHome = (role: string): string => {
@@ -123,6 +124,7 @@ export async function middleware(req: NextRequest) {
     pathname === "/api/payments/verify" ||
     pathname === "/api/attendance/biometric-push" ||
     pathname === "/api/ai/query" ||
+    pathname === "/api/admissions" ||
     pathname.startsWith("/api/admissions/") ||
     pathname === "/api/alumni/verification";
 
@@ -134,8 +136,14 @@ export async function middleware(req: NextRequest) {
     );
   }
 
-  // Require active authenticated session for all application page routes
-  if (!userSession && !pathname.startsWith("/api/")) {
+  const isPublicPageRoute =
+    pathname === "/login" ||
+    pathname === "/register" ||
+    pathname === "/admissions/apply" ||
+    pathname.startsWith("/admissions/apply/");
+
+  // Require active authenticated session for protected application page routes
+  if (!userSession && !pathname.startsWith("/api/") && !isPublicPageRoute) {
     const loginUrl = new URL("/login", req.url);
     loginUrl.searchParams.set("from", pathname);
     return NextResponse.redirect(loginUrl);

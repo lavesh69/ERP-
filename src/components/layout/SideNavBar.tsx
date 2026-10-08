@@ -47,6 +47,7 @@ import {
   Globe2,
   Rocket,
   Siren,
+  UtensilsCrossed,
 } from "lucide-react";
 
 interface NavSection {
@@ -242,6 +243,13 @@ const NAV_SECTIONS: NavSection[] = [
         icon: Siren,
         badge: "SOS",
         roles: ["SUPER_ADMIN", "INSTITUTION_ADMIN", "PRINCIPAL", "HOD", "FACULTY", "STUDENT", "HR_STAFF", "PARENT"],
+      },
+      {
+        name: "Canteen & Smart POS",
+        href: "/canteen",
+        icon: UtensilsCrossed,
+        badge: "RFID",
+        roles: ["SUPER_ADMIN", "INSTITUTION_ADMIN", "PRINCIPAL", "HOD", "FACULTY", "CLASS_TEACHER", "STUDENT", "PARENT", "ACCOUNTANT", "LIBRARIAN", "EXAMINATION_CONTROLLER", "PLACEMENT_OFFICER", "RESEARCH_COORDINATOR", "HR_STAFF", "ALUMNI", "GUEST"],
       },
     ],
   },

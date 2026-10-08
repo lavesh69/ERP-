@@ -27,6 +27,8 @@ import {
   FileText,
   CheckSquare,
   Square,
+  Ticket,
+  QrCode,
 } from "lucide-react";
 
 interface Candidate {
@@ -64,6 +66,8 @@ export default function ConvocationPage() {
   const [searchRoll, setSearchRoll] = useState("");
   const [selectedCandidate, setSelectedCandidate] = useState<Candidate | null>(null);
   const [selectedCandidateDossier, setSelectedCandidateDossier] = useState<Candidate | null>(null);
+  const [selectedCandidateForPass, setSelectedCandidateForPass] = useState<Candidate | null>(null);
+  const [showAdmitPassModal, setShowAdmitPassModal] = useState(false);
   const [showRegModal, setShowRegModal] = useState(false);
   const [regData, setRegData] = useState({
     robeSize: "L" as "S" | "M" | "L" | "XL",
@@ -582,6 +586,19 @@ ${awardList}
                           <Eye className="w-3.5 h-3.5 text-slate-500" />
                           Dossier
                         </button>
+                        {c.allClearancesGranted && (
+                          <button
+                            onClick={() => {
+                              setSelectedCandidateForPass(c);
+                              setShowAdmitPassModal(true);
+                            }}
+                            className="px-2.5 py-1.5 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/60 dark:hover:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all border border-emerald-200 dark:border-emerald-800"
+                            title="Print Hall Admit Card & Robe Token"
+                          >
+                            <Ticket className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                            Pass
+                          </button>
+                        )}
                         {c.allClearancesGranted && !c.convocationRegistered ? (
                           <button
                             onClick={() => {
@@ -676,7 +693,17 @@ ${awardList}
                     Certificate Seal: {c.certificateHash}
                   </div>
 
-                  <div className="pt-2 flex justify-end">
+                  <div className="pt-2 flex justify-end gap-2">
+                    <button
+                      onClick={() => {
+                        setSelectedCandidateForPass(c);
+                        setShowAdmitPassModal(true);
+                      }}
+                      className="px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/60 dark:hover:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors border border-emerald-200 dark:border-emerald-800"
+                    >
+                      <Ticket className="w-3.5 h-3.5" />
+                      Admit Pass
+                    </button>
                     <button
                       onClick={() => setSelectedCandidateDossier(c)}
                       className="px-3 py-1.5 bg-amber-50 hover:bg-amber-100 dark:bg-amber-950/60 dark:hover:bg-amber-900/60 text-amber-700 dark:text-amber-300 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors"
@@ -1043,7 +1070,20 @@ ${awardList}
               </p>
             </div>
 
-            <div className="flex justify-end gap-2.5 pt-2 border-t border-slate-100 dark:border-slate-800">
+            <div className="flex justify-end gap-2.5 pt-2 border-t border-slate-100 dark:border-slate-800 flex-wrap">
+              {selectedCandidateDossier.allClearancesGranted && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedCandidateForPass(selectedCandidateDossier);
+                    setShowAdmitPassModal(true);
+                  }}
+                  className="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-colors shadow-xs"
+                >
+                  <Ticket className="w-3.5 h-3.5" />
+                  Print Ceremony Admit Pass
+                </button>
+              )}
               <button
                 onClick={() => window.print()}
                 className="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-colors"
@@ -1135,6 +1175,203 @@ ${awardList}
                   Download .XML File
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Official Convocation Hall Admit Card & Robe Pass Printable Modal */}
+      {showAdmitPassModal && selectedCandidateForPass && (
+        <div className="fixed inset-0 z-50 bg-slate-950/75 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto animate-in fade-in duration-200">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl max-w-2xl w-full p-6 sm:p-8 shadow-2xl space-y-6 my-8 print:border-none print:shadow-none print:p-2 print:m-0 print:max-w-none">
+            {/* Top Toolbar (hidden during print) */}
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800 print:hidden">
+              <div className="flex items-center gap-2 text-xs font-semibold text-amber-600 dark:text-amber-400">
+                <Ticket className="w-4 h-4" />
+                <span>OFFICIAL CEREMONY CREDENTIAL & ROBE PASS</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => window.print()}
+                  className="px-3.5 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-semibold flex items-center gap-1.5 shadow-sm transition-colors"
+                >
+                  <Printer className="w-3.5 h-3.5" />
+                  Print Pass
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowAdmitPassModal(false);
+                    setSelectedCandidateForPass(null);
+                  }}
+                  className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+
+            {/* Printable Pass Container */}
+            <div className="border-2 border-dashed border-amber-300 dark:border-amber-700/60 rounded-2xl p-6 bg-amber-50/20 dark:bg-amber-950/10 space-y-5 print:border-solid print:border-black print:bg-white print:p-4">
+              {/* Institutional Header */}
+              <div className="flex items-start justify-between border-b border-amber-200/80 dark:border-amber-800/40 pb-4 print:border-black">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-2xl bg-amber-600 text-white flex items-center justify-center font-serif text-2xl font-bold shadow-md print:bg-black">
+                    A
+                  </div>
+                  <div>
+                    <h2 className="text-lg font-serif font-black tracking-wide text-slate-900 dark:text-white uppercase print:text-black">
+                      Apex University of Science and Technology
+                    </h2>
+                    <p className="text-xs text-amber-800 dark:text-amber-300 font-semibold uppercase tracking-wider print:text-black">
+                      42nd Annual Convocation & Academic Degrees Investiture 2026
+                    </p>
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400 font-mono">
+                      Venue: Grand Diamond Auditorium • Ceremony Date: October 24, 2026
+                    </p>
+                  </div>
+                </div>
+                <div className="text-right hidden sm:block print:block">
+                  <span className="px-2.5 py-1 rounded-full text-[10px] font-mono font-bold bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800 print:border-black print:text-black">
+                    CLEARANCE CERTIFIED
+                  </span>
+                  <p className="text-[10px] font-mono text-slate-400 mt-1">
+                    PASS-ADM-{selectedCandidateForPass.studentRoll}
+                  </p>
+                </div>
+              </div>
+
+              {/* Student Identity Section */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200/80 dark:border-slate-800 print:border print:border-black print:bg-white">
+                <div>
+                  <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Candidate Name</span>
+                  <h3 className="text-base font-bold text-slate-900 dark:text-white print:text-black">
+                    {selectedCandidateForPass.fullName}
+                  </h3>
+                  <p className="text-xs font-mono text-amber-700 dark:text-amber-400 font-semibold mt-0.5 print:text-black">
+                    Roll: {selectedCandidateForPass.studentRoll}
+                  </p>
+                </div>
+                <div>
+                  <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Conferred Degree & Honors</span>
+                  <p className="text-sm font-semibold text-slate-900 dark:text-white print:text-black">
+                    {selectedCandidateForPass.program}
+                  </p>
+                  <p className="text-xs text-slate-600 dark:text-slate-400 print:text-black">
+                    CGPA {selectedCandidateForPass.finalCgpa} • {selectedCandidateForPass.honorsCategory.replace(/_/g, " ")}
+                  </p>
+                </div>
+              </div>
+
+              {/* Hall Seating & Robe Credentials Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+                {/* Seat Assignment */}
+                <div className="p-3.5 bg-amber-500/10 dark:bg-amber-950/30 rounded-xl border border-amber-200 dark:border-amber-800/60 print:border-black print:bg-white">
+                  <div className="flex items-center gap-1.5 text-amber-800 dark:text-amber-300 font-bold uppercase tracking-wider text-[10px] print:text-black">
+                    <GraduationCap className="w-3.5 h-3.5" />
+                    <span>Auditorium Seat</span>
+                  </div>
+                  <p className="text-base font-bold text-slate-900 dark:text-white mt-1 print:text-black">
+                    Hall A • Row C, Seat #14
+                  </p>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+                    Gate 3 Entrance • Reporting: 08:30 AM
+                  </p>
+                </div>
+
+                {/* Academic Robe Token */}
+                <div className="p-3.5 bg-indigo-50/60 dark:bg-indigo-950/30 rounded-xl border border-indigo-200 dark:border-indigo-800/60 print:border-black print:bg-white">
+                  <div className="flex items-center gap-1.5 text-indigo-800 dark:text-indigo-300 font-bold uppercase tracking-wider text-[10px] print:text-black">
+                    <PackageCheck className="w-3.5 h-3.5" />
+                    <span>Robe Collection Token</span>
+                  </div>
+                  <p className="text-base font-bold text-indigo-950 dark:text-indigo-200 mt-1 font-mono print:text-black">
+                    ROBE-{(selectedCandidateForPass.robeSize || "L")}-{(selectedCandidateForPass.studentRoll.slice(-4) || "0409")}
+                  </p>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+                    Counter #4 (North Cloakroom) • Size {selectedCandidateForPass.robeSize || "L"}
+                  </p>
+                </div>
+
+                {/* Guest Badges */}
+                <div className="p-3.5 bg-emerald-50/60 dark:bg-emerald-950/30 rounded-xl border border-emerald-200 dark:border-emerald-800/60 print:border-black print:bg-white">
+                  <div className="flex items-center gap-1.5 text-emerald-800 dark:text-emerald-300 font-bold uppercase tracking-wider text-[10px] print:text-black">
+                    <Users className="w-3.5 h-3.5" />
+                    <span>Guest Passes</span>
+                  </div>
+                  <p className="text-base font-bold text-emerald-950 dark:text-emerald-200 mt-1 print:text-black">
+                    {selectedCandidateForPass.guestPassesCount || 2} Guests Admitted
+                  </p>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+                    Pass #G1 & #G2 • Balcony Tier 1
+                  </p>
+                </div>
+              </div>
+
+              {/* Security Barcode & QR Code Section */}
+              <div className="p-4 bg-white dark:bg-slate-900 rounded-xl border border-slate-200/80 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4 print:border-black print:bg-white">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-slate-100 dark:bg-slate-800 rounded-lg print:border print:border-black">
+                    <QrCode className="w-12 h-12 text-slate-900 dark:text-white print:text-black" />
+                  </div>
+                  <div className="text-xs space-y-0.5">
+                    <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Turnstile Pass Verification Digest</span>
+                    <p className="font-mono text-[11px] text-slate-800 dark:text-slate-200 break-all select-all font-semibold print:text-black">
+                      {selectedCandidateForPass.certificateHash}
+                    </p>
+                    <p className="text-[10px] text-slate-500">
+                      Scan at security turnstile 15 minutes before chancellor procession
+                    </p>
+                  </div>
+                </div>
+                <div className="text-right shrink-0">
+                  <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">Conferral Clearance</span>
+                  <span className="inline-flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-bold text-xs">
+                    <CheckCircle2 className="w-3.5 h-3.5" />
+                    All 6 Clearances Verified
+                  </span>
+                </div>
+              </div>
+
+              {/* Signatures & Instructions */}
+              <div className="pt-3 border-t border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row justify-between items-center gap-4 text-xs text-slate-500 print:text-black print:border-black">
+                <p className="text-[11px] max-w-sm">
+                  <strong>Instructions:</strong> Please present this printed pass along with your University Student ID card at Gate 3. Academic robes must be returned to Counter 4 before 06:00 PM.
+                </p>
+                <div className="flex gap-8 text-center text-[10px] font-serif uppercase tracking-wider">
+                  <div>
+                    <div className="w-24 border-b border-slate-400 dark:border-slate-600 mb-1 mx-auto print:border-black"></div>
+                    <span>Dean of Academics</span>
+                  </div>
+                  <div>
+                    <div className="w-24 border-b border-slate-400 dark:border-slate-600 mb-1 mx-auto print:border-black"></div>
+                    <span>Controller of Exams</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Modal Bottom Actions */}
+            <div className="flex justify-end gap-3 print:hidden">
+              <button
+                type="button"
+                onClick={() => {
+                  setShowAdmitPassModal(false);
+                  setSelectedCandidateForPass(null);
+                }}
+                className="px-4 py-2 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+              >
+                Close
+              </button>
+              <button
+                type="button"
+                onClick={() => window.print()}
+                className="px-5 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-semibold flex items-center gap-1.5 shadow-md transition-colors"
+              >
+                <Printer className="w-4 h-4" />
+                Print Admit Pass
+              </button>
             </div>
           </div>
         </div>
