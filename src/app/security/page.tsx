@@ -53,6 +53,68 @@ export default function SecurityPage() {
   const [webcamActive, setWebcamActive] = useState(false);
   const [capturedPhoto, setCapturedPhoto] = useState<string | null>(null);
 
+  // ANPR Scanner Station Modal State
+  const [showAnprModal, setShowAnprModal] = useState(false);
+  const [anprPlateInput, setAnprPlateInput] = useState("DL-01-AB-1234");
+  const [anprScanning, setAnprScanning] = useState(false);
+  const [anprResult, setAnprResult] = useState<{
+    plate: string;
+    owner: string;
+    type: "FACULTY" | "STUDENT" | "VISITOR" | "UNREGISTERED";
+    status: "AUTHORIZED" | "VISITOR_PERMIT_ACTIVE" | "RESTRICTED";
+    confidence: number;
+    barrierStatus: "OPEN" | "CLOSED";
+  } | null>({
+    plate: "DL-01-AB-1234",
+    owner: "Prof. Sarah Chen (Dean of Computing)",
+    type: "FACULTY",
+    status: "AUTHORIZED",
+    confidence: 99.4,
+    barrierStatus: "CLOSED",
+  });
+
+  const handleSimulateAnprScan = (customPlate?: string) => {
+    const plate = customPlate || anprPlateInput;
+    setAnprScanning(true);
+    setTimeout(() => {
+      setAnprScanning(false);
+      const isKnownFaculty = plate.toUpperCase().includes("DL-01") || plate.toUpperCase().includes("CH-01");
+      const isVisitor = plate.toUpperCase().includes("HR-26") || plate.toUpperCase().includes("KA-05");
+
+      if (isKnownFaculty) {
+        setAnprResult({
+          plate: plate.toUpperCase(),
+          owner: "Prof. Sarah Chen (Dean of Computing)",
+          type: "FACULTY",
+          status: "AUTHORIZED",
+          confidence: 98.7,
+          barrierStatus: "OPEN",
+        });
+        setStatusMessage({ type: "success", text: `ANPR Match: ${plate.toUpperCase()} verified. Boom Barrier Raised.` });
+      } else if (isVisitor) {
+        setAnprResult({
+          plate: plate.toUpperCase(),
+          owner: "Dr. Robert Kahn (Academic Speaker - Pass #VP-2026-091)",
+          type: "VISITOR",
+          status: "VISITOR_PERMIT_ACTIVE",
+          confidence: 96.2,
+          barrierStatus: "OPEN",
+        });
+        setStatusMessage({ type: "success", text: `ANPR Visitor Pass Match: ${plate.toUpperCase()} verified. Gate Open.` });
+      } else {
+        setAnprResult({
+          plate: plate.toUpperCase(),
+          owner: "Unregistered Vehicle (Manual Security Check Required)",
+          type: "UNREGISTERED",
+          status: "RESTRICTED",
+          confidence: 94.1,
+          barrierStatus: "CLOSED",
+        });
+        setStatusMessage({ type: "error", text: `ANPR Alert: Plate ${plate.toUpperCase()} is not registered in perimeter whitelist.` });
+      }
+    }, 1000);
+  };
+
   const filteredPasses = passes.filter((p) => {
     const q = searchQuery.toLowerCase();
     const matchesSearch =
@@ -270,6 +332,13 @@ export default function SecurityPage() {
           >
             <Download className="w-4 h-4" />
             Export Passes (CSV)
+          </button>
+          <button
+            onClick={() => setShowAnprModal(true)}
+            className="flex items-center gap-2 px-3.5 py-2.5 bg-blue-50 dark:bg-blue-950/50 hover:bg-blue-100 dark:hover:bg-blue-900 border border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-300 font-semibold text-sm rounded-xl shadow-xs transition-all"
+          >
+            <Camera className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+            ANPR Camera Scanner
           </button>
           <button
             onClick={() => setShowModal(true)}
@@ -1022,6 +1091,209 @@ export default function SecurityPage() {
                 </button>
               </div>
             </div>
+          </div>
+        </div>
+      )}
+      {/* ANPR Scanner Station Modal */}
+      {showAnprModal && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl max-w-2xl w-full p-6 shadow-2xl space-y-5 animate-in zoom-in-95 duration-200 max-h-[95vh] overflow-y-auto">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 bg-blue-600 text-white rounded-xl shadow-md shadow-blue-500/20">
+                  <Camera className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-base text-slate-900 dark:text-white flex items-center gap-2">
+                    ANPR Optical Scanner & Automated Barrier Station
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 font-bold border border-emerald-300">
+                      LIVE FEED
+                    </span>
+                  </h3>
+                  <p className="text-xs text-slate-500">
+                    Perimeter Gate #01 (North Arch) • Real-Time License Plate OCR Telemetry
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowAnprModal(false)}
+                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-sm font-bold p-1.5"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Simulated High-Res CCTV Optical Viewfinder */}
+            <div className="relative bg-slate-950 rounded-2xl overflow-hidden border border-slate-800 aspect-video flex items-center justify-center text-white shadow-inner">
+              {/* Camera Overlays */}
+              <div className="absolute top-3 left-3 flex items-center gap-2 text-[10px] font-mono bg-black/60 px-2.5 py-1 rounded-md text-emerald-400 border border-emerald-500/30">
+                <span className="w-2 h-2 rounded-full bg-rose-500 animate-ping" />
+                REC • CAM-01 NORTH ARCH • 1080P @ 30FPS
+              </div>
+              <div className="absolute top-3 right-3 text-[10px] font-mono bg-black/60 px-2 py-1 rounded-md text-slate-300">
+                {new Date().toLocaleTimeString()}
+              </div>
+
+              {/* Optical Crosshairs and Targeting Grid */}
+              <div className="absolute inset-8 border border-white/10 rounded-xl pointer-events-none flex flex-col justify-between p-2">
+                <div className="flex justify-between text-white/30 text-[9px] font-mono">
+                  <span>[+] AZIMUTH: 042°</span>
+                  <span>RANGE: 4.8M</span>
+                </div>
+                <div className="flex justify-between text-white/30 text-[9px] font-mono">
+                  <span>ZOOM: 1.8X</span>
+                  <span>ANPR ENGINE: V4.2</span>
+                </div>
+              </div>
+
+              {/* Vehicle Bounding Box & License Plate Target */}
+              <div className="relative z-10 flex flex-col items-center gap-2">
+                <div className="w-56 h-24 border-2 border-dashed border-emerald-400 rounded-xl relative flex items-center justify-center bg-emerald-950/20 backdrop-blur-xs p-3">
+                  <div className="absolute -top-3 left-2 bg-emerald-500 text-black text-[9px] font-black px-1.5 py-0.5 rounded uppercase">
+                    OCR PLATE TARGET LOCKED
+                  </div>
+                  <div className="px-4 py-2 bg-yellow-400 text-slate-950 font-black tracking-widest text-lg font-mono rounded border-2 border-slate-900 shadow-lg">
+                    {anprPlateInput || "DL-01-AB-1234"}
+                  </div>
+                  {anprScanning && (
+                    <div className="absolute inset-x-0 h-1 bg-gradient-to-r from-transparent via-cyan-400 to-transparent animate-pulse" />
+                  )}
+                </div>
+                <span className="text-[10px] font-mono text-emerald-300 bg-black/70 px-2 py-0.5 rounded">
+                  {anprScanning ? "ANALYZING NEURAL OCR MATRIX..." : `TARGET ACQUIRED: ${anprPlateInput}`}
+                </span>
+              </div>
+
+              {/* Bottom Barrier Telemetry Overlay */}
+              <div className="absolute bottom-3 inset-x-3 flex items-center justify-between bg-black/75 px-3 py-1.5 rounded-xl border border-slate-800 text-xs font-mono">
+                <div className="flex items-center gap-2">
+                  <span className="text-slate-400">BOOM BARRIER GATE:</span>
+                  <span
+                    className={`font-bold px-2 py-0.5 rounded ${
+                      anprResult?.barrierStatus === "OPEN"
+                        ? "bg-emerald-500 text-slate-950"
+                        : "bg-rose-500 text-white"
+                    }`}
+                  >
+                    {anprResult?.barrierStatus === "OPEN" ? "RAISED (PASS CLEAR)" : "LOWERED (LOCKED)"}
+                  </span>
+                </div>
+                <span className="text-slate-400 text-[10px]">INDUCTION SENSOR: ACTIVE</span>
+              </div>
+            </div>
+
+            {/* Test Sample Plates & Custom OCR Input */}
+            <div className="space-y-2 text-xs">
+              <span className="text-slate-500 font-semibold block">Quick Test Optical Samples:</span>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setAnprPlateInput("DL-01-AB-1234");
+                    handleSimulateAnprScan("DL-01-AB-1234");
+                  }}
+                  className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 rounded-lg font-mono font-medium transition-colors"
+                >
+                  DL-01-AB-1234 (Faculty Whitelist)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setAnprPlateInput("HR-26-DK-9811");
+                    handleSimulateAnprScan("HR-26-DK-9811");
+                  }}
+                  className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 rounded-lg font-mono font-medium transition-colors"
+                >
+                  HR-26-DK-9811 (Visitor Pass Active)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setAnprPlateInput("UP-16-ZZ-9999");
+                    handleSimulateAnprScan("UP-16-ZZ-9999");
+                  }}
+                  className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 rounded-lg font-mono font-medium transition-colors"
+                >
+                  UP-16-ZZ-9999 (Unregistered)
+                </button>
+              </div>
+            </div>
+
+            {/* Custom Input & Scan Trigger */}
+            <div className="flex items-center gap-3">
+              <div className="relative flex-1">
+                <input
+                  type="text"
+                  value={anprPlateInput}
+                  onChange={(e) => setAnprPlateInput(e.target.value.toUpperCase())}
+                  className="w-full p-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl font-mono text-xs font-bold uppercase tracking-wider"
+                  placeholder="Enter license plate e.g. DL-01-AB-1234"
+                />
+              </div>
+              <button
+                type="button"
+                disabled={anprScanning}
+                onClick={() => handleSimulateAnprScan()}
+                className="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs rounded-xl shadow-sm transition-all disabled:opacity-50 flex items-center gap-2"
+              >
+                <Camera className="w-4 h-4" />
+                {anprScanning ? "Scanning..." : "Trigger OCR Scan"}
+              </button>
+            </div>
+
+            {/* Verification Result Card */}
+            {anprResult && (
+              <div
+                className={`p-4 rounded-2xl border text-xs space-y-2.5 ${
+                  anprResult.status === "AUTHORIZED" || anprResult.status === "VISITOR_PERMIT_ACTIVE"
+                    ? "bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-800 text-emerald-900 dark:text-emerald-200"
+                    : "bg-rose-50 dark:bg-rose-950/30 border-rose-200 dark:border-rose-800 text-rose-900 dark:text-rose-200"
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="font-bold text-sm">{anprResult.plate}</span>
+                    <span
+                      className={`px-2 py-0.5 rounded-full font-bold text-[10px] ${
+                        anprResult.status === "AUTHORIZED"
+                          ? "bg-emerald-600 text-white"
+                          : anprResult.status === "VISITOR_PERMIT_ACTIVE"
+                          ? "bg-blue-600 text-white"
+                          : "bg-rose-600 text-white"
+                      }`}
+                    >
+                      {anprResult.status}
+                    </span>
+                  </div>
+                  <span className="font-mono text-[11px]">OCR Confidence: {anprResult.confidence}%</span>
+                </div>
+                <p className="text-slate-600 dark:text-slate-300">
+                  Registered Identity: <strong>{anprResult.owner}</strong> ({anprResult.type})
+                </p>
+
+                <div className="flex items-center justify-between pt-2 border-t border-slate-200 dark:border-slate-800">
+                  <span className="font-semibold text-slate-700 dark:text-slate-300">
+                    Barrier Automated Relay:
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setAnprResult({
+                        ...anprResult,
+                        barrierStatus: anprResult.barrierStatus === "OPEN" ? "CLOSED" : "OPEN",
+                      })
+                    }
+                    className={`px-3 py-1 rounded-lg font-bold text-xs shadow-xs transition-all ${
+                      anprResult.barrierStatus === "OPEN"
+                        ? "bg-rose-600 hover:bg-rose-700 text-white"
+                        : "bg-emerald-600 hover:bg-emerald-700 text-white"
+                    }`}
+                  >
+                    {anprResult.barrierStatus === "OPEN" ? "Lower Barrier Manually" : "Raise Barrier Manually"}
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}

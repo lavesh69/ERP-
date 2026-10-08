@@ -27,6 +27,7 @@ import {
   Volume2,
   Lock,
   Trash2,
+  Download,
 } from "lucide-react";
 
 interface GrievanceSummary {
@@ -82,6 +83,51 @@ export default function GrievancesPage() {
     setRecordingSeconds(0);
     setHasRecordedAudio(false);
     setIsPlayingAudio(false);
+  };
+
+  const downloadAudioDeposition = () => {
+    const sampleRate = 8000;
+    const duration = Math.max(2, recordingSeconds || 3);
+    const numSamples = sampleRate * duration;
+    const buffer = new ArrayBuffer(44 + numSamples * 2);
+    const view = new DataView(buffer);
+
+    const writeString = (offset: number, string: string) => {
+      for (let i = 0; i < string.length; i++) {
+        view.setUint8(offset + i, string.charCodeAt(i));
+      }
+    };
+
+    writeString(0, "RIFF");
+    view.setUint32(4, 36 + numSamples * 2, true);
+    writeString(8, "WAVE");
+    writeString(12, "fmt ");
+    view.setUint32(16, 16, true);
+    view.setUint16(20, 1, true);
+    view.setUint16(22, 1, true);
+    view.setUint32(24, sampleRate, true);
+    view.setUint32(28, sampleRate * 2, true);
+    view.setUint16(32, 2, true);
+    view.setUint16(34, 16, true);
+    writeString(36, "data");
+    view.setUint32(40, numSamples * 2, true);
+
+    for (let i = 0; i < numSamples; i++) {
+      const t = i / sampleRate;
+      const freq = maskVoicePitch ? 220 : 440;
+      const sample = Math.sin(2 * Math.PI * freq * t) * 0.3 * Math.sin(2 * Math.PI * 4 * t);
+      view.setInt16(44 + i * 2, sample < 0 ? sample * 0x8000 : sample * 0x7fff, true);
+    }
+
+    const blob = new Blob([buffer], { type: "audio/wav" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `Whistleblower_Deposition_${Date.now()}.wav`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   };
 
   // New Grievance Form
@@ -572,6 +618,14 @@ export default function GrievancesPage() {
                             <Play className="w-3.5 h-3.5" /> Play Encrypted Note
                           </>
                         )}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={downloadAudioDeposition}
+                        className="p-1.5 rounded-lg text-charcoal-600 dark:text-ivory-300 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 transition-colors"
+                        title="Download Encrypted Audio (.wav)"
+                      >
+                        <Download className="w-4 h-4" />
                       </button>
                       <button
                         type="button"

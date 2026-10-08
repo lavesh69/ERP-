@@ -24,6 +24,9 @@ import {
   ShieldCheck,
   Sparkles,
   Sliders,
+  Layers,
+  Calculator,
+  PieChart,
 } from "lucide-react";
 
 interface Startup {
@@ -71,6 +74,14 @@ export default function IncubationPage() {
   const [evalCommitteeNotes, setEvalCommitteeNotes] = useState<string>(
     "Defensible deep-tech solution with strong faculty-student founding team. Lab trials completed with high efficiency."
   );
+
+  // Cap Table & SAFE Dilution Calculator State
+  const [capFounderShare, setCapFounderShare] = useState<number>(85);
+  const [capUnivStake, setCapUnivStake] = useState<number>(5);
+  const [capEsopShare, setCapEsopShare] = useState<number>(10);
+  const [capPreMoneyVal, setCapPreMoneyVal] = useState<number>(4000000);
+  const [capInvestmentAmt, setCapInvestmentAmt] = useState<number>(1000000);
+  const [capEsopExpansion, setCapEsopExpansion] = useState<number>(5);
 
   const handleUpdateStartupStage = async (id: string, stage: string) => {
     try {
@@ -502,49 +513,331 @@ export default function IncubationPage() {
         </div>
       )}
 
-      {/* Tab 2: Portfolio Analysis */}
+      {/* Tab 2: Portfolio Analysis & Cap-Table Waterfall */}
       {activeTab === "portfolio" && (
-        <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-6">
-          <div>
-            <h2 className="text-lg font-bold text-slate-900 dark:text-white">
-              Institutional Venture Fund & Capital Overview
-            </h2>
-            <p className="text-sm text-slate-500">
-              Equity Stakes, Technology Transfer Filings & Co-Investment Multipliers
-            </p>
+        <div className="space-y-6">
+          <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-6">
+            <div>
+              <h2 className="text-lg font-bold text-slate-900 dark:text-white">
+                Institutional Venture Fund & Capital Overview
+              </h2>
+              <p className="text-sm text-slate-500">
+                Equity Stakes, Technology Transfer Filings & Co-Investment Multipliers
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl space-y-2">
+                <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
+                  Estimated Portfolio Valuation
+                </span>
+                <div className="text-3xl font-extrabold text-violet-600 dark:text-violet-400">
+                  ${(summary?.estimatedPortfolioValuation || 0).toLocaleString()}
+                </div>
+                <p className="text-xs text-slate-400">Across active incubated companies</p>
+              </div>
+
+              <div className="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl space-y-2">
+                <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
+                  Innovation Workspace Density
+                </span>
+                <div className="text-3xl font-extrabold text-slate-900 dark:text-white">
+                  {summary?.totalWorkspacesAllocated || 0} Desks
+                </div>
+                <p className="text-xs text-slate-400">Cleanroom & prototyping benches occupied</p>
+              </div>
+
+              <div className="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl space-y-2">
+                <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
+                  Capital Multiplier Ratio
+                </span>
+                <div className="text-3xl font-extrabold text-emerald-600 dark:text-emerald-400">
+                  11.7x
+                </div>
+                <p className="text-xs text-slate-400">External VC dollars raised per $1 seed grant</p>
+              </div>
+            </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl space-y-2">
-              <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
-                Estimated Portfolio Valuation
-              </span>
-              <div className="text-3xl font-extrabold text-violet-600 dark:text-violet-400">
-                ${(summary?.estimatedPortfolioValuation || 0).toLocaleString()}
-              </div>
-              <p className="text-xs text-slate-400">Across active incubated companies</p>
-            </div>
+          {/* Equity Cap Table Waterfall & SAFE Dilution Calculator */}
+          {(() => {
+            const postMoneyValuation = capPreMoneyVal + capInvestmentAmt;
+            const investorEquityPct = (capInvestmentAmt / postMoneyValuation) * 100;
+            const dilutionMultiplier = (100 - investorEquityPct - capEsopExpansion) / 100;
 
-            <div className="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl space-y-2">
-              <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
-                Innovation Workspace Density
-              </span>
-              <div className="text-3xl font-extrabold text-slate-900 dark:text-white">
-                {summary?.totalWorkspacesAllocated || 0} Desks
-              </div>
-              <p className="text-xs text-slate-400">Cleanroom & prototyping benches occupied</p>
-            </div>
+            const postFounderPct = Number((capFounderShare * dilutionMultiplier).toFixed(2));
+            const postUnivPct = Number((capUnivStake * dilutionMultiplier).toFixed(2));
+            const postEsopPct = Number(((capEsopShare * dilutionMultiplier) + capEsopExpansion).toFixed(2));
+            const postInvestorPct = Number(investorEquityPct.toFixed(2));
 
-            <div className="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl space-y-2">
-              <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
-                Capital Multiplier Ratio
-              </span>
-              <div className="text-3xl font-extrabold text-emerald-600 dark:text-emerald-400">
-                11.7x
+            const founderVal = Math.round((postFounderPct / 100) * postMoneyValuation);
+            const univVal = Math.round((postUnivPct / 100) * postMoneyValuation);
+            const esopVal = Math.round((postEsopPct / 100) * postMoneyValuation);
+            const investorVal = Math.round((postInvestorPct / 100) * postMoneyValuation);
+
+            return (
+              <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-6">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-200 dark:border-slate-800">
+                  <div className="flex items-center gap-3">
+                    <div className="p-3 bg-violet-100 dark:bg-violet-950/60 text-violet-700 dark:text-violet-300 rounded-xl">
+                      <Calculator className="w-6 h-6" />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <h3 className="font-bold text-lg text-slate-900 dark:text-white">
+                          Startup Cap Table Waterfall & SAFE Dilution Engine
+                        </h3>
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-violet-50 dark:bg-violet-900/40 text-violet-700 dark:text-violet-300 border border-violet-200 dark:border-violet-800">
+                          YC Post-Money SAFE Standard
+                        </span>
+                      </div>
+                      <p className="text-xs text-slate-500">
+                        Model pre-seed to Series A funding rounds, option pool shuffles, and institutional dilution waterfalls.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => {
+                        const csv = [
+                          "Stakeholder,Pre-Round %,Post-Round %,Dilution Delta,Post-Round Valuation",
+                          `Founders & Core Team,${capFounderShare}%,${postFounderPct}%,${(postFounderPct - capFounderShare).toFixed(2)}%,$${founderVal.toLocaleString()}`,
+                          `University Incubator Stake,${capUnivStake}%,${postUnivPct}%,${(postUnivPct - capUnivStake).toFixed(2)}%,$${univVal.toLocaleString()}`,
+                          `Employee ESOP Pool,${capEsopShare}%,${postEsopPct}%,+${(postEsopPct - capEsopShare).toFixed(2)}%,$${esopVal.toLocaleString()}`,
+                          `New Seed/SAFE Investors,0%,${postInvestorPct}%,+${postInvestorPct}%,$${investorVal.toLocaleString()}`,
+                          `Total Aggregate,100%,100%,0%,$${postMoneyValuation.toLocaleString()}`,
+                        ].join("\n");
+                        const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement("a");
+                        a.href = url;
+                        a.download = `Cap_Table_Waterfall_${Date.now()}.csv`;
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                      }}
+                      className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-semibold inline-flex items-center gap-1.5 transition-all"
+                    >
+                      <Download className="w-3.5 h-3.5" />
+                      Export Cap-Table CSV
+                    </button>
+                  </div>
+                </div>
+
+                {/* Interactive Simulator Sliders & Inputs */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 bg-slate-50 dark:bg-slate-850 p-4 rounded-xl border border-slate-200 dark:border-slate-800 text-xs">
+                  <div>
+                    <label className="block text-slate-600 dark:text-slate-300 font-semibold mb-1">
+                      Pre-Money Valuation Cap ($)
+                    </label>
+                    <input
+                      type="number"
+                      value={capPreMoneyVal}
+                      onChange={(e) => setCapPreMoneyVal(Number(e.target.value) || 100000)}
+                      step={500000}
+                      className="w-full p-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg font-mono font-bold"
+                    />
+                    <span className="text-[10px] text-slate-400 mt-0.5 block">${(capPreMoneyVal / 1000000).toFixed(2)}M Cap</span>
+                  </div>
+
+                  <div>
+                    <label className="block text-slate-600 dark:text-slate-300 font-semibold mb-1">
+                      New Investment Amount ($)
+                    </label>
+                    <input
+                      type="number"
+                      value={capInvestmentAmt}
+                      onChange={(e) => setCapInvestmentAmt(Number(e.target.value) || 50000)}
+                      step={100000}
+                      className="w-full p-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg font-mono font-bold"
+                    />
+                    <span className="text-[10px] text-emerald-500 mt-0.5 block">${(capInvestmentAmt / 1000).toFixed(0)}k Seed Check</span>
+                  </div>
+
+                  <div>
+                    <label className="block text-slate-600 dark:text-slate-300 font-semibold mb-1">
+                      ESOP Pool Top-Up Expansion (%)
+                    </label>
+                    <input
+                      type="number"
+                      value={capEsopExpansion}
+                      onChange={(e) => setCapEsopExpansion(Number(e.target.value) || 0)}
+                      min={0}
+                      max={20}
+                      className="w-full p-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg font-mono font-bold"
+                    />
+                    <span className="text-[10px] text-slate-400 mt-0.5 block">Unallocated option pool expansion</span>
+                  </div>
+
+                  <div>
+                    <label className="block text-slate-600 dark:text-slate-300 font-semibold mb-1">
+                      Initial Founder Equity: {capFounderShare}%
+                    </label>
+                    <input
+                      type="range"
+                      min={50}
+                      max={95}
+                      value={capFounderShare}
+                      onChange={(e) => {
+                        const val = Number(e.target.value);
+                        setCapFounderShare(val);
+                        setCapEsopShare(Math.max(0, 100 - val - capUnivStake));
+                      }}
+                      className="w-full accent-violet-600"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-slate-600 dark:text-slate-300 font-semibold mb-1">
+                      University Incubator Stake: {capUnivStake}%
+                    </label>
+                    <input
+                      type="range"
+                      min={1}
+                      max={15}
+                      value={capUnivStake}
+                      onChange={(e) => {
+                        const val = Number(e.target.value);
+                        setCapUnivStake(val);
+                        setCapEsopShare(Math.max(0, 100 - capFounderShare - val));
+                      }}
+                      className="w-full accent-indigo-600"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-slate-600 dark:text-slate-300 font-semibold mb-1">
+                      Pre-Round ESOP Pool: {capEsopShare}%
+                    </label>
+                    <input
+                      type="range"
+                      min={0}
+                      max={30}
+                      value={capEsopShare}
+                      onChange={(e) => setCapEsopShare(Number(e.target.value))}
+                      className="w-full accent-emerald-600"
+                    />
+                  </div>
+                </div>
+
+                {/* Ownership Waterfall Visualization */}
+                <div className="space-y-4">
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500">
+                    Ownership Structure: Pre-Round vs. Post-Round Waterfall
+                  </h4>
+
+                  {/* Pre-Round Stacked Bar */}
+                  <div className="space-y-1">
+                    <div className="flex justify-between text-xs font-semibold">
+                      <span>Pre-Round Cap Table ($4.00M Valuation)</span>
+                      <span>100% Fully Diluted</span>
+                    </div>
+                    <div className="h-6 w-full rounded-xl overflow-hidden flex text-[10px] font-bold text-white shadow-inner">
+                      <div style={{ width: `${capFounderShare}%` }} className="bg-violet-600 flex items-center justify-center">
+                        Founders {capFounderShare}%
+                      </div>
+                      <div style={{ width: `${capUnivStake}%` }} className="bg-indigo-600 flex items-center justify-center">
+                        Univ {capUnivStake}%
+                      </div>
+                      <div style={{ width: `${capEsopShare}%` }} className="bg-emerald-600 flex items-center justify-center">
+                        ESOP {capEsopShare}%
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Post-Round Stacked Bar */}
+                  <div className="space-y-1">
+                    <div className="flex justify-between text-xs font-semibold">
+                      <span className="text-violet-600 dark:text-violet-400 font-bold">
+                        Post-Round Cap Table (${(postMoneyValuation / 1000000).toFixed(2)}M Post-Money)
+                      </span>
+                      <span className="text-emerald-600 font-bold">New Capital: +${(capInvestmentAmt / 1000).toFixed(0)}k</span>
+                    </div>
+                    <div className="h-6 w-full rounded-xl overflow-hidden flex text-[10px] font-bold text-white shadow-inner">
+                      <div style={{ width: `${postFounderPct}%` }} className="bg-violet-600 flex items-center justify-center">
+                        Founders {postFounderPct}%
+                      </div>
+                      <div style={{ width: `${postUnivPct}%` }} className="bg-indigo-600 flex items-center justify-center">
+                        Univ {postUnivPct}%
+                      </div>
+                      <div style={{ width: `${postEsopPct}%` }} className="bg-emerald-600 flex items-center justify-center">
+                        ESOP {postEsopPct}%
+                      </div>
+                      <div style={{ width: `${postInvestorPct}%` }} className="bg-amber-500 flex items-center justify-center">
+                        New Investors {postInvestorPct}%
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Detailed Stakeholder Ledger */}
+                <div className="overflow-x-auto border border-slate-200 dark:border-slate-800 rounded-xl">
+                  <table className="w-full text-left text-xs">
+                    <thead className="bg-slate-50 dark:bg-slate-800 text-slate-500">
+                      <tr>
+                        <th className="p-3">Stakeholder Class</th>
+                        <th className="p-3">Pre-Round %</th>
+                        <th className="p-3">Post-Round %</th>
+                        <th className="p-3">Dilution Impact</th>
+                        <th className="p-3 text-right">Implied Equity Valuation</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
+                      <tr className="hover:bg-slate-50/50 dark:hover:bg-slate-800/40">
+                        <td className="p-3 font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+                          <span className="w-3 h-3 rounded bg-violet-600" />
+                          Founders & Core Leadership
+                        </td>
+                        <td className="p-3 font-mono">{capFounderShare}%</td>
+                        <td className="p-3 font-mono font-bold text-violet-600 dark:text-violet-400">{postFounderPct}%</td>
+                        <td className="p-3 font-mono text-rose-500">{(postFounderPct - capFounderShare).toFixed(2)}%</td>
+                        <td className="p-3 font-mono font-bold text-right text-slate-900 dark:text-white">
+                          ${founderVal.toLocaleString()}
+                        </td>
+                      </tr>
+                      <tr className="hover:bg-slate-50/50 dark:hover:bg-slate-800/40">
+                        <td className="p-3 font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+                          <span className="w-3 h-3 rounded bg-indigo-600" />
+                          University Incubator AIC Fund
+                        </td>
+                        <td className="p-3 font-mono">{capUnivStake}%</td>
+                        <td className="p-3 font-mono font-bold text-indigo-600 dark:text-indigo-400">{postUnivPct}%</td>
+                        <td className="p-3 font-mono text-rose-500">{(postUnivPct - capUnivStake).toFixed(2)}%</td>
+                        <td className="p-3 font-mono font-bold text-right text-slate-900 dark:text-white">
+                          ${univVal.toLocaleString()}
+                        </td>
+                      </tr>
+                      <tr className="hover:bg-slate-50/50 dark:hover:bg-slate-800/40">
+                        <td className="p-3 font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+                          <span className="w-3 h-3 rounded bg-emerald-600" />
+                          Employee ESOP Option Pool
+                        </td>
+                        <td className="p-3 font-mono">{capEsopShare}%</td>
+                        <td className="p-3 font-mono font-bold text-emerald-600 dark:text-emerald-400">{postEsopPct}%</td>
+                        <td className="p-3 font-mono text-emerald-600">+{capEsopExpansion}% Top-Up</td>
+                        <td className="p-3 font-mono font-bold text-right text-slate-900 dark:text-white">
+                          ${esopVal.toLocaleString()}
+                        </td>
+                      </tr>
+                      <tr className="hover:bg-slate-50/50 dark:hover:bg-slate-800/40 bg-amber-50/40 dark:bg-amber-950/20">
+                        <td className="p-3 font-semibold text-amber-900 dark:text-amber-200 flex items-center gap-2">
+                          <span className="w-3 h-3 rounded bg-amber-500" />
+                          New SAFE / Seed Syndicate Investors
+                        </td>
+                        <td className="p-3 font-mono text-slate-400">0.00%</td>
+                        <td className="p-3 font-mono font-bold text-amber-600 dark:text-amber-400">{postInvestorPct}%</td>
+                        <td className="p-3 font-mono text-amber-600 font-bold">+{postInvestorPct}% New Issue</td>
+                        <td className="p-3 font-mono font-bold text-right text-amber-600 dark:text-amber-400">
+                          ${investorVal.toLocaleString()}
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
               </div>
-              <p className="text-xs text-slate-400">External VC dollars raised per $1 seed grant</p>
-            </div>
-          </div>
+            );
+          })()}
         </div>
       )}
 

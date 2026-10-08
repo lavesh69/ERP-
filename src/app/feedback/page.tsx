@@ -556,7 +556,90 @@ export default function FeedbackPage() {
 
       {/* Tab 2: Anonymous Survey Responses */}
       {activeTab === "responses" && (
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
+        <div className="space-y-6">
+          {/* Institutional Sentiment Health Meter */}
+          {(() => {
+            const total = responses.length;
+            const pos = responses.filter((r) => analyzeSentiment(r.qualitativeRemarks, r.overallScore).polarity >= 0.1).length;
+            const bal = responses.filter((r) => {
+              const p = analyzeSentiment(r.qualitativeRemarks, r.overallScore).polarity;
+              return p >= -0.2 && p < 0.1;
+            }).length;
+            const crit = responses.filter((r) => analyzeSentiment(r.qualitativeRemarks, r.overallScore).polarity < -0.2).length;
+            const posPct = total ? Math.round((pos / total) * 100) : 0;
+            const balPct = total ? Math.round((bal / total) * 100) : 0;
+            const critPct = total ? Math.round((crit / total) * 100) : 0;
+            const netSentiment = posPct - critPct;
+
+            return (
+              <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 shadow-sm space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2.5 bg-gradient-to-br from-indigo-500 to-purple-600 text-white rounded-xl">
+                      <Brain className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h3 className="font-bold text-sm text-slate-800 dark:text-slate-100">
+                        Campus Qualitative Sentiment Health Monitor
+                      </h3>
+                      <p className="text-xs text-slate-400">
+                        Natural Language tone classification across {total} anonymized evaluations
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-slate-500 font-medium">Net Sentiment Score:</span>
+                    <span
+                      className={`px-2.5 py-1 rounded-lg text-xs font-bold ${
+                        netSentiment >= 50
+                          ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300"
+                          : "bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300"
+                      }`}
+                    >
+                      +{netSentiment} NPS
+                    </span>
+                  </div>
+                </div>
+
+                {/* Multicolored Progress Bar */}
+                <div className="space-y-1.5">
+                  <div className="h-3 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden flex">
+                    <div
+                      style={{ width: `${posPct}%` }}
+                      className="bg-emerald-500 h-full transition-all duration-500"
+                      title={`Positive: ${posPct}%`}
+                    />
+                    <div
+                      style={{ width: `${balPct}%` }}
+                      className="bg-amber-400 h-full transition-all duration-500"
+                      title={`Constructive: ${balPct}%`}
+                    />
+                    <div
+                      style={{ width: `${critPct}%` }}
+                      className="bg-rose-500 h-full transition-all duration-500"
+                      title={`Concerns: ${critPct}%`}
+                    />
+                  </div>
+                  <div className="flex justify-between items-center text-[11px] text-slate-500 dark:text-slate-400">
+                    <span className="flex items-center gap-1.5">
+                      <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                      Favorable / Delighted: <strong>{posPct}%</strong> ({pos})
+                    </span>
+                    <span className="flex items-center gap-1.5">
+                      <span className="w-2 h-2 rounded-full bg-amber-400" />
+                      Balanced / Neutral: <strong>{balPct}%</strong> ({bal})
+                    </span>
+                    <span className="flex items-center gap-1.5">
+                      <span className="w-2 h-2 rounded-full bg-rose-500" />
+                      Critical Concerns: <strong>{critPct}%</strong> ({crit})
+                    </span>
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
+
+          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
           <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
             <div>
               <span className="text-sm font-semibold text-slate-700 dark:text-slate-300">
@@ -693,6 +776,7 @@ export default function FeedbackPage() {
             </div>
           )}
         </div>
+      </div>
       )}
 
       {/* Survey Modal */}

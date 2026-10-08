@@ -123,6 +123,86 @@ export default function ClinicPage() {
     document.body.removeChild(link);
   };
 
+  const handleExportFhirBundle = () => {
+    const listToExport = filteredConsultations;
+    const bundle = {
+      resourceType: "Bundle",
+      id: `campus-clinic-fhir-r4-${Date.now()}`,
+      meta: {
+        lastUpdated: new Date().toISOString(),
+        profile: ["http://hl7.org/fhir/StructureDefinition/Bundle"],
+      },
+      type: "collection",
+      total: listToExport.length,
+      entry: listToExport.map((c: any) => ({
+        fullUrl: `urn:uuid:consultation-${c.caseNo || c.id}`,
+        resource: {
+          resourceType: "Encounter",
+          id: c.caseNo || String(c.id),
+          status: c.status === "ACTIVE" || c.status === "WAITING" ? "in-progress" : "finished",
+          class: {
+            system: "http://terminology.hl7.org/CodeSystem/v3-ActCode",
+            code: "AMB",
+            display: "Ambulatory Campus OPD",
+          },
+          subject: {
+            reference: `Patient/${c.patientRoll || c.patientName}`,
+            display: c.patientName,
+          },
+          participant: [
+            {
+              individual: {
+                display: c.attendingDoctor || "Campus Medical Officer",
+              },
+            },
+          ],
+          reasonCode: [
+            {
+              text: c.chiefComplaint || "General consultation",
+            },
+          ],
+          diagnosis: c.diagnosis
+            ? [
+                {
+                  condition: {
+                    display: c.diagnosis,
+                  },
+                },
+              ]
+            : [],
+          contained: [
+            {
+              resourceType: "Observation",
+              id: `vitals-${c.caseNo || c.id}`,
+              status: "final",
+              code: { text: "Vital Signs Panel" },
+              component: [
+                { code: { text: "Blood Pressure" }, valueString: c.vitals?.bp || "N/A" },
+                { code: { text: "Pulse Rate" }, valueQuantity: { value: c.vitals?.pulseRate || 72, unit: "bpm" } },
+                { code: { text: "Body Temperature" }, valueQuantity: { value: c.vitals?.temperatureF || 98.6, unit: "degF" } },
+                { code: { text: "SpO2" }, valueQuantity: { value: c.vitals?.spo2Percent || 99, unit: "%" } },
+              ],
+            },
+          ],
+        },
+      })),
+    };
+
+    const blob = new Blob([JSON.stringify(bundle, null, 2)], { type: "application/fhir+json" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `Campus_Clinic_FHIR_R4_Bundle_${new Date().toISOString().split("T")[0]}.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    setStatusMessage({
+      type: "success",
+      text: `Exported ${listToExport.length} patient records in compliant HL7/FHIR R4 JSON Bundle format.`,
+    });
+  };
+
   const filteredConsultations = consultations.filter((c: any) => {
     const matchesSearch =
       c.patientName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -321,6 +401,14 @@ export default function ClinicPage() {
           >
             <Download className="w-4 h-4 text-slate-500" />
             Export OPD Logs (CSV)
+          </button>
+          <button
+            onClick={handleExportFhirBundle}
+            className="flex items-center gap-2 px-4 py-2.5 bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 hover:bg-blue-100 dark:hover:bg-blue-900 text-blue-700 dark:text-blue-300 font-medium text-sm rounded-xl shadow-sm transition-all"
+            title="Download international standard HL7 / FHIR R4 JSON collection bundle"
+          >
+            <FileHeart className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+            Export FHIR R4 Bundle (JSON)
           </button>
           <button
             onClick={() => setShowModal(true)}

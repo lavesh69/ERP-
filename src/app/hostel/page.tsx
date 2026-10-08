@@ -22,6 +22,8 @@ import {
   Search,
   QrCode,
   Activity,
+  Leaf,
+  Scale,
 } from "lucide-react";
 
 interface HostelSummary {
@@ -83,6 +85,39 @@ export default function HostelPage() {
   ]);
   const [hasPunchedThisSession, setHasPunchedThisSession] = useState(false);
   const [diningHeadcount, setDiningHeadcount] = useState(384);
+
+  // SDG-12 Food Waste Tracker State
+  const [wasteLogs, setWasteLogs] = useState([
+    { id: "w-1", session: "Dinner (Yesterday)", preparedKg: 340, consumedKg: 318, wastedKg: 22, residents: 410, divertedToBiogas: true },
+    { id: "w-2", session: "Breakfast (Today)", preparedKg: 210, consumedKg: 198, wastedKg: 12, residents: 380, divertedToBiogas: true },
+    { id: "w-3", session: "Lunch (Today)", preparedKg: 360, consumedKg: 334, wastedKg: 26, residents: 395, divertedToBiogas: true },
+  ]);
+  const [wasteInput, setWasteInput] = useState({
+    session: "Dinner (Today)",
+    preparedKg: 350,
+    consumedKg: 328,
+    residents: 384,
+  });
+
+  const handleLogWaste = (e: React.FormEvent) => {
+    e.preventDefault();
+    const wasted = Math.max(0, Number(wasteInput.preparedKg) - Number(wasteInput.consumedKg));
+    const newEntry = {
+      id: `w-${Date.now()}`,
+      session: wasteInput.session,
+      preparedKg: Number(wasteInput.preparedKg),
+      consumedKg: Number(wasteInput.consumedKg),
+      wastedKg: wasted,
+      residents: Number(wasteInput.residents) || 1,
+      divertedToBiogas: true,
+    };
+    setWasteLogs([newEntry, ...wasteLogs]);
+    setStatusMessage({
+      type: "success",
+      text: `Logged ${wasted} kg kitchen surplus for ${wasteInput.session}. 100% diverted to campus anaerobic digester.`,
+    });
+    setTimeout(() => setStatusMessage(null), 4000);
+  };
 
   // New Gate Pass Form
   const [showPassModal, setShowPassModal] = useState(false);
@@ -838,6 +873,177 @@ export default function HostelPage() {
                   </tbody>
                 </table>
               </div>
+            </div>
+          </div>
+
+          {/* SDG-12 Kitchen Food Waste & Sustainability Tracker */}
+          <div className="bg-white dark:bg-charcoal-900 rounded-2xl p-6 border border-border dark:border-charcoal-800 shadow-sm space-y-6">
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-4 border-b border-border dark:border-charcoal-800">
+              <div className="flex items-center gap-3">
+                <div className="p-3 bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 rounded-xl">
+                  <Leaf className="w-6 h-6" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h3 className="font-bold text-lg text-charcoal-900 dark:text-ivory-100">
+                      SDG-12 Kitchen Food Waste & Circularity Tracker
+                    </h3>
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+                      UN SDG Target 12.3 Compliant
+                    </span>
+                  </div>
+                  <p className="text-xs text-charcoal-500 dark:text-charcoal-400">
+                    Real-time per-capita kitchen surplus auditing and automated diversion to campus anaerobic biogas digesters.
+                  </p>
+                </div>
+              </div>
+
+              {/* Real-time KPI Badges */}
+              <div className="flex flex-wrap items-center gap-3 text-xs">
+                <div className="bg-ivory-50 dark:bg-charcoal-850 p-2.5 rounded-xl border border-border dark:border-charcoal-800">
+                  <span className="text-charcoal-500 block text-[10px] uppercase font-semibold">Per-Capita Wastage</span>
+                  <span className="text-sm font-bold text-emerald-600 dark:text-emerald-400">
+                    {(
+                      wasteLogs.reduce((acc, l) => acc + l.wastedKg, 0) /
+                      Math.max(1, wasteLogs.reduce((acc, l) => acc + l.residents, 0))
+                    ).toFixed(3)}{" "}
+                    kg/head
+                  </span>
+                  <span className="text-[10px] text-charcoal-400 block">(Target: &lt; 0.080 kg)</span>
+                </div>
+                <div className="bg-ivory-50 dark:bg-charcoal-850 p-2.5 rounded-xl border border-border dark:border-charcoal-800">
+                  <span className="text-charcoal-500 block text-[10px] uppercase font-semibold">Consumption Rate</span>
+                  <span className="text-sm font-bold text-charcoal-900 dark:text-ivory-100">
+                    {(
+                      (wasteLogs.reduce((acc, l) => acc + l.consumedKg, 0) /
+                        Math.max(1, wasteLogs.reduce((acc, l) => acc + l.preparedKg, 0))) *
+                      100
+                    ).toFixed(1)}
+                    %
+                  </span>
+                  <span className="text-[10px] text-emerald-500 block font-medium">90%+ Green Tier</span>
+                </div>
+                <div className="bg-ivory-50 dark:bg-charcoal-850 p-2.5 rounded-xl border border-border dark:border-charcoal-800">
+                  <span className="text-charcoal-500 block text-[10px] uppercase font-semibold">Biogas Clean Yield</span>
+                  <span className="text-sm font-bold text-emerald-600 dark:text-emerald-400">
+                    {wasteLogs.reduce((acc, l) => acc + l.wastedKg, 0)} kg
+                  </span>
+                  <span className="text-[10px] text-charcoal-400 block">100% Diverted</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Quick Log Form */}
+            <form onSubmit={handleLogWaste} className="bg-ivory-50 dark:bg-charcoal-850/60 p-4 rounded-xl border border-border dark:border-charcoal-800">
+              <div className="flex items-center gap-2 mb-3">
+                <Scale className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                <h4 className="text-xs font-bold text-charcoal-800 dark:text-ivory-200">
+                  Log Meal Session Audit (Hostel Mess In-Charge)
+                </h4>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 text-xs">
+                <div>
+                  <label className="block text-charcoal-500 text-[11px] mb-1">Session</label>
+                  <input
+                    type="text"
+                    required
+                    value={wasteInput.session}
+                    onChange={(e) => setWasteInput({ ...wasteInput, session: e.target.value })}
+                    className="w-full p-2 bg-white dark:bg-charcoal-800 border border-border dark:border-charcoal-700 rounded-lg text-xs"
+                    placeholder="e.g. Dinner"
+                  />
+                </div>
+                <div>
+                  <label className="block text-charcoal-500 text-[11px] mb-1">Prepared (kg)</label>
+                  <input
+                    type="number"
+                    required
+                    min={1}
+                    value={wasteInput.preparedKg}
+                    onChange={(e) => setWasteInput({ ...wasteInput, preparedKg: Number(e.target.value) })}
+                    className="w-full p-2 bg-white dark:bg-charcoal-800 border border-border dark:border-charcoal-700 rounded-lg text-xs"
+                  />
+                </div>
+                <div>
+                  <label className="block text-charcoal-500 text-[11px] mb-1">Consumed (kg)</label>
+                  <input
+                    type="number"
+                    required
+                    min={0}
+                    value={wasteInput.consumedKg}
+                    onChange={(e) => setWasteInput({ ...wasteInput, consumedKg: Number(e.target.value) })}
+                    className="w-full p-2 bg-white dark:bg-charcoal-800 border border-border dark:border-charcoal-700 rounded-lg text-xs"
+                  />
+                </div>
+                <div>
+                  <label className="block text-charcoal-500 text-[11px] mb-1">Residents Served</label>
+                  <input
+                    type="number"
+                    required
+                    min={1}
+                    value={wasteInput.residents}
+                    onChange={(e) => setWasteInput({ ...wasteInput, residents: Number(e.target.value) })}
+                    className="w-full p-2 bg-white dark:bg-charcoal-800 border border-border dark:border-charcoal-700 rounded-lg text-xs"
+                  />
+                </div>
+                <div className="flex items-end">
+                  <button
+                    type="submit"
+                    className="w-full p-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-lg text-xs transition-colors shadow-sm flex items-center justify-center gap-1.5"
+                  >
+                    <PlusCircle className="w-3.5 h-3.5" />
+                    Record Audit
+                  </button>
+                </div>
+              </div>
+            </form>
+
+            {/* Waste Session Audit History */}
+            <div className="overflow-x-auto border border-border dark:border-charcoal-800 rounded-xl">
+              <table className="w-full text-left text-xs">
+                <thead className="bg-ivory-50 dark:bg-charcoal-800 text-charcoal-500">
+                  <tr>
+                    <th className="p-3">Session</th>
+                    <th className="p-3">Prepared</th>
+                    <th className="p-3">Consumed</th>
+                    <th className="p-3">Surplus (kg)</th>
+                    <th className="p-3">Residents</th>
+                    <th className="p-3">Per Capita</th>
+                    <th className="p-3">Circularity Status</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border dark:divide-charcoal-800">
+                  {wasteLogs.map((log) => {
+                    const perCap = (log.wastedKg / Math.max(1, log.residents)).toFixed(3);
+                    const isOptimal = Number(perCap) <= 0.08;
+                    return (
+                      <tr key={log.id} className="hover:bg-ivory-50/50 dark:hover:bg-charcoal-800/40">
+                        <td className="p-3 font-semibold text-charcoal-900 dark:text-ivory-100">{log.session}</td>
+                        <td className="p-3 text-charcoal-600 dark:text-ivory-300">{log.preparedKg} kg</td>
+                        <td className="p-3 text-charcoal-600 dark:text-ivory-300">{log.consumedKg} kg</td>
+                        <td className="p-3 font-bold text-amber-600 dark:text-amber-400">{log.wastedKg} kg</td>
+                        <td className="p-3 text-charcoal-500">{log.residents} students</td>
+                        <td className="p-3">
+                          <span
+                            className={`px-2 py-0.5 rounded text-[11px] font-bold ${
+                              isOptimal
+                                ? "bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300"
+                                : "bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300"
+                            }`}
+                          >
+                            {perCap} kg/capita
+                          </span>
+                        </td>
+                        <td className="p-3">
+                          <span className="flex items-center gap-1 text-[11px] font-medium text-emerald-600 dark:text-emerald-400">
+                            <CheckCircle2 className="w-3.5 h-3.5" /> Biogas Digester Diverted
+                          </span>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
             </div>
           </div>
 
