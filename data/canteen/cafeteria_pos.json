@@ -8,7 +8,7 @@
       "calories": 380,
       "isVeg": true,
       "isGlutenFree": true,
-      "availableStock": 27,
+      "availableStock": 26,
       "prepTimeMins": 6,
       "description": "Traditional fermented crepe with spiced potato filling, lentil sambar, and fresh coconut chutney."
     },
@@ -113,13 +113,36 @@
       "userFullName": "Provost Elena Evans",
       "userRole": "SUPER_ADMIN",
       "rfidCardId": "RFID-APEX-100001",
-      "currentBalance": 523.14,
+      "currentBalance": 543.87,
       "dailySpendingLimit": 100,
       "autoRechargeThreshold": 20,
       "status": "ACTIVE"
     }
   },
   "orders": [
+    {
+      "orderId": "ord-1791533528499",
+      "orderToken": "#CAN-120",
+      "userId": "usr-admin-01",
+      "customerName": "provost.evans",
+      "items": [
+        {
+          "menuItemId": "dish-01",
+          "name": "Crisp Masala Dosa & Coconut Chutney",
+          "quantity": 1,
+          "unitPrice": 4.5,
+          "subtotal": 4.5,
+          "calories": 380
+        }
+      ],
+      "subtotalAmount": 4.5,
+      "discountApplied": 0.23,
+      "totalAmount": 4.27,
+      "paymentMethod": "MEAL_WALLET",
+      "status": "PREPARING",
+      "counterNo": 2,
+      "placedAt": "2026-10-09T08:12:08.499Z"
+    },
     {
       "orderId": "ord-1791532887388",
       "orderToken": "#CAN-119",
@@ -568,6 +591,24 @@
   ],
   "transactions": [
     {
+      "id": "tx-1791533528499",
+      "userId": "usr-admin-01",
+      "type": "DEBIT_PURCHASE",
+      "amount": 4.27,
+      "balanceAfter": 543.87,
+      "reference": "ORD-#CAN-120",
+      "timestamp": "2026-10-09T08:12:08.499Z"
+    },
+    {
+      "id": "tx-1791533528493",
+      "userId": "usr-admin-01",
+      "type": "CREDIT_TOPUP",
+      "amount": 25,
+      "balanceAfter": 548.14,
+      "reference": "NET_BANKING_UPI_TEST",
+      "timestamp": "2026-10-09T08:12:08.493Z"
+    },
+    {
       "id": "tx-1791532887388",
       "userId": "usr-admin-01",
       "type": "DEBIT_PURCHASE",
@@ -919,5 +960,5 @@
       "timestamp": "2026-10-08T17:20:30.081Z"
     }
   ],
-  "orderCounter": 120
+  "orderCounter": 121
 }

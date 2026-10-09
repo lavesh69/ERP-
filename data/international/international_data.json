@@ -50,6 +50,24 @@
   ],
   "students": [
     {
+      "id": "ex-1791533528466",
+      "applicationRef": "IRO-2026-865",
+      "type": "OUTBOUND",
+      "studentName": "Devansh Sharma",
+      "studentRollOrId": "CS2026-044",
+      "homeUniversity": "Apex Autonomous University",
+      "hostUniversity": "National University of Singapore (NUS)",
+      "program": "B.Tech Computer Science & Engineering",
+      "targetSemester": "Autumn 2027",
+      "creditsMapped": 18,
+      "status": "NOMINATED",
+      "passportNumber": "N7710294",
+      "visaExpiryDate": "2027-12-31",
+      "frroStatus": "NOT_APPLICABLE",
+      "scholarshipGrantAmount": 4000,
+      "createdAt": "2026-10-09T08:12:08.466Z"
+    },
+    {
       "id": "ex-1791532887354",
       "applicationRef": "IRO-2026-429",
       "type": "OUTBOUND",

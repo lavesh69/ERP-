@@ -1,6 +1,25 @@
 {
   "startups": [
     {
+      "id": "st-1791533528473",
+      "companyRef": "VENT-2026-370",
+      "startupName": "HyperSpeed Hyperloop Logistics",
+      "founderName": "Rohan Varma",
+      "founderRollOrStaffId": "ME2026-089",
+      "founderRole": "STUDENT",
+      "sector": "ROBOTICS_IOT",
+      "stage": "INCUBATED_PROTOTYPE",
+      "pitchDeckSummary": "Magnetic levitation freight pods for inter-warehouse rapid delivery.",
+      "seedGrantDisbursed": 20000,
+      "universityEquityPercentage": 2.5,
+      "externalFundingRaised": 0,
+      "patentsFiled": 0,
+      "labDesksAllocated": 3,
+      "mentorName": "Prof. Vikram Sarabhai Chair",
+      "status": "ACTIVE",
+      "incubatedDate": "2026-10-09T08:12:08.473Z"
+    },
+    {
       "id": "st-1791532887362",
       "companyRef": "VENT-2026-450",
       "startupName": "HyperSpeed Hyperloop Logistics",

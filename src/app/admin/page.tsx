@@ -32,6 +32,8 @@ import {
   UserX,
   Filter,
   Edit2,
+  Gauge,
+  Zap,
 } from "lucide-react";
 import PasswordStrengthMeter from "@/components/auth/PasswordStrengthMeter";
 
@@ -141,6 +143,13 @@ export default function SuperAdminPage() {
   const [auditLogs, setAuditLogs] = useState<any[]>([]);
   const [isSwitchingTenant, setIsSwitchingTenant] = useState(false);
 
+  // Enterprise Load Benchmark State
+  const [benchmarkRunning, setBenchmarkRunning] = useState(false);
+  const [benchmarkSuite, setBenchmarkSuite] = useState("HMAC_SIGNATURE_CONCURRENCY");
+  const [benchmarkIterations, setBenchmarkIterations] = useState(50);
+  const [benchmarkConcurrency, setBenchmarkConcurrency] = useState(10);
+  const [benchmarkResult, setBenchmarkResult] = useState<any>(null);
+
   // 1. Fetch persisted settings, tenants, and audit logs on mount
   useEffect(() => {
     async function loadAdminData() {
@@ -244,6 +253,32 @@ export default function SuperAdminPage() {
       showToast("Network error executing automation job", "error");
     } finally {
       setRunningJob(null);
+    }
+  };
+
+  const handleRunBenchmark = async () => {
+    setBenchmarkRunning(true);
+    try {
+      const res = await fetch("/api/testing/benchmark", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          suite: benchmarkSuite,
+          iterations: benchmarkIterations,
+          concurrency: benchmarkConcurrency,
+        }),
+      });
+      const data = await res.json();
+      if (res.ok && data.result) {
+        setBenchmarkResult(data.result);
+        showToast(`Load benchmark completed: ${data.result.throughputOpsSec} ops/sec!`, "success");
+      } else {
+        showToast(data.error || "Benchmark execution failed", "error");
+      }
+    } catch {
+      showToast("Network error executing load benchmark", "error");
+    } finally {
+      setBenchmarkRunning(false);
     }
   };
 
@@ -1183,6 +1218,143 @@ export default function SuperAdminPage() {
                   <pre className="text-[11px] font-mono bg-white/80 dark:bg-charcoal-900 p-2.5 rounded-lg overflow-x-auto text-charcoal-800 dark:text-ivory-100 border border-green-100 dark:border-green-900">
                     {JSON.stringify(lastJobResult, null, 2)}
                   </pre>
+                </div>
+              )}
+            </div>
+
+            {/* Enterprise Load Testing & Concurrency Benchmark Card */}
+            <div className="bg-white dark:bg-[#1E191C] p-6 rounded-2xl border border-border dark:border-charcoal-800 shadow-soft flex flex-col gap-5">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-border dark:border-charcoal-800">
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-xl bg-rose-container dark:bg-rose-dark/30 text-rose-primary dark:text-rose-accent flex items-center justify-center">
+                    <Gauge className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-bold text-charcoal-900 dark:text-ivory-100">
+                      Enterprise Concurrency & Load Testing Harness
+                    </h3>
+                    <p className="text-xs text-charcoal-600 dark:text-charcoal-400">
+                      Stress-test cryptographic verification engines, sanitization throughput, and transaction concurrency
+                    </p>
+                  </div>
+                </div>
+
+                <button
+                  onClick={handleRunBenchmark}
+                  disabled={benchmarkRunning}
+                  className="flex items-center gap-2 px-4 py-2 rounded-xl bg-rose-primary hover:bg-rose-dark disabled:opacity-50 text-white text-xs font-bold transition-all shadow-sm"
+                >
+                  <RefreshCw className={`h-4 w-4 ${benchmarkRunning ? "animate-spin" : ""}`} />
+                  <span>{benchmarkRunning ? "Benchmarking Engine..." : "Run Micro-Benchmark"}</span>
+                </button>
+              </div>
+
+              {/* Benchmark Configuration Row */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div>
+                  <label className="text-[11px] font-bold text-charcoal-700 dark:text-charcoal-300 block mb-1">
+                    Benchmark Suite Target
+                  </label>
+                  <select
+                    value={benchmarkSuite}
+                    onChange={(e) => setBenchmarkSuite(e.target.value)}
+                    className="w-full bg-ivory-100 dark:bg-charcoal-900 border border-border dark:border-charcoal-700 rounded-xl p-2 text-xs font-medium text-charcoal-900 dark:text-ivory-100"
+                  >
+                    <option value="HMAC_SIGNATURE_CONCURRENCY">Crypto HMAC Digital Signatures</option>
+                    <option value="SECURITY_SANITIZATION">CWE-1236 Formula Sanitization</option>
+                    <option value="FULL_SYNTHETIC_LOAD">Full Synthetic Multi-Process Load</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="text-[11px] font-bold text-charcoal-700 dark:text-charcoal-300 block mb-1">
+                    Synthetic Iterations (count)
+                  </label>
+                  <input
+                    type="number"
+                    min={10}
+                    max={500}
+                    value={benchmarkIterations}
+                    onChange={(e) => setBenchmarkIterations(Math.max(10, Math.min(500, Number(e.target.value))))}
+                    className="w-full bg-ivory-100 dark:bg-charcoal-900 border border-border dark:border-charcoal-700 rounded-xl p-2 text-xs font-medium text-charcoal-900 dark:text-ivory-100 font-mono"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-[11px] font-bold text-charcoal-700 dark:text-charcoal-300 block mb-1">
+                    Simulated Concurrency (workers)
+                  </label>
+                  <input
+                    type="number"
+                    min={2}
+                    max={50}
+                    value={benchmarkConcurrency}
+                    onChange={(e) => setBenchmarkConcurrency(Math.max(2, Math.min(50, Number(e.target.value))))}
+                    className="w-full bg-ivory-100 dark:bg-charcoal-900 border border-border dark:border-charcoal-700 rounded-xl p-2 text-xs font-medium text-charcoal-900 dark:text-ivory-100 font-mono"
+                  />
+                </div>
+              </div>
+
+              {/* Benchmark Results Display */}
+              {benchmarkResult && (
+                <div className="flex flex-col gap-3 pt-2">
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    <div className="p-3 rounded-xl bg-ivory-50 dark:bg-charcoal-900 border border-border dark:border-charcoal-800">
+                      <span className="text-[10px] uppercase font-bold text-charcoal-500 block">Throughput</span>
+                      <span className="text-lg font-black text-emerald-600 dark:text-emerald-400 font-mono">
+                        {benchmarkResult.throughputOpsSec}
+                      </span>
+                      <span className="text-[10px] text-charcoal-500 block">ops / second</span>
+                    </div>
+
+                    <div className="p-3 rounded-xl bg-ivory-50 dark:bg-charcoal-900 border border-border dark:border-charcoal-800">
+                      <span className="text-[10px] uppercase font-bold text-charcoal-500 block">Success Rate</span>
+                      <span className="text-lg font-black text-rose-primary dark:text-rose-accent font-mono">
+                        {benchmarkResult.successRatePct}%
+                      </span>
+                      <span className="text-[10px] text-charcoal-500 block">
+                        {benchmarkResult.successfulOperations} / {benchmarkResult.totalOperations} ops
+                      </span>
+                    </div>
+
+                    <div className="p-3 rounded-xl bg-ivory-50 dark:bg-charcoal-900 border border-border dark:border-charcoal-800">
+                      <span className="text-[10px] uppercase font-bold text-charcoal-500 block">Latency (p95 / p50)</span>
+                      <span className="text-lg font-black text-indigo-600 dark:text-indigo-400 font-mono">
+                        {benchmarkResult.latencyDistribution?.p95Ms} ms
+                      </span>
+                      <span className="text-[10px] text-charcoal-500 block">
+                        median: {benchmarkResult.latencyDistribution?.p50Ms} ms
+                      </span>
+                    </div>
+
+                    <div className="p-3 rounded-xl bg-ivory-50 dark:bg-charcoal-900 border border-border dark:border-charcoal-800">
+                      <span className="text-[10px] uppercase font-bold text-charcoal-500 block">Total Duration</span>
+                      <span className="text-lg font-black text-charcoal-900 dark:text-ivory-100 font-mono">
+                        {benchmarkResult.totalDurationMs} ms
+                      </span>
+                      <span className="text-[10px] text-charcoal-500 block">
+                        at {benchmarkResult.concurrency} concurrent workers
+                      </span>
+                    </div>
+                  </div>
+
+                  {benchmarkResult.systemTelemetry && (
+                    <div className="flex flex-wrap items-center gap-2 p-2.5 rounded-xl bg-surface-soft dark:bg-charcoal-900/60 border border-border/80 dark:border-charcoal-800 text-[10px] text-charcoal-600 dark:text-charcoal-400">
+                      <span className="font-bold text-charcoal-800 dark:text-ivory-200">Runtime Telemetry:</span>
+                      <span className="px-2 py-0.5 rounded bg-ivory-200 dark:bg-charcoal-800 font-mono">
+                        Node: {benchmarkResult.systemTelemetry.nodeVersion}
+                      </span>
+                      <span className="px-2 py-0.5 rounded bg-ivory-200 dark:bg-charcoal-800 font-mono">
+                        Platform: {benchmarkResult.systemTelemetry.platform} ({benchmarkResult.systemTelemetry.arch})
+                      </span>
+                      <span className="px-2 py-0.5 rounded bg-ivory-200 dark:bg-charcoal-800 font-mono">
+                        CPU Cores: {benchmarkResult.systemTelemetry.cpuCores}
+                      </span>
+                      <span className="px-2 py-0.5 rounded bg-ivory-200 dark:bg-charcoal-800 font-mono">
+                        Memory RSS: {benchmarkResult.systemTelemetry.memoryRssMb} MB
+                      </span>
+                    </div>
+                  )}
                 </div>
               )}
             </div>

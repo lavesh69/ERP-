@@ -34,6 +34,9 @@ import {
   Layers,
   FlaskConical,
   GripVertical,
+  BarChart2,
+  Zap,
+  RefreshCw,
 } from "lucide-react";
 
 export default function TimetablePage() {
@@ -87,6 +90,11 @@ export default function TimetablePage() {
   const [sickLeaveDay, setSickLeaveDay] = useState("MONDAY");
   const [autoResolvedPlan, setAutoResolvedPlan] = useState<any[]>([]);
   const [isExecutingPlan, setIsExecutingPlan] = useState(false);
+
+  // Space Utilization Telemetry Modal State
+  const [isSpaceModalOpen, setIsSpaceModalOpen] = useState(false);
+  const [spaceTelemetry, setSpaceTelemetry] = useState<any>(null);
+  const [isLoadingSpaceTelemetry, setIsLoadingSpaceTelemetry] = useState(false);
 
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
   const [draggingSlotId, setDraggingSlotId] = useState<string | null>(null);
@@ -159,6 +167,23 @@ export default function TimetablePage() {
       showToast("Error retrieving academic timetable data", "error");
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const fetchSpaceTelemetry = async () => {
+    setIsLoadingSpaceTelemetry(true);
+    try {
+      const res = await fetch("/api/timetable/utilization");
+      const data = await res.json();
+      if (res.ok && data.telemetry) {
+        setSpaceTelemetry(data.telemetry);
+      } else {
+        showToast(data.error || "Failed to load facility space utilization telemetry", "error");
+      }
+    } catch {
+      showToast("Network error fetching space utilization metrics", "error");
+    } finally {
+      setIsLoadingSpaceTelemetry(false);
     }
   };
 
@@ -558,6 +583,20 @@ export default function TimetablePage() {
               <Download className="h-4 w-4 text-rose-primary" />
               <span className="hidden sm:inline">Export (.ics)</span>
             </button>
+
+            {!isStudent && (
+              <button
+                onClick={() => {
+                  fetchSpaceTelemetry();
+                  setIsSpaceModalOpen(true);
+                }}
+                className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white dark:bg-charcoal-800 border border-border dark:border-charcoal-700 hover:bg-ivory-100 dark:hover:bg-charcoal-700 text-charcoal-700 dark:text-ivory-200 text-xs font-bold transition-all"
+                title="View Facility Space Utilization & HVAC Telemetry"
+              >
+                <BarChart2 className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+                <span className="hidden sm:inline">Space Analytics</span>
+              </button>
+            )}
 
             {!isStudent && scheduleMode === "CLASS" && (
               <button
@@ -1532,6 +1571,225 @@ export default function TimetablePage() {
               >
                 <Sparkles className="h-3.5 w-3.5" />
                 <span>{isExecutingPlan ? "Deploying..." : "Execute Auto-Substitution Plan"}</span>
+              </button>
+            </div>
+          </div>
+        </Modal>
+
+        {/* Modal: Space & Facility Utilization Telemetry */}
+        <Modal
+          isOpen={isSpaceModalOpen}
+          onClose={() => setIsSpaceModalOpen(false)}
+          title="Campus Space & Facility Utilization Telemetry"
+          description="Real-time room occupancy analytics, seat fill efficiencies, and HVAC energy conservation insights."
+        >
+          <div className="flex flex-col gap-4 text-xs max-h-[75vh] overflow-y-auto pr-1">
+            {isLoadingSpaceTelemetry ? (
+              <div className="p-10 text-center flex flex-col items-center justify-center gap-2">
+                <div className="w-8 h-8 border-2 border-rose-primary border-t-transparent rounded-full animate-spin" />
+                <span className="text-charcoal-500 font-semibold">Aggregating campus room and space telemetry...</span>
+              </div>
+            ) : spaceTelemetry ? (
+              <>
+                {/* KPI Highlights */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                  <div className="p-3 rounded-xl bg-ivory-50 dark:bg-charcoal-800 border border-border dark:border-charcoal-700">
+                    <span className="text-[10px] uppercase font-bold text-charcoal-500 block">Total Rooms</span>
+                    <span className="text-lg font-black text-charcoal-900 dark:text-ivory-100">
+                      {spaceTelemetry.totalRooms}
+                    </span>
+                    <span className="text-[10px] text-charcoal-500 block">
+                      {spaceTelemetry.totalCapacitySeats} seats
+                    </span>
+                  </div>
+
+                  <div className="p-3 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-800">
+                    <span className="text-[10px] uppercase font-bold text-indigo-700 dark:text-indigo-300 block">Avg Occupancy</span>
+                    <span className="text-lg font-black text-indigo-700 dark:text-indigo-300">
+                      {spaceTelemetry.averageOccupancyPct}%
+                    </span>
+                    <span className="text-[10px] text-indigo-600/80 dark:text-indigo-400 block">
+                      {spaceTelemetry.totalScheduledHours} hrs/week
+                    </span>
+                  </div>
+
+                  <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800">
+                    <span className="text-[10px] uppercase font-bold text-emerald-700 dark:text-emerald-300 block">Seat Fill Rate</span>
+                    <span className="text-lg font-black text-emerald-700 dark:text-emerald-300">
+                      {spaceTelemetry.averageSeatFillPct}%
+                    </span>
+                    <span className="text-[10px] text-emerald-600/80 dark:text-emerald-400 block">
+                      Enrollment density
+                    </span>
+                  </div>
+
+                  <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800">
+                    <span className="text-[10px] uppercase font-bold text-amber-700 dark:text-amber-300 block">Peak Window</span>
+                    <span className="text-sm font-black text-amber-800 dark:text-amber-200 truncate block mt-0.5">
+                      {spaceTelemetry.peakHour || "10:00 - 11:00"}
+                    </span>
+                    <span className="text-[10px] text-amber-700/80 dark:text-amber-400 flex items-center gap-1 mt-0.5">
+                      <Zap className="h-3 w-3" />
+                      {spaceTelemetry.insights?.recommendedHvacSavingsHours || 0}h HVAC savings
+                    </span>
+                  </div>
+                </div>
+
+                {/* Optimization Highlights */}
+                {spaceTelemetry.insights && (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                    <div className="p-3 rounded-xl bg-rose-50/70 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-900/60">
+                      <div className="flex items-center gap-1.5 font-bold text-rose-800 dark:text-rose-300 mb-1">
+                        <AlertTriangle className="h-3.5 w-3.5" />
+                        <span>High-Load Bottlenecks (&ge;80%):</span>
+                      </div>
+                      <div className="flex flex-wrap gap-1">
+                        {spaceTelemetry.insights.criticalBottlenecks?.length > 0 ? (
+                          spaceTelemetry.insights.criticalBottlenecks.map((b: string) => (
+                            <span key={b} className="px-2 py-0.5 rounded bg-rose-200 dark:bg-rose-900 text-rose-900 dark:text-rose-100 font-bold text-[10px]">
+                              {b}
+                            </span>
+                          ))
+                        ) : (
+                          <span className="text-charcoal-500 text-[11px]">No capacity bottlenecks detected</span>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="p-3 rounded-xl bg-green-50/70 dark:bg-green-950/30 border border-green-200 dark:border-green-900/60">
+                      <div className="flex items-center gap-1.5 font-bold text-green-800 dark:text-green-300 mb-1">
+                        <CheckCircle2 className="h-3.5 w-3.5" />
+                        <span>Energy Savings Candidates (&lt;25%):</span>
+                      </div>
+                      <div className="flex flex-wrap gap-1">
+                        {spaceTelemetry.insights.underutilizedRooms?.length > 0 ? (
+                          spaceTelemetry.insights.underutilizedRooms.map((u: string) => (
+                            <span key={u} className="px-2 py-0.5 rounded bg-green-200 dark:bg-green-900 text-green-900 dark:text-green-100 font-bold text-[10px]">
+                              {u}
+                            </span>
+                          ))
+                        ) : (
+                          <span className="text-charcoal-500 text-[11px]">All facilities actively utilized</span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Day Distribution Bar */}
+                {spaceTelemetry.dayDistribution && (
+                  <div>
+                    <span className="font-bold text-charcoal-700 dark:text-charcoal-300 block mb-1.5 text-[11px]">
+                      Day-by-Day Facility Load Curve
+                    </span>
+                    <div className="grid grid-cols-5 gap-1.5">
+                      {spaceTelemetry.dayDistribution.map((d: any) => (
+                        <div key={d.dayOfWeek} className="p-2 rounded-lg bg-ivory-50 dark:bg-charcoal-800 border border-border dark:border-charcoal-700 text-center">
+                          <span className="font-mono text-[9px] uppercase font-bold text-charcoal-500 block">
+                            {d.dayOfWeek.slice(0, 3)}
+                          </span>
+                          <span className="font-bold text-xs text-charcoal-800 dark:text-ivory-200 block">
+                            {d.loadPct}%
+                          </span>
+                          <span className="text-[9px] text-charcoal-400 block">
+                            {d.scheduledHours}h active
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Room-by-Room Metrics Table */}
+                <div>
+                  <span className="font-bold text-charcoal-700 dark:text-charcoal-300 block mb-1.5 text-[11px]">
+                    Room Space & Capacity Breakdown
+                  </span>
+                  <div className="border border-border dark:border-charcoal-700 rounded-xl overflow-hidden max-h-56 overflow-y-auto">
+                    <table className="w-full text-left text-[11px]">
+                      <thead className="bg-ivory-100 dark:bg-charcoal-800 text-charcoal-500 sticky top-0">
+                        <tr>
+                          <th className="p-2">Room</th>
+                          <th className="p-2">Capacity</th>
+                          <th className="p-2">Weekly Hours</th>
+                          <th className="p-2">Occupancy</th>
+                          <th className="p-2">Status</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-border dark:divide-charcoal-700">
+                        {spaceTelemetry.metricsByRoom?.map((r: any) => (
+                          <tr key={r.roomId} className="hover:bg-ivory-50 dark:hover:bg-charcoal-800/40">
+                            <td className="p-2">
+                              <span className="font-bold text-charcoal-900 dark:text-ivory-100 block">
+                                {r.roomCode}
+                              </span>
+                              <span className="text-[10px] text-charcoal-500">{r.roomName}</span>
+                            </td>
+                            <td className="p-2 text-charcoal-700 dark:text-ivory-200 font-mono">
+                              {r.capacity} seats
+                            </td>
+                            <td className="p-2 text-charcoal-700 dark:text-ivory-200 font-mono">
+                              {r.scheduledWeeklyHours}h / 40h
+                            </td>
+                            <td className="p-2">
+                              <div className="flex items-center gap-1.5">
+                                <div className="w-12 bg-ivory-200 dark:bg-charcoal-700 rounded-full h-1.5 overflow-hidden">
+                                  <div
+                                    className={`h-full ${
+                                      r.occupancyRatePct >= 80
+                                        ? "bg-rose-500"
+                                        : r.occupancyRatePct >= 40
+                                        ? "bg-indigo-500"
+                                        : "bg-emerald-500"
+                                    }`}
+                                    style={{ width: `${Math.min(100, r.occupancyRatePct)}%` }}
+                                  />
+                                </div>
+                                <span className="font-bold text-[10px] font-mono">{r.occupancyRatePct}%</span>
+                              </div>
+                            </td>
+                            <td className="p-2">
+                              <span
+                                className={`px-2 py-0.5 rounded text-[9px] font-bold ${
+                                  r.status === "CRITICAL_BOTTLENECK"
+                                    ? "bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300"
+                                    : r.status === "OPTIMAL"
+                                    ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300"
+                                    : "bg-ivory-200 text-charcoal-700 dark:bg-charcoal-700 dark:text-charcoal-300"
+                                }`}
+                              >
+                                {r.status}
+                              </span>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </>
+            ) : (
+              <div className="p-6 text-center text-charcoal-500">
+                No space telemetry available. Click below to refresh.
+              </div>
+            )}
+
+            <div className="flex items-center justify-between pt-3 border-t border-border dark:border-charcoal-700 mt-2">
+              <button
+                type="button"
+                onClick={fetchSpaceTelemetry}
+                disabled={isLoadingSpaceTelemetry}
+                className="px-3 py-1.5 rounded-xl border border-border dark:border-charcoal-700 text-charcoal-700 dark:text-ivory-200 hover:bg-ivory-100 dark:hover:bg-charcoal-800 text-xs font-semibold flex items-center gap-1"
+              >
+                <RefreshCw className="h-3 w-3" />
+                <span>Refresh Metrics</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsSpaceModalOpen(false)}
+                className="px-4 py-2 rounded-xl bg-rose-primary hover:bg-rose-dark text-white text-xs font-bold shadow-sm"
+              >
+                Close Telemetry
               </button>
             </div>
           </div>
