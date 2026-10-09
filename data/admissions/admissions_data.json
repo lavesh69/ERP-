@@ -1,6 +1,121 @@
 {
   "applicants": [
     {
+      "id": "app-1791484178485",
+      "applicationNo": "ADM-2026-889",
+      "fullName": "Linus Torvalds Jr.",
+      "email": "linus.jr@test-admissions.edu",
+      "phone": "+1 (555) 019-2834",
+      "programCode": "BTECH-CSE",
+      "programName": "B.Tech Computer Science & Engineering",
+      "highSchoolGpa": 4,
+      "entranceExamScore": 1560,
+      "meritRank": 26,
+      "stage": "OFFER_EXTENDED",
+      "documentsStatus": {
+        "transcriptsVerified": false,
+        "identityProofVerified": false,
+        "recommendationLettersVerified": false
+      },
+      "seatDepositPaid": false,
+      "depositAmount": 0,
+      "assignedCounselor": "Admissions Central Desk",
+      "source": "PORTAL_DIRECT",
+      "appliedDate": "2026-10-08T18:29:38.486Z"
+    },
+    {
+      "id": "app-1791484045860",
+      "applicationNo": "ADM-2026-905",
+      "fullName": "Linus Torvalds Jr.",
+      "email": "linus.jr@test-admissions.edu",
+      "phone": "+1 (555) 019-2834",
+      "programCode": "BTECH-CSE",
+      "programName": "B.Tech Computer Science & Engineering",
+      "highSchoolGpa": 4,
+      "entranceExamScore": 1560,
+      "meritRank": 41,
+      "stage": "OFFER_EXTENDED",
+      "documentsStatus": {
+        "transcriptsVerified": false,
+        "identityProofVerified": false,
+        "recommendationLettersVerified": false
+      },
+      "seatDepositPaid": false,
+      "depositAmount": 0,
+      "assignedCounselor": "Admissions Central Desk",
+      "source": "PORTAL_DIRECT",
+      "appliedDate": "2026-10-08T18:27:25.860Z"
+    },
+    {
+      "id": "app-1791484017184",
+      "applicationNo": "ADM-2026-520",
+      "fullName": "Linus Torvalds Jr.",
+      "email": "linus.jr@test-admissions.edu",
+      "phone": "+1 (555) 019-2834",
+      "programCode": "BTECH-CSE",
+      "programName": "B.Tech Computer Science & Engineering",
+      "highSchoolGpa": 4,
+      "entranceExamScore": 1560,
+      "meritRank": 10,
+      "stage": "OFFER_EXTENDED",
+      "documentsStatus": {
+        "transcriptsVerified": false,
+        "identityProofVerified": false,
+        "recommendationLettersVerified": false
+      },
+      "seatDepositPaid": false,
+      "depositAmount": 0,
+      "assignedCounselor": "Admissions Central Desk",
+      "source": "PORTAL_DIRECT",
+      "appliedDate": "2026-10-08T18:26:57.184Z"
+    },
+    {
+      "id": "app-1791483906389",
+      "applicationNo": "ADM-2026-947",
+      "fullName": "Linus Torvalds Jr.",
+      "email": "linus.jr@test-admissions.edu",
+      "phone": "+1 (555) 019-2834",
+      "programCode": "BTECH-CSE",
+      "programName": "B.Tech Computer Science & Engineering",
+      "highSchoolGpa": 4,
+      "entranceExamScore": 1560,
+      "meritRank": 43,
+      "stage": "OFFER_EXTENDED",
+      "documentsStatus": {
+        "transcriptsVerified": false,
+        "identityProofVerified": false,
+        "recommendationLettersVerified": false
+      },
+      "seatDepositPaid": false,
+      "depositAmount": 0,
+      "assignedCounselor": "Admissions Central Desk",
+      "source": "PORTAL_DIRECT",
+      "appliedDate": "2026-10-08T18:25:06.389Z"
+    },
+    {
+      "id": "app-1791481827555",
+      "applicationNo": "ADM-2026-710",
+      "fullName": "Linus Torvalds Jr.",
+      "email": "linus.jr@test-admissions.edu",
+      "phone": "+1 (555) 019-2834",
+      "programCode": "BTECH-CSE",
+      "programName": "B.Tech Computer Science & Engineering",
+      "highSchoolGpa": 4,
+      "entranceExamScore": 1560,
+      "meritRank": 52,
+      "stage": "OFFER_EXTENDED",
+      "documentsStatus": {
+        "transcriptsVerified": false,
+        "identityProofVerified": false,
+        "recommendationLettersVerified": false
+      },
+      "seatDepositPaid": false,
+      "depositAmount": 0,
+      "assignedCounselor": "Admissions Central Desk",
+      "source": "PORTAL_DIRECT",
+      "appliedDate": "2026-10-08T17:50:27.555Z"
+    },
+    {
       "id": "app-1791338601145",
       "applicationNo": "ADM-2026-260",
       "fullName": "Linus Torvalds Jr.",

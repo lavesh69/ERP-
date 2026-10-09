@@ -34,6 +34,7 @@ interface HostelStoreSchema {
   gatePasses: GatePass[];
   messPlans: MessPlan[];
   subscriptions: StudentMessSubscription[];
+  nightRollCalls?: any[];
 }
 
 const DEFAULT_BLOCKS: HostelBlock[] = [
@@ -497,5 +498,148 @@ export const hostelStore = {
 
     writeStore(store);
     return { success: true, planName: plan.name };
+  },
+
+  getNightRollCall(blockId?: string) {
+    const store = readStore();
+    const defaultRollCalls = [
+      {
+        id: "nrc-2026-10-08",
+        date: new Date().toISOString().split("T")[0],
+        curfewTime: "21:30",
+        blockId: "blk-a",
+        blockName: "Nelson Mandela Hall (Block A)",
+        wardenOnDuty: "Dr. Arthur Pendelton",
+        status: "IN_PROGRESS",
+        totalResidents: 6,
+        inRoomCount: 4,
+        permittedOutpassCount: 1,
+        unauthorizedAbsentCount: 1,
+        roster: [
+          {
+            studentRoll: "CS2026-001",
+            studentName: "Alex Mercer",
+            roomNumber: "A-101",
+            bedId: "A101-B1",
+            status: "IN_ROOM",
+            updatedAt: new Date().toISOString(),
+            remarks: "Biometric optical verify",
+          },
+          {
+            studentRoll: "CS2026-089",
+            studentName: "Rohan Deshmukh",
+            roomNumber: "A-101",
+            bedId: "A101-B2",
+            status: "IN_ROOM",
+            updatedAt: new Date().toISOString(),
+            remarks: "Present in room",
+          },
+          {
+            studentRoll: "ME2025-042",
+            studentName: "Priya Sharma",
+            roomNumber: "A-102",
+            bedId: "A102-B1",
+            status: "PERMITTED_LATE_PASS",
+            updatedAt: new Date().toISOString(),
+            remarks: "Library night pass till 23:00",
+          },
+          {
+            studentRoll: "EE2024-019",
+            studentName: "Karan Singhania",
+            roomNumber: "A-102",
+            bedId: "A102-B2",
+            status: "UNAUTHORIZED_ABSENT",
+            updatedAt: new Date().toISOString(),
+            remarks: "Not in room, SOS outpass alert flagged",
+          },
+          {
+            studentRoll: "CS2025-014",
+            studentName: "Tanya Mehta",
+            roomNumber: "A-103",
+            bedId: "A103-B1",
+            status: "HOME_LEAVE",
+            updatedAt: new Date().toISOString(),
+            remarks: "Diwali sanctioned home leave",
+          },
+          {
+            studentRoll: "CS2026-042",
+            studentName: "Alex Rivera",
+            roomNumber: "A-103",
+            bedId: "A103-B2",
+            status: "IN_ROOM",
+            updatedAt: new Date().toISOString(),
+            remarks: "Verified present",
+          },
+        ],
+      },
+    ];
+
+    const rollCalls = store.nightRollCalls || defaultRollCalls;
+    if (blockId && blockId !== "all") {
+      return rollCalls.filter((rc: any) => rc.blockId === blockId);
+    }
+    return rollCalls;
+  },
+
+  submitNightRollCall(payload: {
+    blockId: string;
+    blockName?: string;
+    wardenOnDuty?: string;
+    roster: any[];
+  }) {
+    const store = readStore();
+    const defaultRollCalls = [
+      {
+        id: "nrc-2026-10-08",
+        date: new Date().toISOString().split("T")[0],
+        curfewTime: "21:30",
+        blockId: "blk-a",
+        blockName: "Nelson Mandela Hall (Block A)",
+        wardenOnDuty: "Dr. Arthur Pendelton",
+        status: "IN_PROGRESS",
+        totalResidents: 6,
+        inRoomCount: 4,
+        permittedOutpassCount: 1,
+        unauthorizedAbsentCount: 1,
+        roster: [],
+      },
+    ];
+
+    if (!store.nightRollCalls) {
+      store.nightRollCalls = defaultRollCalls;
+    }
+
+    const todayStr = new Date().toISOString().split("T")[0];
+    const inRoomCount = payload.roster.filter((r) => r.status === "IN_ROOM").length;
+    const permittedOutpassCount = payload.roster.filter((r) => r.status === "PERMITTED_LATE_PASS").length;
+    const unauthorizedAbsentCount = payload.roster.filter((r) => r.status === "UNAUTHORIZED_ABSENT").length;
+
+    const existingIdx = store.nightRollCalls.findIndex(
+      (rc: any) => rc.blockId === payload.blockId && rc.date === todayStr
+    );
+
+    const record = {
+      id: existingIdx >= 0 ? store.nightRollCalls[existingIdx].id : `nrc-${Date.now()}`,
+      date: todayStr,
+      curfewTime: "21:30",
+      blockId: payload.blockId,
+      blockName: payload.blockName || "Hostel Residential Block",
+      wardenOnDuty: payload.wardenOnDuty || "Resident Hostel Warden",
+      status: "COMPLETED",
+      totalResidents: payload.roster.length,
+      inRoomCount,
+      permittedOutpassCount,
+      unauthorizedAbsentCount,
+      roster: payload.roster,
+    };
+
+    if (existingIdx >= 0) {
+      store.nightRollCalls[existingIdx] = record;
+    } else {
+      store.nightRollCalls.unshift(record);
+    }
+
+    writeStore(store);
+    return record;
   },
 };

@@ -35,6 +35,8 @@ import {
   Zap,
 } from "lucide-react";
 
+import { CBCSElectiveChoiceView } from "@/components/lms/CBCSElectiveChoiceView";
+
 interface Chapter {
   id: string;
   title: string;
@@ -57,7 +59,8 @@ interface Module {
 }
 
 export default function LMSPage() {
-  const { showToast, setIsAIChatOpen, refreshTrigger, triggerRefresh, currentRole } = useApp();
+  const { showToast, setIsAIChatOpen, refreshTrigger, triggerRefresh, currentRole, currentUser } = useApp();
+  const [lmsViewMode, setLmsViewMode] = useState<"courseware" | "cbcs-electives">("courseware");
   const [selectedCourse, setSelectedCourse] = useState("CS-402");
   const [availableCourses, setAvailableCourses] = useState<{ id: string; code: string; title: string }[]>([]);
   const [activeChapterId, setActiveChapterId] = useState<string>("");
@@ -467,13 +470,44 @@ Verification Code: APX-LMS-2026-${Date.now()}
           </div>
         </div>
 
-        {/* Course Banner & Progress */}
-        <div className="glass-panel p-6 rounded-2xl shadow-soft flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div className="flex flex-col gap-2">
-            <div className="flex items-center gap-3">
-              <span className="text-xs font-bold text-rose-primary dark:text-rose-accent uppercase tracking-wider">
-                {isFacultyOrAdmin ? "Assigned Course" : "Enrolled Course"}
-              </span>
+        {/* LMS Mode Navigation Switcher */}
+        <div className="flex items-center gap-1.5 p-1 bg-ivory-100 dark:bg-charcoal-950/80 rounded-2xl border border-border dark:border-charcoal-800 max-w-full overflow-x-auto">
+          <button
+            onClick={() => setLmsViewMode("courseware")}
+            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all whitespace-nowrap cursor-pointer ${
+              lmsViewMode === "courseware"
+                ? "bg-white dark:bg-charcoal-800 text-charcoal-900 dark:text-ivory-100 shadow-sm"
+                : "text-charcoal-600 dark:text-charcoal-400 hover:text-charcoal-900 dark:hover:text-ivory-100"
+            }`}
+          >
+            <BookOpen className="h-4 w-4 text-rose-primary" />
+            Courseware &amp; Learning Modules ({selectedCourse})
+          </button>
+
+          <button
+            onClick={() => setLmsViewMode("cbcs-electives")}
+            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all whitespace-nowrap cursor-pointer ${
+              lmsViewMode === "cbcs-electives"
+                ? "bg-white dark:bg-charcoal-800 text-charcoal-900 dark:text-ivory-100 shadow-sm"
+                : "text-charcoal-600 dark:text-charcoal-400 hover:text-charcoal-900 dark:hover:text-ivory-100"
+            }`}
+          >
+            <Sparkles className="h-4 w-4 text-emerald-500" />
+            CBCS Elective Choice Filling (Semester Enrollment)
+          </button>
+        </div>
+
+        {lmsViewMode === "cbcs-electives" ? (
+          <CBCSElectiveChoiceView showToast={showToast} currentUser={currentUser} />
+        ) : (
+          <>
+            {/* Course Banner & Progress */}
+            <div className="glass-panel p-6 rounded-2xl shadow-soft flex flex-col md:flex-row md:items-center justify-between gap-6">
+              <div className="flex flex-col gap-2">
+                <div className="flex items-center gap-3">
+                  <span className="text-xs font-bold text-rose-primary dark:text-rose-accent uppercase tracking-wider">
+                    {isFacultyOrAdmin ? "Assigned Course" : "Enrolled Course"}
+                  </span>
               {availableCourses.length > 1 && (
                 <div className="flex items-center gap-1.5">
                   <span className="text-[11px] text-charcoal-500 font-semibold">Switch:</span>
@@ -890,6 +924,8 @@ Verification Code: APX-LMS-2026-${Date.now()}
               </div>
             </div>
           </div>
+        )}
+          </>
         )}
       </div>
 

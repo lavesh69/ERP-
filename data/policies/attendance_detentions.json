@@ -1,0 +1,79 @@
+{
+  "academicSession": "Fall 2026",
+  "statutoryThresholdPercent": 75,
+  "medicalCondonationFloorPercent": 65,
+  "condonations": [
+    {
+      "id": "cnd-1791484178828",
+      "studentRoll": "APX2026-CS-088",
+      "studentName": "Rahul Sharma",
+      "courseCode": "CS-402",
+      "courseTitle": "Neural Networks & Deep Learning",
+      "attendancePercentage": 68.5,
+      "totalClasses": 40,
+      "attendedClasses": 27,
+      "status": "CONDONED_EXAM_PERMITTED",
+      "medicalCertRef": "MED-CLINIC-2026-8819",
+      "hospitalName": "Registered University Medical Center",
+      "condonationFeeReceipt": "REC-99120",
+      "condonationFeeAmount": 25,
+      "approvedBy": "Senate Academic Appeals Board",
+      "approvedAt": "2026-10-08T18:29:38.828Z"
+    },
+    {
+      "id": "cnd-2026-001",
+      "studentRoll": "APX2026-CS-019",
+      "studentName": "Vikram Malhotra",
+      "courseCode": "CS-402",
+      "courseTitle": "Advanced Neural Networks",
+      "attendancePercentage": 68.5,
+      "totalClasses": 40,
+      "attendedClasses": 27,
+      "status": "CONDONED_EXAM_PERMITTED",
+      "medicalCertRef": "MED-APX-88219",
+      "hospitalName": "Apollo Healthcare & University Infirmary",
+      "condonationFeeReceipt": "REC-CND-5501",
+      "condonationFeeAmount": 25,
+      "approvedBy": "Dr. Sarah Jenkins (HOD Computer Science)",
+      "approvedAt": "2026-10-05T11:20:00Z"
+    }
+  ],
+  "sampleDetainedStudents": [
+    {
+      "studentRoll": "APX2026-CS-022",
+      "studentName": "Rahul Verma",
+      "courseCode": "CS-402",
+      "courseTitle": "Advanced Neural Networks",
+      "totalClasses": 40,
+      "attendedClasses": 28,
+      "attendancePercentage": 70,
+      "status": "ELIGIBLE_FOR_CONDONATION",
+      "category": "CONDONABLE_WINDOW",
+      "shortfallClasses": 2
+    },
+    {
+      "studentRoll": "APX2026-CS-031",
+      "studentName": "Sameer Joshi",
+      "courseCode": "CS-402",
+      "courseTitle": "Advanced Neural Networks",
+      "totalClasses": 40,
+      "attendedClasses": 22,
+      "attendancePercentage": 55,
+      "status": "STRICTLY_DETAINED",
+      "category": "CRITICAL_DETENTION",
+      "shortfallClasses": 8
+    },
+    {
+      "studentRoll": "APX2026-CS-044",
+      "studentName": "Kavita Sharma",
+      "courseCode": "CS-402",
+      "courseTitle": "Advanced Neural Networks",
+      "totalClasses": 40,
+      "attendedClasses": 29,
+      "attendancePercentage": 72.5,
+      "status": "ELIGIBLE_FOR_CONDONATION",
+      "category": "CONDONABLE_WINDOW",
+      "shortfallClasses": 1
+    }
+  ]
+}

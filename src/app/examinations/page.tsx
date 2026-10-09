@@ -34,10 +34,13 @@ import {
   ShieldAlert,
   Percent,
   Target,
+  RotateCcw,
 } from "lucide-react";
 import { COPOMappingView } from "@/components/examinations/COPOMappingView";
+import { BacklogPortalView } from "@/components/examinations/BacklogPortalView";
+import { InvigilationRosterView } from "@/components/examinations/InvigilationRosterView";
 
-type ExamTab = "schedules" | "evaluations" | "seating" | "transcript" | "scanner" | "obe-mapping";
+type ExamTab = "schedules" | "evaluations" | "seating" | "transcript" | "scanner" | "obe-mapping" | "backlog-portal" | "invigilation";
 
 export default function ExaminationsPage() {
   const { showToast, setIsAIChatOpen, refreshTrigger, triggerRefresh, currentRole } = useApp();
@@ -517,6 +520,30 @@ export default function ExaminationsPage() {
           >
             <Target className="h-4 w-4 text-rose-primary" />
             CO-PO Mapping &amp; NBA Attainment
+          </button>
+
+          <button
+            onClick={() => setActiveTab("backlog-portal")}
+            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all whitespace-nowrap ${
+              activeTab === "backlog-portal"
+                ? "bg-white dark:bg-charcoal-800 text-charcoal-900 dark:text-ivory-100 shadow-sm"
+                : "text-charcoal-600 dark:text-charcoal-400 hover:text-charcoal-900 dark:hover:text-ivory-100"
+            }`}
+          >
+            <RotateCcw className="h-4 w-4 text-orange-500" />
+            Backlogs &amp; Supplementary
+          </button>
+
+          <button
+            onClick={() => setActiveTab("invigilation")}
+            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all whitespace-nowrap ${
+              activeTab === "invigilation"
+                ? "bg-white dark:bg-charcoal-800 text-charcoal-900 dark:text-ivory-100 shadow-sm"
+                : "text-charcoal-600 dark:text-charcoal-400 hover:text-charcoal-900 dark:hover:text-ivory-100"
+            }`}
+          >
+            <Users className="h-4 w-4 text-blue-500" />
+            Invigilation Duty Matrix
           </button>
         </div>
 
@@ -1288,6 +1315,20 @@ export default function ExaminationsPage() {
         {/* ======================================================== */}
         {activeTab === "obe-mapping" && (
           <COPOMappingView showToast={showToast} canEdit={canEditExams} />
+        )}
+
+        {/* ======================================================== */}
+        {/* TAB 7: BACKLOGS & REMEDIAL EXAM PORTAL                    */}
+        {/* ======================================================== */}
+        {activeTab === "backlog-portal" && (
+          <BacklogPortalView showToast={showToast} canEdit={canEditExams} isStudent={isStudent} />
+        )}
+
+        {/* ======================================================== */}
+        {/* TAB 8: FACULTY INVIGILATION DUTY MATRIX                   */}
+        {/* ======================================================== */}
+        {activeTab === "invigilation" && (
+          <InvigilationRosterView showToast={showToast} canEdit={canEditExams} />
         )}
 
         {/* ======================================================== */}

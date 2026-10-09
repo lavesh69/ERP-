@@ -28,6 +28,11 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ success: true, ...messData });
     }
 
+    if (tab === "night-rollcall") {
+      const rollCalls = hostelStore.getNightRollCall(blockId);
+      return NextResponse.json({ success: true, rollCalls });
+    }
+
     // Default: summary
     const summary = hostelStore.getSummary();
     return NextResponse.json({ success: true, summary });
@@ -46,6 +51,24 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
     const { action } = body;
+
+    if (action === "SUBMIT_NIGHT_ROLLCALL") {
+      const { blockId, blockName, wardenOnDuty, roster } = body;
+      if (!blockId || !roster) {
+        return NextResponse.json({ error: "blockId and roster are required for night roll call." }, { status: 400 });
+      }
+      const record = hostelStore.submitNightRollCall({
+        blockId,
+        blockName,
+        wardenOnDuty: wardenOnDuty || session.email || "Chief Resident Warden",
+        roster,
+      });
+      return NextResponse.json({
+        success: true,
+        message: "Hostel night curfew roll-call recorded and synchronized.",
+        record,
+      });
+    }
 
     if (action === "ALLOCATE_BED") {
       const { roomId, bedNumber, studentId, studentName, studentRoll, branch } = body;

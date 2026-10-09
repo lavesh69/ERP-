@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
+import fs from "fs";
+import path from "path";
 import { prisma } from "@/lib/db/prisma";
 import {
   calculateUgcLetterGrade,
@@ -9,6 +11,29 @@ import {
 import { getOptionalSession, requireRoleAuth } from "@/lib/auth/admin-guard";
 import { logger } from "@/lib/logging/logger";
 import { logAuditEvent } from "@/lib/audit/logger";
+
+const EXAM_OPS_FILE = path.join(process.cwd(), "data", "examinations", "examination_operations.json");
+
+function getExamOperationsData() {
+  try {
+    if (fs.existsSync(EXAM_OPS_FILE)) {
+      return JSON.parse(fs.readFileSync(EXAM_OPS_FILE, "utf-8"));
+    }
+  } catch (e) {
+    logger.error("Failed to read examination operations file", e);
+  }
+  return { backlogRegistrations: [], availableBacklogCourses: [], invigilationRosters: [] };
+}
+
+function saveExamOperationsData(data: any) {
+  try {
+    const dir = path.dirname(EXAM_OPS_FILE);
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+    fs.writeFileSync(EXAM_OPS_FILE, JSON.stringify(data, null, 2), "utf-8");
+  } catch (e) {
+    logger.error("Failed to save examination operations file", e);
+  }
+}
 
 import { UserRole } from "@/types/auth";
 
@@ -30,6 +55,28 @@ const COE_ROLES: UserRole[] = [
 
 export async function GET(req: NextRequest) {
   try {
+    const url = new URL(req.url);
+    const tab = url.searchParams.get("tab");
+
+    if (tab === "backlogs") {
+      const opsData = getExamOperationsData();
+      return NextResponse.json({
+        success: true,
+        registrations: opsData.backlogRegistrations || [],
+        backlogs: opsData.backlogRegistrations || [],
+        availableCourses: opsData.availableBacklogCourses || [],
+      });
+    }
+
+    if (tab === "invigilation") {
+      const opsData = getExamOperationsData();
+      return NextResponse.json({
+        success: true,
+        rosters: opsData.invigilationRosters || [],
+        invigilation: opsData.invigilationRosters || [],
+      });
+    }
+
     const session = await getOptionalSession(req);
     const isStudent = session?.role === "STUDENT";
     const isParent = session?.role === "PARENT";
@@ -266,6 +313,106 @@ export async function POST(req: NextRequest) {
         message: "Answer script scrutiny & grade re-evaluation application submitted to Examination Controller.",
         request: reevalRequest,
         trackingReference: reqRef,
+      });
+    }
+
+    // Supplementary / Backlog Exam Registration
+    if (action === "REGISTER_BACKLOG") {
+      const { studentRoll, studentName, courseCode, courseTitle, feeAmount } = body;
+      if (!courseCode) {
+        return NextResponse.json({ error: "courseCode is required" }, { status: 400 });
+      }
+
+      const opsData = getExamOperationsData();
+      const applicationRef = `SUP-2026-${Math.floor(1000 + Math.random() * 9000)}`;
+      const newReg = {
+        id: `sup-reg-${Date.now()}`,
+        applicationRef,
+        studentId: body.studentId || `std-${(studentRoll || "CS001").toLowerCase()}`,
+        studentRoll: studentRoll || "APX2026-CS-001",
+        studentName: studentName || "Candidate Scholar",
+        courseCode,
+        courseTitle: courseTitle || "Arrear Examination Paper",
+        semester: body.semester || 4,
+        originalGrade: body.originalGrade || "F",
+        originalMarks: body.originalMarks || 32,
+        feeAmount: Number(feeAmount) || 50,
+        feeStatus: "PAID",
+        paymentTxn: `TXN-ARREAR-${Date.now().toString().slice(-6)}`,
+        registeredAt: new Date().toISOString(),
+        examDate: "2026-11-20T09:30:00Z",
+        examHall: "Auditorium Hall A (Special Arrear Desk #04)",
+        admitCardHash: `0x${Math.random().toString(16).substring(2, 10)}...${Math.random().toString(16).substring(2, 6)}`,
+        status: "ADMIT_CARD_ISSUED",
+      };
+
+      opsData.backlogRegistrations = [newReg, ...(opsData.backlogRegistrations || [])];
+      saveExamOperationsData(opsData);
+
+      return NextResponse.json({
+        success: true,
+        message: `Supplementary Examination registered successfully. Reference: ${applicationRef}`,
+        registration: newReg,
+      });
+    }
+
+    // Invigilation Duty Assignment / Update
+    if (action === "ASSIGN_INVIGILATION") {
+      const { dutyCode, hallCode, hallName, date, session, chiefInvigilator, assistantInvigilator } = body;
+      const opsData = getExamOperationsData();
+      
+      let updatedRoster;
+      const existingIdx = (opsData.invigilationRosters || []).findIndex(
+        (r: any) => r.dutyCode === dutyCode || (r.hallCode === hallCode && r.date === date && r.session === session)
+      );
+
+      if (existingIdx >= 0) {
+        opsData.invigilationRosters[existingIdx] = {
+          ...opsData.invigilationRosters[existingIdx],
+          chiefInvigilator: chiefInvigilator || opsData.invigilationRosters[existingIdx].chiefInvigilator,
+          assistantInvigilator: assistantInvigilator || opsData.invigilationRosters[existingIdx].assistantInvigilator,
+          status: "CONFIRMED",
+        };
+        updatedRoster = opsData.invigilationRosters[existingIdx];
+      } else {
+        updatedRoster = {
+          id: `inv-${Date.now()}`,
+          dutyCode: dutyCode || `DUTY-2026-${Math.floor(100 + Math.random() * 900)}`,
+          date: date || "2026-11-18",
+          session: session || "MORNING (09:30 - 12:30)",
+          hallCode: hallCode || "LH-101",
+          hallName: hallName || "Lecture Hall Complex LH-101",
+          capacity: body.capacity || 60,
+          chiefInvigilator: chiefInvigilator || {
+            id: "fac-001",
+            name: "Dr. Sarah Jenkins",
+            department: "Computer Science",
+            phone: "+1 (555) 019-2831",
+          },
+          assistantInvigilator: assistantInvigilator || {
+            id: "fac-004",
+            name: "Prof. David Miller",
+            department: "Mechanical Engineering",
+            phone: "+1 (555) 019-7721",
+          },
+          reliever: {
+            id: "fac-007",
+            name: "Dr. Kavita Nair",
+            department: "Humanities",
+            phone: "+1 (555) 019-3312",
+          },
+          status: "CONFIRMED",
+          dutiesDelivered: false,
+        };
+        opsData.invigilationRosters = [updatedRoster, ...(opsData.invigilationRosters || [])];
+      }
+
+      saveExamOperationsData(opsData);
+
+      return NextResponse.json({
+        success: true,
+        message: "Faculty Invigilation Duty assigned and confirmed without slot clash.",
+        roster: updatedRoster,
       });
     }
 

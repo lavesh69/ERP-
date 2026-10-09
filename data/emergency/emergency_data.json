@@ -1,6 +1,116 @@
 {
   "alerts": [
     {
+      "id": "al-1791484178757",
+      "alertCode": "EMG-2026-604",
+      "category": "SEVERE_WEATHER_ALERT",
+      "severity": "CAMPUS_ALL_CLEAR",
+      "headline": "Flash Flood & Storm Warning on East Campus",
+      "instructions": "All students and staff in Basement labs must immediately proceed to Ground floor muster points. | [ALL CLEAR]: Weather services have downgraded warning; facilities team confirmed safe building egress.",
+      "affectedZones": [
+        "Engineering Block A",
+        "Central Library"
+      ],
+      "dispatchedChannels": [
+        "SMS_GATEWAY",
+        "CAMPUS_SIRENS",
+        "MOBILE_APP_PUSH"
+      ],
+      "initiatedBy": "Incident Commander",
+      "initiatedAt": "2026-10-08T18:29:38.757Z",
+      "isActive": false,
+      "cryptographicBroadcastSeal": "EOC-ALERT-9240C8A67CEB3A8A",
+      "resolvedAt": "2026-10-08T18:29:38.767Z"
+    },
+    {
+      "id": "al-1791484046005",
+      "alertCode": "EMG-2026-605",
+      "category": "SEVERE_WEATHER_ALERT",
+      "severity": "CAMPUS_ALL_CLEAR",
+      "headline": "Flash Flood & Storm Warning on East Campus",
+      "instructions": "All students and staff in Basement labs must immediately proceed to Ground floor muster points. | [ALL CLEAR]: Weather services have downgraded warning; facilities team confirmed safe building egress.",
+      "affectedZones": [
+        "Engineering Block A",
+        "Central Library"
+      ],
+      "dispatchedChannels": [
+        "SMS_GATEWAY",
+        "CAMPUS_SIRENS",
+        "MOBILE_APP_PUSH"
+      ],
+      "initiatedBy": "Incident Commander",
+      "initiatedAt": "2026-10-08T18:27:26.005Z",
+      "isActive": false,
+      "cryptographicBroadcastSeal": "EOC-ALERT-1945CABF04023CE3",
+      "resolvedAt": "2026-10-08T18:27:26.010Z"
+    },
+    {
+      "id": "al-1791484017320",
+      "alertCode": "EMG-2026-100",
+      "category": "SEVERE_WEATHER_ALERT",
+      "severity": "CAMPUS_ALL_CLEAR",
+      "headline": "Flash Flood & Storm Warning on East Campus",
+      "instructions": "All students and staff in Basement labs must immediately proceed to Ground floor muster points. | [ALL CLEAR]: Weather services have downgraded warning; facilities team confirmed safe building egress.",
+      "affectedZones": [
+        "Engineering Block A",
+        "Central Library"
+      ],
+      "dispatchedChannels": [
+        "SMS_GATEWAY",
+        "CAMPUS_SIRENS",
+        "MOBILE_APP_PUSH"
+      ],
+      "initiatedBy": "Incident Commander",
+      "initiatedAt": "2026-10-08T18:26:57.320Z",
+      "isActive": false,
+      "cryptographicBroadcastSeal": "EOC-ALERT-60167C5EA7AA276F",
+      "resolvedAt": "2026-10-08T18:26:57.327Z"
+    },
+    {
+      "id": "al-1791483906519",
+      "alertCode": "EMG-2026-938",
+      "category": "SEVERE_WEATHER_ALERT",
+      "severity": "CAMPUS_ALL_CLEAR",
+      "headline": "Flash Flood & Storm Warning on East Campus",
+      "instructions": "All students and staff in Basement labs must immediately proceed to Ground floor muster points. | [ALL CLEAR]: Weather services have downgraded warning; facilities team confirmed safe building egress.",
+      "affectedZones": [
+        "Engineering Block A",
+        "Central Library"
+      ],
+      "dispatchedChannels": [
+        "SMS_GATEWAY",
+        "CAMPUS_SIRENS",
+        "MOBILE_APP_PUSH"
+      ],
+      "initiatedBy": "Incident Commander",
+      "initiatedAt": "2026-10-08T18:25:06.519Z",
+      "isActive": false,
+      "cryptographicBroadcastSeal": "EOC-ALERT-CA2D06913120F38A",
+      "resolvedAt": "2026-10-08T18:25:06.524Z"
+    },
+    {
+      "id": "al-1791481827664",
+      "alertCode": "EMG-2026-336",
+      "category": "SEVERE_WEATHER_ALERT",
+      "severity": "CAMPUS_ALL_CLEAR",
+      "headline": "Flash Flood & Storm Warning on East Campus",
+      "instructions": "All students and staff in Basement labs must immediately proceed to Ground floor muster points. | [ALL CLEAR]: Weather services have downgraded warning; facilities team confirmed safe building egress.",
+      "affectedZones": [
+        "Engineering Block A",
+        "Central Library"
+      ],
+      "dispatchedChannels": [
+        "SMS_GATEWAY",
+        "CAMPUS_SIRENS",
+        "MOBILE_APP_PUSH"
+      ],
+      "initiatedBy": "Incident Commander",
+      "initiatedAt": "2026-10-08T17:50:27.664Z",
+      "isActive": false,
+      "cryptographicBroadcastSeal": "EOC-ALERT-B3929563198279A8",
+      "resolvedAt": "2026-10-08T17:50:27.671Z"
+    },
+    {
       "id": "al-1791338601238",
       "alertCode": "EMG-2026-167",
       "category": "SEVERE_WEATHER_ALERT",

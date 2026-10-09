@@ -215,6 +215,8 @@ import {
   MealWalletAccount,
   CanteenMenuItem,
 } from "@/lib/canteen/canteen-engine";
+import { GET as handleCourseRegistrationGet, POST as handleCourseRegistrationPost } from "@/app/api/courses/registration/route";
+import { GET as handleDetentionGet, POST as handleDetentionPost } from "@/app/api/attendance/detention/route";
 
 async function runTestSuite() {
   console.log("=================================================");
@@ -6228,6 +6230,169 @@ By breaking down large monolithic systems into decoupled microservices, systems 
   const placeOrderData = await placeOrderRes.json();
   assert(placeOrderData.order.orderToken.startsWith("#CAN-"), "Order confirmed with counter pickup token");
   assert(placeOrderData.order.status === "PREPARING", "Order entered kitchen preparation status");
+
+  // ==========================================
+  // GROUP 60: Real-World College Core Workflows Suite
+  // (Backlog Exams, Invigilation Roster, CBCS Choice Filling, Attendance Detention & Condonation, Hostel Night Curfew)
+  // ==========================================
+  console.log("\n📌 Group 60: Real-World College Core Functional Workflows Suite");
+
+  // 60.1 Backlog & Supplementary Exam Portal
+  const backlogReq = new NextRequest("http://localhost:3000/api/examinations?tab=backlogs", {
+    headers: { Cookie: `classroom_session=${adminToken}` },
+  });
+  const backlogRes = await handleExaminationsGet(backlogReq);
+  assert(backlogRes.status === 200, "GET /api/examinations?tab=backlogs returns 200 OK");
+  const backlogData = await backlogRes.json();
+  assert(Array.isArray(backlogData.backlogs), "Backlog portal returns candidate backlog registrations array");
+
+  const registerBacklogReq = new NextRequest("http://localhost:3000/api/examinations", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "REGISTER_BACKLOG",
+      studentId: "usr-stu-01",
+      studentName: "Alex Mercer",
+      studentRoll: "CS2026-001",
+      courseCode: "CS-301",
+      courseTitle: "Theory of Computation",
+      attemptNumber: 2,
+      examCycle: "Autumn Supplementary 2026",
+      feeAmount: 750,
+    }),
+  });
+  const registerBacklogRes = await handleExaminationsPost(registerBacklogReq);
+  assert(registerBacklogRes.status === 200, "POST /api/examinations (action: REGISTER_BACKLOG) registers arrear exam with 200 OK");
+  const registerBacklogData = await registerBacklogRes.json();
+  assert(registerBacklogData.registration.applicationRef.startsWith("SUP-2026-"), "Supplementary hall ticket generated with SUP-2026- prefix");
+  assert(registerBacklogData.registration.status === "ADMIT_CARD_ISSUED", "Backlog application marked as ADMIT_CARD_ISSUED with confirmed fee checkout");
+
+  // 60.2 Faculty Invigilation Duty Roster
+  const invigReq = new NextRequest("http://localhost:3000/api/examinations?tab=invigilation", {
+    headers: { Cookie: `classroom_session=${adminToken}` },
+  });
+  const invigRes = await handleExaminationsGet(invigReq);
+  assert(invigRes.status === 200, "GET /api/examinations?tab=invigilation returns 200 OK");
+  const invigData = await invigRes.json();
+  assert(Array.isArray(invigData.invigilation), "Invigilation portal returns active faculty supervision roster");
+
+  const assignInvigReq = new NextRequest("http://localhost:3000/api/examinations", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "ASSIGN_INVIGILATION",
+      dutyCode: "DUTY-2026-777",
+      hallCode: "LH-201",
+      hallName: "Lecture Hall Complex LH-201",
+      date: "2026-11-18",
+      session: "MORNING (09:30 - 12:30)",
+    }),
+  });
+  const assignInvigRes = await handleExaminationsPost(assignInvigReq);
+  assert(assignInvigRes.status === 200, "POST /api/examinations (action: ASSIGN_INVIGILATION) schedules duty with 200 OK");
+  const assignInvigData = await assignInvigRes.json();
+  assert(assignInvigData.roster.status === "CONFIRMED", "Faculty supervision assigned with CONFIRMED state");
+
+  // 60.3 CBCS Elective Choice Filling & Course Registration
+  const cbcsReq = new NextRequest("http://localhost:3000/api/courses/registration?studentId=usr-stu-01", {
+    headers: { Cookie: `classroom_session=${adminToken}` },
+  });
+  const cbcsRes = await handleCourseRegistrationGet(cbcsReq);
+  assert(cbcsRes.status === 200, "GET /api/courses/registration returns 200 OK");
+  const cbcsData = await cbcsRes.json();
+  assert(Array.isArray(cbcsData.data.availableElectives), "CBCS registration returns Departmental & Open Elective pools");
+
+  const submitCbcsReq = new NextRequest("http://localhost:3000/api/courses/registration", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "SUBMIT_CHOICE_FILLING",
+      studentRoll: "CS2026-001",
+      studentName: "Alex Mercer",
+      choices: [{ courseCode: "CS-EL-501", preference: 1 }],
+      totalCredits: 20,
+    }),
+  });
+  const submitCbcsRes = await handleCourseRegistrationPost(submitCbcsReq);
+  assert(submitCbcsRes.status === 200, "POST /api/courses/registration (action: SUBMIT_CHOICE_FILLING) records enrollment with 200 OK");
+  const submitCbcsData = await submitCbcsRes.json();
+  assert(submitCbcsData.registration.status === "CONFIRMED_SEALED", "Course choices confirmed with formal CONFIRMED_SEALED registration status");
+  assert(submitCbcsData.registration.totalCreditsRegistered === 20, "Total registered credits (20) within permissible UGC/NEP 18-24 boundary");
+
+  // 60.4 Attendance Shortage Detention & Medical Condonation
+  const detentionReq = new NextRequest("http://localhost:3000/api/attendance/detention?institutionId=inst-apex-01", {
+    headers: { Cookie: `classroom_session=${adminToken}` },
+  });
+  const detentionRes = await handleDetentionGet(detentionReq);
+  assert(detentionRes.status === 200, "GET /api/attendance/detention returns 200 OK");
+  const detentionData = await detentionRes.json();
+  assert(Array.isArray(detentionData.data.sampleDetainedStudents), "Detention registry returns categorized list of attendance shortage students");
+
+  const condonationReq = new NextRequest("http://localhost:3000/api/attendance/detention", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "APPLY_CONDONATION",
+      studentRoll: "APX2026-CS-088",
+      studentName: "Rahul Sharma",
+      courseCode: "CS-402",
+      courseTitle: "Neural Networks & Deep Learning",
+      attendancePercentage: 68.5,
+      medicalCertRef: "MED-CLINIC-2026-8819",
+      condonationFeeReceipt: "REC-99120",
+      approvedBy: "Senate Academic Appeals Board",
+    }),
+  });
+  const condonationRes = await handleDetentionPost(condonationReq);
+  assert(condonationRes.status === 200, "POST /api/attendance/detention (action: APPLY_CONDONATION) approves medical waiver with 200 OK");
+  const condonationData = await condonationRes.json();
+  assert(condonationData.condonation.status === "CONDONED_EXAM_PERMITTED", "Detention overturned to CONDONED_EXAM_PERMITTED status following medical certificate verification");
+  assert(condonationData.condonation.condonationFeeAmount === 25, "Statutory condonation fine fee verified and logged");
+
+  // 60.5 Hostel Night Curfew Roll-Call Ledger (21:30)
+  const rollCallReq = new NextRequest("http://localhost:3000/api/hostel?tab=night-rollcall&blockId=blk-a", {
+    headers: { Cookie: `classroom_session=${adminToken}` },
+  });
+  const rollCallRes = await handleHostelGet(rollCallReq);
+  assert(rollCallRes.status === 200, "GET /api/hostel?tab=night-rollcall returns 200 OK");
+  const rollCallData = await rollCallRes.json();
+  assert(Array.isArray(rollCallData.rollCalls), "Night roll-call returns 21:30 mandatory room-by-room resident roster records");
+
+  const submitRollCallReq = new NextRequest("http://localhost:3000/api/hostel", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "SUBMIT_NIGHT_ROLLCALL",
+      blockId: "blk-a",
+      blockName: "Mandela Block (Boys)",
+      curfewTime: "21:30",
+      wardenOnDuty: "Chief Warden Dr. Sharma",
+      roster: [
+        {
+          studentRoll: "CS2026-001",
+          studentName: "Alex Rivera",
+          roomNumber: "101",
+          bedId: "101-A",
+          status: "IN_ROOM",
+          updatedAt: new Date().toISOString(),
+        },
+        {
+          studentRoll: "EE2024-019",
+          studentName: "Marcus Vance",
+          roomNumber: "102",
+          bedId: "102-A",
+          status: "UNAUTHORIZED_ABSENT",
+          updatedAt: new Date().toISOString(),
+          remarks: "Curfew violated - Parents alerted via automated SMS",
+        },
+      ],
+    }),
+  });
+  const submitRollCallRes = await handleHostelPost(submitRollCallReq);
+  assert(submitRollCallRes.status === 200, "POST /api/hostel (action: SUBMIT_NIGHT_ROLLCALL) records curfew headcount with 200 OK");
+  const submitRollCallData = await submitRollCallRes.json();
+  assert(submitRollCallData.record.inRoomCount === 1, "Roll-call accurately tallies confirmed in-room residents");
+  assert(submitRollCallData.record.unauthorizedAbsentCount === 1, "Roll-call accurately flags curfew absentees for security protocol");
 
   console.log("\n=================================================");
   console.log(`🎉 ALL ${passedTests}/${totalTests} TESTS PASSED SUCCESSFULLY!`);

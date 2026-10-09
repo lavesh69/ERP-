@@ -1,0 +1,119 @@
+{
+  "semesterTerm": "Fall 2026 - CBCS Phase II",
+  "minCreditsRequired": 18,
+  "maxCreditsAllowed": 24,
+  "registrationDeadline": "2026-10-31T23:59:59Z",
+  "availableElectives": [
+    {
+      "code": "OE-501",
+      "title": "Applied Machine Learning & Neural Networks",
+      "type": "OPEN_ELECTIVE",
+      "department": "Computer Science & Engineering",
+      "faculty": "Dr. Sarah Jenkins",
+      "credits": 4,
+      "maxSeats": 60,
+      "enrolledCount": 54,
+      "schedule": "Mon, Wed 10:00 - 11:30 AM",
+      "prerequisites": "Discrete Mathematics & Basic Python",
+      "description": "Supervised & unsupervised learning models, backpropagation, CNNs, Transformers and edge AI deployment."
+    },
+    {
+      "code": "OE-502",
+      "title": "Financial Technology & Blockchain Economics",
+      "type": "OPEN_ELECTIVE",
+      "department": "Management & Economics",
+      "faculty": "Prof. Alistair Vance",
+      "credits": 3,
+      "maxSeats": 50,
+      "enrolledCount": 42,
+      "schedule": "Tue, Thu 14:00 - 15:30 PM",
+      "prerequisites": "None (Interdisciplinary Open Basket)",
+      "description": "Decentralized finance protocols, smart contract audit fundamentals, algorithmic trading, and token economics."
+    },
+    {
+      "code": "PE-601",
+      "title": "Cloud Computing Infrastructure & DevOps (K8s)",
+      "type": "PROFESSIONAL_ELECTIVE",
+      "department": "Computer Science & Engineering",
+      "faculty": "Dr. Rajesh Gupta",
+      "credits": 4,
+      "maxSeats": 45,
+      "enrolledCount": 39,
+      "schedule": "Wed, Fri 08:30 - 10:00 AM",
+      "prerequisites": "Operating Systems & Computer Networks",
+      "description": "Container orchestration via Kubernetes, Terraform IaC, distributed telemetry, and zero-downtime CI/CD."
+    },
+    {
+      "code": "OE-503",
+      "title": "Renewable Energy Systems & Microgrids",
+      "type": "OPEN_ELECTIVE",
+      "department": "Electrical Engineering",
+      "faculty": "Prof. Michael Chang",
+      "credits": 3,
+      "maxSeats": 40,
+      "enrolledCount": 28,
+      "schedule": "Tue, Thu 11:30 - 13:00 PM",
+      "prerequisites": "None (Green Technology Basket)",
+      "description": "Solar PV conversion mechanics, wind turbine grid stabilization, battery energy storage systems (BESS)."
+    },
+    {
+      "code": "PE-602",
+      "title": "Advanced Cyber Threat Intelligence & Forensics",
+      "type": "PROFESSIONAL_ELECTIVE",
+      "department": "Information Security",
+      "faculty": "Dr. Elena Rostova",
+      "credits": 4,
+      "maxSeats": 40,
+      "enrolledCount": 38,
+      "schedule": "Mon, Thu 16:00 - 17:30 PM",
+      "prerequisites": "Network Security & Cryptography",
+      "description": "MITRE ATT&CK framework mapping, memory dump forensics, reverse engineering ELF/PE malware."
+    }
+  ],
+  "studentRegistrations": [
+    {
+      "id": "reg-cbcs-1791484178819",
+      "studentRoll": "CS2026-001",
+      "studentName": "Alex Mercer",
+      "registeredTerm": "Fall 2026 - CBCS Phase II",
+      "priorityChoices": [
+        {
+          "preference": 1,
+          "courseCode": "CS-EL-501",
+          "status": "PENDING_SCRUTINY"
+        }
+      ],
+      "totalCreditsRegistered": 20,
+      "status": "CONFIRMED_SEALED",
+      "enrolledAt": "2026-10-08T18:29:38.819Z",
+      "sealHash": "0x1d912c74...8482"
+    },
+    {
+      "id": "reg-cbcs-001",
+      "studentRoll": "APX2026-CS-001",
+      "studentName": "Alex Rivera",
+      "registeredTerm": "Fall 2026",
+      "priorityChoices": [
+        {
+          "preference": 1,
+          "courseCode": "OE-501",
+          "status": "ALLOTTED"
+        },
+        {
+          "preference": 2,
+          "courseCode": "PE-601",
+          "status": "ALLOTTED"
+        },
+        {
+          "preference": 3,
+          "courseCode": "OE-502",
+          "status": "WAITLISTED"
+        }
+      ],
+      "totalCreditsRegistered": 21,
+      "status": "CONFIRMED_SEALED",
+      "enrolledAt": "2026-10-01T09:00:00Z",
+      "sealHash": "0x4b7e...9a21"
+    }
+  ]
+}

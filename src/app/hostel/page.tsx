@@ -24,7 +24,9 @@ import {
   Activity,
   Leaf,
   Scale,
+  Moon,
 } from "lucide-react";
+import { NightRollCallView } from "@/components/hostel/NightRollCallView";
 
 interface HostelSummary {
   totalBlocks: number;
@@ -40,7 +42,7 @@ interface HostelSummary {
 
 export default function HostelPage() {
   const { currentUser, currentRole } = useApp();
-  const [activeTab, setActiveTab] = useState<"matrix" | "allocations" | "gatepass" | "mess">("matrix");
+  const [activeTab, setActiveTab] = useState<"matrix" | "allocations" | "gatepass" | "mess" | "night-rollcall">("matrix");
   const [loading, setLoading] = useState(true);
   const [summary, setSummary] = useState<HostelSummary | null>(null);
   const [rooms, setRooms] = useState<any[]>([]);
@@ -395,6 +397,7 @@ export default function HostelPage() {
           { id: "allocations", label: "Bed Allocation Registry", icon: Bed },
           { id: "gatepass", label: "Gate Pass & Night Outpass", icon: Clock, count: summary?.pendingGatePasses },
           { id: "mess", label: "Dining & Mess Management", icon: Utensils },
+          { id: "night-rollcall", label: "Night Curfew Roll-Call (21:30)", icon: Moon },
         ].map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
@@ -1099,6 +1102,15 @@ export default function HostelPage() {
             ))}
           </div>
         </div>
+      )}
+
+      {/* TAB 5: NIGHT CURFEW ROLL-CALL (21:30) */}
+      {activeTab === "night-rollcall" && (
+        <NightRollCallView
+          blocks={summary?.blocks || []}
+          currentUser={currentUser}
+          showToast={(msg, type) => setStatusMessage({ type: type === "error" ? "error" : "success", text: msg })}
+        />
       )}
 
       {/* MODAL: Request Outpass */}

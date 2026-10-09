@@ -1,0 +1,236 @@
+{
+  "backlogRegistrations": [
+    {
+      "id": "sup-reg-1791484178799",
+      "applicationRef": "SUP-2026-3453",
+      "studentId": "usr-stu-01",
+      "studentRoll": "CS2026-001",
+      "studentName": "Alex Mercer",
+      "courseCode": "CS-301",
+      "courseTitle": "Theory of Computation",
+      "semester": 4,
+      "originalGrade": "F",
+      "originalMarks": 32,
+      "feeAmount": 750,
+      "feeStatus": "PAID",
+      "paymentTxn": "TXN-ARREAR-178799",
+      "registeredAt": "2026-10-08T18:29:38.799Z",
+      "examDate": "2026-11-20T09:30:00Z",
+      "examHall": "Auditorium Hall A (Special Arrear Desk #04)",
+      "admitCardHash": "0xabd730c3...8c1a",
+      "status": "ADMIT_CARD_ISSUED"
+    },
+    {
+      "id": "sup-reg-1791484046032",
+      "applicationRef": "SUP-2026-5894",
+      "studentId": "usr-stu-01",
+      "studentRoll": "CS2026-001",
+      "studentName": "Alex Mercer",
+      "courseCode": "CS-301",
+      "courseTitle": "Theory of Computation",
+      "semester": 4,
+      "originalGrade": "F",
+      "originalMarks": 32,
+      "feeAmount": 50,
+      "feeStatus": "PAID",
+      "paymentTxn": "TXN-ARREAR-046032",
+      "registeredAt": "2026-10-08T18:27:26.032Z",
+      "examDate": "2026-11-20T09:30:00Z",
+      "examHall": "Auditorium Hall A (Special Arrear Desk #04)",
+      "admitCardHash": "0x31f8be6a...6443",
+      "status": "ADMIT_CARD_ISSUED"
+    },
+    {
+      "id": "sup-reg-101",
+      "applicationRef": "SUP-2026-8812",
+      "studentId": "std-cs-2024-001",
+      "studentRoll": "CS2024-089",
+      "studentName": "Rohan Deshmukh",
+      "courseCode": "CS-301",
+      "courseTitle": "Database Management Systems",
+      "semester": 4,
+      "originalGrade": "F",
+      "originalMarks": 32,
+      "feeAmount": 50,
+      "feeStatus": "PAID",
+      "paymentTxn": "TXN-FEE-882194",
+      "registeredAt": "2026-10-02T10:30:00Z",
+      "examDate": "2026-11-15T09:30:00Z",
+      "examHall": "Auditorium Hall A (Row B-12)",
+      "admitCardHash": "0x7f4a...9b12",
+      "status": "ADMIT_CARD_ISSUED"
+    },
+    {
+      "id": "sup-reg-102",
+      "applicationRef": "SUP-2026-8813",
+      "studentId": "std-ec-2024-014",
+      "studentRoll": "EC2024-034",
+      "studentName": "Ananya Sen",
+      "courseCode": "EC-202",
+      "courseTitle": "Signals and Linear Systems",
+      "semester": 3,
+      "originalGrade": "F",
+      "originalMarks": 28,
+      "feeAmount": 50,
+      "feeStatus": "PAID",
+      "paymentTxn": "TXN-FEE-882201",
+      "registeredAt": "2026-10-04T14:15:00Z",
+      "examDate": "2026-11-16T14:00:00Z",
+      "examHall": "Lecture Hall LH-102 (Seat #18)",
+      "admitCardHash": "0x3e8c...1a94",
+      "status": "ADMIT_CARD_ISSUED"
+    }
+  ],
+  "availableBacklogCourses": [
+    {
+      "courseCode": "CS-301",
+      "courseTitle": "Database Management Systems",
+      "department": "Computer Science",
+      "credits": 4,
+      "semester": 4,
+      "feePerSubject": 50
+    },
+    {
+      "courseCode": "EC-202",
+      "courseTitle": "Signals and Linear Systems",
+      "department": "Electronics",
+      "credits": 4,
+      "semester": 3,
+      "feePerSubject": 50
+    },
+    {
+      "courseCode": "MA-201",
+      "courseTitle": "Discrete Mathematics & Graph Theory",
+      "department": "Mathematics",
+      "credits": 3,
+      "semester": 3,
+      "feePerSubject": 50
+    },
+    {
+      "courseCode": "CS-204",
+      "courseTitle": "Design & Analysis of Algorithms",
+      "department": "Computer Science",
+      "credits": 4,
+      "semester": 4,
+      "feePerSubject": 50
+    }
+  ],
+  "invigilationRosters": [
+    {
+      "id": "inv-1791484178808",
+      "dutyCode": "DUTY-2026-777",
+      "date": "2026-11-18",
+      "session": "MORNING (09:30 - 12:30)",
+      "hallCode": "LH-201",
+      "hallName": "Lecture Hall Complex LH-201",
+      "capacity": 60,
+      "chiefInvigilator": {
+        "id": "fac-001",
+        "name": "Dr. Sarah Jenkins",
+        "department": "Computer Science",
+        "phone": "+1 (555) 019-2831"
+      },
+      "assistantInvigilator": {
+        "id": "fac-004",
+        "name": "Prof. David Miller",
+        "department": "Mechanical Engineering",
+        "phone": "+1 (555) 019-7721"
+      },
+      "reliever": {
+        "id": "fac-007",
+        "name": "Dr. Kavita Nair",
+        "department": "Humanities",
+        "phone": "+1 (555) 019-3312"
+      },
+      "status": "CONFIRMED",
+      "dutiesDelivered": false
+    },
+    {
+      "id": "inv-001",
+      "dutyCode": "DUTY-2026-041",
+      "date": "2026-11-15",
+      "session": "MORNING (09:30 - 12:30)",
+      "hallCode": "AUD-HALL-A",
+      "hallName": "Central Auditorium Hall A",
+      "capacity": 120,
+      "chiefInvigilator": {
+        "id": "fac-001",
+        "name": "Dr. Sarah Jenkins",
+        "department": "Computer Science",
+        "phone": "+1 (555) 019-2831"
+      },
+      "assistantInvigilator": {
+        "id": "fac-004",
+        "name": "Prof. David Miller",
+        "department": "Mechanical Engineering",
+        "phone": "+1 (555) 019-7721"
+      },
+      "reliever": {
+        "id": "fac-007",
+        "name": "Dr. Kavita Nair",
+        "department": "Humanities",
+        "phone": "+1 (555) 019-3312"
+      },
+      "status": "CONFIRMED",
+      "dutiesDelivered": false
+    },
+    {
+      "id": "inv-002",
+      "dutyCode": "DUTY-2026-042",
+      "date": "2026-11-15",
+      "session": "MORNING (09:30 - 12:30)",
+      "hallCode": "LH-101",
+      "hallName": "Lecture Hall Complex LH-101",
+      "capacity": 60,
+      "chiefInvigilator": {
+        "id": "fac-002",
+        "name": "Prof. Michael Chang",
+        "department": "Electrical Engineering",
+        "phone": "+1 (555) 019-4490"
+      },
+      "assistantInvigilator": {
+        "id": "fac-005",
+        "name": "Dr. Elena Rostova",
+        "department": "Physics",
+        "phone": "+1 (555) 019-8819"
+      },
+      "reliever": {
+        "id": "fac-007",
+        "name": "Dr. Kavita Nair",
+        "department": "Humanities",
+        "phone": "+1 (555) 019-3312"
+      },
+      "status": "CONFIRMED",
+      "dutiesDelivered": false
+    },
+    {
+      "id": "inv-003",
+      "dutyCode": "DUTY-2026-043",
+      "date": "2026-11-16",
+      "session": "AFTERNOON (14:00 - 17:00)",
+      "hallCode": "LH-102",
+      "hallName": "Lecture Hall Complex LH-102",
+      "capacity": 60,
+      "chiefInvigilator": {
+        "id": "fac-003",
+        "name": "Dr. Rajesh Gupta",
+        "department": "Computer Science",
+        "phone": "+1 (555) 019-6612"
+      },
+      "assistantInvigilator": {
+        "id": "fac-006",
+        "name": "Prof. Anita Roy",
+        "department": "Mathematics",
+        "phone": "+1 (555) 019-2245"
+      },
+      "reliever": {
+        "id": "fac-008",
+        "name": "Prof. Samuel Green",
+        "department": "Chemistry",
+        "phone": "+1 (555) 019-9944"
+      },
+      "status": "PENDING_CONFIRMATION",
+      "dutiesDelivered": false
+    }
+  ]
+}

@@ -51,9 +51,11 @@ import {
   Bell,
   ExternalLink,
   Fingerprint,
+  ShieldAlert,
 } from "lucide-react";
 import QRScannerModal from "@/components/attendance/QRScannerModal";
 import ProjectorModeModal from "@/components/attendance/ProjectorModeModal";
+import { DetentionCondonationModal } from "@/components/attendance/DetentionCondonationModal";
 import {
   calculateAttendancePercentage,
   isDefaulter,
@@ -64,6 +66,7 @@ import {
 
 export default function AttendancePage() {
   const { showToast, triggerRefresh, currentRole, currentUser } = useApp();
+  const [isDetentionModalOpen, setIsDetentionModalOpen] = useState(false);
 
   // Core Selection & Academic Context
   const [selectedCourse, setSelectedCourse] = useState("CS-402");
@@ -1397,6 +1400,14 @@ export default function AttendancePage() {
                 >
                   <Fingerprint className="h-4 w-4 text-cyan-600 dark:text-cyan-400" />
                   <span>Biometric Sync</span>
+                </button>
+                <button
+                  onClick={() => setIsDetentionModalOpen(true)}
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 dark:hover:bg-rose-900/40 text-rose-800 dark:text-rose-200 text-xs font-bold border border-rose-200 dark:border-rose-800 transition-all shadow-xs"
+                  title="Senate Examination Detention (<75%) & Medical Condonation Center"
+                >
+                  <ShieldAlert className="h-4 w-4 text-rose-600 dark:text-rose-400" />
+                  <span>Detention &amp; Condonation</span>
                 </button>
                 <button
                   onClick={handleExportCSV}
@@ -4589,6 +4600,14 @@ export default function AttendancePage() {
           </div>
         </Modal>
       )}
+
+      {/* Senate Attendance Detention & Medical Condonation Center Modal */}
+      <DetentionCondonationModal
+        isOpen={isDetentionModalOpen}
+        onClose={() => setIsDetentionModalOpen(false)}
+        showToast={showToast}
+        canApprove={["SUPER_ADMIN", "INSTITUTION_ADMIN", "PRINCIPAL", "HOD"].includes(currentRole)}
+      />
     </AppShell>
   );
 }
