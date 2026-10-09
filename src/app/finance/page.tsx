@@ -436,6 +436,17 @@ export default function FinancePage() {
                 <span>Export Defaulters</span>
               </button>
             )}
+            {currentRole !== "STUDENT" && currentRole !== "PARENT" && (
+              <a
+                href="/api/finance?export=tally"
+                download="tally_vouchers.xml"
+                className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-ivory-100 dark:bg-charcoal-800 hover:bg-rose-container text-charcoal-800 dark:text-ivory-100 text-xs font-bold border border-border dark:border-charcoal-700 transition-all cursor-pointer"
+                title="Export fee receipts in official Tally Prime XML format"
+              >
+                <FileText className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                <span>Tally Prime XML</span>
+              </a>
+            )}
             <button
               onClick={() => setIsPayModalOpen(true)}
               className="flex items-center gap-2 px-4 py-2 rounded-xl bg-rose-primary hover:bg-rose-dark text-white text-xs font-bold shadow-sm transition-all"

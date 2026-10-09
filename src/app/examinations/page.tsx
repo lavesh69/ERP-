@@ -1171,13 +1171,24 @@ export default function ExaminationsPage() {
                       {transcriptData.verification.authenticatedBy}
                     </span>
                   </p>
-                  <button
-                    onClick={() => window.print()}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-ivory-100 hover:bg-ivory-200 dark:bg-charcoal-800 text-charcoal-800 dark:text-ivory-200 border border-border dark:border-charcoal-700 transition-colors w-fit"
-                  >
-                    <Printer className="h-3.5 w-3.5" />
-                    Print Official Mark Sheet
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <a
+                      href="/api/examinations/transcripts/pdf"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-primary-600 hover:bg-primary-700 text-white font-semibold text-xs shadow-soft transition-colors w-fit"
+                    >
+                      <Download className="h-3.5 w-3.5" />
+                      Official PDF Dossier
+                    </a>
+                    <button
+                      onClick={() => window.print()}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-ivory-100 hover:bg-ivory-200 dark:bg-charcoal-800 text-charcoal-800 dark:text-ivory-200 border border-border dark:border-charcoal-700 transition-colors w-fit"
+                    >
+                      <Printer className="h-3.5 w-3.5" />
+                      Print Official Mark Sheet
+                    </button>
+                  </div>
                 </div>
               </div>
             )}

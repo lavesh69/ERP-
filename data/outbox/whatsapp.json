@@ -1,5 +1,51 @@
 [
   {
+    "id": "wa-1791532887452-ef2529",
+    "wamid": "wamid.HBgL1791532887452b7ef8e07e057417a==",
+    "recipientPhone": "+1 (555) 019-2831",
+    "recipientName": "John Mercer",
+    "recipientRole": "PARENT",
+    "templateName": "attendance_shortage_alert",
+    "parameters": {
+      "student_name": "Alex Mercer",
+      "course_name": "CS-402 Neural Networks",
+      "attendance_percentage": "64.2%"
+    },
+    "status": "SENT",
+    "dispatchedAt": "2026-10-09T08:01:27.452Z",
+    "rawPayload": {
+      "messaging_product": "whatsapp",
+      "recipient_type": "individual",
+      "to": "15550192831",
+      "type": "template",
+      "template": {
+        "name": "attendance_shortage_alert",
+        "language": {
+          "code": "en_US"
+        },
+        "components": [
+          {
+            "type": "body",
+            "parameters": [
+              {
+                "type": "text",
+                "text": "Alex Mercer"
+              },
+              {
+                "type": "text",
+                "text": "CS-402 Neural Networks"
+              },
+              {
+                "type": "text",
+                "text": "64.2%"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  },
+  {
     "id": "wa-1791531853767-094170",
     "wamid": "wamid.HBgL1791531853767e168ecedf2234d4f==",
     "recipientPhone": "+1 (555) 019-2831",

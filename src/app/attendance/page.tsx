@@ -1336,6 +1336,16 @@ export default function AttendancePage() {
                   <FileText className="h-3.5 w-3.5 text-purple-500" />
                   <span>Reports</span>
                 </button>
+                <a
+                  href={`/api/attendance/offline-cache?courseCode=${selectedCourse}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-ivory-100 dark:bg-charcoal-800 hover:bg-ivory-200 dark:hover:bg-charcoal-700 text-charcoal-800 dark:text-ivory-200 text-xs font-bold border border-border dark:border-charcoal-700 transition-all"
+                  title="Download cryptographically signed offline roster manifest"
+                >
+                  <Download className="h-3.5 w-3.5 text-rose-primary" />
+                  <span>Offline Manifest</span>
+                </a>
                 <button
                   onClick={handleOpenMissingScanner}
                   className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-ivory-100 dark:bg-charcoal-800 hover:bg-ivory-200 dark:hover:bg-charcoal-700 text-charcoal-800 dark:text-ivory-200 text-xs font-bold border border-border dark:border-charcoal-700 transition-all"
