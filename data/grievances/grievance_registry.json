@@ -1,6 +1,26 @@
 {
   "grievances": [
     {
+      "id": "grv-1791528009149",
+      "grievanceTicketNo": "GRV-2026-365",
+      "title": "Automated Test Ombudsman Petition Regarding Lab Access",
+      "description": "Laboratory air conditioning and power backup tripped during semester test session.",
+      "category": "CAMPUS_INFRASTRUCTURE",
+      "severity": "MEDIUM",
+      "status": "RESOLVED",
+      "isAnonymous": false,
+      "grievantRole": "SUPER_ADMIN",
+      "grievantName": "Alex Mercer",
+      "grievantRollOrId": "CS2026-001",
+      "committeeName": "Campus Estate & Residential Welfare Board",
+      "slaTargetDays": 5,
+      "daysRemaining": 5,
+      "isSlaBreached": false,
+      "createdAt": "2026-10-09T06:40:09.149Z",
+      "actionTakenReport": "UPS auxiliary power inverter replaced by estate engineering. Certified functional.",
+      "resolvedAt": "2026-10-09T06:40:09.156Z"
+    },
+    {
       "id": "grv-1791526672608",
       "grievanceTicketNo": "GRV-2026-930",
       "title": "Automated Test Ombudsman Petition Regarding Lab Access",

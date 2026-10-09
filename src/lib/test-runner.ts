@@ -223,6 +223,26 @@ import {
 } from "@/lib/canteen/canteen-engine";
 import { GET as handleCourseRegistrationGet, POST as handleCourseRegistrationPost } from "@/app/api/courses/registration/route";
 import { GET as handleDetentionGet, POST as handleDetentionPost } from "@/app/api/attendance/detention/route";
+import {
+  GET as handleWhatsAppGet,
+  POST as handleWhatsAppPost,
+} from "@/app/api/communication/whatsapp/route";
+import {
+  verifyWebhookSubscription,
+  verifyWebhookSignature,
+  DEFAULT_WHATSAPP_APP_SECRET,
+} from "@/lib/communication/whatsapp-service";
+import {
+  POST as handleTabularExportPost,
+} from "@/app/api/export/tabular/route";
+import {
+  exportToCsv,
+  exportToExcelXml,
+  sanitizeCsvCell,
+} from "@/lib/export/tabular-export";
+import {
+  GET as handleTranscriptPdfGet,
+} from "@/app/api/examinations/transcripts/pdf/route";
 
 async function runTestSuite() {
   console.log("=================================================");
@@ -6576,6 +6596,163 @@ By breaking down large monolithic systems into decoupled microservices, systems 
   const simulateData = await simulateRes.json();
   assert(simulateData.simulated === true, "Simulation mode sets simulated flag to true without DB mutation");
   assert(typeof simulateData.promotedCount === "number", "Simulation calculates projected promoted count");
+
+  // =========================================================================
+  // Group 63: WhatsApp Cloud Webhooks, Tabular CSV/Excel Exporter & Transcript PDF Suite
+  // =========================================================================
+  console.log("\n📦 Running Group 63: WhatsApp Cloud Webhooks, Tabular CSV/Excel Exporter & Transcript PDF Suite");
+
+  // 63.1 Meta WhatsApp Webhook Handshake Verification
+  const validWebhookCheck = verifyWebhookSubscription("subscribe", "apex_erp_whatsapp_verify_2026");
+  assert(validWebhookCheck.valid === true, "Meta Webhook challenge succeeds with matching verification token");
+
+  const invalidWebhookCheck = verifyWebhookSubscription("subscribe", "wrong_token");
+  assert(invalidWebhookCheck.valid === false, "Meta Webhook challenge strictly rejects incorrect verification token");
+
+  const waChallengeReq = new NextRequest("http://localhost:3000/api/communication/whatsapp?hub.mode=subscribe&hub.challenge=test_meta_challenge_777&hub.verify_token=apex_erp_whatsapp_verify_2026");
+  const waChallengeRes = await handleWhatsAppGet(waChallengeReq);
+  assert(waChallengeRes.status === 200, "GET /api/communication/whatsapp verifies webhook with 200 OK");
+  const waChallengeText = await waChallengeRes.text();
+  assert(waChallengeText === "test_meta_challenge_777", "GET /api/communication/whatsapp echoes plain-text hub.challenge");
+
+  // 63.2 HMAC-SHA256 Webhook Signature Verification
+  const testPayloadJson = JSON.stringify({
+    entry: [
+      {
+        changes: [
+          {
+            value: {
+              statuses: [
+                {
+                  id: "wamid.HBgL1234567890==",
+                  status: "delivered",
+                  timestamp: "1728456000",
+                },
+              ],
+            },
+          },
+        ],
+      },
+    ],
+  });
+  const validSignature = "sha256=" + crypto.createHmac("sha256", DEFAULT_WHATSAPP_APP_SECRET).update(testPayloadJson, "utf-8").digest("hex");
+  const isSigValid = verifyWebhookSignature(testPayloadJson, validSignature, DEFAULT_WHATSAPP_APP_SECRET);
+  assert(isSigValid === true, "Constant-time HMAC-SHA256 signature validator approves authentic Meta webhook");
+
+  const forgedSig = "sha256=0000000000000000000000000000000000000000000000000000000000000000";
+  const isForgedSigValid = verifyWebhookSignature(testPayloadJson, forgedSig, DEFAULT_WHATSAPP_APP_SECRET);
+  assert(isForgedSigValid === false, "Constant-time HMAC-SHA256 signature validator rejects forged signature");
+
+  // 63.3 Webhook Event Delivery Processing
+  const webhookCallbackReq = new NextRequest("http://localhost:3000/api/communication/whatsapp", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "x-hub-signature-256": validSignature,
+    },
+    body: testPayloadJson,
+  });
+  const webhookCallbackRes = await handleWhatsAppPost(webhookCallbackReq);
+  assert(webhookCallbackRes.status === 200, "POST /api/communication/whatsapp processes verified webhook callback with 200 OK");
+
+  // 63.4 Outbound WhatsApp Parent Notification Dispatch
+  const outboundWaReq = new NextRequest("http://localhost:3000/api/communication/whatsapp", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Cookie: `classroom_session=${adminToken}`,
+    },
+    body: JSON.stringify({
+      recipientPhone: "+1 (555) 019-2831",
+      recipientName: "John Mercer",
+      recipientRole: "PARENT",
+      templateName: "attendance_shortage_alert",
+      parameters: {
+        student_name: "Alex Mercer",
+        course_name: "CS-402 Neural Networks",
+        attendance_percentage: "64.2%",
+      },
+    }),
+  });
+  const outboundWaRes = await handleWhatsAppPost(outboundWaReq);
+  assert(outboundWaRes.status === 200, "POST /api/communication/whatsapp queues outbound notification with 200 OK");
+  const outboundWaData = await outboundWaRes.json();
+  assert(outboundWaData.success === true, "Outbound WhatsApp returns success: true");
+  assert(typeof outboundWaData.messageId === "string" && outboundWaData.messageId.startsWith("wa-"), "WhatsApp dispatch assigns standard wa- message identifier");
+  assert(typeof outboundWaData.wamid === "string" && outboundWaData.wamid.startsWith("wamid."), "WhatsApp dispatch produces standard Meta wamid identifier");
+
+  // 63.5 WhatsApp Outbox & Telemetry Retrieval
+  const waOutboxReq = new NextRequest("http://localhost:3000/api/communication/whatsapp", {
+    headers: { Cookie: `classroom_session=${adminToken}` },
+  });
+  const waOutboxRes = await handleWhatsAppGet(waOutboxReq);
+  assert(waOutboxRes.status === 200, "GET /api/communication/whatsapp returns 200 OK for staff telemetry");
+  const waOutboxData = await waOutboxRes.json();
+  assert(typeof waOutboxData.stats.totalMessages === "number" && waOutboxData.stats.totalMessages >= 1, "WhatsApp telemetry aggregates outbox total sent messages");
+  assert(Array.isArray(waOutboxData.outbox), "WhatsApp telemetry provides audit ledger of dispatched notifications");
+
+  // 63.6 Universal Tabular CSV & Formula Injection Defense
+  const dangerousFormulaValue = "=1+1; cmd|' /C calc'!A0";
+  const sanitizedCell = sanitizeCsvCell(dangerousFormulaValue);
+  assert(sanitizedCell.startsWith("'="), "CSV sanitizer prepends single quote to neutralize formula injection (CWE-1236)");
+
+  const sampleExportData = [
+    { studentRoll: "2024-CSE-001", studentName: "Aarav Sharma", cgpa: 9.2, dues: 0 },
+    { studentRoll: "2024-CSE-002", studentName: "Rohan Verma, Jr.", cgpa: 7.8, dues: 500 },
+  ];
+  const exportedTestCsv = exportToCsv(sampleExportData);
+  assert(exportedTestCsv.includes("StudentRoll,StudentName,Cgpa,Dues"), "exportToCsv renders proper CSV header row");
+  assert(exportedTestCsv.includes("\"Rohan Verma, Jr.\""), "exportToCsv safely quotes values containing commas");
+
+  // Tabular API endpoint CSV export
+  const csvExportReq = new NextRequest("http://localhost:3000/api/export/tabular", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Cookie: `classroom_session=${adminToken}`,
+    },
+    body: JSON.stringify({
+      format: "csv",
+      filename: "students_roster",
+      data: sampleExportData,
+    }),
+  });
+  const csvExportRes = await handleTabularExportPost(csvExportReq);
+  assert(csvExportRes.status === 200, "POST /api/export/tabular (csv) returns 200 OK");
+  assert(csvExportRes.headers.get("content-type")?.includes("text/csv") === true, "Tabular CSV export sets text/csv content type");
+
+  // Tabular API endpoint Excel SpreadsheetML export
+  const excelExportReq = new NextRequest("http://localhost:3000/api/export/tabular", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Cookie: `classroom_session=${adminToken}`,
+    },
+    body: JSON.stringify({
+      format: "excel",
+      filename: "students_roster",
+      sheetName: "CSE Roster",
+      data: sampleExportData,
+    }),
+  });
+  const excelExportRes = await handleTabularExportPost(excelExportReq);
+  assert(excelExportRes.status === 200, "POST /api/export/tabular (excel) returns 200 OK");
+  assert(excelExportRes.headers.get("content-type")?.includes("application/vnd.ms-excel") === true, "Tabular Excel export sets application/vnd.ms-excel content type");
+  const excelXmlText = await excelExportRes.text();
+  assert(excelXmlText.includes("xmlns:ss=\"urn:schemas-microsoft-com:office:spreadsheet\""), "Excel export generates valid Microsoft SpreadsheetML schema");
+  assert(excelXmlText.includes("<Worksheet ss:Name=\"CSE Roster\">"), "Excel export embeds configured worksheet name");
+
+  // 63.7 Academic Transcripts PDF & Print Dossier Verification
+  const transcriptPdfReq = new NextRequest("http://localhost:3000/api/examinations/transcripts/pdf", {
+    headers: { Cookie: `classroom_session=${adminToken}` },
+  });
+  const transcriptPdfRes = await handleTranscriptPdfGet(transcriptPdfReq);
+  assert(transcriptPdfRes.status === 200, "GET /api/examinations/transcripts/pdf returns 200 OK");
+  assert(transcriptPdfRes.headers.get("content-type")?.includes("text/html") === true, "Transcript PDF route serves text/html content type");
+  const transcriptHtml = await transcriptPdfRes.text();
+  assert(transcriptHtml.includes("OFFICIAL GRADE TRANSCRIPT"), "Transcript HTML includes official UGC grade transcript title");
+  assert(transcriptHtml.includes("@page"), "Transcript HTML embeds print-to-PDF stylesheet rules");
+  assert(transcriptHtml.includes("APEX-COE-SEAL-"), "Transcript HTML embeds Controller of Examinations security seal");
 
   console.log("\n=================================================");
   console.log(`🎉 ALL ${passedTests}/${totalTests} TESTS PASSED SUCCESSFULLY!`);

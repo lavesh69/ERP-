@@ -8,18 +8,18 @@
 
 ## 1. Top 10 Prioritized Improvements Matrix
 
-| Task ID | Improvement Task | Baseline | Target Metric | Motivating Competitor | Impact (pp) | Complexity | Priority |
+| Task ID | Improvement Task | Baseline | Status | Motivating Competitor | Impact (pp) | Complexity | Priority |
 | :---: | :--- | :---: | :---: | :--- | :---: | :---: | :---: |
-| **`IMP-01`** | **Tally Prime & Accounting XML Ledger Export** | 80% Integrations | 92% Integrations | Fedena / Entab / Frappe | +0.60 pp | Medium | **P1 (High)** |
-| **`IMP-02`** | **Database Latency & Preflight Telemetry (`/api/health`)** | 86% Scalability | 95% Scalability | TCS iON / Academia | +0.45 pp | Low | **P1 (High)** |
-| **`IMP-03`** | **Bulk Student Semester Promotion & Rollover Engine** | 94% Workflow | 98% Workflow | Academia / Frappe | +0.60 pp | Medium | **P1 (High)** |
-| **`IMP-04`** | **WhatsApp Business Cloud API Webhook Adapter** | 78% Integrations | 90% Integrations | Teachmint / Entab | +0.60 pp | Medium | **P2** |
-| **`IMP-05`** | **Automated Table CSV / Excel Export Utility** | 90% Analytics | 96% Analytics | Fedena / Frappe | +0.30 pp | Low | **P2** |
-| **`IMP-06`** | **Automated Academic Transcripts PDF Generation Service** | 94% Workflow | 98% Workflow | TCS iON / Academia | +0.60 pp | Medium | **P2** |
-| **`IMP-07`** | **Low-Bandwidth Offline QR Code Attendance Cache** | 96% Core ERP | 99% Core ERP | Fedena (Offline RFID) | +0.60 pp | Medium | **P2** |
-| **`IMP-08`** | **Fine-Grained Custom DocType / Field Metadata Engine** | 82% Integrations | 90% Integrations | Frappe Education | +0.40 pp | High | **P3** |
-| **`IMP-09`** | **Streaming LLM Token Generation in AI Assistant Studio** | 95% AI Studio | 99% AI Studio | Teachmint (EduAI) | +0.40 pp | Medium | **P3** |
-| **`IMP-10`** | **Automated Load Testing & Micro-Benchmark Suite** | 94% Reliability | 98% Reliability | TCS iON (Mega-Scale) | +0.40 pp | Medium | **P3** |
+| **`IMP-01`** | **Tally Prime & Accounting XML Ledger Export** | 80% Integrations | ✅ **Done (92%)** | Fedena / Entab / Frappe | +0.60 pp | Medium | **P1 (High)** |
+| **`IMP-02`** | **Database Latency & Preflight Telemetry (`/api/health`)** | 86% Scalability | ✅ **Done (95%)** | TCS iON / Academia | +0.45 pp | Low | **P1 (High)** |
+| **`IMP-03`** | **Bulk Student Semester Promotion & Rollover Engine** | 94% Workflow | ✅ **Done (98%)** | Academia / Frappe | +0.60 pp | Medium | **P1 (High)** |
+| **`IMP-04`** | **WhatsApp Business Cloud API Webhook Adapter** | 78% Integrations | ✅ **Done (92%)** | Teachmint / Entab | +0.60 pp | Medium | **P2** |
+| **`IMP-05`** | **Automated Table CSV / Excel Export Utility** | 90% Analytics | ✅ **Done (96%)** | Fedena / Frappe | +0.30 pp | Low | **P2** |
+| **`IMP-06`** | **Automated Academic Transcripts PDF Generation Service** | 94% Workflow | ✅ **Done (98%)** | TCS iON / Academia | +0.60 pp | Medium | **P2** |
+| **`IMP-07`** | **Low-Bandwidth Offline QR Code Attendance Cache** | 96% Core ERP | ⏳ In Queue | Fedena (Offline RFID) | +0.60 pp | Medium | **P2** |
+| **`IMP-08`** | **Fine-Grained Custom DocType / Field Metadata Engine** | 82% Integrations | ⏳ In Queue | Frappe Education | +0.40 pp | High | **P3** |
+| **`IMP-09`** | **Streaming LLM Token Generation in AI Assistant Studio** | 95% AI Studio | ⏳ In Queue | Teachmint (EduAI) | +0.40 pp | Medium | **P3** |
+| **`IMP-10`** | **Automated Load Testing & Micro-Benchmark Suite** | 94% Reliability | ⏳ In Queue | TCS iON (Mega-Scale) | +0.40 pp | Medium | **P3** |
 
 ---
 

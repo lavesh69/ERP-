@@ -11,6 +11,8 @@ import {
 } from "@/lib/grading/gpa-engine";
 import { logger } from "@/lib/logging/logger";
 
+import { generateTranscriptHtml } from "@/lib/examinations/transcript-template";
+
 const HMAC_SECRET = process.env.JWT_SECRET || "apex-university-coe-secure-key";
 
 export async function GET(req: NextRequest) {
@@ -206,6 +208,16 @@ export async function GET(req: NextRequest) {
         isCertified: true,
       },
     };
+
+    if (searchParams.get("format") === "html" || searchParams.get("export") === "pdf") {
+      const html = generateTranscriptHtml(transcript);
+      return new NextResponse(html, {
+        status: 200,
+        headers: {
+          "Content-Type": "text/html; charset=utf-8",
+        },
+      });
+    }
 
     return NextResponse.json({ success: true, transcript });
   } catch (error: any) {
