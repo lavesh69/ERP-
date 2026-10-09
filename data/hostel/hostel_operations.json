@@ -208,6 +208,57 @@
   ],
   "gatePasses": [
     {
+      "id": "gp-1791529816953",
+      "passNumber": "GP-2026-1303",
+      "studentId": "stu-guest",
+      "studentName": "Alex Mercer",
+      "studentRoll": "CS2026-001",
+      "roomNumber": "A-101",
+      "blockName": "Nelson Mandela Hall",
+      "reason": "National Robotics Olympiad Finals",
+      "destination": "New York, NY",
+      "departureTime": "2026-11-01T08:00:00.000Z",
+      "expectedReturnTime": "2026-11-03T20:00:00.000Z",
+      "status": "PENDING_WARDEN",
+      "emergencyContact": "+1 (555) 881-2233",
+      "parentConsentVerified": true,
+      "createdAt": "2026-10-09T07:10:16.953Z"
+    },
+    {
+      "id": "gp-1791528971681",
+      "passNumber": "GP-2026-3877",
+      "studentId": "stu-guest",
+      "studentName": "Alex Mercer",
+      "studentRoll": "CS2026-001",
+      "roomNumber": "A-101",
+      "blockName": "Nelson Mandela Hall",
+      "reason": "National Robotics Olympiad Finals",
+      "destination": "New York, NY",
+      "departureTime": "2026-11-01T08:00:00.000Z",
+      "expectedReturnTime": "2026-11-03T20:00:00.000Z",
+      "status": "PENDING_WARDEN",
+      "emergencyContact": "+1 (555) 881-2233",
+      "parentConsentVerified": true,
+      "createdAt": "2026-10-09T06:56:11.681Z"
+    },
+    {
+      "id": "gp-1791528576862",
+      "passNumber": "GP-2026-5395",
+      "studentId": "stu-guest",
+      "studentName": "Alex Mercer",
+      "studentRoll": "CS2026-001",
+      "roomNumber": "A-101",
+      "blockName": "Nelson Mandela Hall",
+      "reason": "National Robotics Olympiad Finals",
+      "destination": "New York, NY",
+      "departureTime": "2026-11-01T08:00:00.000Z",
+      "expectedReturnTime": "2026-11-03T20:00:00.000Z",
+      "status": "PENDING_WARDEN",
+      "emergencyContact": "+1 (555) 881-2233",
+      "parentConsentVerified": true,
+      "createdAt": "2026-10-09T06:49:36.862Z"
+    },
+    {
       "id": "gp-1791528009122",
       "passNumber": "GP-2026-8975",
       "studentId": "stu-guest",
@@ -756,7 +807,7 @@
           "roomNumber": "101",
           "bedId": "101-A",
           "status": "IN_ROOM",
-          "updatedAt": "2026-10-09T06:40:09.400Z"
+          "updatedAt": "2026-10-09T07:10:17.284Z"
         },
         {
           "studentRoll": "EE2024-019",
@@ -764,7 +815,7 @@
           "roomNumber": "102",
           "bedId": "102-A",
           "status": "UNAUTHORIZED_ABSENT",
-          "updatedAt": "2026-10-09T06:40:09.400Z",
+          "updatedAt": "2026-10-09T07:10:17.284Z",
           "remarks": "Curfew violated - Parents alerted via automated SMS"
         }
       ]

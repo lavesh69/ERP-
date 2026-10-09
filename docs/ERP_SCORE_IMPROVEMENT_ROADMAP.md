@@ -16,9 +16,9 @@
 | **`IMP-04`** | **WhatsApp Business Cloud API Webhook Adapter** | 78% Integrations | ✅ **Done (92%)** | Teachmint / Entab | +0.60 pp | Medium | **P2** |
 | **`IMP-05`** | **Automated Table CSV / Excel Export Utility** | 90% Analytics | ✅ **Done (96%)** | Fedena / Frappe | +0.30 pp | Low | **P2** |
 | **`IMP-06`** | **Automated Academic Transcripts PDF Generation Service** | 94% Workflow | ✅ **Done (98%)** | TCS iON / Academia | +0.60 pp | Medium | **P2** |
-| **`IMP-07`** | **Low-Bandwidth Offline QR Code Attendance Cache** | 96% Core ERP | ⏳ In Queue | Fedena (Offline RFID) | +0.60 pp | Medium | **P2** |
-| **`IMP-08`** | **Fine-Grained Custom DocType / Field Metadata Engine** | 82% Integrations | ⏳ In Queue | Frappe Education | +0.40 pp | High | **P3** |
-| **`IMP-09`** | **Streaming LLM Token Generation in AI Assistant Studio** | 95% AI Studio | ⏳ In Queue | Teachmint (EduAI) | +0.40 pp | Medium | **P3** |
+| **`IMP-07`** | **Low-Bandwidth Offline QR Code Attendance Cache** | 96% Core ERP | ✅ **Done (99%)** | Fedena (Offline RFID) | +0.60 pp | Medium | **P2** |
+| **`IMP-08`** | **Examination Moderation & Statistical Bell-Curve Engine** | 92% Core ERP | ✅ **Done (98%)** | TCS iON / Academia | +0.50 pp | Medium | **P2** |
+| **`IMP-09`** | **Campus Timetable & Space Utilization Telemetry** | 90% Scalability | ⏳ In Queue | TCS iON / Academia | +0.40 pp | Medium | **P3** |
 | **`IMP-10`** | **Automated Load Testing & Micro-Benchmark Suite** | 94% Reliability | ⏳ In Queue | TCS iON (Mega-Scale) | +0.40 pp | Medium | **P3** |
 
 ---

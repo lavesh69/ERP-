@@ -716,6 +716,69 @@
       "totalAmount": 7500,
       "dueDate": "2026-12-01",
       "createdAt": "2026-10-09T06:40:09.080Z"
+    },
+    {
+      "id": "mfs-mv0luwx2",
+      "code": "TEST-STR-6804",
+      "title": "Automated Suite Test Fee Structure",
+      "programCode": "BTECH-CSE",
+      "academicYear": "2026-2027",
+      "quotaType": "MERIT_GENERAL",
+      "studentType": "DAY_SCHOLAR",
+      "currency": "USD",
+      "heads": [
+        {
+          "id": "h1",
+          "name": "Tuition",
+          "category": "TUITION",
+          "amount": 7500
+        }
+      ],
+      "totalAmount": 7500,
+      "dueDate": "2026-12-01",
+      "createdAt": "2026-10-09T06:49:36.806Z"
+    },
+    {
+      "id": "mfs-mv0m3dk0",
+      "code": "TEST-STR-1614",
+      "title": "Automated Suite Test Fee Structure",
+      "programCode": "BTECH-CSE",
+      "academicYear": "2026-2027",
+      "quotaType": "MERIT_GENERAL",
+      "studentType": "DAY_SCHOLAR",
+      "currency": "USD",
+      "heads": [
+        {
+          "id": "h1",
+          "name": "Tuition",
+          "category": "TUITION",
+          "amount": 7500
+        }
+      ],
+      "totalAmount": 7500,
+      "dueDate": "2026-12-01",
+      "createdAt": "2026-10-09T06:56:11.616Z"
+    },
+    {
+      "id": "mfs-mv0mlhs1",
+      "code": "TEST-STR-6895",
+      "title": "Automated Suite Test Fee Structure",
+      "programCode": "BTECH-CSE",
+      "academicYear": "2026-2027",
+      "quotaType": "MERIT_GENERAL",
+      "studentType": "DAY_SCHOLAR",
+      "currency": "USD",
+      "heads": [
+        {
+          "id": "h1",
+          "name": "Tuition",
+          "category": "TUITION",
+          "amount": 7500
+        }
+      ],
+      "totalAmount": 7500,
+      "dueDate": "2026-12-01",
+      "createdAt": "2026-10-09T07:10:16.897Z"
     }
   ],
   "installmentPlans": [
@@ -800,6 +863,78 @@
     }
   ],
   "refundVouchers": [
+    {
+      "id": "rfnd-1791529816940",
+      "voucherNo": "RFND-2026-1586",
+      "studentId": "stu-general",
+      "studentName": "Alex Mercer",
+      "rollNo": "CS2026-001",
+      "program": "B.Tech Computer Science",
+      "type": "CAUTION_MONEY",
+      "amount": 500,
+      "bankDetails": {
+        "accountHolder": "Alex Mercer",
+        "accountNumber": "0000000000",
+        "ifscOrSwift": "INSTITUTION-SWIFT",
+        "bankName": "National Treasury Bank"
+      },
+      "clearanceStatus": {
+        "libraryCleared": true,
+        "hostelCleared": true,
+        "labCleared": true
+      },
+      "status": "PENDING_APPROVAL",
+      "requestedAt": "2026-10-09T07:10:16.940Z",
+      "remarks": "Refund application logged with Bursar Treasury"
+    },
+    {
+      "id": "rfnd-1791528971668",
+      "voucherNo": "RFND-2026-5951",
+      "studentId": "stu-general",
+      "studentName": "Alex Mercer",
+      "rollNo": "CS2026-001",
+      "program": "B.Tech Computer Science",
+      "type": "CAUTION_MONEY",
+      "amount": 500,
+      "bankDetails": {
+        "accountHolder": "Alex Mercer",
+        "accountNumber": "0000000000",
+        "ifscOrSwift": "INSTITUTION-SWIFT",
+        "bankName": "National Treasury Bank"
+      },
+      "clearanceStatus": {
+        "libraryCleared": true,
+        "hostelCleared": true,
+        "labCleared": true
+      },
+      "status": "PENDING_APPROVAL",
+      "requestedAt": "2026-10-09T06:56:11.668Z",
+      "remarks": "Refund application logged with Bursar Treasury"
+    },
+    {
+      "id": "rfnd-1791528576849",
+      "voucherNo": "RFND-2026-6639",
+      "studentId": "stu-general",
+      "studentName": "Alex Mercer",
+      "rollNo": "CS2026-001",
+      "program": "B.Tech Computer Science",
+      "type": "CAUTION_MONEY",
+      "amount": 500,
+      "bankDetails": {
+        "accountHolder": "Alex Mercer",
+        "accountNumber": "0000000000",
+        "ifscOrSwift": "INSTITUTION-SWIFT",
+        "bankName": "National Treasury Bank"
+      },
+      "clearanceStatus": {
+        "libraryCleared": true,
+        "hostelCleared": true,
+        "labCleared": true
+      },
+      "status": "PENDING_APPROVAL",
+      "requestedAt": "2026-10-09T06:49:36.849Z",
+      "remarks": "Refund application logged with Bursar Treasury"
+    },
     {
       "id": "rfnd-1791528009111",
       "voucherNo": "RFND-2026-9283",

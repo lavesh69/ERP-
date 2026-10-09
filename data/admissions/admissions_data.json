@@ -1,6 +1,75 @@
 {
   "applicants": [
     {
+      "id": "app-1791529817025",
+      "applicationNo": "ADM-2026-595",
+      "fullName": "Linus Torvalds Jr.",
+      "email": "linus.jr@test-admissions.edu",
+      "phone": "+1 (555) 019-2834",
+      "programCode": "BTECH-CSE",
+      "programName": "B.Tech Computer Science & Engineering",
+      "highSchoolGpa": 4,
+      "entranceExamScore": 1560,
+      "meritRank": 21,
+      "stage": "OFFER_EXTENDED",
+      "documentsStatus": {
+        "transcriptsVerified": false,
+        "identityProofVerified": false,
+        "recommendationLettersVerified": false
+      },
+      "seatDepositPaid": false,
+      "depositAmount": 0,
+      "assignedCounselor": "Admissions Central Desk",
+      "source": "PORTAL_DIRECT",
+      "appliedDate": "2026-10-09T07:10:17.025Z"
+    },
+    {
+      "id": "app-1791528971758",
+      "applicationNo": "ADM-2026-158",
+      "fullName": "Linus Torvalds Jr.",
+      "email": "linus.jr@test-admissions.edu",
+      "phone": "+1 (555) 019-2834",
+      "programCode": "BTECH-CSE",
+      "programName": "B.Tech Computer Science & Engineering",
+      "highSchoolGpa": 4,
+      "entranceExamScore": 1560,
+      "meritRank": 74,
+      "stage": "OFFER_EXTENDED",
+      "documentsStatus": {
+        "transcriptsVerified": false,
+        "identityProofVerified": false,
+        "recommendationLettersVerified": false
+      },
+      "seatDepositPaid": false,
+      "depositAmount": 0,
+      "assignedCounselor": "Admissions Central Desk",
+      "source": "PORTAL_DIRECT",
+      "appliedDate": "2026-10-09T06:56:11.758Z"
+    },
+    {
+      "id": "app-1791528576938",
+      "applicationNo": "ADM-2026-335",
+      "fullName": "Linus Torvalds Jr.",
+      "email": "linus.jr@test-admissions.edu",
+      "phone": "+1 (555) 019-2834",
+      "programCode": "BTECH-CSE",
+      "programName": "B.Tech Computer Science & Engineering",
+      "highSchoolGpa": 4,
+      "entranceExamScore": 1560,
+      "meritRank": 75,
+      "stage": "OFFER_EXTENDED",
+      "documentsStatus": {
+        "transcriptsVerified": false,
+        "identityProofVerified": false,
+        "recommendationLettersVerified": false
+      },
+      "seatDepositPaid": false,
+      "depositAmount": 0,
+      "assignedCounselor": "Admissions Central Desk",
+      "source": "PORTAL_DIRECT",
+      "appliedDate": "2026-10-09T06:49:36.938Z"
+    },
+    {
       "id": "app-1791528009201",
       "applicationNo": "ADM-2026-609",
       "fullName": "Linus Torvalds Jr.",

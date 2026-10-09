@@ -243,6 +243,24 @@ import {
 import {
   GET as handleTranscriptPdfGet,
 } from "@/app/api/examinations/transcripts/pdf/route";
+import {
+  GET as handleOfflineAttendanceGet,
+  POST as handleOfflineAttendancePost,
+} from "@/app/api/attendance/offline-cache/route";
+import {
+  signOfflineManifest,
+  verifyOfflineManifestSignature,
+  validateOfflineAttendanceRecords,
+} from "@/lib/attendance/offline-attendance-engine";
+import {
+  GET as handleExamModerationGet,
+  POST as handleExamModerationPost,
+} from "@/app/api/examinations/moderation/route";
+import {
+  calculateExamStatistics,
+  applyBellCurveModeration,
+  applyGraceMarkModeration,
+} from "@/lib/examinations/moderation-engine";
 
 async function runTestSuite() {
   console.log("=================================================");
@@ -6753,6 +6771,136 @@ By breaking down large monolithic systems into decoupled microservices, systems 
   assert(transcriptHtml.includes("OFFICIAL GRADE TRANSCRIPT"), "Transcript HTML includes official UGC grade transcript title");
   assert(transcriptHtml.includes("@page"), "Transcript HTML embeds print-to-PDF stylesheet rules");
   assert(transcriptHtml.includes("APEX-COE-SEAL-"), "Transcript HTML embeds Controller of Examinations security seal");
+
+  // =========================================================================
+  // Group 64: Offline Attendance Caching & Exam Statistical Moderation Bell-Curve Suite
+  // =========================================================================
+  console.log("\n📦 Running Group 64: Offline Attendance Caching & Exam Statistical Moderation Bell-Curve Suite");
+
+  // 64.1 Offline Attendance Manifest Signing & Signature Verification
+  const testCourseId = "test-course-offline";
+  const testSectionId = "test-sec-offline";
+  const offlineSessionDate = "2026-10-09";
+  const testNonce = "abcdef1234567890";
+
+  const manifestSig = signOfflineManifest(testCourseId, testSectionId, offlineSessionDate, testNonce);
+  assert(typeof manifestSig === "string" && manifestSig.length === 64, "signOfflineManifest produces 64-hex SHA-256 HMAC digital signature");
+  const isManifestValid = verifyOfflineManifestSignature(testCourseId, testSectionId, offlineSessionDate, testNonce, manifestSig);
+  assert(isManifestValid === true, "verifyOfflineManifestSignature verifies authentic offline manifest signature");
+
+  // Tamper resistance
+  const tamperedCourseValid = verifyOfflineManifestSignature("tampered-course", testSectionId, offlineSessionDate, testNonce, manifestSig);
+  assert(tamperedCourseValid === false, "verifyOfflineManifestSignature detects tampered course identifier in offline package");
+
+  // 64.2 Offline Attendance Record Deduplication & Validation
+  const sampleOfflineRecords = [
+    { studentId: "s1", rollNumber: "CS-01", status: "PRESENT" as const, timestamp: "2026-10-09T09:15:00Z", nonce: "n1" },
+    { studentId: "s2", rollNumber: "CS-02", status: "ABSENT" as const, timestamp: "2026-10-09T09:15:01Z", nonce: "n2" },
+    { studentId: "s1", rollNumber: "CS-01", status: "PRESENT" as const, timestamp: "2026-10-09T09:15:02Z", nonce: "n3" }, // duplicate student
+    { studentId: "s3", rollNumber: "CS-03", status: "LATE" as const, timestamp: "2026-10-09T09:20:00Z", nonce: "n4" },
+  ];
+  const validatedOffline = validateOfflineAttendanceRecords(sampleOfflineRecords);
+  assert(validatedOffline.validRecords.length === 3, "validateOfflineAttendanceRecords strips duplicate student scan entries");
+  assert(validatedOffline.duplicatesCount === 1, "validateOfflineAttendanceRecords accurately tallies 1 dropped duplicate");
+  assert(validatedOffline.presentCount === 1 && validatedOffline.absentCount === 1 && validatedOffline.lateCount === 1, "validateOfflineAttendanceRecords accurately tallies breakdown of present, absent, late");
+
+  // 64.3 Offline Manifest Download API
+  const offlineGetReq = new NextRequest("http://localhost:3000/api/attendance/offline-cache", {
+    headers: { Cookie: `classroom_session=${adminToken}` },
+  });
+  const offlineGetRes = await handleOfflineAttendanceGet(offlineGetReq);
+  assert(offlineGetRes.status === 200, "GET /api/attendance/offline-cache returns 200 OK");
+  const offlineGetData = await offlineGetRes.json();
+  assert(offlineGetData.success === true, "Offline manifest reports success: true");
+  assert(typeof offlineGetData.manifest.manifestId === "string" && offlineGetData.manifest.manifestId.startsWith("OFFLINE-MAN-"), "Manifest provides standardized OFFLINE-MAN- identifier");
+  assert(Array.isArray(offlineGetData.manifest.roster), "Offline manifest bundles student roster for offline attendance check");
+  assert(typeof offlineGetData.manifest.digitalSignature === "string", "Offline manifest is cryptographically sealed");
+
+  // 64.4 Offline Attendance Batch Sync POST API
+  const courseForSync = await prisma.course.findFirst();
+  const sectionForSync = await prisma.section.findFirst();
+  const facultyForSync = await prisma.faculty.findFirst();
+  const studentForSync = await prisma.student.findFirst();
+
+  if (courseForSync && sectionForSync && facultyForSync && studentForSync) {
+    const offlinePostReq = new NextRequest("http://localhost:3000/api/attendance/offline-cache", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+      body: JSON.stringify({
+        manifestId: offlineGetData.manifest.manifestId,
+        courseId: courseForSync.id,
+        sectionId: sectionForSync.id,
+        facultyId: facultyForSync.id,
+        sessionDate: "2026-10-09",
+        records: [
+          {
+            studentId: studentForSync.id,
+            rollNumber: studentForSync.rollNumber,
+            status: "PRESENT",
+            timestamp: new Date().toISOString(),
+            nonce: "nonce-sync-01",
+          },
+        ],
+      }),
+    });
+    const offlinePostRes = await handleOfflineAttendancePost(offlinePostReq);
+    assert(offlinePostRes.status === 200, "POST /api/attendance/offline-cache reconciles batch attendance with 200 OK");
+    const offlinePostData = await offlinePostRes.json();
+    assert(offlinePostData.success === true, "Offline batch reconciliation reports success: true");
+    assert(offlinePostData.syncedRecordsCount >= 1, "Offline batch sync persists records into database");
+  }
+
+  // 64.5 Statistical Metrics Engine (Mean, Median, Standard Deviation, Pass Rate)
+  const sampleMarks = [32, 38, 45, 52, 60, 68, 75, 82, 90, 95];
+  const examStats = calculateExamStatistics(sampleMarks, 40);
+  assert(examStats.count === 10, "calculateExamStatistics processes count of 10 examinees");
+  assert(examStats.min === 32 && examStats.max === 95, "calculateExamStatistics identifies minimum (32) and maximum (95) scores");
+  assert(examStats.mean === 63.7, "calculateExamStatistics accurately calculates arithmetic mean (63.7)");
+  assert(examStats.median === 64, "calculateExamStatistics accurately calculates median score (64)");
+  assert(examStats.standardDeviation > 20, "calculateExamStatistics accurately measures score dispersion / standard deviation");
+  assert(examStats.passRatePercent === 80.0, "calculateExamStatistics computes 80% passing rate (8 of 10 >= 40)");
+
+  // 64.6 Gaussian Bell-Curve Normalization Engine
+  const studentRecords = sampleMarks.map((m, idx) => ({ studentId: `cand-${idx}`, marksObtained: m }));
+  const bellCurved = applyBellCurveModeration(studentRecords, 70, 100);
+  assert(Math.abs(bellCurved.afterStats.mean - 70) <= 1.0, "applyBellCurveModeration normalizes cohort marks within ~1 mark of target Gaussian mean (70)");
+  assert(bellCurved.results.length === 10, "applyBellCurveModeration moderates all candidate scores");
+
+  // 64.7 Statutory Grace Marks Moderation Engine (Condonation)
+  const graceMarksSim = applyGraceMarkModeration(studentRecords, 40, 5);
+  assert(graceMarksSim.graceBeneficiariesCount === 1, "applyGraceMarkModeration lifts borderline student (38 -> 40) across 40 passing cutoff");
+  assert(graceMarksSim.afterStats.passRatePercent === 90.0, "Pass rate increases from 80% to 90% after borderline condonation grace marks");
+
+  // 64.8 Examination Moderation API Preview & Simulation
+  const examRecord = await prisma.exam.findFirst();
+  if (examRecord) {
+    const moderationGetReq = new NextRequest(`http://localhost:3000/api/examinations/moderation?examId=${examRecord.id}`, {
+      headers: { Cookie: `classroom_session=${adminToken}` },
+    });
+    const moderationGetRes = await handleExamModerationGet(moderationGetReq);
+    assert(moderationGetRes.status === 200, "GET /api/examinations/moderation returns 200 OK");
+    const moderationGetData = await moderationGetRes.json();
+    assert(moderationGetData.success === true, "Moderation preview returns success: true");
+    assert(typeof moderationGetData.statistics.mean === "number", "Moderation preview computes raw examination mean");
+    assert(typeof moderationGetData.projections.bellCurve.projectedPassRate === "number", "Moderation preview projects bell curve passing rate");
+
+    // Simulation POST
+    const simModerationReq = new NextRequest("http://localhost:3000/api/examinations/moderation", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+      body: JSON.stringify({
+        examId: examRecord.id,
+        moderationType: "GRACE_MARKS",
+        action: "SIMULATE",
+        passingMarks: 40,
+        maxGraceMarks: 5,
+      }),
+    });
+    const simModerationRes = await handleExamModerationPost(simModerationReq);
+    assert(simModerationRes.status === 200, "POST /api/examinations/moderation (action: SIMULATE) returns 200 OK");
+    const simModerationData = await simModerationRes.json();
+    assert(simModerationData.simulated === true, "Moderation simulation executes without database alteration");
+  }
 
   console.log("\n=================================================");
   console.log(`🎉 ALL ${passedTests}/${totalTests} TESTS PASSED SUCCESSFULLY!`);

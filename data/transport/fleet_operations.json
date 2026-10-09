@@ -80,7 +80,7 @@
       "assignedVehicleId": "veh-01",
       "assignedVehicleCode": "BUS-01",
       "assignedDriverName": "Robert Kowalski",
-      "totalRegisteredStudents": 68,
+      "totalRegisteredStudents": 71,
       "stops": [
         {
           "stopName": "Union Square Metro",
@@ -174,6 +174,54 @@
     }
   ],
   "passes": [
+    {
+      "id": "pass-1791529816965",
+      "passNumber": "BP-2026-6084",
+      "studentName": "Alex Mercer",
+      "studentRoll": "CS2026-001",
+      "routeId": "rt-01",
+      "routeNumber": "R-01",
+      "stopName": "Porter Square T-Station",
+      "academicYear": "2026-2027",
+      "validUntil": "2027-05-31",
+      "status": "ACTIVE",
+      "feeAmount": 450,
+      "feeStatus": "PAID",
+      "qrCodeFingerprint": "0dfde1a64e7771e8414f0d3ea094cfb0",
+      "issuedAt": "2026-10-09T07:10:16.965Z"
+    },
+    {
+      "id": "pass-1791528971693",
+      "passNumber": "BP-2026-9458",
+      "studentName": "Alex Mercer",
+      "studentRoll": "CS2026-001",
+      "routeId": "rt-01",
+      "routeNumber": "R-01",
+      "stopName": "Porter Square T-Station",
+      "academicYear": "2026-2027",
+      "validUntil": "2027-05-31",
+      "status": "ACTIVE",
+      "feeAmount": 450,
+      "feeStatus": "PAID",
+      "qrCodeFingerprint": "0dfde1a64e7771e8414f0d3ea094cfb0",
+      "issuedAt": "2026-10-09T06:56:11.693Z"
+    },
+    {
+      "id": "pass-1791528576875",
+      "passNumber": "BP-2026-7631",
+      "studentName": "Alex Mercer",
+      "studentRoll": "CS2026-001",
+      "routeId": "rt-01",
+      "routeNumber": "R-01",
+      "stopName": "Porter Square T-Station",
+      "academicYear": "2026-2027",
+      "validUntil": "2027-05-31",
+      "status": "ACTIVE",
+      "feeAmount": 450,
+      "feeStatus": "PAID",
+      "qrCodeFingerprint": "0dfde1a64e7771e8414f0d3ea094cfb0",
+      "issuedAt": "2026-10-09T06:49:36.875Z"
+    },
     {
       "id": "pass-1791528009135",
       "passNumber": "BP-2026-1145",
