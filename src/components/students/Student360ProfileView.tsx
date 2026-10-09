@@ -2158,17 +2158,18 @@ Registrar Stamp: [APEX-ACADEMIC-SEAL]
                           </button>
                         )}
 
-                        {currentRole !== "STUDENT" && req.status === "SUBMITTED" && (
+                        {((currentRole !== "STUDENT" && req.status === "SUBMITTED") ||
+                          (currentRole === "STUDENT" && req.type === "GUARDIAN_LINK_REQUEST" && req.status === "SUBMITTED")) && (
                           <button
                             onClick={() => {
                               setSelectedRequestForReview(req);
                               setReviewStatus("APPROVED");
-                              setReviewRemarks("");
+                              setReviewRemarks(req.type === "GUARDIAN_LINK_REQUEST" ? "Approved by Scholar" : "");
                               setIsReviewModalOpen(true);
                             }}
                             className="px-3 py-1 rounded-lg text-xs font-bold bg-rose-container dark:bg-rose-dark/30 hover:bg-rose-primary hover:text-white text-rose-primary dark:text-rose-accent transition-colors border border-rose-accent/30"
                           >
-                            Review &amp; Resolve
+                            {req.type === "GUARDIAN_LINK_REQUEST" ? "Respond to Link Request" : "Review & Resolve"}
                           </button>
                         )}
                       </div>
@@ -2212,6 +2213,7 @@ Registrar Stamp: [APEX-ACADEMIC-SEAL]
               <option value="ELECTIVE_CHANGE">Elective Course Switch / Add-Drop Petition</option>
               <option value="BONAFIDE">Bonafide Student Certificate</option>
               <option value="FEE_CONCESSION">Pastoral Fee Concession / Financial Aid</option>
+              <option value="GUARDIAN_LINK_REQUEST">Parent / Guardian Link Authorization</option>
             </select>
           </div>
 
@@ -2307,8 +2309,17 @@ Registrar Stamp: [APEX-ACADEMIC-SEAL]
               onChange={(e) => setReviewStatus(e.target.value as any)}
               className="w-full text-xs p-2.5 rounded-xl border border-border dark:border-charcoal-700 bg-white dark:bg-charcoal-900 text-charcoal-900 dark:text-ivory-100 font-bold focus:outline-none focus:border-rose-primary"
             >
-              <option value="APPROVED">APPROVE — Grant Academic Exemption / Certificate</option>
-              <option value="REJECTED">REJECT — Request Ineligible / Insufficient Evidence</option>
+              {selectedRequestForReview?.type === "GUARDIAN_LINK_REQUEST" ? (
+                <>
+                  <option value="APPROVED">APPROVE — Authorize Guardian Linking &amp; Grant Portal Access</option>
+                  <option value="REJECTED">REJECT — Decline Guardian Link Authorization</option>
+                </>
+              ) : (
+                <>
+                  <option value="APPROVED">APPROVE — Grant Academic Exemption / Certificate</option>
+                  <option value="REJECTED">REJECT — Request Ineligible / Insufficient Evidence</option>
+                </>
+              )}
             </select>
           </div>
 

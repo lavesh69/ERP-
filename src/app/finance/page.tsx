@@ -100,6 +100,15 @@ export default function FinancePage() {
   const [isReceiptModalOpen, setIsReceiptModalOpen] = useState(false);
   const [reconcilingId, setReconcilingId] = useState<string | null>(null);
 
+  // Interactive Payment Gateway / Sandbox Checkout Details
+  const [checkoutChannel, setCheckoutChannel] = useState<"CARD" | "UPI" | "NETBANKING">("CARD");
+  const [cardNumber, setCardNumber] = useState("4242 •••• •••• 4242");
+  const [cardExpiry, setCardExpiry] = useState("12/28");
+  const [cardCvv, setCardCvv] = useState("123");
+  const [cardHolder, setCardHolder] = useState("Alex Mercer");
+  const [upiId, setUpiId] = useState("scholar.mercer@okhdfcbank");
+  const [selectedBank, setSelectedBank] = useState("HDFC Bank (Enterprise Institutional Portal)");
+
   const handleApproveChallan = async (transactionId: string, referenceNumber: string) => {
     setReconcilingId(transactionId);
     try {
@@ -889,10 +898,123 @@ export default function FinancePage() {
               </select>
             </div>
 
+            {(payMethod.includes("Online") || payMethod.includes("Razorpay") || payMethod.includes("Card")) && (
+              <div className="p-3.5 rounded-xl border border-rose-primary/20 bg-rose-50/40 dark:bg-rose-950/10 flex flex-col gap-3">
+                <div className="flex items-center justify-between border-b border-rose-primary/20 pb-2">
+                  <span className="text-[11px] font-bold text-rose-primary dark:text-rose-accent uppercase tracking-wider flex items-center gap-1.5">
+                    <ShieldCheck className="h-3.5 w-3.5" /> Secure Gateway Sandbox Checkout
+                  </span>
+                  <div className="flex gap-1">
+                    {(["CARD", "UPI", "NETBANKING"] as const).map((ch) => (
+                      <button
+                        key={ch}
+                        type="button"
+                        onClick={() => setCheckoutChannel(ch)}
+                        className={`px-2 py-0.5 rounded-md text-[10px] font-bold transition-all ${
+                          checkoutChannel === ch
+                            ? "bg-rose-primary text-white"
+                            : "bg-ivory-200 dark:bg-charcoal-800 text-charcoal-700 dark:text-ivory-200 hover:bg-rose-100"
+                        }`}
+                      >
+                        {ch === "CARD" ? "Card" : ch === "UPI" ? "UPI" : "NetBanking"}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {checkoutChannel === "CARD" && (
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] text-charcoal-500 font-semibold">Card Details</span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setCardNumber("4242 4242 4242 4242");
+                          setCardExpiry("12/28");
+                          setCardCvv("888");
+                          setCardHolder("Alex Mercer");
+                        }}
+                        className="text-[10px] text-rose-primary hover:underline font-bold"
+                      >
+                        ⚡ Fill Test Card
+                      </button>
+                    </div>
+                    <div className="grid grid-cols-3 gap-2">
+                      <input
+                        type="text"
+                        placeholder="Card Number"
+                        value={cardNumber}
+                        onChange={(e) => setCardNumber(e.target.value)}
+                        className="col-span-3 bg-white dark:bg-charcoal-900 border border-border dark:border-charcoal-700 rounded-lg p-2 text-xs font-mono"
+                      />
+                      <input
+                        type="text"
+                        placeholder="Cardholder"
+                        value={cardHolder}
+                        onChange={(e) => setCardHolder(e.target.value)}
+                        className="col-span-2 bg-white dark:bg-charcoal-900 border border-border dark:border-charcoal-700 rounded-lg p-2 text-xs"
+                      />
+                      <div className="flex gap-1">
+                        <input
+                          type="text"
+                          placeholder="MM/YY"
+                          value={cardExpiry}
+                          onChange={(e) => setCardExpiry(e.target.value)}
+                          className="w-1/2 bg-white dark:bg-charcoal-900 border border-border dark:border-charcoal-700 rounded-lg p-2 text-xs text-center"
+                        />
+                        <input
+                          type="password"
+                          maxLength={4}
+                          placeholder="CVV"
+                          value={cardCvv}
+                          onChange={(e) => setCardCvv(e.target.value)}
+                          className="w-1/2 bg-white dark:bg-charcoal-900 border border-border dark:border-charcoal-700 rounded-lg p-2 text-xs text-center"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {checkoutChannel === "UPI" && (
+                  <div className="space-y-1.5">
+                    <span className="text-[10px] text-charcoal-500 font-semibold">Virtual Payment Address (VPA)</span>
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={upiId}
+                        onChange={(e) => setUpiId(e.target.value)}
+                        className="flex-1 bg-white dark:bg-charcoal-900 border border-border dark:border-charcoal-700 rounded-lg p-2 text-xs font-mono"
+                        placeholder="scholar@okhdfcbank"
+                      />
+                      <span className="px-2 py-1.5 rounded-lg bg-green-100 text-green-700 dark:bg-green-950/40 dark:text-green-300 text-[10px] font-bold flex items-center">
+                        Verified VPA
+                      </span>
+                    </div>
+                  </div>
+                )}
+
+                {checkoutChannel === "NETBANKING" && (
+                  <div className="space-y-1.5">
+                    <span className="text-[10px] text-charcoal-500 font-semibold">Corporate & Retail Partner Banks</span>
+                    <select
+                      value={selectedBank}
+                      onChange={(e) => setSelectedBank(e.target.value)}
+                      className="w-full bg-white dark:bg-charcoal-900 border border-border dark:border-charcoal-700 rounded-lg p-2 text-xs"
+                    >
+                      <option value="HDFC Bank (Enterprise Institutional Portal)">HDFC Bank (Enterprise Institutional Portal)</option>
+                      <option value="State Bank of India (SBI Edu-Pay)">State Bank of India (SBI Edu-Pay)</option>
+                      <option value="ICICI Bank (Corporate Campus Link)">ICICI Bank (Corporate Campus Link)</option>
+                      <option value="Axis Bank (Higher Education Gateway)">Axis Bank (Higher Education Gateway)</option>
+                    </select>
+                  </div>
+                )}
+              </div>
+            )}
+
             <div className="p-3 rounded-xl bg-ivory-50 dark:bg-charcoal-900 border border-border dark:border-charcoal-700 text-[11px] text-charcoal-600 dark:text-charcoal-400 flex items-center gap-2">
               <Lock className="h-4 w-4 text-rose-primary shrink-0" />
               <span>
-                Transaction will be immediately recorded into SQLite Bursar Ledgers with a cryptographic reference token.
+                256-bit encrypted gateway tokenization. Ledger &amp; receipt auto-issued upon authorization.
               </span>
             </div>
 

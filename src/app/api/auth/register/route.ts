@@ -396,6 +396,49 @@ export async function POST(req: NextRequest) {
       },
     });
 
+    // Auto-enroll new student in default department/program courses so dashboards are fully populated
+    if (newUser.studentProfile) {
+      try {
+        const activeCourses = await prisma.course.findMany({
+          where: {
+            departmentId: program.departmentId,
+            isActive: true,
+          },
+          take: 4,
+        });
+
+        const fallbackCourses = activeCourses.length > 0 ? activeCourses : await prisma.course.findMany({ take: 4 });
+
+        for (const c of fallbackCourses) {
+          await prisma.enrollment.create({
+            data: {
+              studentId: newUser.studentProfile.id,
+              courseId: c.id,
+              status: "ENROLLED",
+            },
+          }).catch(() => {});
+        }
+
+        // Auto-assign default fee structure if available
+        const defaultFeeStructure = (await prisma.feeStructure.findFirst()) || null;
+        if (defaultFeeStructure) {
+          await prisma.studentFee.create({
+            data: {
+              studentId: newUser.studentProfile.id,
+              feeStructureId: defaultFeeStructure.id,
+              totalAmount: defaultFeeStructure.totalAmount,
+              paidAmount: 0.0,
+              discountAmount: 0.0,
+              status: "PENDING",
+              dueDate: defaultFeeStructure.dueDate || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+            },
+          }).catch(() => {});
+        }
+      } catch (enrollErr) {
+        logger.warn("Auto-enrollment background step warning", { error: String(enrollErr) });
+      }
+    }
+
     await prisma.auditLog.create({
       data: {
         institutionId: institution.id,

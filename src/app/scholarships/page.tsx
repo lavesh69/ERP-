@@ -25,6 +25,8 @@ import {
   Building,
   GraduationCap,
   Percent,
+  Upload,
+  FileText,
 } from "lucide-react";
 
 export default function ScholarshipsPage() {
@@ -45,6 +47,39 @@ export default function ScholarshipsPage() {
   const [statement, setStatement] = useState("");
   const [documentsUrl, setDocumentsUrl] = useState("/uploads/scholarships/alex_mercer_transcript.pdf");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadedFileName, setUploadedFileName] = useState<string | null>(null);
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("title", `${file.name.replace(/\.[^/.]+$/, "")} - Transcript`);
+      formData.append("category", "TRANSCRIPT");
+
+      const res = await fetch("/api/documents", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await res.json();
+      if (res.ok && data.document) {
+        setDocumentsUrl(data.document.fileUrl);
+        setUploadedFileName(file.name);
+        showToast("Transcript document encrypted and uploaded successfully!", "success");
+      } else {
+        showToast(data.error || "File upload failed", "error");
+      }
+    } catch {
+      showToast("Network error uploading transcript document", "error");
+    } finally {
+      setIsUploading(false);
+    }
+  };
 
   useEffect(() => {
     async function loadScholarships() {
@@ -529,16 +564,37 @@ export default function ScholarshipsPage() {
         <form onSubmit={handleApply} className="flex flex-col gap-4 text-xs">
           <div>
             <label className="font-bold text-charcoal-700 dark:text-charcoal-300 block mb-1">
-              Verified Academic Transcript / Credential Link
+              Verified Academic Transcript / Credential Dossier
             </label>
-            <input
-              type="text"
-              required
-              value={documentsUrl}
-              onChange={(e) => setDocumentsUrl(e.target.value)}
-              className="w-full text-xs p-2.5 rounded-xl border border-border dark:border-charcoal-700 bg-white dark:bg-charcoal-900 text-charcoal-900 dark:text-ivory-100"
-              placeholder="e.g. /uploads/scholarships/transcript.pdf"
-            />
+            <div className="flex flex-col gap-2">
+              <div className="flex flex-wrap items-center gap-2">
+                <label className="flex items-center gap-2 px-3 py-2 rounded-xl border border-dashed border-rose-primary/50 bg-rose-50/50 dark:bg-rose-950/20 hover:bg-rose-50 text-rose-primary dark:text-rose-accent text-xs font-bold cursor-pointer transition-all">
+                  <Upload className="h-4 w-4" />
+                  <span>{isUploading ? "Uploading & Encrypting..." : "Upload Official Transcript (PDF/DOCX)"}</span>
+                  <input
+                    type="file"
+                    accept=".pdf,.doc,.docx"
+                    className="hidden"
+                    disabled={isUploading}
+                    onChange={handleFileUpload}
+                  />
+                </label>
+                {uploadedFileName && (
+                  <span className="flex items-center gap-1.5 text-[11px] font-semibold text-academic-success bg-academic-success-subtle px-2.5 py-1 rounded-lg border border-green-200 dark:border-green-800">
+                    <CheckCircle2 className="h-3.5 w-3.5 text-green-600" />
+                    {uploadedFileName}
+                  </span>
+                )}
+              </div>
+              <input
+                type="text"
+                required
+                value={documentsUrl}
+                onChange={(e) => setDocumentsUrl(e.target.value)}
+                className="w-full text-xs p-2 rounded-xl border border-border dark:border-charcoal-700 bg-surface-ground text-charcoal-700 dark:text-ivory-200 font-mono text-[11px]"
+                placeholder="e.g. /uploads/documents/transcript.pdf"
+              />
+            </div>
           </div>
 
           <div>

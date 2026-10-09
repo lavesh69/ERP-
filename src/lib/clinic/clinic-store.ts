@@ -22,10 +22,22 @@ function ensureDirectory() {
   }
 }
 
+export interface PharmacyItem {
+  id: string;
+  name: string;
+  category: string;
+  stock: number;
+  minThreshold: number;
+  unit: string;
+  expiry: string;
+  batch: string;
+}
+
 interface ClinicStoreSchema {
   emergencyProfiles: MedicalEmergencyRecord[];
   consultations: ClinicConsultation[];
   beds: SickBayBed[];
+  pharmacyStock?: PharmacyItem[];
 }
 
 const DEFAULT_PROFILES: MedicalEmergencyRecord[] = [
@@ -89,6 +101,15 @@ const DEFAULT_BEDS: SickBayBed[] = [
   { id: "bed-04", bedNumber: "Bed 4 (Emergency Recovery)", roomNumber: "Triage Bay", isOccupied: false },
 ];
 
+export const DEFAULT_PHARMACY: PharmacyItem[] = [
+  { id: "MED-01", name: "Paracetamol 650mg Tabs", category: "Analgesic / Antipyretic", stock: 85, minThreshold: 30, unit: "tablets", expiry: "2027-08", batch: "BATCH-PCM-89" },
+  { id: "MED-02", name: "ORS Oral Rehydration Salts", category: "Electrolyte Replenisher", stock: 12, minThreshold: 25, unit: "sachets", expiry: "2026-12", batch: "BATCH-ORS-21" },
+  { id: "MED-03", name: "Amoxicillin 500mg Caps", category: "Antibiotic", stock: 42, minThreshold: 20, unit: "capsules", expiry: "2027-04", batch: "BATCH-AMX-77" },
+  { id: "MED-04", name: "Cetirizine 10mg Tabs", category: "Antihistamine / Allergy", stock: 16, minThreshold: 20, unit: "tablets", expiry: "2026-11", batch: "BATCH-CTZ-09" },
+  { id: "MED-05", name: "Betadine 10% Ointment", category: "Antiseptic Microbicide", stock: 58, minThreshold: 15, unit: "tubes", expiry: "2028-01", batch: "BATCH-BTD-45" },
+  { id: "MED-06", name: "Sterile Gauze & Bandage Packs", category: "First Aid & Trauma", stock: 120, minThreshold: 40, unit: "packs", expiry: "2029-06", batch: "BATCH-GBZ-12" },
+];
+
 function readStore(): ClinicStoreSchema {
   ensureDirectory();
   if (!fs.existsSync(STORE_FILE)) {
@@ -96,6 +117,7 @@ function readStore(): ClinicStoreSchema {
       emergencyProfiles: DEFAULT_PROFILES,
       consultations: DEFAULT_CONSULTATIONS,
       beds: DEFAULT_BEDS,
+      pharmacyStock: DEFAULT_PHARMACY,
     };
     fs.writeFileSync(STORE_FILE, JSON.stringify(initial, null, 2), "utf-8");
     return initial;
@@ -103,13 +125,19 @@ function readStore(): ClinicStoreSchema {
 
   try {
     const raw = fs.readFileSync(STORE_FILE, "utf-8");
-    return JSON.parse(raw);
+    const parsed: ClinicStoreSchema = JSON.parse(raw);
+    if (!parsed.pharmacyStock || !Array.isArray(parsed.pharmacyStock)) {
+      parsed.pharmacyStock = DEFAULT_PHARMACY;
+      writeStore(parsed);
+    }
+    return parsed;
   } catch (err) {
     console.error("Error reading clinic store, using defaults", err);
     return {
       emergencyProfiles: DEFAULT_PROFILES,
       consultations: DEFAULT_CONSULTATIONS,
       beds: DEFAULT_BEDS,
+      pharmacyStock: DEFAULT_PHARMACY,
     };
   }
 }
@@ -201,5 +229,34 @@ export const clinicStore = {
 
     writeStore(store);
     return bed;
+  },
+
+  getPharmacyStock(): PharmacyItem[] {
+    const store = readStore();
+    return store.pharmacyStock || DEFAULT_PHARMACY;
+  },
+
+  dispenseMedicine(medId: string, quantity: number = 2) {
+    const store = readStore();
+    if (!store.pharmacyStock) store.pharmacyStock = [...DEFAULT_PHARMACY];
+    const med = store.pharmacyStock.find((m) => m.id === medId);
+    if (!med) {
+      throw new Error(`Medicine ${medId} not found in pharmacy repository`);
+    }
+    med.stock = Math.max(0, med.stock - quantity);
+    writeStore(store);
+    return med;
+  },
+
+  restockMedicine(medId: string, quantity: number = 50) {
+    const store = readStore();
+    if (!store.pharmacyStock) store.pharmacyStock = [...DEFAULT_PHARMACY];
+    const med = store.pharmacyStock.find((m) => m.id === medId);
+    if (!med) {
+      throw new Error(`Medicine ${medId} not found in pharmacy repository`);
+    }
+    med.stock += quantity;
+    writeStore(store);
+    return med;
   },
 };

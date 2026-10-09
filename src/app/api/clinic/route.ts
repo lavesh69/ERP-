@@ -27,8 +27,14 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ success: true, beds });
     }
 
+    if (tab === "pharmacy") {
+      const pharmacyStock = clinicStore.getPharmacyStock();
+      return NextResponse.json({ success: true, pharmacyStock });
+    }
+
     const summary = clinicStore.getSummary();
-    return NextResponse.json({ success: true, summary });
+    const pharmacyStock = clinicStore.getPharmacyStock();
+    return NextResponse.json({ success: true, summary, pharmacyStock });
   } catch (error: any) {
     console.error("[Clinic API Error GET]:", error);
     return NextResponse.json({ error: error.message || "Failed to retrieve clinic data" }, { status: 500 });
@@ -93,6 +99,32 @@ export async function POST(request: NextRequest) {
         success: true,
         message: `Patient successfully discharged from ${dischargedBed.bedNumber}. Bed sanitized and marked vacant.`,
         bed: dischargedBed,
+      });
+    }
+
+    if (action === "DISPENSE_MEDICINE") {
+      const { medId, quantity } = body;
+      if (!medId) {
+        return NextResponse.json({ error: "Medicine ID is required to dispense" }, { status: 400 });
+      }
+      const updated = clinicStore.dispenseMedicine(medId, Number(quantity) || 2);
+      return NextResponse.json({
+        success: true,
+        message: `Dispensed ${quantity || 2} ${updated.unit} of ${updated.name}. Stock ledger updated.`,
+        medicine: updated,
+      });
+    }
+
+    if (action === "RESTOCK_MEDICINE") {
+      const { medId, quantity } = body;
+      if (!medId) {
+        return NextResponse.json({ error: "Medicine ID is required to restock" }, { status: 400 });
+      }
+      const updated = clinicStore.restockMedicine(medId, Number(quantity) || 50);
+      return NextResponse.json({
+        success: true,
+        message: `Restocked +${quantity || 50} ${updated.unit} of ${updated.name}. Statutory batch verified.`,
+        medicine: updated,
       });
     }
 

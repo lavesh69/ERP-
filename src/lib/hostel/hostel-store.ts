@@ -28,6 +28,27 @@ function ensureDirectory() {
   }
 }
 
+export interface PunchedMeal {
+  id: string;
+  studentRoll: string;
+  studentName: string;
+  plan: string;
+  mealType: string;
+  timestamp: string;
+  lane: string;
+  tokenHash: string;
+}
+
+export interface WasteLog {
+  id: string;
+  session: string;
+  preparedKg: number;
+  consumedKg: number;
+  wastedKg: number;
+  residents: number;
+  divertedToBiogas: boolean;
+}
+
 interface HostelStoreSchema {
   blocks: HostelBlock[];
   rooms: HostelRoom[];
@@ -35,6 +56,8 @@ interface HostelStoreSchema {
   messPlans: MessPlan[];
   subscriptions: StudentMessSubscription[];
   nightRollCalls?: any[];
+  punchedMeals?: PunchedMeal[];
+  wasteLogs?: WasteLog[];
 }
 
 const DEFAULT_BLOCKS: HostelBlock[] = [
@@ -317,6 +340,45 @@ const DEFAULT_SUBSCRIPTIONS: StudentMessSubscription[] = [
   },
 ];
 
+export const DEFAULT_PUNCHED_MEALS: PunchedMeal[] = [
+  {
+    id: "tok-101",
+    studentRoll: "CS2026-001",
+    studentName: "Alex Rivera",
+    plan: "All-Access Premium Buffet",
+    mealType: "Dinner (Executive)",
+    timestamp: "Just now",
+    lane: "Turnstile Gate #02 (Optical)",
+    tokenHash: "0x89f4b...3e1a",
+  },
+  {
+    id: "tok-102",
+    studentRoll: "ME2025-042",
+    studentName: "Priya Sharma",
+    plan: "South Indian Vegetarian",
+    mealType: "Dinner (Executive)",
+    timestamp: "3 mins ago",
+    lane: "Turnstile Gate #01 (Biometric)",
+    tokenHash: "0x12c8a...9f00",
+  },
+  {
+    id: "tok-103",
+    studentRoll: "EE2024-019",
+    studentName: "Marcus Vance",
+    plan: "Continental & Halal Fusion",
+    mealType: "Dinner (Executive)",
+    timestamp: "7 mins ago",
+    lane: "Turnstile Gate #03 (RFID Card)",
+    tokenHash: "0x44d1e...bc27",
+  },
+];
+
+export const DEFAULT_WASTE_LOGS: WasteLog[] = [
+  { id: "w-1", session: "Dinner (Yesterday)", preparedKg: 340, consumedKg: 318, wastedKg: 22, residents: 410, divertedToBiogas: true },
+  { id: "w-2", session: "Breakfast (Today)", preparedKg: 210, consumedKg: 198, wastedKg: 12, residents: 380, divertedToBiogas: true },
+  { id: "w-3", session: "Lunch (Today)", preparedKg: 360, consumedKg: 334, wastedKg: 26, residents: 395, divertedToBiogas: true },
+];
+
 function readStore(): HostelStoreSchema {
   ensureDirectory();
   if (!fs.existsSync(STORE_FILE)) {
@@ -326,6 +388,8 @@ function readStore(): HostelStoreSchema {
       gatePasses: DEFAULT_GATE_PASSES,
       messPlans: DEFAULT_MESS_PLANS,
       subscriptions: DEFAULT_SUBSCRIPTIONS,
+      punchedMeals: DEFAULT_PUNCHED_MEALS,
+      wasteLogs: DEFAULT_WASTE_LOGS,
     };
     fs.writeFileSync(STORE_FILE, JSON.stringify(initial, null, 2), "utf-8");
     return initial;
@@ -333,7 +397,20 @@ function readStore(): HostelStoreSchema {
 
   try {
     const raw = fs.readFileSync(STORE_FILE, "utf-8");
-    return JSON.parse(raw);
+    const parsed: HostelStoreSchema = JSON.parse(raw);
+    let changed = false;
+    if (!parsed.punchedMeals || !Array.isArray(parsed.punchedMeals)) {
+      parsed.punchedMeals = DEFAULT_PUNCHED_MEALS;
+      changed = true;
+    }
+    if (!parsed.wasteLogs || !Array.isArray(parsed.wasteLogs)) {
+      parsed.wasteLogs = DEFAULT_WASTE_LOGS;
+      changed = true;
+    }
+    if (changed) {
+      writeStore(parsed);
+    }
+    return parsed;
   } catch (err) {
     console.error("Error reading hostel store, fallback to default", err);
     return {
@@ -342,6 +419,8 @@ function readStore(): HostelStoreSchema {
       gatePasses: DEFAULT_GATE_PASSES,
       messPlans: DEFAULT_MESS_PLANS,
       subscriptions: DEFAULT_SUBSCRIPTIONS,
+      punchedMeals: DEFAULT_PUNCHED_MEALS,
+      wasteLogs: DEFAULT_WASTE_LOGS,
     };
   }
 }
@@ -641,5 +720,50 @@ export const hostelStore = {
 
     writeStore(store);
     return record;
+  },
+
+  getPunchedMeals(): PunchedMeal[] {
+    const store = readStore();
+    return store.punchedMeals || DEFAULT_PUNCHED_MEALS;
+  },
+
+  recordMealPunch(punch: Omit<PunchedMeal, "id" | "timestamp" | "tokenHash">) {
+    const store = readStore();
+    if (!store.punchedMeals) store.punchedMeals = [...DEFAULT_PUNCHED_MEALS];
+    const newPunch: PunchedMeal = {
+      id: `tok-${Date.now()}`,
+      studentRoll: punch.studentRoll,
+      studentName: punch.studentName,
+      plan: punch.plan || "All-Access Premium Buffet",
+      mealType: punch.mealType || "Dinner (Executive)",
+      timestamp: "Just now",
+      lane: punch.lane || "Turnstile Gate #01 (Biometric Optical)",
+      tokenHash: `0x${Math.random().toString(16).substring(2, 8)}...${Math.random().toString(16).substring(2, 6)}`,
+    };
+    store.punchedMeals.unshift(newPunch);
+    writeStore(store);
+    return newPunch;
+  },
+
+  getWasteLogs(): WasteLog[] {
+    const store = readStore();
+    return store.wasteLogs || DEFAULT_WASTE_LOGS;
+  },
+
+  recordFoodWaste(log: Omit<WasteLog, "id" | "divertedToBiogas">) {
+    const store = readStore();
+    if (!store.wasteLogs) store.wasteLogs = [...DEFAULT_WASTE_LOGS];
+    const newEntry: WasteLog = {
+      id: `w-${Date.now()}`,
+      session: log.session,
+      preparedKg: Number(log.preparedKg),
+      consumedKg: Number(log.consumedKg),
+      wastedKg: Number(log.wastedKg),
+      residents: Number(log.residents) || 1,
+      divertedToBiogas: true,
+    };
+    store.wasteLogs.unshift(newEntry);
+    writeStore(store);
+    return newEntry;
   },
 };

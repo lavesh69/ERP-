@@ -101,10 +101,10 @@ export default function HostelPage() {
     residents: 384,
   });
 
-  const handleLogWaste = (e: React.FormEvent) => {
+  const handleLogWaste = async (e: React.FormEvent) => {
     e.preventDefault();
     const wasted = Math.max(0, Number(wasteInput.preparedKg) - Number(wasteInput.consumedKg));
-    const newEntry = {
+    const optimisticEntry = {
       id: `w-${Date.now()}`,
       session: wasteInput.session,
       preparedKg: Number(wasteInput.preparedKg),
@@ -113,11 +113,31 @@ export default function HostelPage() {
       residents: Number(wasteInput.residents) || 1,
       divertedToBiogas: true,
     };
-    setWasteLogs([newEntry, ...wasteLogs]);
-    setStatusMessage({
-      type: "success",
-      text: `Logged ${wasted} kg kitchen surplus for ${wasteInput.session}. 100% diverted to campus anaerobic digester.`,
-    });
+    setWasteLogs((prev) => [optimisticEntry, ...prev]);
+    try {
+      const res = await fetch("/api/hostel", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "LOG_FOOD_WASTE",
+          session: wasteInput.session,
+          preparedKg: wasteInput.preparedKg,
+          consumedKg: wasteInput.consumedKg,
+          residents: wasteInput.residents,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to persist waste log");
+      setStatusMessage({
+        type: "success",
+        text: `Logged ${wasted} kg kitchen surplus for ${wasteInput.session}. 100% diverted to campus anaerobic digester.`,
+      });
+      if (data.log) {
+        setWasteLogs((prev) => [data.log, ...prev.filter((w) => w.id !== optimisticEntry.id)]);
+      }
+    } catch (err: any) {
+      setStatusMessage({ type: "error", text: err.message || "Failed to log food waste" });
+    }
     setTimeout(() => setStatusMessage(null), 4000);
   };
 
@@ -172,6 +192,12 @@ export default function HostelPage() {
         const mData = await messRes.json();
         setMessPlans(mData.plans || []);
         setSubscriptions(mData.subscriptions || []);
+        if (mData.punchedMeals && Array.isArray(mData.punchedMeals)) {
+          setPunchedMeals(mData.punchedMeals);
+        }
+        if (mData.wasteLogs && Array.isArray(mData.wasteLogs)) {
+          setWasteLogs(mData.wasteLogs);
+        }
       }
     } catch (err) {
       console.error("Failed to fetch hostel data", err);
@@ -256,7 +282,7 @@ export default function HostelPage() {
           action: "SUBSCRIBE_MESS",
           studentId: currentUser?.id || "stu-alex-01",
           studentName: currentUser?.fullName || "Alex Mercer",
-          studentRoll: "CS2026-001",
+          studentRoll: (currentUser as any)?.studentRollNumber || (currentUser as any)?.rollNo || (currentUser as any)?.rollNumber || "CS2026-001",
           planId,
         }),
       });
@@ -269,7 +295,7 @@ export default function HostelPage() {
     }
   };
 
-  const handleBiometricPunch = () => {
+  const handleBiometricPunch = async () => {
     if (hasPunchedThisSession) {
       setStatusMessage({
         type: "error",
@@ -277,23 +303,53 @@ export default function HostelPage() {
       });
       return;
     }
-    const newPunch = {
+    const resolvedRoll =
+      (currentUser as any)?.studentRollNumber ||
+      (currentUser as any)?.rollNo ||
+      (currentUser as any)?.rollNumber ||
+      currentUser?.email?.split("@")[0] ||
+      "STU-2026";
+    const resolvedName = currentUser?.fullName || "Student Scholar";
+
+    const optimisticPunch = {
       id: `tok-${Date.now()}`,
-      studentRoll: currentUser?.email?.split("@")[0] || "CS2026-001",
-      studentName: currentUser?.fullName || "Alex Rivera",
+      studentRoll: resolvedRoll,
+      studentName: resolvedName,
       plan: "All-Access Premium Buffet",
       mealType: "Dinner (Executive)",
       timestamp: "Just now",
       lane: "Turnstile Gate #01 (Biometric Optical)",
       tokenHash: `0x${Math.random().toString(16).substring(2, 8)}...${Math.random().toString(16).substring(2, 6)}`,
     };
-    setPunchedMeals((prev) => [newPunch, ...prev]);
+    setPunchedMeals((prev) => [optimisticPunch, ...prev]);
     setHasPunchedThisSession(true);
     setDiningHeadcount((prev) => prev + 1);
-    setStatusMessage({
-      type: "success",
-      text: "Biometric Turnstile Token Validated! Meal voucher deducted & barrier opened.",
-    });
+
+    try {
+      const res = await fetch("/api/hostel", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "PUNCH_MEAL",
+          studentRoll: resolvedRoll,
+          studentName: resolvedName,
+          plan: "All-Access Premium Buffet",
+          mealType: "Dinner (Executive)",
+          lane: "Turnstile Gate #01 (Biometric Optical)",
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Biometric validation failed");
+      setStatusMessage({
+        type: "success",
+        text: "Biometric Turnstile Token Validated! Meal voucher deducted & barrier opened.",
+      });
+      if (data.punch) {
+        setPunchedMeals((prev) => [data.punch, ...prev.filter((p) => p.id !== optimisticPunch.id)]);
+      }
+    } catch (err: any) {
+      setStatusMessage({ type: "error", text: err.message || "Failed to validate meal punch" });
+    }
   };
 
   const filteredRooms = selectedBlockId === "all" ? rooms : rooms.filter((r) => r.blockId === selectedBlockId);

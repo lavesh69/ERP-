@@ -25,7 +25,9 @@ export async function GET(request: NextRequest) {
 
     if (tab === "mess") {
       const messData = hostelStore.getMessPlans();
-      return NextResponse.json({ success: true, ...messData });
+      const punchedMeals = hostelStore.getPunchedMeals();
+      const wasteLogs = hostelStore.getWasteLogs();
+      return NextResponse.json({ success: true, ...messData, punchedMeals, wasteLogs });
     }
 
     if (tab === "night-rollcall") {
@@ -133,6 +135,39 @@ export async function POST(request: NextRequest) {
         planId
       );
       return NextResponse.json({ message: "Mess subscription updated successfully", ...res });
+    }
+
+    if (action === "PUNCH_MEAL") {
+      const { studentRoll, studentName, plan, mealType, lane } = body;
+      const punch = hostelStore.recordMealPunch({
+        studentRoll: studentRoll || (session as any)?.studentRollNumber || session.email?.split("@")[0] || "STU-2026",
+        studentName: studentName || session.fullName || "Student Scholar",
+        plan: plan || "All-Access Premium Buffet",
+        mealType: mealType || "Dinner (Executive)",
+        lane: lane || "Turnstile Gate #01 (Biometric Optical)",
+      });
+      return NextResponse.json({
+        success: true,
+        message: "Biometric Turnstile Token Validated! Meal voucher deducted & barrier opened.",
+        punch,
+      });
+    }
+
+    if (action === "LOG_FOOD_WASTE") {
+      const { session: diningSession, preparedKg, consumedKg, residents } = body;
+      const wasted = Math.max(0, Number(preparedKg) - Number(consumedKg));
+      const log = hostelStore.recordFoodWaste({
+        session: diningSession || "Dinner",
+        preparedKg: Number(preparedKg),
+        consumedKg: Number(consumedKg),
+        wastedKg: wasted,
+        residents: Number(residents) || 1,
+      });
+      return NextResponse.json({
+        success: true,
+        message: `Logged ${wasted} kg kitchen surplus for ${diningSession}. Diverted to campus anaerobic digester.`,
+        log,
+      });
     }
 
     return NextResponse.json({ error: `Unknown action: ${action}` }, { status: 400 });

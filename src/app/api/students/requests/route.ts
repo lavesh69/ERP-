@@ -13,6 +13,7 @@ const createRequestSchema = z.object({
     "ACADEMIC_CORRECTION",
     "RE_EVALUATION",
     "ELECTIVE_CHANGE",
+    "GUARDIAN_LINK_REQUEST",
   ]),
   title: z.string().min(3, "Title must be at least 3 characters").max(100),
   reason: z.string().min(10, "Reason must be at least 10 characters").max(1000),
@@ -138,8 +139,10 @@ export async function POST(req: NextRequest) {
 }
 
 export async function PATCH(req: NextRequest) {
-  const auth = await requireFacultyOrAdminAuth(req);
-  if (auth instanceof NextResponse) return auth;
+  const session = await getOptionalSession(req);
+  if (!session) {
+    return NextResponse.json({ error: "Authentication required to review requests" }, { status: 401 });
+  }
 
   try {
     const body = await req.json().catch(() => ({}));
@@ -162,14 +165,77 @@ export async function PATCH(req: NextRequest) {
       return NextResponse.json({ error: "Request not found" }, { status: 404 });
     }
 
-    if (auth.payload.role !== "SUPER_ADMIN" && auth.payload.institutionId && existingRequest.student.user.institutionId !== auth.payload.institutionId) {
+    const isStudent = session.role === "STUDENT";
+    const isLeadershipOrFaculty = [
+      "SUPER_ADMIN",
+      "INSTITUTION_ADMIN",
+      "PRINCIPAL",
+      "HOD",
+      "FACULTY",
+      "CLASS_TEACHER",
+    ].includes(session.role);
+
+    // If caller is student, they are ONLY permitted to self-resolve GUARDIAN_LINK_REQUEST for their own profile
+    if (isStudent) {
+      const callerStudent = await prisma.student.findFirst({
+        where: {
+          OR: [{ userId: session.userId }, { user: { email: session.email } }],
+        },
+      });
+
+      if (!callerStudent || callerStudent.id !== existingRequest.studentId || existingRequest.type !== "GUARDIAN_LINK_REQUEST") {
+        return NextResponse.json(
+          { error: "Forbidden: Students are only permitted to approve or reject their own guardian link requests." },
+          { status: 403 }
+        );
+      }
+    } else if (!isLeadershipOrFaculty) {
+      return NextResponse.json(
+        { error: "Forbidden: Insufficient privileges to review academic requests." },
+        { status: 403 }
+      );
+    } else if (session.role !== "SUPER_ADMIN" && session.institutionId && existingRequest.student.user.institutionId !== session.institutionId) {
       return NextResponse.json(
         { error: "Forbidden: Cannot review requests outside your institution" },
         { status: 403 }
       );
     }
 
-    const reviewerId = auth.payload.userId || auth.payload.sub || "admin";
+    const reviewerId = session.userId || session.sub || "admin";
+
+    // If guardian link request is approved, establish the StudentParentRelation
+    if (status === "APPROVED" && existingRequest.type === "GUARDIAN_LINK_REQUEST") {
+      let targetParentId = body.parentId || existingRequest.attachmentUrl;
+      if (!targetParentId) {
+        const emailMatch = existingRequest.reason.match(/[\w.-]+@[\w.-]+\.\w+/);
+        if (emailMatch) {
+          const parentUser = await prisma.user.findUnique({
+            where: { email: emailMatch[0] },
+            include: { parentProfile: true },
+          });
+          if (parentUser?.parentProfile) {
+            targetParentId = parentUser.parentProfile.id;
+          }
+        }
+      }
+
+      if (targetParentId) {
+        await prisma.studentParentRelation.upsert({
+          where: {
+            studentId_parentId: {
+              studentId: existingRequest.studentId,
+              parentId: targetParentId,
+            },
+          },
+          update: { isPrimary: true },
+          create: {
+            studentId: existingRequest.studentId,
+            parentId: targetParentId,
+            isPrimary: true,
+          },
+        });
+      }
+    }
 
     let correctedRecord: any = null;
     if (status === "APPROVED" && (existingRequest.type === "ATTENDANCE_CORRECTION" || existingRequest.type === "LEAVE")) {

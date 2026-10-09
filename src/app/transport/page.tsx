@@ -67,14 +67,25 @@ export default function TransportPage() {
   const [isSimulating, setIsSimulating] = useState<boolean>(true);
 
   // New Pass Modal
+  const userRoll = (currentUser as any)?.studentRollNumber || (currentUser as any)?.rollNo || (currentUser as any)?.rollNumber || "CS2026-001";
   const [showPassModal, setShowPassModal] = useState(false);
   const [passForm, setPassForm] = useState({
     studentName: currentUser?.fullName || "",
-    studentRoll: "CS2026-001",
+    studentRoll: userRoll,
     routeId: "rt-01",
     stopName: "Porter Square T-Station",
     feeAmount: 450,
   });
+
+  useEffect(() => {
+    if (currentUser) {
+      setPassForm((prev) => ({
+        ...prev,
+        studentName: currentUser.fullName || prev.studentName,
+        studentRoll: (currentUser as any)?.studentRollNumber || (currentUser as any)?.rollNo || (currentUser as any)?.rollNumber || prev.studentRoll,
+      }));
+    }
+  }, [currentUser]);
 
   // Maintenance Modal
   const [showMaintModal, setShowMaintModal] = useState(false);

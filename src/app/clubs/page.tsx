@@ -100,11 +100,14 @@ export default function ClubsPage() {
     document.body.removeChild(link);
   };
 
+  const userRoll = (currentUser as any)?.studentRollNumber || (currentUser as any)?.rollNo || (currentUser as any)?.rollNumber || "CS2026-001";
+  const userName = currentUser?.fullName || (currentUser?.firstName ? `${currentUser.firstName} ${currentUser.lastName || ""}`.trim() : "Scholar Candidate");
+
   // New Claim Modal
   const [showModal, setShowModal] = useState(false);
   const [claimForm, setClaimForm] = useState({
-    studentRoll: "CS2026-001",
-    studentName: currentUser?.fullName || "Alex Mercer",
+    studentRoll: userRoll,
+    studentName: userName,
     clubCode: "IEEE-SB",
     activityTitle: "",
     description: "",
@@ -113,11 +116,23 @@ export default function ClubsPage() {
     evidenceReference: "",
   });
 
+  // Sync claimForm when currentUser loads
+  useEffect(() => {
+    if (currentUser) {
+      setClaimForm((prev) => ({
+        ...prev,
+        studentRoll: (currentUser as any)?.studentRollNumber || (currentUser as any)?.rollNo || (currentUser as any)?.rollNumber || prev.studentRoll,
+        studentName: currentUser.fullName || prev.studentName,
+      }));
+    }
+  }, [currentUser]);
+
   const fetchData = async () => {
     try {
       setLoading(true);
+      const activeRoll = (currentUser as any)?.studentRollNumber || (currentUser as any)?.rollNo || (currentUser as any)?.rollNumber || "CS2026-001";
       const [sumRes, clmRes, clbRes] = await Promise.all([
-        fetch("/api/clubs?tab=summary&roll=CS2026-001"),
+        fetch(`/api/clubs?tab=summary&roll=${encodeURIComponent(activeRoll)}`),
         fetch("/api/clubs?tab=claims"),
         fetch("/api/clubs?tab=clubs"),
       ]);

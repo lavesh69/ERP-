@@ -65,7 +65,8 @@ export default function ClinicPage() {
 
   const lowStockAlerts = pharmacyStock.filter((m) => m.stock < m.minThreshold);
 
-  const handleDispenseMedicine = (medId: string, quantity: number = 2) => {
+  const handleDispenseMedicine = async (medId: string, quantity: number = 2) => {
+    // Optimistic UI update
     setPharmacyStock((prev) =>
       prev.map((m) => {
         if (m.id === medId) {
@@ -75,13 +76,29 @@ export default function ClinicPage() {
       })
     );
     const med = pharmacyStock.find((m) => m.id === medId);
-    setStatusMessage({
-      type: "success",
-      text: `Dispensed ${quantity} ${med?.unit} of ${med?.name}. Stock ledger updated.`,
-    });
+    try {
+      const res = await fetch("/api/clinic", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "DISPENSE_MEDICINE", medId, quantity }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to dispense medicine");
+      setStatusMessage({
+        type: "success",
+        text: `Dispensed ${quantity} ${med?.unit} of ${med?.name}. Stock ledger updated.`,
+      });
+      if (data.medicine) {
+        setPharmacyStock((prev) => prev.map((m) => (m.id === medId ? data.medicine : m)));
+      }
+    } catch (err: any) {
+      setStatusMessage({ type: "error", text: err.message || "Failed to dispense medicine" });
+      fetchData();
+    }
   };
 
-  const handleRestockMedicine = (medId: string, quantity: number = 50) => {
+  const handleRestockMedicine = async (medId: string, quantity: number = 50) => {
+    // Optimistic UI update
     setPharmacyStock((prev) =>
       prev.map((m) => {
         if (m.id === medId) {
@@ -91,10 +108,25 @@ export default function ClinicPage() {
       })
     );
     const med = pharmacyStock.find((m) => m.id === medId);
-    setStatusMessage({
-      type: "success",
-      text: `Restocked +${quantity} ${med?.unit} of ${med?.name}. Statutory batch verified.`,
-    });
+    try {
+      const res = await fetch("/api/clinic", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "RESTOCK_MEDICINE", medId, quantity }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to restock medicine");
+      setStatusMessage({
+        type: "success",
+        text: `Restocked +${quantity} ${med?.unit} of ${med?.name}. Statutory batch verified.`,
+      });
+      if (data.medicine) {
+        setPharmacyStock((prev) => prev.map((m) => (m.id === medId ? data.medicine : m)));
+      }
+    } catch (err: any) {
+      setStatusMessage({ type: "error", text: err.message || "Failed to restock medicine" });
+      fetchData();
+    }
   };
 
   const handleExportClinicCsv = () => {
@@ -274,6 +306,9 @@ export default function ClinicPage() {
       if (sumRes.ok) {
         const sumData = await sumRes.json();
         setSummary(sumData.summary);
+        if (sumData.pharmacyStock && Array.isArray(sumData.pharmacyStock)) {
+          setPharmacyStock(sumData.pharmacyStock);
+        }
       }
       if (consRes.ok) {
         const cData = await consRes.json();

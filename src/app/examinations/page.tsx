@@ -43,7 +43,7 @@ import { InvigilationRosterView } from "@/components/examinations/InvigilationRo
 type ExamTab = "schedules" | "evaluations" | "seating" | "transcript" | "scanner" | "obe-mapping" | "backlog-portal" | "invigilation";
 
 export default function ExaminationsPage() {
-  const { showToast, setIsAIChatOpen, refreshTrigger, triggerRefresh, currentRole } = useApp();
+  const { currentUser, showToast, setIsAIChatOpen, refreshTrigger, triggerRefresh, currentRole } = useApp();
   const [activeTab, setActiveTab] = useState<ExamTab>("schedules");
 
   const [exams, setExams] = useState<any[]>([]);
@@ -97,9 +97,17 @@ export default function ExaminationsPage() {
   const [isLoadingTranscript, setIsLoadingTranscript] = useState(false);
 
   // Gate Scanner Simulator State
-  const [scannerRoll, setScannerRoll] = useState("APX2026-CS-001");
+  const userRoll = (currentUser as any)?.studentRollNumber || (currentUser as any)?.rollNo || (currentUser as any)?.rollNumber || "APX2026-CS-001";
+  const [scannerRoll, setScannerRoll] = useState(userRoll);
   const [scanResult, setScanResult] = useState<any>(null);
   const [isScanning, setIsScanning] = useState(false);
+
+  useEffect(() => {
+    if (currentUser) {
+      const activeRoll = (currentUser as any)?.studentRollNumber || (currentUser as any)?.rollNo || (currentUser as any)?.rollNumber;
+      if (activeRoll) setScannerRoll(activeRoll);
+    }
+  }, [currentUser]);
 
   // Load Examinations
   const fetchExams = () => {
