@@ -94,6 +94,11 @@ import { GET as handleFinance } from "@/app/api/finance/route";
 import { GET as handleParentGet, POST as handleParentPost } from "@/app/api/parent/route";
 import { GET as handleFacultyGet, PATCH as handleFacultyPatch, POST as handleFacultyPost } from "@/app/api/faculty/route";
 import { GET as handleStudentGet, PATCH as handleStudentPatch } from "@/app/api/students/route";
+import {
+  GET as handleStudentPromoteGet,
+  POST as handleStudentPromotePost,
+} from "@/app/api/students/promote/route";
+import { evaluateStudentPromotion } from "@/lib/academic/promotion-engine";
 import { GET as handleTimetableGet, PATCH as handleTimetablePatch } from "@/app/api/timetable/route";
 import { GET as handleExaminationsGet, POST as handleExaminationsPost, PUT as handleExaminationsPut } from "@/app/api/examinations/route";
 import { GET as handleHallTicketGet, POST as handleHallTicketPost } from "@/app/api/examinations/hall-ticket/route";
@@ -6421,6 +6426,156 @@ By breaking down large monolithic systems into decoupled microservices, systems 
   assert(typeof healthData.database.engine === "string" && healthData.database.engine.length > 0, "Health telemetry accurately reports database engine");
   assert(typeof healthData.database.latencyMs === "number", "Database query roundtrip latency measured in milliseconds");
   assert(healthData.database.counts.institutions >= 1, "Health check counts active tenant institutions");
+
+  // =========================================================================
+  // Group 62: Bulk Student Semester Promotion & Rollover Engine Suite
+  // =========================================================================
+  console.log("\n📦 Running Group 62: Bulk Student Semester Promotion & Rollover Engine Suite");
+
+  // 62.1 Pure Promotion Engine Unit Assertions (CGPA & Backlog Gates)
+  const eligibleCandidate = evaluateStudentPromotion(
+    {
+      id: "test-s1",
+      userId: "u1",
+      rollNumber: "CS-2026-101",
+      admissionNumber: "ADM-101",
+      currentSemester: 2,
+      cgpa: 7.85,
+      attendanceRate: 92.0,
+      user: { firstName: "Aarav", lastName: "Sharma", email: "aarav@apex.edu" },
+      examResults: [],
+      enrollments: [],
+    },
+    3,
+    4.0,
+    3,
+    8
+  );
+  assert(eligibleCandidate.eligible === true, "Student with high CGPA (7.85) and 0 backlogs is marked ELIGIBLE");
+  assert(eligibleCandidate.status === "ELIGIBLE", "Eligible student status assigned as ELIGIBLE");
+
+  // Low CGPA detention
+  const lowCgpaCandidate = evaluateStudentPromotion(
+    {
+      id: "test-s2",
+      userId: "u2",
+      rollNumber: "CS-2026-102",
+      admissionNumber: "ADM-102",
+      currentSemester: 2,
+      cgpa: 3.45,
+      attendanceRate: 85.0,
+      user: { firstName: "Rohan", lastName: "Verma", email: "rohan@apex.edu" },
+      examResults: [],
+      enrollments: [],
+    },
+    3,
+    4.0,
+    3,
+    8
+  );
+  assert(lowCgpaCandidate.eligible === false, "Student with CGPA below cutoff (3.45 < 4.0) is detained");
+  assert(lowCgpaCandidate.status === "DETAINED_LOW_CGPA", "Low CGPA student flagged with DETAINED_LOW_CGPA");
+  assert(lowCgpaCandidate.decisionReason.includes("below minimum"), "Decision reason articulates low CGPA gate");
+
+  // Excess Backlogs detention
+  const excessBacklogsCandidate = evaluateStudentPromotion(
+    {
+      id: "test-s3",
+      userId: "u3",
+      rollNumber: "CS-2026-103",
+      admissionNumber: "ADM-103",
+      currentSemester: 2,
+      cgpa: 6.5,
+      attendanceRate: 80.0,
+      user: { firstName: "Kavya", lastName: "Nair", email: "kavya@apex.edu" },
+      examResults: [
+        { gradeLetter: "F", marksObtained: 28, exam: { course: { code: "CS-201", title: "Data Structures" } } },
+        { gradeLetter: "F", marksObtained: 32, exam: { course: { code: "CS-202", title: "Digital Logic" } } },
+        { gradeLetter: "F", marksObtained: 35, exam: { course: { code: "MA-201", title: "Discrete Math" } } },
+        { gradeLetter: "F", marksObtained: 22, exam: { course: { code: "CS-203", title: "Computer Org" } } },
+      ],
+      enrollments: [],
+    },
+    3,
+    4.0,
+    3,
+    8
+  );
+  assert(excessBacklogsCandidate.eligible === false, "Student with 4 backlogs exceeding maxBacklogs=3 is detained");
+  assert(excessBacklogsCandidate.status === "DETAINED_EXCESS_BACKLOGS", "Excess backlogs student flagged as DETAINED_EXCESS_BACKLOGS");
+  assert(excessBacklogsCandidate.backlogsCount === 4, "Backlogs count accurately tallies 4 distinct failing course codes");
+
+  // Degree Conferral / Final Semester Graduation Gate
+  const graduatingCandidate = evaluateStudentPromotion(
+    {
+      id: "test-s4",
+      userId: "u4",
+      rollNumber: "CS-2022-005",
+      admissionNumber: "ADM-2022-005",
+      currentSemester: 8,
+      cgpa: 8.92,
+      attendanceRate: 96.0,
+      user: { firstName: "Ananya", lastName: "Iyer", email: "ananya@apex.edu" },
+      examResults: [],
+      enrollments: [],
+    },
+    9,
+    4.0,
+    3,
+    8
+  );
+  assert(graduatingCandidate.eligible === true, "Final semester student eligible for degree completion");
+  assert(graduatingCandidate.status === "GRADUATION_ELIGIBLE", "Student in 8th semester promoted beyond maxSemesters is GRADUATION_ELIGIBLE");
+
+  // 62.2 RBAC Security Boundary Check
+  const promoStudentJwt = await signJwt({
+    userId: "usr-stu-01",
+    email: "alex.mercer@apex.edu",
+    role: "STUDENT",
+    institutionId: "inst-apex-01",
+  });
+  const unauthorizedGetReq = new NextRequest("http://localhost:3000/api/students/promote?currentSemester=5", {
+    headers: { Cookie: `classroom_session=${promoStudentJwt}` },
+  });
+  const unauthorizedGetRes = await handleStudentPromoteGet(unauthorizedGetReq);
+  assert(unauthorizedGetRes.status === 403, "GET /api/students/promote strictly forbidden (403) for STUDENT role");
+
+  const unauthorizedPostReq = new NextRequest("http://localhost:3000/api/students/promote", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${promoStudentJwt}` },
+    body: JSON.stringify({ currentSemester: 5, targetSemester: 6 }),
+  });
+  const unauthorizedPostRes = await handleStudentPromotePost(unauthorizedPostReq);
+  assert(unauthorizedPostRes.status === 403, "POST /api/students/promote strictly forbidden (403) for STUDENT role");
+
+  // 62.3 API Preview & Simulation Endpoints
+  const previewReq = new NextRequest("http://localhost:3000/api/students/promote?currentSemester=5&targetSemester=6&minCgpa=4.0&maxBacklogs=3", {
+    headers: { Cookie: `classroom_session=${adminToken}` },
+  });
+  const previewRes = await handleStudentPromoteGet(previewReq);
+  assert(previewRes.status === 200, "GET /api/students/promote returns 200 OK for authorized admin");
+  const previewData = await previewRes.json();
+  assert(previewData.success === true, "Promotion preview reports success: true");
+  assert(typeof previewData.summary.totalCohortSize === "number", "Summary provides total cohort size number");
+  assert(Array.isArray(previewData.students), "Returns array of evaluated student candidate dossiers");
+
+  // Simulation execution without mutation
+  const simulateReq = new NextRequest("http://localhost:3000/api/students/promote", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      currentSemester: 5,
+      targetSemester: 6,
+      action: "SIMULATE",
+      minCgpa: 4.0,
+      maxBacklogs: 3,
+    }),
+  });
+  const simulateRes = await handleStudentPromotePost(simulateReq);
+  assert(simulateRes.status === 200, "POST /api/students/promote (action: SIMULATE) returns 200 OK");
+  const simulateData = await simulateRes.json();
+  assert(simulateData.simulated === true, "Simulation mode sets simulated flag to true without DB mutation");
+  assert(typeof simulateData.promotedCount === "number", "Simulation calculates projected promoted count");
 
   console.log("\n=================================================");
   console.log(`🎉 ALL ${passedTests}/${totalTests} TESTS PASSED SUCCESSFULLY!`);

@@ -1,6 +1,26 @@
 {
   "backlogRegistrations": [
     {
+      "id": "sup-reg-1791526672774",
+      "applicationRef": "SUP-2026-5408",
+      "studentId": "usr-stu-01",
+      "studentRoll": "CS2026-001",
+      "studentName": "Alex Mercer",
+      "courseCode": "CS-301",
+      "courseTitle": "Theory of Computation",
+      "semester": 4,
+      "originalGrade": "F",
+      "originalMarks": 32,
+      "feeAmount": 750,
+      "feeStatus": "PAID",
+      "paymentTxn": "TXN-ARREAR-672774",
+      "registeredAt": "2026-10-09T06:17:52.774Z",
+      "examDate": "2026-11-20T09:30:00Z",
+      "examHall": "Auditorium Hall A (Special Arrear Desk #04)",
+      "admitCardHash": "0xd7ddfc1f...0df1",
+      "status": "ADMIT_CARD_ISSUED"
+    },
+    {
       "id": "sup-reg-1791525764704",
       "applicationRef": "SUP-2026-8500",
       "studentId": "usr-stu-01",

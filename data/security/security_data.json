@@ -24,6 +24,25 @@
   ],
   "passes": [
     {
+      "id": "vp-1791526672702",
+      "passNumber": "VTR-2026-556",
+      "visitorName": "David Attenborough",
+      "contactPhone": "+1 (555) 789-0123",
+      "idProofType": "PASSPORT",
+      "idProofNumber": "P987654321",
+      "visitorType": "GUEST_SPEAKER",
+      "hostName": "Prof. Ada Lovelace",
+      "hostDepartment": "Computer Science & Engineering",
+      "purposeOfVisit": "Distinguished Campus Colloquium Keynote",
+      "vehicleNumber": "KA-01-EQ-9900",
+      "checkInTime": "2026-10-09T06:17:52.702Z",
+      "validUntil": "2026-10-09T12:17:52.701Z",
+      "entryGate": "Main North Arch Gate",
+      "status": "CHECKED_OUT",
+      "digitalSeal": "SEC-PASS-DFBD16B8B0955100",
+      "checkOutTime": "2026-10-09T06:17:52.707Z"
+    },
+    {
       "id": "vp-1791525764603",
       "passNumber": "VTR-2026-564",
       "visitorName": "David Attenborough",
