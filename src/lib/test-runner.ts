@@ -261,6 +261,25 @@ import {
   applyBellCurveModeration,
   applyGraceMarkModeration,
 } from "@/lib/examinations/moderation-engine";
+import {
+  calculateSlotDurationHours,
+  calculateRoomMetrics,
+  computeCampusSpaceTelemetry,
+} from "@/lib/timetable/space-utilization";
+import {
+  GET as handleTimetableUtilizationGet,
+  POST as handleTimetableUtilizationPost,
+} from "@/app/api/timetable/utilization/route";
+import {
+  calculatePercentile,
+  runLoadBenchmark,
+  benchmarkCryptoHmacThroughput,
+  benchmarkSanitizationThroughput,
+} from "@/lib/testing/load-benchmark";
+import {
+  GET as handleTestingBenchmarkGet,
+  POST as handleTestingBenchmarkPost,
+} from "@/app/api/testing/benchmark/route";
 
 async function runTestSuite() {
   console.log("=================================================");
@@ -6901,6 +6920,138 @@ By breaking down large monolithic systems into decoupled microservices, systems 
     const simModerationData = await simModerationRes.json();
     assert(simModerationData.simulated === true, "Moderation simulation executes without database alteration");
   }
+
+  console.log("\n📦 Running Group 65: Campus Facility Space Utilization & Enterprise Load Benchmark Suite");
+
+  // 65.1 Slot Duration and Individual Room Utilization Calculations
+  const dur1 = calculateSlotDurationHours("09:00", "10:30");
+  assert(dur1 === 1.5, "calculateSlotDurationHours computes 1.5 hours for 09:00 to 10:30");
+  const dur2 = calculateSlotDurationHours("14:00", "17:00");
+  assert(dur2 === 3.0, "calculateSlotDurationHours computes 3.0 hours for 14:00 to 17:00");
+
+  const testRoomHeavy = { id: "rm-test-01", code: "LH-01", name: "Main Hall", type: "LECTURE_HALL", capacity: 100 };
+  const heavySlots = [
+    { id: "s-1", roomId: "rm-test-01", dayOfWeek: "MONDAY", startTime: "09:00", endTime: "17:00", sectionCapacity: 90 },
+    { id: "s-2", roomId: "rm-test-01", dayOfWeek: "TUESDAY", startTime: "09:00", endTime: "17:00", sectionCapacity: 95 },
+    { id: "s-3", roomId: "rm-test-01", dayOfWeek: "WEDNESDAY", startTime: "09:00", endTime: "17:00", sectionCapacity: 85 },
+    { id: "s-4", roomId: "rm-test-01", dayOfWeek: "THURSDAY", startTime: "09:00", endTime: "17:00", sectionCapacity: 90 },
+    { id: "s-5", roomId: "rm-test-01", dayOfWeek: "FRIDAY", startTime: "09:00", endTime: "13:00", sectionCapacity: 90 },
+  ]; // 36 hours out of 40 = 90%
+  const heavyMetrics = calculateRoomMetrics(testRoomHeavy, heavySlots, 40);
+  assert(heavyMetrics.occupancyRatePct === 90.0, "Room metrics accurately computes 90% occupancy for heavily booked hall");
+  assert(heavyMetrics.status === "CRITICAL_BOTTLENECK", "Room with >=80% occupancy categorized as CRITICAL_BOTTLENECK");
+  assert(heavyMetrics.capacityFit === "WELL_SIZED", "Room with 90% seat fill rate marked as WELL_SIZED");
+
+  const testRoomSparse = { id: "rm-test-02", code: "LAB-02", name: "Robotics Lab", type: "LAB", capacity: 80 };
+  const sparseSlots = [
+    { id: "s-6", roomId: "rm-test-02", dayOfWeek: "MONDAY", startTime: "10:00", endTime: "12:00", sectionCapacity: 15 },
+  ]; // 2 hours out of 40 = 5%
+  const sparseMetrics = calculateRoomMetrics(testRoomSparse, sparseSlots, 40);
+  assert(sparseMetrics.occupancyRatePct === 5.0, "Sparse room metrics computes 5% occupancy");
+  assert(sparseMetrics.status === "UNDERUTILIZED", "Room with <25% occupancy categorized as UNDERUTILIZED");
+  assert(sparseMetrics.capacityFit === "UNDER_OCCUPIED_SPACE", "Room with low seat fill rate (<40%) marked as UNDER_OCCUPIED_SPACE");
+
+  // 65.2 Campus-Wide Space Telemetry Engine
+  const sampleCampusRooms = [testRoomHeavy, testRoomSparse];
+  const sampleCampusSlots = [...heavySlots, ...sparseSlots];
+  const campusTelemetry = computeCampusSpaceTelemetry(sampleCampusRooms, sampleCampusSlots, { weeklyOperatingHours: 40 });
+  assert(campusTelemetry.totalRooms === 2, "computeCampusSpaceTelemetry aggregates total room count");
+  assert(campusTelemetry.totalCapacitySeats === 180, "computeCampusSpaceTelemetry tallies total seating capacity (100+80=180)");
+  assert(campusTelemetry.dayDistribution.length === 5, "Day distribution includes all 5 standard academic operating days");
+  assert(campusTelemetry.hourlyDistribution.length === 10, "Hourly distribution covers 10 hours from 08:00 to 18:00");
+  assert(typeof campusTelemetry.peakHour === "string", "Campus telemetry identifies peak operational hour");
+  assert(campusTelemetry.insights.criticalBottlenecks.length >= 1, "Campus telemetry identifies critical bottlenecks");
+  assert(campusTelemetry.insights.underutilizedRooms.length >= 1, "Campus telemetry identifies underutilized rooms for energy savings");
+
+  // 65.3 Timetable Space Utilization API RBAC & Data Fetching
+  const spaceStudentJwt = await signJwt({
+    userId: "usr-stu-space",
+    email: "student.space@apex.edu",
+    role: "STUDENT",
+    institutionId: "inst-apex-01",
+  });
+  const unauthSpaceReq = new NextRequest("http://localhost:3000/api/timetable/utilization", {
+    headers: { Cookie: `classroom_session=${spaceStudentJwt}` },
+  });
+  const unauthSpaceRes = await handleTimetableUtilizationGet(unauthSpaceReq);
+  assert(unauthSpaceRes.status === 403, "GET /api/timetable/utilization strictly forbidden (403) for STUDENT role");
+
+  const authSpaceReq = new NextRequest("http://localhost:3000/api/timetable/utilization", {
+    headers: { Cookie: `classroom_session=${adminToken}` },
+  });
+  const authSpaceRes = await handleTimetableUtilizationGet(authSpaceReq);
+  assert(authSpaceRes.status === 200, "GET /api/timetable/utilization returns 200 OK for authorized admin/faculty");
+  const authSpaceData = await authSpaceRes.json();
+  assert(authSpaceData.success === true, "Timetable space utilization returns success: true");
+  assert(typeof authSpaceData.telemetry.totalRooms === "number", "Space utilization reports total room inventory");
+  assert(Array.isArray(authSpaceData.telemetry.metricsByRoom), "Space utilization provides room-by-room metric cards");
+  assert(Array.isArray(authSpaceData.telemetry.dayDistribution), "Space utilization provides day-by-day load curve");
+
+  // Space Utilization Simulation POST
+  const simSpaceReq = new NextRequest("http://localhost:3000/api/timetable/utilization", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      simulationMode: true,
+      rooms: sampleCampusRooms,
+      slots: sampleCampusSlots,
+    }),
+  });
+  const simSpaceRes = await handleTimetableUtilizationPost(simSpaceReq);
+  assert(simSpaceRes.status === 200, "POST /api/timetable/utilization (simulation) returns 200 OK");
+  const simSpaceData = await simSpaceRes.json();
+  assert(simSpaceData.simulationMode === true, "Space simulation flag confirmed in response");
+  assert(simSpaceData.projectedTelemetry.totalRooms === 2, "Space simulation projects telemetry for provided scenario");
+
+  // 65.4 Automated Load Testing & Concurrency Benchmark Engine
+  const testPValues = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100];
+  const p50Val = calculatePercentile(testPValues, 50);
+  assert(p50Val >= 50 && p50Val <= 60, "calculatePercentile computes accurate median percentile");
+  const p95Val = calculatePercentile(testPValues, 95);
+  assert(p95Val >= 90 && p95Val <= 100, "calculatePercentile computes accurate 95th percentile");
+
+  const cryptoBench = await benchmarkCryptoHmacThroughput(40, 5);
+  assert(cryptoBench.totalOperations === 40, "benchmarkCryptoHmacThroughput executes exactly 40 iterations");
+  assert(cryptoBench.successfulOperations === 40, "Crypto HMAC load benchmark achieves 100% success rate under concurrency");
+  assert(cryptoBench.failedOperations === 0, "Crypto HMAC load benchmark encounters zero failures");
+  assert(cryptoBench.throughputRps > 0, "Load benchmark measures positive throughput requests per second");
+  assert(typeof cryptoBench.latencies.p95Ms === "number", "Load benchmark measures p95 latency distribution");
+
+  const sanitizeBench = await benchmarkSanitizationThroughput(30, 5);
+  assert(sanitizeBench.successfulOperations === 30, "Sanitization benchmark completes with 100% success rate");
+  assert(sanitizeBench.failedOperations === 0, "Sanitization benchmark records zero failures");
+
+  // 65.5 Testing Benchmark API RBAC & Execution
+  const unauthBenchReq = new NextRequest("http://localhost:3000/api/testing/benchmark", {
+    headers: { Cookie: `classroom_session=${spaceStudentJwt}` },
+  });
+  const unauthBenchRes = await handleTestingBenchmarkGet(unauthBenchReq);
+  assert(unauthBenchRes.status === 403, "GET /api/testing/benchmark strictly forbidden (403) for non-admin");
+
+  const authBenchGetReq = new NextRequest("http://localhost:3000/api/testing/benchmark", {
+    headers: { Cookie: `classroom_session=${adminToken}` },
+  });
+  const authBenchGetRes = await handleTestingBenchmarkGet(authBenchGetReq);
+  assert(authBenchGetRes.status === 200, "GET /api/testing/benchmark returns 200 OK for SUPER_ADMIN");
+  const authBenchGetData = await authBenchGetRes.json();
+  assert(authBenchGetData.success === true, "Benchmark telemetry returns success: true");
+  assert(Array.isArray(authBenchGetData.availableSuites), "Benchmark API enumerates available test suites");
+  assert(typeof authBenchGetData.systemTelemetry.uptimeSeconds === "number", "Benchmark API provides system telemetry");
+
+  const authBenchPostReq = new NextRequest("http://localhost:3000/api/testing/benchmark", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      suite: "HMAC_CRYPTO",
+      operations: 25,
+      concurrency: 5,
+    }),
+  });
+  const authBenchPostRes = await handleTestingBenchmarkPost(authBenchPostReq);
+  assert(authBenchPostRes.status === 200, "POST /api/testing/benchmark executes suite with 200 OK");
+  const authBenchPostData = await authBenchPostRes.json();
+  assert(authBenchPostData.success === true, "Benchmark run returns success: true");
+  assert(authBenchPostData.benchmarkResult.successfulOperations === 25, "Benchmark execution confirms 25 successful operations");
 
   console.log("\n=================================================");
   console.log(`🎉 ALL ${passedTests}/${totalTests} TESTS PASSED SUCCESSFULLY!`);

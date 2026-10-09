@@ -8,7 +8,7 @@
       "calories": 380,
       "isVeg": true,
       "isGlutenFree": true,
-      "availableStock": 30,
+      "availableStock": 28,
       "prepTimeMins": 6,
       "description": "Traditional fermented crepe with spiced potato filling, lentil sambar, and fresh coconut chutney."
     },
@@ -113,13 +113,59 @@
       "userFullName": "Provost Elena Evans",
       "userRole": "SUPER_ADMIN",
       "rfidCardId": "RFID-APEX-100001",
-      "currentBalance": 460.95,
+      "currentBalance": 502.41,
       "dailySpendingLimit": 100,
       "autoRechargeThreshold": 20,
       "status": "ACTIVE"
     }
   },
   "orders": [
+    {
+      "orderId": "ord-1791531853683",
+      "orderToken": "#CAN-118",
+      "userId": "usr-admin-01",
+      "customerName": "provost.evans",
+      "items": [
+        {
+          "menuItemId": "dish-01",
+          "name": "Crisp Masala Dosa & Coconut Chutney",
+          "quantity": 1,
+          "unitPrice": 4.5,
+          "subtotal": 4.5,
+          "calories": 380
+        }
+      ],
+      "subtotalAmount": 4.5,
+      "discountApplied": 0.23,
+      "totalAmount": 4.27,
+      "paymentMethod": "MEAL_WALLET",
+      "status": "PREPARING",
+      "counterNo": 3,
+      "placedAt": "2026-10-09T07:44:13.683Z"
+    },
+    {
+      "orderId": "ord-1791531816938",
+      "orderToken": "#CAN-117",
+      "userId": "usr-admin-01",
+      "customerName": "provost.evans",
+      "items": [
+        {
+          "menuItemId": "dish-01",
+          "name": "Crisp Masala Dosa & Coconut Chutney",
+          "quantity": 1,
+          "unitPrice": 4.5,
+          "subtotal": 4.5,
+          "calories": 380
+        }
+      ],
+      "subtotalAmount": 4.5,
+      "discountApplied": 0.23,
+      "totalAmount": 4.27,
+      "paymentMethod": "MEAL_WALLET",
+      "status": "PREPARING",
+      "counterNo": 2,
+      "placedAt": "2026-10-09T07:43:36.938Z"
+    },
     {
       "orderId": "ord-1791529817240",
       "orderToken": "#CAN-116",
@@ -499,6 +545,42 @@
   ],
   "transactions": [
     {
+      "id": "tx-1791531853683",
+      "userId": "usr-admin-01",
+      "type": "DEBIT_PURCHASE",
+      "amount": 4.27,
+      "balanceAfter": 502.41,
+      "reference": "ORD-#CAN-118",
+      "timestamp": "2026-10-09T07:44:13.683Z"
+    },
+    {
+      "id": "tx-1791531853677",
+      "userId": "usr-admin-01",
+      "type": "CREDIT_TOPUP",
+      "amount": 25,
+      "balanceAfter": 506.68,
+      "reference": "NET_BANKING_UPI_TEST",
+      "timestamp": "2026-10-09T07:44:13.677Z"
+    },
+    {
+      "id": "tx-1791531816938",
+      "userId": "usr-admin-01",
+      "type": "DEBIT_PURCHASE",
+      "amount": 4.27,
+      "balanceAfter": 481.68,
+      "reference": "ORD-#CAN-117",
+      "timestamp": "2026-10-09T07:43:36.938Z"
+    },
+    {
+      "id": "tx-1791531816929",
+      "userId": "usr-admin-01",
+      "type": "CREDIT_TOPUP",
+      "amount": 25,
+      "balanceAfter": 485.95,
+      "reference": "NET_BANKING_UPI_TEST",
+      "timestamp": "2026-10-09T07:43:36.929Z"
+    },
+    {
       "id": "tx-1791529817240",
       "userId": "usr-admin-01",
       "type": "DEBIT_PURCHASE",
@@ -796,5 +878,5 @@
       "timestamp": "2026-10-08T17:20:30.081Z"
     }
   ],
-  "orderCounter": 117
+  "orderCounter": 119
 }
