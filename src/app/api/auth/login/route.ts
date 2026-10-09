@@ -30,13 +30,17 @@ export async function POST(req: NextRequest) {
     const { twoFactorCode, rememberMe, turnstileToken } = body;
     const cleanEmail = email.toLowerCase().trim();
 
+    const isDemoModeAllowed =
+      process.env.NODE_ENV !== "production" || process.env.ENABLE_DEMO_MODE === "true";
+
     const isDemoEmail =
-      cleanEmail.endsWith("@classroom.edu") ||
-      cleanEmail.endsWith("@apex.edu") ||
-      cleanEmail.includes("mercer") ||
-      cleanEmail.endsWith("@techcorp.io") ||
-      cleanEmail.endsWith("@accreditation-board.org") ||
-      ALL_DEMO_PERSONAS.some((p) => p.email.toLowerCase() === cleanEmail);
+      isDemoModeAllowed &&
+      (cleanEmail.endsWith("@classroom.edu") ||
+        cleanEmail.endsWith("@apex.edu") ||
+        cleanEmail.includes("mercer") ||
+        cleanEmail.endsWith("@techcorp.io") ||
+        cleanEmail.endsWith("@accreditation-board.org") ||
+        ALL_DEMO_PERSONAS.some((p) => p.email.toLowerCase() === cleanEmail));
 
     if (!password && !isDemoEmail) {
       return NextResponse.json(

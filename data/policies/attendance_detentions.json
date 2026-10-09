@@ -4,6 +4,23 @@
   "medicalCondonationFloorPercent": 65,
   "condonations": [
     {
+      "id": "cnd-1791525113535",
+      "studentRoll": "APX2026-CS-088",
+      "studentName": "Rahul Sharma",
+      "courseCode": "CS-402",
+      "courseTitle": "Neural Networks & Deep Learning",
+      "attendancePercentage": 68.5,
+      "totalClasses": 40,
+      "attendedClasses": 27,
+      "status": "CONDONED_EXAM_PERMITTED",
+      "medicalCertRef": "MED-CLINIC-2026-8819",
+      "hospitalName": "Registered University Medical Center",
+      "condonationFeeReceipt": "REC-99120",
+      "condonationFeeAmount": 25,
+      "approvedBy": "Senate Academic Appeals Board",
+      "approvedAt": "2026-10-09T05:51:53.535Z"
+    },
+    {
       "id": "cnd-1791524362688",
       "studentRoll": "APX2026-CS-088",
       "studentName": "Rahul Sharma",
