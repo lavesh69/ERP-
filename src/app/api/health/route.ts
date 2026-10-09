@@ -18,13 +18,20 @@ export async function GET() {
     };
 
     // 3. Count primary records for database telemetry
-    const [studentsCount, facultyCount, coursesCount] = await Promise.all([
+    const [institutionsCount, studentsCount, facultyCount, coursesCount] = await Promise.all([
+      prisma.institution.count().catch(() => 0),
       prisma.student.count().catch(() => 0),
       prisma.faculty.count().catch(() => 0),
       prisma.course.count().catch(() => 0),
     ]);
 
     const totalResponseTimeMs = Date.now() - startTime;
+    const isPostgres =
+      (process.env.DATABASE_URL || "").includes("postgres") ||
+      (process.env.POSTGRES_PRISMA_URL || "").includes("postgres");
+    const dbEngine = isPostgres
+      ? "PostgreSQL (Neon Cloud / Supabase / AWS RDS)"
+      : "SQLite (Local Dev / Vercel Serverless /tmp)";
 
     return NextResponse.json(
       {
@@ -33,9 +40,10 @@ export async function GET() {
         responseTimeMs: totalResponseTimeMs,
         database: {
           status: "UP",
-          engine: (process.env.DATABASE_URL || "").includes("postgres") ? "PostgreSQL (Neon Cloud)" : "PostgreSQL",
+          engine: dbEngine,
           latencyMs: dbLatencyMs,
           counts: {
+            institutions: institutionsCount,
             students: studentsCount,
             faculty: facultyCount,
             courses: coursesCount,

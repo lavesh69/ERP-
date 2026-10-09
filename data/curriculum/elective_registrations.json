@@ -72,6 +72,23 @@
   ],
   "studentRegistrations": [
     {
+      "id": "reg-cbcs-1791525764716",
+      "studentRoll": "CS2026-001",
+      "studentName": "Alex Mercer",
+      "registeredTerm": "Fall 2026 - CBCS Phase II",
+      "priorityChoices": [
+        {
+          "preference": 1,
+          "courseCode": "CS-EL-501",
+          "status": "PENDING_SCRUTINY"
+        }
+      ],
+      "totalCreditsRegistered": 20,
+      "status": "CONFIRMED_SEALED",
+      "enrolledAt": "2026-10-09T06:02:44.716Z",
+      "sealHash": "0x1f96b8ea...af2d"
+    },
+    {
       "id": "reg-cbcs-1791525113530",
       "studentRoll": "CS2026-001",
       "studentName": "Alex Mercer",

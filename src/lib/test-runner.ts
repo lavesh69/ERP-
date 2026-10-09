@@ -136,6 +136,7 @@ import { GET as handleFinanceInstallmentsGet } from "@/app/api/finance/installme
 import { GET as handleFinanceLateFinesGet, POST as handleFinanceLateFinesPost } from "@/app/api/finance/late-fines/route";
 import { GET as handleFinanceBrsGet, POST as handleFinanceBrsPost } from "@/app/api/finance/brs/route";
 import { GET as handleFinanceRefundsGet, POST as handleFinanceRefundsPost } from "@/app/api/finance/refunds/route";
+import { GET as handleHealthGet } from "@/app/api/health/route";
 import {
   calculateFeeStructureTotal,
   generateInstallmentSchedule,
@@ -6393,6 +6394,33 @@ By breaking down large monolithic systems into decoupled microservices, systems 
   const submitRollCallData = await submitRollCallRes.json();
   assert(submitRollCallData.record.inRoomCount === 1, "Roll-call accurately tallies confirmed in-room residents");
   assert(submitRollCallData.record.unauthorizedAbsentCount === 1, "Roll-call accurately flags curfew absentees for security protocol");
+
+  // =========================================================================
+  // Group 61: Enterprise Accounting Tally XML & Health Observability Suite
+  // =========================================================================
+  console.log("\n📦 Running Group 61: Enterprise Accounting Tally XML & Health Observability Suite");
+
+  // 61.1 Tally Prime XML Export
+  const tallyExportReq = new NextRequest("http://localhost:3000/api/finance?export=tally", {
+    headers: { Cookie: `classroom_session=${adminToken}` },
+  });
+  const tallyExportRes = await handleFinance(tallyExportReq);
+  assert(tallyExportRes.status === 200, "GET /api/finance?export=tally returns 200 OK");
+  const tallyContentType = tallyExportRes.headers.get("content-type") || "";
+  assert(tallyContentType.includes("application/xml"), "Tally export sets application/xml content-type header");
+  const tallyXmlContent = await tallyExportRes.text();
+  assert(tallyXmlContent.includes("<ENVELOPE>"), "Tally export generates valid outer ENVELOPE element");
+  assert(tallyXmlContent.includes("<TALLYREQUEST>Import Data</TALLYREQUEST>"), "Tally export declares Import Data request");
+  assert(tallyXmlContent.includes("VOUCHER VCHTYPE=\"Receipt\""), "Tally export packages fee receipts as official accounting vouchers");
+
+  // 61.2 Preflight Health & Telemetry Engine
+  const healthRes = await handleHealthGet();
+  assert(healthRes.status === 200, "GET /api/health returns 200 OK");
+  const healthData = await healthRes.json();
+  assert(healthData.status === "HEALTHY", "Health check reports HEALTHY operational status");
+  assert(typeof healthData.database.engine === "string" && healthData.database.engine.length > 0, "Health telemetry accurately reports database engine");
+  assert(typeof healthData.database.latencyMs === "number", "Database query roundtrip latency measured in milliseconds");
+  assert(healthData.database.counts.institutions >= 1, "Health check counts active tenant institutions");
 
   console.log("\n=================================================");
   console.log(`🎉 ALL ${passedTests}/${totalTests} TESTS PASSED SUCCESSFULLY!`);

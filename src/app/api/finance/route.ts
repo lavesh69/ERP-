@@ -164,6 +164,64 @@ export async function GET(req: NextRequest) {
     const totalPages = Math.ceil(total / limit) || 1;
     const paginatedFees = formattedFees;
 
+    // Check for standard accounting Tally XML export
+    const exportFormat = searchParams.get("export") || searchParams.get("format");
+    if (exportFormat === "tally") {
+      const vouchersXml = transactions
+        .map((t) => {
+          const dateStr = t.transactedAt.toISOString().slice(0, 10).replace(/-/g, "");
+          const student = t.studentFee.student;
+          const narration = `Tuition fee receipt: ${t.studentFee.feeStructure.title} for ${student.user.firstName} ${student.user.lastName} (Roll: ${student.rollNumber}). Ref: ${t.referenceNumber}`;
+          return `
+      <TALLYMESSAGE xmlns:UDF="TallyUDF">
+        <VOUCHER VCHTYPE="Receipt" ACTION="Create">
+          <DATE>${dateStr}</DATE>
+          <VOUCHERTYPENAME>Receipt</VOUCHERTYPENAME>
+          <VOUCHERNUMBER>${t.referenceNumber}</VOUCHERNUMBER>
+          <NARRATION>${narration}</NARRATION>
+          <ALLLEDGERENTRIES.LIST>
+            <LEDGERNAME>Bank / Online Gateway</LEDGERNAME>
+            <ISDEEMEDPOSITIVE>Yes</ISDEEMEDPOSITIVE>
+            <AMOUNT>-${t.amount}</AMOUNT>
+          </ALLLEDGERENTRIES.LIST>
+          <ALLLEDGERENTRIES.LIST>
+            <LEDGERNAME>${t.studentFee.feeStructure.title} Account</LEDGERNAME>
+            <ISDEEMEDPOSITIVE>No</ISDEEMEDPOSITIVE>
+            <AMOUNT>${t.amount}</AMOUNT>
+          </ALLLEDGERENTRIES.LIST>
+        </VOUCHER>
+      </TALLYMESSAGE>`;
+        })
+        .join("");
+
+      const tallyEnvelopeXml = `<?xml version="1.0" encoding="UTF-8"?>
+<ENVELOPE>
+  <HEADER>
+    <TALLYREQUEST>Import Data</TALLYREQUEST>
+  </HEADER>
+  <BODY>
+    <IMPORTDATA>
+      <REQUESTDESC>
+        <REPORTNAME>Vouchers</REPORTNAME>
+        <STATICVARIABLES>
+          <SVCURRENTCOMPANY>Apex Institute of Technology</SVCURRENTCOMPANY>
+        </STATICVARIABLES>
+      </REQUESTDESC>
+      <REQUESTDATA>${vouchersXml}
+      </REQUESTDATA>
+    </IMPORTDATA>
+  </BODY>
+</ENVELOPE>`;
+
+      return new NextResponse(tallyEnvelopeXml, {
+        status: 200,
+        headers: {
+          "Content-Type": "application/xml; charset=utf-8",
+          "Content-Disposition": 'attachment; filename="tally_fee_vouchers.xml"',
+        },
+      });
+    }
+
     return NextResponse.json({
       summary: {
         totalBilled,
