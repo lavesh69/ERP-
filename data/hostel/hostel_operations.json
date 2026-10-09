@@ -208,6 +208,40 @@
   ],
   "gatePasses": [
     {
+      "id": "gp-1791524362483",
+      "passNumber": "GP-2026-9750",
+      "studentId": "stu-guest",
+      "studentName": "Alex Mercer",
+      "studentRoll": "CS2026-001",
+      "roomNumber": "A-101",
+      "blockName": "Nelson Mandela Hall",
+      "reason": "National Robotics Olympiad Finals",
+      "destination": "New York, NY",
+      "departureTime": "2026-11-01T08:00:00.000Z",
+      "expectedReturnTime": "2026-11-03T20:00:00.000Z",
+      "status": "PENDING_WARDEN",
+      "emergencyContact": "+1 (555) 881-2233",
+      "parentConsentVerified": true,
+      "createdAt": "2026-10-09T05:39:22.483Z"
+    },
+    {
+      "id": "gp-1791524100261",
+      "passNumber": "GP-2026-1663",
+      "studentId": "stu-guest",
+      "studentName": "Alex Mercer",
+      "studentRoll": "CS2026-001",
+      "roomNumber": "A-101",
+      "blockName": "Nelson Mandela Hall",
+      "reason": "National Robotics Olympiad Finals",
+      "destination": "New York, NY",
+      "departureTime": "2026-11-01T08:00:00.000Z",
+      "expectedReturnTime": "2026-11-03T20:00:00.000Z",
+      "status": "PENDING_WARDEN",
+      "emergencyContact": "+1 (555) 881-2233",
+      "parentConsentVerified": true,
+      "createdAt": "2026-10-09T05:35:00.261Z"
+    },
+    {
       "id": "gp-1791484178383",
       "passNumber": "GP-2026-4303",
       "studentId": "stu-guest",
@@ -636,6 +670,38 @@
   ],
   "nightRollCalls": [
     {
+      "id": "nrc-1791524100484",
+      "date": "2026-10-09",
+      "curfewTime": "21:30",
+      "blockId": "blk-a",
+      "blockName": "Mandela Block (Boys)",
+      "wardenOnDuty": "Chief Warden Dr. Sharma",
+      "status": "COMPLETED",
+      "totalResidents": 2,
+      "inRoomCount": 1,
+      "permittedOutpassCount": 0,
+      "unauthorizedAbsentCount": 1,
+      "roster": [
+        {
+          "studentRoll": "CS2026-001",
+          "studentName": "Alex Rivera",
+          "roomNumber": "101",
+          "bedId": "101-A",
+          "status": "IN_ROOM",
+          "updatedAt": "2026-10-09T05:39:22.693Z"
+        },
+        {
+          "studentRoll": "EE2024-019",
+          "studentName": "Marcus Vance",
+          "roomNumber": "102",
+          "bedId": "102-A",
+          "status": "UNAUTHORIZED_ABSENT",
+          "updatedAt": "2026-10-09T05:39:22.693Z",
+          "remarks": "Curfew violated - Parents alerted via automated SMS"
+        }
+      ]
+    },
+    {
       "id": "nrc-2026-10-08",
       "date": "2026-10-08",
       "curfewTime": "21:30",
@@ -666,6 +732,67 @@
           "remarks": "Curfew violated - Parents alerted via automated SMS"
         }
       ]
+    }
+  ],
+  "punchedMeals": [
+    {
+      "id": "tok-101",
+      "studentRoll": "CS2026-001",
+      "studentName": "Alex Rivera",
+      "plan": "All-Access Premium Buffet",
+      "mealType": "Dinner (Executive)",
+      "timestamp": "Just now",
+      "lane": "Turnstile Gate #02 (Optical)",
+      "tokenHash": "0x89f4b...3e1a"
+    },
+    {
+      "id": "tok-102",
+      "studentRoll": "ME2025-042",
+      "studentName": "Priya Sharma",
+      "plan": "South Indian Vegetarian",
+      "mealType": "Dinner (Executive)",
+      "timestamp": "3 mins ago",
+      "lane": "Turnstile Gate #01 (Biometric)",
+      "tokenHash": "0x12c8a...9f00"
+    },
+    {
+      "id": "tok-103",
+      "studentRoll": "EE2024-019",
+      "studentName": "Marcus Vance",
+      "plan": "Continental & Halal Fusion",
+      "mealType": "Dinner (Executive)",
+      "timestamp": "7 mins ago",
+      "lane": "Turnstile Gate #03 (RFID Card)",
+      "tokenHash": "0x44d1e...bc27"
+    }
+  ],
+  "wasteLogs": [
+    {
+      "id": "w-1",
+      "session": "Dinner (Yesterday)",
+      "preparedKg": 340,
+      "consumedKg": 318,
+      "wastedKg": 22,
+      "residents": 410,
+      "divertedToBiogas": true
+    },
+    {
+      "id": "w-2",
+      "session": "Breakfast (Today)",
+      "preparedKg": 210,
+      "consumedKg": 198,
+      "wastedKg": 12,
+      "residents": 380,
+      "divertedToBiogas": true
+    },
+    {
+      "id": "w-3",
+      "session": "Lunch (Today)",
+      "preparedKg": 360,
+      "consumedKg": 334,
+      "wastedKg": 26,
+      "residents": 395,
+      "divertedToBiogas": true
     }
   ]
 }

@@ -38,6 +38,58 @@
   ],
   "consultations": [
     {
+      "id": "cs-1791524362554",
+      "caseNo": "OPD-2026-505",
+      "patientName": "Alex Mercer",
+      "patientRoll": "CS2026-001",
+      "visitDate": "2026-10-09T05:39:22.554Z",
+      "chiefComplaint": "Severe migraine and acute eye fatigue during compiler build sprint",
+      "vitals": {
+        "bp": "125/82",
+        "pulseRate": 74,
+        "temperatureF": 98.8,
+        "spo2Percent": 99
+      },
+      "diagnosis": "Visual fatigue and tension headache",
+      "prescriptions": [
+        {
+          "name": "Naproxen",
+          "dosage": "250mg",
+          "frequency": "BID",
+          "days": 3
+        }
+      ],
+      "attendingDoctor": "Dr. Marcus Welby (Campus Physician)",
+      "requiresSickBayAdmit": true,
+      "status": "ADMITTED_SICK_BAY"
+    },
+    {
+      "id": "cs-1791524100357",
+      "caseNo": "OPD-2026-442",
+      "patientName": "Alex Mercer",
+      "patientRoll": "CS2026-001",
+      "visitDate": "2026-10-09T05:35:00.357Z",
+      "chiefComplaint": "Severe migraine and acute eye fatigue during compiler build sprint",
+      "vitals": {
+        "bp": "125/82",
+        "pulseRate": 74,
+        "temperatureF": 98.8,
+        "spo2Percent": 99
+      },
+      "diagnosis": "Visual fatigue and tension headache",
+      "prescriptions": [
+        {
+          "name": "Naproxen",
+          "dosage": "250mg",
+          "frequency": "BID",
+          "days": 3
+        }
+      ],
+      "attendingDoctor": "Dr. Marcus Welby (Campus Physician)",
+      "requiresSickBayAdmit": true,
+      "status": "ADMITTED_SICK_BAY"
+    },
+    {
       "id": "cs-1791484178564",
       "caseNo": "OPD-2026-200",
       "patientName": "Alex Mercer",
@@ -466,6 +518,68 @@
       "isOccupied": true,
       "patientName": "Alex Mercer",
       "admittedAt": "2026-10-06T17:05:36.709Z"
+    }
+  ],
+  "pharmacyStock": [
+    {
+      "id": "MED-01",
+      "name": "Paracetamol 650mg Tabs",
+      "category": "Analgesic / Antipyretic",
+      "stock": 85,
+      "minThreshold": 30,
+      "unit": "tablets",
+      "expiry": "2027-08",
+      "batch": "BATCH-PCM-89"
+    },
+    {
+      "id": "MED-02",
+      "name": "ORS Oral Rehydration Salts",
+      "category": "Electrolyte Replenisher",
+      "stock": 12,
+      "minThreshold": 25,
+      "unit": "sachets",
+      "expiry": "2026-12",
+      "batch": "BATCH-ORS-21"
+    },
+    {
+      "id": "MED-03",
+      "name": "Amoxicillin 500mg Caps",
+      "category": "Antibiotic",
+      "stock": 42,
+      "minThreshold": 20,
+      "unit": "capsules",
+      "expiry": "2027-04",
+      "batch": "BATCH-AMX-77"
+    },
+    {
+      "id": "MED-04",
+      "name": "Cetirizine 10mg Tabs",
+      "category": "Antihistamine / Allergy",
+      "stock": 16,
+      "minThreshold": 20,
+      "unit": "tablets",
+      "expiry": "2026-11",
+      "batch": "BATCH-CTZ-09"
+    },
+    {
+      "id": "MED-05",
+      "name": "Betadine 10% Ointment",
+      "category": "Antiseptic Microbicide",
+      "stock": 58,
+      "minThreshold": 15,
+      "unit": "tubes",
+      "expiry": "2028-01",
+      "batch": "BATCH-BTD-45"
+    },
+    {
+      "id": "MED-06",
+      "name": "Sterile Gauze & Bandage Packs",
+      "category": "First Aid & Trauma",
+      "stock": 120,
+      "minThreshold": 40,
+      "unit": "packs",
+      "expiry": "2029-06",
+      "batch": "BATCH-GBZ-12"
     }
   ]
 }
