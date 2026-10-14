@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
+import crypto from "crypto";
+import { prisma } from "@/lib/db/prisma";
 import { getOptionalSession } from "@/lib/auth/admin-guard";
 import {
   calculateCompositeMeritScore,
@@ -195,6 +197,72 @@ export async function POST(req: NextRequest) {
         message: "Provisional seat allotment order generated successfully",
         order,
       });
+    }
+
+    if (action === "PROVISION_ALLOTTED_STUDENT") {
+      const { applicant, allottedProgram, roundNumber = 1 } = body;
+      if (!applicant || !applicant.applicationNo || !applicant.fullName) {
+        return NextResponse.json({ error: "Valid applicant record required for provisioning" }, { status: 400 });
+      }
+
+      const progCode = (applicant.allottedProgram || allottedProgram || "CSE").replace(/[^a-zA-Z]/g, "").slice(0, 3).toUpperCase();
+      const serialPart = applicant.applicationNo.replace(/[^0-9]/g, "").slice(-3) || "091";
+      const rollNumber = `2026-${progCode}-${serialPart}`;
+      const admissionNumber = applicant.applicationNo;
+
+      const institution = await prisma.institution.findFirst();
+      const institutionId = institution?.id || "inst-apex-01";
+      const program = await prisma.program.findFirst();
+      const targetProgramId = program?.id || "prog-cs-01";
+
+      const email = `${applicant.fullName.toLowerCase().replace(/[^a-z]/g, "")}@apex.edu`;
+      let user = await prisma.user.findFirst({ where: { email } });
+      if (!user) {
+        const nameParts = applicant.fullName.split(" ");
+        user = await prisma.user.create({
+          data: {
+            email,
+            firstName: nameParts[0] || "Scholar",
+            lastName: nameParts.slice(1).join(" ") || "Candidate",
+            role: "STUDENT",
+            passwordHash: "PROVISIONED_DEFAULT_HASH",
+            institutionId,
+          },
+        });
+      }
+
+      let student = await prisma.student.findUnique({ where: { userId: user.id } });
+      if (!student) {
+        student = await prisma.student.create({
+          data: {
+            userId: user.id,
+            programId: targetProgramId,
+            rollNumber,
+            admissionNumber,
+            admissionDate: new Date(),
+            currentSemester: 1,
+            status: "ACTIVE",
+          },
+        });
+      }
+
+      const seal = `APEX-ENROLL-SEAL-${crypto.createHash("sha256").update(`${rollNumber}|${student.id}|${admissionNumber}`).digest("hex").slice(0, 16).toUpperCase()}`;
+
+      return NextResponse.json({
+        success: true,
+        message: `Scholar ${applicant.fullName} successfully provisioned into Student Information System`,
+        enrollmentDetails: {
+          studentId: student.id,
+          rollNumber: student.rollNumber,
+          admissionNumber: student.admissionNumber,
+          fullName: applicant.fullName,
+          email,
+          allottedProgram: applicant.allottedProgram || allottedProgram || "CSE",
+          status: "ACTIVE",
+          currentSemester: 1,
+          enrollmentSeal: seal,
+        },
+      }, { status: 201 });
     }
 
     return NextResponse.json({ error: `Unknown action: ${action}` }, { status: 400 });

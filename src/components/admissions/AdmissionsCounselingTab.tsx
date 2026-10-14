@@ -31,10 +31,39 @@ export function AdmissionsCounselingTab() {
   const [searchQuery, setSearchQuery] = useState("");
   const [filterCategory, setFilterCategory] = useState("ALL");
 
-  // Merit Score Interactive Calculator state
-  const [calcBoard, setCalcBoard] = useState(92.5);
-  const [calcEntrance, setCalcEntrance] = useState(96.0);
+  const [provisioning, setProvisioning] = useState(false);
+  const [provisionedScholar, setProvisionedScholar] = useState<any>(null);
+
+  const [calcBoard, setCalcBoard] = useState<number>(85);
+  const [calcEntrance, setCalcEntrance] = useState<number>(90);
   const [calcComposite, setCalcComposite] = useState<number | null>(null);
+
+  const handleProvisionStudent = async () => {
+    if (!allotmentOrder) return;
+    try {
+      setProvisioning(true);
+      const res = await fetch("/api/admissions/counseling", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "PROVISION_ALLOTTED_STUDENT",
+          applicant: selectedApplicant || {
+            applicationNo: allotmentOrder.applicationNo,
+            fullName: allotmentOrder.applicantName,
+            allottedProgram: allotmentOrder.allottedProgram,
+          },
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setProvisionedScholar(data.enrollmentDetails);
+      }
+    } catch (err) {
+      console.error("Provisioning failed:", err);
+    } finally {
+      setProvisioning(false);
+    }
+  };
 
   useEffect(() => {
     fetchCounselingData();
@@ -408,13 +437,46 @@ export function AdmissionsCounselingTab() {
               {allotmentOrder.verificationSeal}
             </div>
 
+            {provisionedScholar && (
+              <div className="p-3 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-300 dark:border-emerald-700 rounded-xl space-y-1 text-xs">
+                <div className="flex items-center gap-1.5 text-emerald-800 dark:text-emerald-300 font-bold">
+                  <CheckCircle2 className="w-4 h-4" />
+                  <span>Enrolled & Provisioned in SIS</span>
+                </div>
+                <div className="flex justify-between text-[11px]">
+                  <span className="text-charcoal-500">Official Roll No:</span>
+                  <span className="font-mono font-bold text-charcoal-900 dark:text-ivory-100">{provisionedScholar.rollNumber}</span>
+                </div>
+                <div className="flex justify-between text-[11px]">
+                  <span className="text-charcoal-500">Institutional Email:</span>
+                  <span className="font-mono text-emerald-700">{provisionedScholar.email}</span>
+                </div>
+                <div className="text-[9px] font-mono text-charcoal-500 truncate">
+                  Enrollment Seal: {provisionedScholar.enrollmentSeal}
+                </div>
+              </div>
+            )}
+
             <div className="flex justify-end gap-2 pt-2">
               <button
-                onClick={() => setAllotmentOrder(null)}
+                onClick={() => {
+                  setAllotmentOrder(null);
+                  setProvisionedScholar(null);
+                }}
                 className="px-4 py-2 border rounded-lg text-xs font-semibold text-charcoal-700 hover:bg-ivory-100"
               >
                 Dismiss
               </button>
+              {!provisionedScholar && (
+                <button
+                  onClick={handleProvisionStudent}
+                  disabled={provisioning}
+                  className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors"
+                >
+                  <GraduationCap className="w-3.5 h-3.5" />
+                  {provisioning ? "Provisioning..." : "Enroll & Provision to SIS"}
+                </button>
+              )}
               <button
                 onClick={() => window.print()}
                 className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5"

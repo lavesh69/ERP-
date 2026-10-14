@@ -30,6 +30,14 @@ import {
   CheckSquare,
   FileCheck,
   Building2,
+  GraduationCap,
+  HeartPulse,
+  Bus,
+  Bed,
+  Microscope,
+  Receipt,
+  Layers,
+  ChevronRight,
 } from "lucide-react";
 
 export default function DashboardPage() {
@@ -1386,6 +1394,247 @@ export default function DashboardPage() {
                 Ask Copilot AI
               </span>
             </button>
+          </div>
+        </div>
+
+        {/* Autonomous Institutional Ecosystem & Unified Operations Grid */}
+        <div className="bg-white dark:bg-[#1E191C] p-5 sm:p-6 rounded-2xl border border-border dark:border-charcoal-800 shadow-soft">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-border/70 dark:border-charcoal-800 mb-5">
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-xl bg-gradient-to-tr from-rose-600 to-rose-400 text-white flex items-center justify-center shadow-md shrink-0">
+                <Layers className="h-5 w-5" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <h3 className="text-sm font-bold text-charcoal-900 dark:text-ivory-100 uppercase tracking-wider">
+                    Autonomous Institutional Ecosystem & Operations Grid
+                  </h3>
+                  <span className="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-50 dark:bg-rose-950/40 text-rose-primary border border-rose-200 dark:border-rose-900/60">
+                    <span className="h-1.5 w-1.5 rounded-full bg-rose-primary animate-pulse" />
+                    Unified Grid Active
+                  </span>
+                </div>
+                <p className="text-xs text-charcoal-600 dark:text-charcoal-400 mt-0.5">
+                  Interconnected multi-tier intelligence across admissions quota matrix, research ethics, digital repository, clinic EHR, and fleet telematics.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 shrink-0">
+              <Link
+                href="/finance"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-ivory-100 dark:bg-charcoal-800 hover:bg-rose-container dark:hover:bg-charcoal-700 text-xs font-bold text-charcoal-800 dark:text-ivory-200 border border-border dark:border-charcoal-700 transition-all"
+              >
+                <Receipt className="h-3.5 w-3.5 text-rose-primary dark:text-rose-accent" />
+                <span>Auxiliary Service Billing</span>
+              </Link>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {/* Sector 1: Admissions & Seat Matrix */}
+            <div className="p-4 rounded-xl border border-border dark:border-charcoal-800 bg-ivory-50/50 dark:bg-charcoal-900/40 hover:border-rose-300 dark:hover:border-rose-900 transition-all flex flex-col justify-between group">
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    <div className="h-7 w-7 rounded-lg bg-rose-100 dark:bg-rose-950/50 text-rose-primary dark:text-rose-accent flex items-center justify-center">
+                      <GraduationCap className="h-4 w-4" />
+                    </div>
+                    <span className="text-xs font-bold text-charcoal-900 dark:text-ivory-100">
+                      Admissions & Counseling
+                    </span>
+                  </div>
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-academic-success-subtle dark:bg-green-950/40 text-academic-success border border-green-200 dark:border-green-800">
+                    Merit Engine Active
+                  </span>
+                </div>
+                <p className="text-xs text-charcoal-600 dark:text-charcoal-400 mb-3">
+                  Statutory reservation quotas (Open, OBC-NCL, SC, ST, EWS, PwD) with automated provisional seat allotment order generation.
+                </p>
+              </div>
+              <div className="pt-2 border-t border-border/50 dark:border-charcoal-800 flex items-center justify-between">
+                <span className="text-[11px] font-semibold text-charcoal-500">
+                  Round 1 • Multi-Tier Matrix
+                </span>
+                <Link
+                  href="/admissions?tab=counseling"
+                  className="inline-flex items-center gap-1 text-xs font-bold text-rose-primary dark:text-rose-accent group-hover:translate-x-0.5 transition-transform"
+                >
+                  <span>Counseling Desk</span>
+                  <ChevronRight className="h-3.5 w-3.5" />
+                </Link>
+              </div>
+            </div>
+
+            {/* Sector 2: Research & Ethics Review Board (IRB) */}
+            <div className="p-4 rounded-xl border border-border dark:border-charcoal-800 bg-ivory-50/50 dark:bg-charcoal-900/40 hover:border-rose-300 dark:hover:border-rose-900 transition-all flex flex-col justify-between group">
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    <div className="h-7 w-7 rounded-lg bg-rose-100 dark:bg-rose-950/50 text-rose-primary dark:text-rose-accent flex items-center justify-center">
+                      <Microscope className="h-4 w-4" />
+                    </div>
+                    <span className="text-xs font-bold text-charcoal-900 dark:text-ivory-100">
+                      Research & IRB Ethics
+                    </span>
+                  </div>
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800">
+                    Full Quorum Ready
+                  </span>
+                </div>
+                <p className="text-xs text-charcoal-600 dark:text-charcoal-400 mb-3">
+                  Autonomous institutional review board protocol evaluation, human subject risk tiers, quorum deliberations, and cryptographic seals.
+                </p>
+              </div>
+              <div className="pt-2 border-t border-border/50 dark:border-charcoal-800 flex items-center justify-between">
+                <span className="text-[11px] font-semibold text-charcoal-500">
+                  IRB Protocol Lifecycle
+                </span>
+                <Link
+                  href="/research?tab=irb"
+                  className="inline-flex items-center gap-1 text-xs font-bold text-rose-primary dark:text-rose-accent group-hover:translate-x-0.5 transition-transform"
+                >
+                  <span>IRB Deliberations</span>
+                  <ChevronRight className="h-3.5 w-3.5" />
+                </Link>
+              </div>
+            </div>
+
+            {/* Sector 3: Digital E-Library & DOI Repository */}
+            <div className="p-4 rounded-xl border border-border dark:border-charcoal-800 bg-ivory-50/50 dark:bg-charcoal-900/40 hover:border-rose-300 dark:hover:border-rose-900 transition-all flex flex-col justify-between group">
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    <div className="h-7 w-7 rounded-lg bg-rose-100 dark:bg-rose-950/50 text-rose-primary dark:text-rose-accent flex items-center justify-center">
+                      <BookOpen className="h-4 w-4" />
+                    </div>
+                    <span className="text-xs font-bold text-charcoal-900 dark:text-ivory-100">
+                      E-Library & Digital Repository
+                    </span>
+                  </div>
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 border border-purple-200 dark:border-purple-800">
+                    IP-Proxy Authenticated
+                  </span>
+                </div>
+                <p className="text-xs text-charcoal-600 dark:text-charcoal-400 mb-3">
+                  Institutional thesis depository, OpenAccess peer-reviewed papers, automatic APA/IEEE/BibTeX citations, and tokenized downloads.
+                </p>
+              </div>
+              <div className="pt-2 border-t border-border/50 dark:border-charcoal-800 flex items-center justify-between">
+                <span className="text-[11px] font-semibold text-charcoal-500">
+                  Secured DOI Vault
+                </span>
+                <Link
+                  href="/library?tab=digital"
+                  className="inline-flex items-center gap-1 text-xs font-bold text-rose-primary dark:text-rose-accent group-hover:translate-x-0.5 transition-transform"
+                >
+                  <span>Repository Index</span>
+                  <ChevronRight className="h-3.5 w-3.5" />
+                </Link>
+              </div>
+            </div>
+
+            {/* Sector 4: Student Health Clinic & Immunization */}
+            <div className="p-4 rounded-xl border border-border dark:border-charcoal-800 bg-ivory-50/50 dark:bg-charcoal-900/40 hover:border-rose-300 dark:hover:border-rose-900 transition-all flex flex-col justify-between group">
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    <div className="h-7 w-7 rounded-lg bg-rose-100 dark:bg-rose-950/50 text-rose-primary dark:text-rose-accent flex items-center justify-center">
+                      <HeartPulse className="h-4 w-4" />
+                    </div>
+                    <span className="text-xs font-bold text-charcoal-900 dark:text-ivory-100">
+                      Health Clinic & EHR Passports
+                    </span>
+                  </div>
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
+                    Passports Verified
+                  </span>
+                </div>
+                <p className="text-xs text-charcoal-600 dark:text-charcoal-400 mb-3">
+                  Electronic health records, immunization compliance tracking (MMR, Hepatitis B, Tdap), and medical clearance certification.
+                </p>
+              </div>
+              <div className="pt-2 border-t border-border/50 dark:border-charcoal-800 flex items-center justify-between">
+                <span className="text-[11px] font-semibold text-charcoal-500">
+                  Residential Fitness Check
+                </span>
+                <Link
+                  href="/health?tab=clinic"
+                  className="inline-flex items-center gap-1 text-xs font-bold text-rose-primary dark:text-rose-accent group-hover:translate-x-0.5 transition-transform"
+                >
+                  <span>Clinic Console</span>
+                  <ChevronRight className="h-3.5 w-3.5" />
+                </Link>
+              </div>
+            </div>
+
+            {/* Sector 5: Hostel Move-In/Out & Deposit Clearance */}
+            <div className="p-4 rounded-xl border border-border dark:border-charcoal-800 bg-ivory-50/50 dark:bg-charcoal-900/40 hover:border-rose-300 dark:hover:border-rose-900 transition-all flex flex-col justify-between group">
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    <div className="h-7 w-7 rounded-lg bg-rose-100 dark:bg-rose-950/50 text-rose-primary dark:text-rose-accent flex items-center justify-center">
+                      <Bed className="h-4 w-4" />
+                    </div>
+                    <span className="text-xs font-bold text-charcoal-900 dark:text-ivory-100">
+                      Hostel Asset & Caution Escrow
+                    </span>
+                  </div>
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-800">
+                    Escrow Reconciled
+                  </span>
+                </div>
+                <p className="text-xs text-charcoal-600 dark:text-charcoal-400 mb-3">
+                  Asset condition comparison audits across move-in and vacate checkpoints, damage assessment levies, and deposit clearance seals.
+                </p>
+              </div>
+              <div className="pt-2 border-t border-border/50 dark:border-charcoal-800 flex items-center justify-between">
+                <span className="text-[11px] font-semibold text-charcoal-500">
+                  Warden Inspection Desk
+                </span>
+                <Link
+                  href="/hostel?tab=clearance"
+                  className="inline-flex items-center gap-1 text-xs font-bold text-rose-primary dark:text-rose-accent group-hover:translate-x-0.5 transition-transform"
+                >
+                  <span>Inventory Clearance</span>
+                  <ChevronRight className="h-3.5 w-3.5" />
+                </Link>
+              </div>
+            </div>
+
+            {/* Sector 6: Transport Fleet Regulatory Roadworthiness */}
+            <div className="p-4 rounded-xl border border-border dark:border-charcoal-800 bg-ivory-50/50 dark:bg-charcoal-900/40 hover:border-rose-300 dark:hover:border-rose-900 transition-all flex flex-col justify-between group">
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    <div className="h-7 w-7 rounded-lg bg-rose-100 dark:bg-rose-950/50 text-rose-primary dark:text-rose-accent flex items-center justify-center">
+                      <Bus className="h-4 w-4" />
+                    </div>
+                    <span className="text-xs font-bold text-charcoal-900 dark:text-ivory-100">
+                      Fleet Safety & Telematics
+                    </span>
+                  </div>
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-teal-50 dark:bg-teal-950/40 text-teal-600 dark:text-teal-400 border border-teal-200 dark:border-teal-800">
+                    RTO Certified 100%
+                  </span>
+                </div>
+                <p className="text-xs text-charcoal-600 dark:text-charcoal-400 mb-3">
+                  Vehicle fitness certificates, insurance renewals, speed governor calibration, driver commercial licenses, and route dispatching.
+                </p>
+              </div>
+              <div className="pt-2 border-t border-border/50 dark:border-charcoal-800 flex items-center justify-between">
+                <span className="text-[11px] font-semibold text-charcoal-500">
+                  Campus Transit Grid
+                </span>
+                <Link
+                  href="/transport?tab=fleet"
+                  className="inline-flex items-center gap-1 text-xs font-bold text-rose-primary dark:text-rose-accent group-hover:translate-x-0.5 transition-transform"
+                >
+                  <span>Fleet Roadworthiness</span>
+                  <ChevronRight className="h-3.5 w-3.5" />
+                </Link>
+              </div>
+            </div>
           </div>
         </div>
 

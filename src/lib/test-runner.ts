@@ -440,6 +440,13 @@ import {
   POST as handleFleetCompliancePost,
 } from "@/app/api/transport/compliance/route";
 
+// Group 74: Auxiliary Service Fee Invoicing & Admissions SIS Provisioning
+import {
+  GET as handleLinkServicesGet,
+  POST as handleLinkServicesPost,
+} from "@/app/api/finance/link-services/route";
+import { CAMPUS_SERVICE_CATALOG } from "@/lib/finance/service-catalog";
+
 async function runTestSuite() {
   console.log("=================================================");
   console.log("🚀 STARTING CLASSROOM ERP COMPREHENSIVE TEST SUITE");
@@ -9766,6 +9773,83 @@ By breaking down large monolithic systems into decoupled microservices, systems 
   const fleetInspectData = await fleetInspectRes.json();
   assert(fleetInspectData.record.complianceStatus === "FULLY_COMPLIANT_FIT", "Vehicle confirmed FULLY_COMPLIANT_FIT");
   assert(fleetInspectData.record.complianceSeal.startsWith("APEX-BUS-FIT-SEAL-"), "Roadworthiness certification stamped with cryptographic seal");
+
+  // =========================================================================
+  // GROUP 74: Auxiliary Service Fee Invoicing & Admissions Counseling SIS Provisioning
+  // =========================================================================
+  console.log("\n--- GROUP 74: Auxiliary Service Fee Invoicing & Admissions Counseling SIS Provisioning ---");
+
+  // 74.1 Campus Service Catalog Retrieval
+  assert(CAMPUS_SERVICE_CATALOG.length >= 5, "Campus service catalog defines at least 5 standard auxiliary service charges");
+  const linkServicesGetReq = new NextRequest("http://localhost:3000/api/finance/link-services", {
+    method: "GET",
+    headers: { Cookie: `classroom_session=${adminToken}` },
+  });
+  const linkServicesGetRes = await handleLinkServicesGet(linkServicesGetReq);
+  assert(linkServicesGetRes.status === 200, "GET /api/finance/link-services returns 200 OK with service catalog");
+  const linkServicesGetData = await linkServicesGetRes.json();
+  assert(linkServicesGetData.success === true, "GET /api/finance/link-services returns success: true");
+  assert(linkServicesGetData.totalCatalogServices >= 5, "Service catalog contains all institutional auxiliary fees");
+
+  // 74.2 Linking Auxiliary Campus Service Fee (Hostel Caution Deposit)
+  const testScholar = await prisma.student.findFirst({
+    include: { user: true },
+  });
+  assert(!!testScholar, "At least one student entity exists in the SIS database for fee linkage");
+
+  if (testScholar) {
+    const linkFeePostReq = new NextRequest("http://localhost:3000/api/finance/link-services", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+      body: JSON.stringify({
+        studentId: testScholar.id,
+        serviceType: "HOSTEL_CAUTION_DEPOSIT",
+        amount: 10000,
+        description: "Refundable caution deposit for residential accommodation",
+        semester: 1,
+        academicYear: "2026-2027",
+      }),
+    });
+    const linkFeePostRes = await handleLinkServicesPost(linkFeePostReq);
+    assert(linkFeePostRes.status === 201, "POST /api/finance/link-services issues auxiliary service fee invoice with 201 Created");
+    const linkFeePostData = await linkFeePostRes.json();
+    assert(linkFeePostData.success === true, "Auxiliary service fee linkage reports success: true");
+    assert(linkFeePostData.cryptographicInvoiceSeal.startsWith("APEX-SRV-INV-"), "Auxiliary fee invoice sealed with SHA-256 seal");
+    assert(linkFeePostData.serviceCharge.amount === 10000, "Service charge invoice amount equals ₹10,000");
+
+    // Verify GET with studentId parameter
+    const studentServicesGetReq = new NextRequest(`http://localhost:3000/api/finance/link-services?studentId=${testScholar.id}`, {
+      method: "GET",
+      headers: { Cookie: `classroom_session=${adminToken}` },
+    });
+    const studentServicesGetRes = await handleLinkServicesGet(studentServicesGetReq);
+    assert(studentServicesGetRes.status === 200, "GET /api/finance/link-services?studentId=... returns scholar fee schedule");
+    const studentServicesGetData = await studentServicesGetRes.json();
+    assert(studentServicesGetData.studentServices.length > 0, "Scholar auxiliary fee records populated in bursar ledger");
+  }
+
+  // 74.3 Admissions Counseling Allotted Applicant SIS Provisioning
+  const provisionApplicantPostReq = new NextRequest("http://localhost:3000/api/admissions/counseling", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "PROVISION_ALLOTTED_STUDENT",
+      applicant: {
+        applicationNo: "APEX-2026-9001",
+        fullName: "Aarav Sharma",
+        allottedProgram: "B.Tech Computer Science & Engineering",
+      },
+      allottedProgram: "B.Tech Computer Science & Engineering",
+      roundNumber: 1,
+    }),
+  });
+  const provisionApplicantPostRes = await handleAdmissionsCounselingPost(provisionApplicantPostReq);
+  assert(provisionApplicantPostRes.status === 201, "POST /api/admissions/counseling (PROVISION_ALLOTTED_STUDENT) provisions student with 201 Created");
+  const provisionApplicantPostData = await provisionApplicantPostRes.json();
+  assert(provisionApplicantPostData.success === true, "Counseling provisioning reports success: true");
+  assert(provisionApplicantPostData.enrollmentDetails.rollNumber.startsWith("2026-"), "Provisioned student assigned standardized roll number");
+  assert(provisionApplicantPostData.enrollmentDetails.enrollmentSeal.startsWith("APEX-ENROLL-SEAL-"), "Provisioned enrollment sealed with cryptographic signature");
+  assert(provisionApplicantPostData.enrollmentDetails.status === "ACTIVE", "Provisioned student status active in SIS");
 
   console.log("\n=================================================");
   console.log(`🎉 ALL ${passedTests}/${totalTests} TESTS PASSED SUCCESSFULLY!`);

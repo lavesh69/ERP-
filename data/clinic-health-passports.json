@@ -135,7 +135,7 @@
       },
       {
         "vaccineName": "Meningococcal (MenACWY)",
-        "dosesReceived": 2,
+        "dosesReceived": 4,
         "dosesRequired": 1,
         "lastDoseDate": "2026-03-15",
         "compliant": true
@@ -145,9 +145,9 @@
     "fitnessCategory": "FIT_FOR_ALL",
     "physicianNotes": "Hostel residency clearance granted following completion of residential immunization booster.",
     "certifiedBy": "Dr. Arvind Swaminathan, MD",
-    "certifiedAt": "2026-10-14T15:50:25.801Z",
-    "validUntil": "2027-10-14T15:50:25.801Z",
-    "medicalClearanceSeal": "APEX-MED-FIT-SEAL-FF83EC9843A5B11A"
+    "certifiedAt": "2026-10-14T16:19:30.689Z",
+    "validUntil": "2027-10-14T16:19:30.689Z",
+    "medicalClearanceSeal": "APEX-MED-FIT-SEAL-C56F1CA7943F4ADE"
   },
   {
     "studentId": "STU-2026-004",
