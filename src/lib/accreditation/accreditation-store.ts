@@ -6,6 +6,7 @@ import {
   calculateFacultyStudentRatio,
   calculateCadreRatio,
   generateAQARDossier,
+  generateNAACSSRDossier,
 } from "./accreditation-engine";
 
 const DATA_DIR = path.join(process.cwd(), "data", "accreditation");
@@ -170,5 +171,10 @@ export const accreditationStore = {
   generateOfficialDossier() {
     const store = readStore();
     return generateAQARDossier(store.criteria);
+  },
+
+  generateSSRDossier() {
+    const store = readStore();
+    return generateNAACSSRDossier(store.criteria, store.metrics);
   },
 };

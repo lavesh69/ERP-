@@ -14,6 +14,8 @@ const createRequestSchema = z.object({
     "RE_EVALUATION",
     "ELECTIVE_CHANGE",
     "GUARDIAN_LINK_REQUEST",
+    "BONAFIDE",
+    "FEE_CONCESSION",
   ]),
   title: z.string().min(3, "Title must be at least 3 characters").max(100),
   reason: z.string().min(10, "Reason must be at least 10 characters").max(1000),
@@ -104,22 +106,38 @@ export async function POST(req: NextRequest) {
     }
 
     // Resolve student
-    const student = await prisma.student.findFirst({
-      where: {
-        OR: [
-          { userId: session.userId },
-          { user: { email: session.email } },
-        ],
-      },
-    });
+    let studentIdToUse: string | null = null;
+    if (body.studentId && session.role !== "STUDENT") {
+      const targetStudent = await prisma.student.findUnique({
+        where: { id: body.studentId },
+      });
+      if (targetStudent) {
+        studentIdToUse = targetStudent.id;
+      }
+    }
 
-    if (!student) {
+    if (!studentIdToUse) {
+      const student = await prisma.student.findFirst({
+        where: {
+          OR: [
+            { userId: session.userId },
+            { user: { email: session.email } },
+          ],
+        },
+      });
+
+      if (student) {
+        studentIdToUse = student.id;
+      }
+    }
+
+    if (!studentIdToUse) {
       return NextResponse.json({ error: "Student profile not found for this account" }, { status: 404 });
     }
 
     const newRequest = await prisma.studentRequest.create({
       data: {
-        studentId: student.id,
+        studentId: studentIdToUse,
         type: parsed.data.type,
         title: parsed.data.title,
         reason: parsed.data.reason,
@@ -194,7 +212,12 @@ export async function PATCH(req: NextRequest) {
         { error: "Forbidden: Insufficient privileges to review academic requests." },
         { status: 403 }
       );
-    } else if (session.role !== "SUPER_ADMIN" && session.institutionId && existingRequest.student.user.institutionId !== session.institutionId) {
+    } else if (
+      session.role !== "SUPER_ADMIN" &&
+      session.institutionId &&
+      existingRequest.student?.user?.institutionId &&
+      existingRequest.student.user.institutionId !== session.institutionId
+    ) {
       return NextResponse.json(
         { error: "Forbidden: Cannot review requests outside your institution" },
         { status: 403 }

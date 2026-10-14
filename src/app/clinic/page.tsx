@@ -24,8 +24,10 @@ import {
   PackageCheck,
   Phone,
   QrCode,
+  ShieldCheck,
 } from "lucide-react";
 import { checkTriageUrgency } from "@/lib/clinic/clinic-engine";
+import MedicalClearanceTab from "@/components/clinic/MedicalClearanceTab";
 
 interface ClinicSummary {
   totalConsultations: number;
@@ -38,7 +40,7 @@ interface ClinicSummary {
 
 export default function ClinicPage() {
   const { currentUser } = useApp();
-  const [activeTab, setActiveTab] = useState<"consultations" | "beds" | "profiles" | "triage" | "pharmacy">("consultations");
+  const [activeTab, setActiveTab] = useState<"consultations" | "beds" | "profiles" | "triage" | "pharmacy" | "clearance">("consultations");
   const [loading, setLoading] = useState(true);
   const [summary, setSummary] = useState<ClinicSummary | null>(null);
   const [consultations, setConsultations] = useState<any[]>([]);
@@ -616,6 +618,18 @@ export default function ClinicPage() {
             </span>
           )}
         </button>
+
+        <button
+          onClick={() => setActiveTab("clearance")}
+          className={`pb-3 text-sm font-semibold border-b-2 transition-all flex items-center gap-2 ${
+            activeTab === "clearance"
+              ? "border-rose-600 text-rose-600 dark:text-rose-400"
+              : "border-transparent text-slate-500 hover:text-slate-900 dark:hover:text-slate-200"
+          }`}
+        >
+          <ShieldCheck className="w-4 h-4" />
+          Statutory Health Passports & Clearance
+        </button>
       </div>
 
       {/* Tab 1: OPD Consultations */}
@@ -1129,6 +1143,9 @@ export default function ClinicPage() {
           </div>
         </div>
       )}
+
+      {/* Tab 6: Statutory Health Passports & Medical Clearance */}
+      {activeTab === "clearance" && <MedicalClearanceTab />}
 
       {/* Log Consultation Modal */}
       {showModal && (

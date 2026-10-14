@@ -12,7 +12,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const body = await req.json();
+    const body = await req.json().catch(() => ({}));
     const { feeId, orderId, paymentId, signature, amount } = body;
 
     if (!feeId || !orderId || !paymentId || !signature) {
@@ -22,6 +22,23 @@ export async function POST(req: NextRequest) {
     const isValid = verifyPaymentSignature({ orderId, paymentId, signature });
     if (!isValid) {
       return NextResponse.json({ error: "Invalid cryptographic payment signature" }, { status: 400 });
+    }
+
+    // Idempotency Check: Prevent duplicate fee credit if paymentId has already been recorded
+    const existingTxn = await prisma.paymentTransaction.findFirst({
+      where: {
+        paymentMethod: { contains: paymentId },
+        status: "SUCCESS",
+      },
+    });
+
+    if (existingTxn) {
+      return NextResponse.json({
+        success: true,
+        message: "Payment signature already verified and reconciled.",
+        alreadyProcessed: true,
+        transaction: existingTxn,
+      });
     }
 
     const fee = await prisma.studentFee.findUnique({
@@ -52,26 +69,27 @@ export async function POST(req: NextRequest) {
     const newPaidAmount = fee.paidAmount + amountPaid;
     const newStatus = newPaidAmount + fee.discountAmount >= fee.totalAmount ? "PAID" : "PARTIAL";
 
-    // 1. Update Student Fee Ledger
-    const updatedFee = await prisma.studentFee.update({
-      where: { id: feeId },
-      data: {
-        paidAmount: newPaidAmount,
-        status: newStatus,
-      },
-    });
-
-    // 2. Insert Payment Transaction Record
     const refNumber = `TXN-${Date.now().toString().slice(-6)}-${paymentId.slice(-4)}`;
-    const transaction = await prisma.paymentTransaction.create({
-      data: {
-        studentFeeId: feeId,
-        amount: amountPaid,
-        paymentMethod: `Online Gateway (${paymentId})`,
-        referenceNumber: refNumber,
-        status: "SUCCESS",
-      },
-    });
+
+    // Atomic ACID transaction ensuring both fee ledger and transaction receipt commit together
+    const [updatedFee, transaction] = await prisma.$transaction([
+      prisma.studentFee.update({
+        where: { id: feeId },
+        data: {
+          paidAmount: newPaidAmount,
+          status: newStatus,
+        },
+      }),
+      prisma.paymentTransaction.create({
+        data: {
+          studentFeeId: feeId,
+          amount: amountPaid,
+          paymentMethod: `Online Gateway (${paymentId})`,
+          referenceNumber: refNumber,
+          status: "SUCCESS",
+        },
+      }),
+    ]);
 
     // 3. Log Immutable Bursar Audit Trail
     await logAuditEvent({

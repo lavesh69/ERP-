@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getOptionalSession } from "@/lib/auth/admin-guard";
 import { transportStore } from "@/lib/transport/transport-store";
+import { prisma } from "@/lib/db/prisma";
 
 export async function GET(request: NextRequest) {
   try {
@@ -60,6 +61,39 @@ export async function POST(request: NextRequest) {
         stopName,
         feeAmount: feeAmount || 450,
       });
+
+      // Synchronize with Finance Ledger if matching student exists
+      try {
+        const student = await prisma.student.findFirst({
+          where: {
+            OR: [
+              { rollNumber: studentRoll },
+              { admissionNumber: studentRoll },
+              { id: studentId || "" },
+            ],
+          },
+        });
+        if (student) {
+          const feeStructure =
+            (await prisma.feeStructure.findFirst({
+              where: { title: { contains: "Transport" } },
+            })) || (await prisma.feeStructure.findFirst());
+
+          if (feeStructure) {
+            await prisma.studentFee.create({
+              data: {
+                studentId: student.id,
+                feeStructureId: feeStructure.id,
+                totalAmount: Number(feeAmount) || 450,
+                dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+                status: "PENDING",
+              },
+            });
+          }
+        }
+      } catch (err) {
+        console.warn("[Transport-Finance Link Warning]:", err);
+      }
 
       return NextResponse.json({ success: true, message: "Digital transit pass issued successfully", pass });
     }

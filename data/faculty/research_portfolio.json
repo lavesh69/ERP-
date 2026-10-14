@@ -1,0 +1,167 @@
+{
+  "fac-demo-01": {
+    "facultyId": "fac-demo-01",
+    "facultyName": "Dr. Rajesh K. Sharma",
+    "department": "Computer Science & Engineering",
+    "designation": "Professor & Dean R&D",
+    "hIndex": 18,
+    "i10Index": 32,
+    "totalCitations": 1420,
+    "publications": [
+      {
+        "id": "pub-01",
+        "facultyId": "fac-demo-01",
+        "facultyName": "Dr. Rajesh K. Sharma",
+        "title": "Fault-Tolerant Consensus in Asynchronous Hybrid Byzantine Clouds",
+        "journalName": "IEEE Transactions on Parallel and Distributed Systems",
+        "issnOrIsbn": "1045-9219",
+        "indexing": "IEEE_XPLORE",
+        "impactFactor": 5.3,
+        "authorshipRole": "FIRST_AUTHOR",
+        "totalAuthors": 3,
+        "doi": "10.1109/TPDS.2024.3389102",
+        "publicationYear": 2024,
+        "apiPointsAwarded": 31.5,
+        "verified": true
+      },
+      {
+        "id": "pub-02",
+        "facultyId": "fac-demo-01",
+        "facultyName": "Dr. Rajesh K. Sharma",
+        "title": "Adaptive Rate-Limiting and Zero-Trust Telemetry for Distributed Microservices",
+        "journalName": "ACM Transactions on Autonomous and Adaptive Systems",
+        "issnOrIsbn": "1556-4665",
+        "indexing": "SCOPUS",
+        "impactFactor": 3.8,
+        "authorshipRole": "CORRESPONDING_AUTHOR",
+        "totalAuthors": 2,
+        "doi": "10.1145/3641209",
+        "publicationYear": 2025,
+        "apiPointsAwarded": 28,
+        "verified": true
+      },
+      {
+        "facultyId": "fac-demo-01",
+        "facultyName": "Dr. Rajesh K. Sharma",
+        "title": "Zero-Trust Resilient Microservices in Distributed Clouds",
+        "journalName": "IEEE Transactions on Services Computing",
+        "issnOrIsbn": "N/A",
+        "indexing": "IEEE_XPLORE",
+        "impactFactor": 4.8,
+        "authorshipRole": "FIRST_AUTHOR",
+        "totalAuthors": 2,
+        "doi": "10.1109/TSC.2026.991203",
+        "publicationYear": 2026,
+        "id": "pub-1791990036386-841",
+        "apiPointsAwarded": 28,
+        "verified": true
+      },
+      {
+        "facultyId": "fac-demo-01",
+        "facultyName": "Dr. Rajesh K. Sharma",
+        "title": "Zero-Trust Resilient Microservices in Distributed Clouds",
+        "journalName": "IEEE Transactions on Services Computing",
+        "issnOrIsbn": "N/A",
+        "indexing": "IEEE_XPLORE",
+        "impactFactor": 4.8,
+        "authorshipRole": "FIRST_AUTHOR",
+        "totalAuthors": 2,
+        "doi": "10.1109/TSC.2026.991203",
+        "publicationYear": 2026,
+        "id": "pub-1791992780974-531",
+        "apiPointsAwarded": 28,
+        "verified": true
+      },
+      {
+        "facultyId": "fac-demo-01",
+        "facultyName": "Dr. Rajesh K. Sharma",
+        "title": "Zero-Trust Resilient Microservices in Distributed Clouds",
+        "journalName": "IEEE Transactions on Services Computing",
+        "issnOrIsbn": "N/A",
+        "indexing": "IEEE_XPLORE",
+        "impactFactor": 4.8,
+        "authorshipRole": "FIRST_AUTHOR",
+        "totalAuthors": 2,
+        "doi": "10.1109/TSC.2026.991203",
+        "publicationYear": 2026,
+        "id": "pub-1791992924866-752",
+        "apiPointsAwarded": 28,
+        "verified": true
+      },
+      {
+        "facultyId": "fac-demo-01",
+        "facultyName": "Dr. Rajesh K. Sharma",
+        "title": "Zero-Trust Resilient Microservices in Distributed Clouds",
+        "journalName": "IEEE Transactions on Services Computing",
+        "issnOrIsbn": "N/A",
+        "indexing": "IEEE_XPLORE",
+        "impactFactor": 4.8,
+        "authorshipRole": "FIRST_AUTHOR",
+        "totalAuthors": 2,
+        "doi": "10.1109/TSC.2026.991203",
+        "publicationYear": 2026,
+        "id": "pub-1791993025618-744",
+        "apiPointsAwarded": 28,
+        "verified": true
+      }
+    ],
+    "grants": [
+      {
+        "id": "grant-01",
+        "facultyId": "fac-demo-01",
+        "facultyName": "Dr. Rajesh K. Sharma",
+        "projectTitle": "AI-Augmented Resilient Architecture for Smart Grid Sensor Networks",
+        "fundingAgency": "DST",
+        "sanctionOrderNumber": "DST/TMD/CERI/2023/84",
+        "sanctionYear": 2023,
+        "durationMonths": 36,
+        "totalOutlayInr": 4850000,
+        "fundsDisbursedInr": 3200000,
+        "investigatorRole": "PRINCIPAL_INVESTIGATOR",
+        "status": "ACTIVE",
+        "apiPointsAwarded": 10
+      }
+    ],
+    "patents": [
+      {
+        "id": "pat-01",
+        "facultyId": "fac-demo-01",
+        "facultyName": "Dr. Rajesh K. Sharma",
+        "title": "A Cryptographically Sealed Low-Power IoT Mesh Gateway Architecture",
+        "patentOffice": "INDIA_IPO",
+        "applicationNumber": "202311048291",
+        "filingDate": "2023-08-14",
+        "grantDate": "2025-01-20",
+        "stage": "GRANTED",
+        "isNational": true,
+        "apiPointsAwarded": 7
+      }
+    ],
+    "consultancies": [
+      {
+        "id": "con-01",
+        "facultyId": "fac-demo-01",
+        "facultyName": "Dr. Rajesh K. Sharma",
+        "clientOrganization": "Apex Tech Cloud Solutions Ltd.",
+        "projectScope": "High-Throughput Distributed Kafka Architecture Audit & Tuning",
+        "agreementDate": "2024-05-10",
+        "contractValueInr": 1200000,
+        "institutionalOverheadShareInr": 360000,
+        "consultantDisbursementInr": 840000,
+        "status": "COMPLETED",
+        "apiPointsAwarded": 4
+      }
+    ],
+    "ugcApiSummary": {
+      "category1PublicationsScore": 171.5,
+      "category2GrantsScore": 10,
+      "category3PatentsPolicyScore": 7,
+      "category4ConsultancyScore": 4,
+      "totalUgcResearchScore": 192.5,
+      "eligibleForProfessorCas": true,
+      "eligibleForAssociateProfessorCas": true
+    },
+    "integrityVerificationSeal": "UGC-RESEARCH-SEAL-1CCA77D2B07D2E67E7A4D9B4",
+    "lastUpdated": "2026-10-14T15:50:25.618Z"
+  }
+}

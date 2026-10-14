@@ -139,3 +139,83 @@ export function generateAQARDossier(
     certifiedDate: new Date().toISOString(),
   };
 }
+
+export interface NaacSsrDossier {
+  cycle: number;
+  aisheCode: string;
+  institutionName: string;
+  accreditationGrade: "A++" | "A+" | "A" | "B++" | "B";
+  institutionalCgpa: number;
+  totalScore: number;
+  maxScore: number;
+  executiveSummary: {
+    vision: string;
+    mission: string;
+    swocAnalysis: {
+      strengths: string[];
+      weaknesses: string[];
+      opportunities: string[];
+      challenges: string[];
+    };
+  };
+  criteriaBreakdown: AccreditationCriterion[];
+  verificationHash: string;
+  compiledAt: string;
+}
+
+/**
+ * Compiles the official NAAC Self Study Report (SSR) Institutional Dossier
+ */
+export function generateNAACSSRDossier(
+  criteria: AccreditationCriterion[],
+  metrics: InstitutionalMetrics,
+  institutionName: string = "APEX INSTITUTE OF HIGHER EDUCATION & RESEARCH",
+  aisheCode: string = "U-0128"
+): NaacSsrDossier {
+  const aqar = generateAQARDossier(criteria);
+
+  const hash = crypto
+    .createHash("sha256")
+    .update(`${aisheCode}:${institutionName}:${aqar.institutionalCgpa}:${Date.now()}`)
+    .digest("hex")
+    .slice(0, 16)
+    .toUpperCase();
+
+  return {
+    cycle: 3,
+    aisheCode,
+    institutionName,
+    accreditationGrade: aqar.accreditationGrade,
+    institutionalCgpa: aqar.institutionalCgpa,
+    totalScore: aqar.totalScore,
+    maxScore: aqar.maxScore,
+    executiveSummary: {
+      vision: "To be an internationally recognized center of academic excellence nurturing ethical scholars and innovation leaders.",
+      mission: "Provide state-of-the-art technological curricula, foster interdisciplinary scientific discovery, and ensure holistic societal upliftment.",
+      swocAnalysis: {
+        strengths: [
+          "100% Outcome-Based Education (OBE) mapped to Program Specific Outcomes (PSOs)",
+          `High-density faculty-student ratio of ${calculateFacultyStudentRatio(metrics.totalStudents, metrics.totalFaculty).ratioString}`,
+          "Fully integrated autonomous ERP automating administration, fees, attendance and examinations",
+          `${metrics.placementRatePercentage}% placement record in Fortune 500 tech enterprises`,
+        ],
+        weaknesses: [
+          "Need for increased international exchange faculty chairs",
+          "Potential for higher cross-border patent commercialization",
+        ],
+        opportunities: [
+          "Establishment of Semiconductor & AI Center of Excellence under NEP 2020",
+          "Expansion of extramural grant funding from DST, DBT, and global consortia",
+        ],
+        challenges: [
+          "Rapid evolution of emerging technology skills requiring continuous curriculum agility",
+          "Attracting and retaining senior tier-1 academic researchers",
+        ],
+      },
+    },
+    criteriaBreakdown: criteria,
+    verificationHash: `NAAC-SSR-${hash}`,
+    compiledAt: new Date().toISOString(),
+  };
+}
+

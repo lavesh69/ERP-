@@ -29,7 +29,13 @@ function isReplayRequest(nonceKey: string): boolean {
 export async function POST(req: NextRequest) {
   try {
     const deviceKey = req.headers.get("x-device-key") || req.headers.get("authorization");
-    const configuredKey = process.env.BIOMETRIC_DEVICE_KEY || "apex-biometric-secret-2026";
+    const isProduction = process.env.NODE_ENV === "production";
+    const configuredKey = process.env.BIOMETRIC_DEVICE_KEY || (!isProduction ? "apex-biometric-secret-2026" : "");
+
+    if (isProduction && !configuredKey) {
+      logger.error("BIOMETRIC_DEVICE_KEY environment variable is not configured in production");
+      return NextResponse.json({ error: "Biometric hardware device service not configured" }, { status: 500 });
+    }
 
     // Validate device authorization: header is mandatory
     if (!deviceKey || deviceKey.replace(/^Bearer\s+/i, "") !== configuredKey) {

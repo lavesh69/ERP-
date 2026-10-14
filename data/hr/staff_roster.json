@@ -1,0 +1,113 @@
+[
+  {
+    "id": "fac-01",
+    "name": "Dr. Alan Turing",
+    "email": "alan.turing@classroom.edu",
+    "designation": "Professor & Chair of Computer Science",
+    "department": "Computer Science & Engineering",
+    "employeeType": "FACULTY",
+    "basicPay": 85000,
+    "joinedDate": "2018-08-01",
+    "status": "ACTIVE",
+    "panNumber": "ABCPT1912A",
+    "pfUan": "100984729104",
+    "bankDetails": {
+      "bankName": "State Bank of India",
+      "accountNumber": "38920194821",
+      "ifscCode": "SBIN0004128"
+    },
+    "taxRegime": "OLD_REGIME",
+    "section80cDeclared": 150000,
+    "section80dDeclared": 25000,
+    "lopDays": 0,
+    "holdStatus": "RELEASED"
+  },
+  {
+    "id": "fac-02",
+    "name": "Dr. Arthur Pendelton",
+    "email": "arthur.pendelton@classroom.edu",
+    "designation": "Associate Professor & Chief Warden",
+    "department": "Mechanical Engineering",
+    "employeeType": "FACULTY",
+    "basicPay": 72000,
+    "joinedDate": "2020-01-15",
+    "status": "ACTIVE",
+    "panNumber": "DFGPP4921K",
+    "pfUan": "100984729105",
+    "bankDetails": {
+      "bankName": "HDFC Bank",
+      "accountNumber": "50100492817291",
+      "ifscCode": "HDFC0001048"
+    },
+    "taxRegime": "OLD_REGIME",
+    "section80cDeclared": 120000,
+    "section80dDeclared": 20000,
+    "lopDays": 1
+  },
+  {
+    "id": "fac-03",
+    "name": "Dr. Sunita Deshmukh",
+    "email": "sunita.deshmukh@classroom.edu",
+    "designation": "Professor of Electronics",
+    "department": "Electrical & Electronics",
+    "employeeType": "FACULTY",
+    "basicPay": 78000,
+    "joinedDate": "2019-07-20",
+    "status": "ACTIVE",
+    "panNumber": "KJHPD8492J",
+    "pfUan": "100984729106",
+    "bankDetails": {
+      "bankName": "ICICI Bank",
+      "accountNumber": "192801948291",
+      "ifscCode": "ICIC0000481"
+    },
+    "taxRegime": "NEW_REGIME",
+    "section80cDeclared": 150000,
+    "section80dDeclared": 25000,
+    "lopDays": 0
+  },
+  {
+    "id": "fac-04",
+    "name": "Sarah Jenkins",
+    "email": "sarah.jenkins@classroom.edu",
+    "designation": "Head of Human Resources & Staff Welfare",
+    "department": "Administrative Affairs",
+    "employeeType": "ADMIN_STAFF",
+    "basicPay": 64000,
+    "joinedDate": "2021-03-10",
+    "status": "ACTIVE",
+    "panNumber": "MNBPS9281M",
+    "pfUan": "100984729107",
+    "bankDetails": {
+      "bankName": "Punjab National Bank",
+      "accountNumber": "094820194829",
+      "ifscCode": "PUNB0001928"
+    },
+    "taxRegime": "NEW_REGIME",
+    "section80cDeclared": 80000,
+    "section80dDeclared": 15000,
+    "lopDays": 0
+  },
+  {
+    "id": "stf-0512",
+    "name": "Sarah Chen",
+    "email": "sarah.chen@apex.edu",
+    "designation": "Associate Professor",
+    "department": "Computer Science & Engineering",
+    "employeeType": "FACULTY",
+    "basicPay": 131400,
+    "joinedDate": "2026-10-11",
+    "status": "ACTIVE",
+    "panNumber": "PANXX0000X",
+    "pfUan": "100900000000",
+    "bankDetails": {
+      "bankName": "Institutional Partner Bank",
+      "accountNumber": "0000000000",
+      "ifscCode": "IPBK0000001"
+    },
+    "taxRegime": "NEW_REGIME",
+    "section80cDeclared": 0,
+    "section80dDeclared": 0,
+    "lopDays": 0
+  }
+]

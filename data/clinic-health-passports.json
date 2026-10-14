@@ -1,0 +1,201 @@
+[
+  {
+    "studentId": "STU-2026-001",
+    "studentName": "Aarav Sharma",
+    "rollNo": "CS23B042",
+    "department": "Computer Science",
+    "bloodGroup": "O+",
+    "emergencyContact": "+1 (555) 321-9988 (Parent)",
+    "knownAllergies": [
+      "Penicillin",
+      "Dust Mites"
+    ],
+    "chronicConditions": [
+      "Mild Asthma (Ventolin SOS)"
+    ],
+    "immunizations": [
+      {
+        "vaccineName": "Hepatitis B",
+        "dosesReceived": 3,
+        "dosesRequired": 3,
+        "lastDoseDate": "2023-04-12",
+        "compliant": true
+      },
+      {
+        "vaccineName": "MMR (Measles, Mumps, Rubella)",
+        "dosesReceived": 2,
+        "dosesRequired": 2,
+        "lastDoseDate": "2021-08-19",
+        "compliant": true
+      },
+      {
+        "vaccineName": "Tdap (Tetanus Booster)",
+        "dosesReceived": 1,
+        "dosesRequired": 1,
+        "lastDoseDate": "2024-05-10",
+        "compliant": true
+      },
+      {
+        "vaccineName": "Meningococcal (MenACWY)",
+        "dosesReceived": 1,
+        "dosesRequired": 1,
+        "lastDoseDate": "2023-07-22",
+        "compliant": true
+      }
+    ],
+    "immunizationComplianceStatus": "COMPLIANT",
+    "fitnessCategory": "FIT_FOR_ALL",
+    "medicalClearanceSeal": "APEX-MED-FIT-SEAL-9A4B72F01C38E619",
+    "certifiedBy": "Dr. Arvind Swaminathan, MD (Chief Medical Officer)",
+    "certifiedAt": "2026-01-14T09:00:00.000Z",
+    "validUntil": "2027-01-14T23:59:59.000Z",
+    "physicianNotes": "Cleared for varsity badminton and hostel residency. Asthmatic inhaler self-carry authorized."
+  },
+  {
+    "studentId": "STU-2026-002",
+    "studentName": "Diya Patel",
+    "rollNo": "AI23B018",
+    "department": "Artificial Intelligence",
+    "bloodGroup": "B+",
+    "emergencyContact": "+1 (555) 441-2090 (Guardian)",
+    "knownAllergies": [
+      "Peanuts / Tree Nuts (Severe - EpiPen)"
+    ],
+    "chronicConditions": [],
+    "immunizations": [
+      {
+        "vaccineName": "Hepatitis B",
+        "dosesReceived": 3,
+        "dosesRequired": 3,
+        "lastDoseDate": "2022-11-05",
+        "compliant": true
+      },
+      {
+        "vaccineName": "MMR (Measles, Mumps, Rubella)",
+        "dosesReceived": 2,
+        "dosesRequired": 2,
+        "lastDoseDate": "2020-03-14",
+        "compliant": true
+      },
+      {
+        "vaccineName": "Tdap (Tetanus Booster)",
+        "dosesReceived": 1,
+        "dosesRequired": 1,
+        "lastDoseDate": "2024-09-01",
+        "compliant": true
+      },
+      {
+        "vaccineName": "Meningococcal (MenACWY)",
+        "dosesReceived": 1,
+        "dosesRequired": 1,
+        "lastDoseDate": "2023-08-11",
+        "compliant": true
+      }
+    ],
+    "immunizationComplianceStatus": "COMPLIANT",
+    "fitnessCategory": "FIT_FOR_ALL",
+    "medicalClearanceSeal": "APEX-MED-FIT-SEAL-8B12E094AA51F028",
+    "certifiedBy": "Dr. Arvind Swaminathan, MD (Chief Medical Officer)",
+    "certifiedAt": "2026-01-15T11:30:00.000Z",
+    "validUntil": "2027-01-15T23:59:59.000Z",
+    "physicianNotes": "Hostel cafeteria alerted to peanut anaphylaxis protocol. EpiPen auto-injector registered in dorm EMR."
+  },
+  {
+    "studentId": "STU-2026-003",
+    "studentName": "Rohan Deshmukh",
+    "rollNo": "ME23B064",
+    "department": "Mechanical Engineering",
+    "bloodGroup": "A-",
+    "emergencyContact": "+1 (555) 789-1122 (Parent)",
+    "knownAllergies": [],
+    "chronicConditions": [
+      "Recent Right Knee ACL Reconstruction"
+    ],
+    "immunizations": [
+      {
+        "vaccineName": "Hepatitis B",
+        "dosesReceived": 2,
+        "dosesRequired": 3,
+        "lastDoseDate": "2025-10-10",
+        "compliant": false
+      },
+      {
+        "vaccineName": "MMR (Measles, Mumps, Rubella)",
+        "dosesReceived": 2,
+        "dosesRequired": 2,
+        "lastDoseDate": "2021-02-18",
+        "compliant": true
+      },
+      {
+        "vaccineName": "Tdap (Tetanus Booster)",
+        "dosesReceived": 1,
+        "dosesRequired": 1,
+        "lastDoseDate": "2023-06-15",
+        "compliant": true
+      },
+      {
+        "vaccineName": "Meningococcal (MenACWY)",
+        "dosesReceived": 2,
+        "dosesRequired": 1,
+        "lastDoseDate": "2026-03-15",
+        "compliant": true
+      }
+    ],
+    "immunizationComplianceStatus": "PROVISIONAL",
+    "fitnessCategory": "FIT_FOR_ALL",
+    "physicianNotes": "Hostel residency clearance granted following completion of residential immunization booster.",
+    "certifiedBy": "Dr. Arvind Swaminathan, MD",
+    "certifiedAt": "2026-10-14T15:50:25.801Z",
+    "validUntil": "2027-10-14T15:50:25.801Z",
+    "medicalClearanceSeal": "APEX-MED-FIT-SEAL-FF83EC9843A5B11A"
+  },
+  {
+    "studentId": "STU-2026-004",
+    "studentName": "Ananya Iyer",
+    "rollNo": "BT23B009",
+    "department": "Biotechnology",
+    "bloodGroup": "AB+",
+    "emergencyContact": "+1 (555) 662-3344 (Mother)",
+    "knownAllergies": [
+      "Sulfonamides"
+    ],
+    "chronicConditions": [],
+    "immunizations": [
+      {
+        "vaccineName": "Hepatitis B",
+        "dosesReceived": 3,
+        "dosesRequired": 3,
+        "lastDoseDate": "2023-01-10",
+        "compliant": true
+      },
+      {
+        "vaccineName": "MMR (Measles, Mumps, Rubella)",
+        "dosesReceived": 2,
+        "dosesRequired": 2,
+        "lastDoseDate": "2021-05-19",
+        "compliant": true
+      },
+      {
+        "vaccineName": "Tdap (Tetanus Booster)",
+        "dosesReceived": 1,
+        "dosesRequired": 1,
+        "lastDoseDate": "2025-02-04",
+        "compliant": true
+      },
+      {
+        "vaccineName": "Meningococcal (MenACWY)",
+        "dosesReceived": 1,
+        "dosesRequired": 1,
+        "lastDoseDate": "2024-08-15",
+        "compliant": true
+      }
+    ],
+    "immunizationComplianceStatus": "COMPLIANT",
+    "fitnessCategory": "FIT_FOR_ALL",
+    "medicalClearanceSeal": "APEX-MED-FIT-SEAL-1109C488F1E772A0",
+    "certifiedBy": "Dr. Arvind Swaminathan, MD (Chief Medical Officer)",
+    "certifiedAt": "2026-02-01T14:15:00.000Z",
+    "validUntil": "2027-02-01T23:59:59.000Z",
+    "physicianNotes": "Full clearance granted for biotechnology BSL-2 lab courses and varsity rowing team."
+  }
+]

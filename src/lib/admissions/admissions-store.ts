@@ -188,6 +188,11 @@ export const admissionsStore = {
     return store.applicants;
   },
 
+  getApplicant(id: string) {
+    const store = readStore();
+    return store.applicants.find((a) => a.id === id || a.applicationNo === id);
+  },
+
   createApplicant(lead: Partial<ApplicantLead>) {
     const validation = validateApplicantInput(lead);
     if (!validation.isValid) {

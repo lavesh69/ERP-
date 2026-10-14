@@ -12,13 +12,54 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const tab = searchParams.get("tab") || "summary";
 
+    const CLINIC_STAFF_ROLES = [
+      "SUPER_ADMIN",
+      "INSTITUTION_ADMIN",
+      "PRINCIPAL",
+      "HOD",
+      "HR_STAFF",
+      "FACULTY",
+    ];
+    const isClinicStaff = CLINIC_STAFF_ROLES.includes(session.role);
+
     if (tab === "consultations") {
-      const consultations = clinicStore.getConsultations();
+      let consultations = clinicStore.getConsultations();
+      if (!isClinicStaff) {
+        if (session.role === "STUDENT") {
+          // Scope consultations strictly to calling student
+          consultations = consultations.filter(
+            (c: any) =>
+              (session.studentId && c.patientRoll?.toLowerCase() === session.studentId?.toLowerCase()) ||
+              (session.email && c.patientRoll?.toLowerCase() === session.email?.toLowerCase()) ||
+              (session.fullName && c.patientName?.toLowerCase() === session.fullName?.toLowerCase())
+          );
+        } else {
+          return NextResponse.json(
+            { error: "Forbidden: Medical consultation dossiers require clinical staff authorization" },
+            { status: 403 }
+          );
+        }
+      }
       return NextResponse.json({ success: true, consultations });
     }
 
     if (tab === "profiles") {
-      const profiles = clinicStore.getProfiles();
+      let profiles = clinicStore.getProfiles();
+      if (!isClinicStaff) {
+        if (session.role === "STUDENT") {
+          profiles = profiles.filter(
+            (p: any) =>
+              (session.studentId && p.rollNumber?.toLowerCase() === session.studentId?.toLowerCase()) ||
+              (session.email && p.rollNumber?.toLowerCase() === session.email?.toLowerCase()) ||
+              (session.fullName && p.studentName?.toLowerCase() === session.fullName?.toLowerCase())
+          );
+        } else {
+          return NextResponse.json(
+            { error: "Forbidden: Medical profiles require clinical staff authorization" },
+            { status: 403 }
+          );
+        }
+      }
       return NextResponse.json({ success: true, profiles });
     }
 
@@ -46,6 +87,21 @@ export async function POST(request: NextRequest) {
     const session = await getOptionalSession(request);
     if (!session) {
       return NextResponse.json({ error: "Authentication required to perform clinic operation" }, { status: 401 });
+    }
+
+    const CLINIC_STAFF_ROLES = [
+      "SUPER_ADMIN",
+      "INSTITUTION_ADMIN",
+      "PRINCIPAL",
+      "HOD",
+      "HR_STAFF",
+      "FACULTY",
+    ];
+    if (!CLINIC_STAFF_ROLES.includes(session.role)) {
+      return NextResponse.json(
+        { error: "Forbidden: Clinical interventions and pharmacy dispensing require medical staff authorization" },
+        { status: 403 }
+      );
     }
 
     const body = await request.json();

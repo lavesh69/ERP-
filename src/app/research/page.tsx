@@ -26,6 +26,7 @@ import {
   GraduationCap,
   FileCheck,
 } from "lucide-react";
+import EthicsClearanceTab from "@/components/research/EthicsClearanceTab";
 
 export default function ResearchPage() {
   const { showToast, setIsAIChatOpen, refreshTrigger, triggerRefresh } = useApp();
@@ -33,7 +34,7 @@ export default function ResearchPage() {
   const [projects, setProjects] = useState<any[]>([]);
   const [publications, setPublications] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<"projects" | "publications">("projects");
+  const [activeTab, setActiveTab] = useState<"projects" | "publications" | "ethics">("projects");
   const [searchQuery, setSearchQuery] = useState("");
 
   // Proposal modal state
@@ -331,6 +332,17 @@ export default function ResearchPage() {
             >
               Archival Publications & DOIs ({publications.length})
             </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab("ethics")}
+              className={`px-4 py-2 rounded-2xl text-xs font-bold transition-all cursor-pointer ${
+                activeTab === "ethics"
+                  ? "bg-rose-primary text-white shadow-xs"
+                  : "bg-surface-soft dark:bg-charcoal-800 text-charcoal-700 dark:text-charcoal-300 hover:bg-rose-container"
+              }`}
+            >
+              Institutional Ethics Board (IRB)
+            </button>
           </div>
 
           <div className="relative w-full sm:w-72">
@@ -508,6 +520,9 @@ export default function ResearchPage() {
             </div>
           </div>
         )}
+
+        {/* Tab 3: Institutional Ethics Board (IRB) Clearance */}
+        {activeTab === "ethics" && <EthicsClearanceTab />}
 
         {/* Modal 1: Submit Grant Proposal */}
         <Modal

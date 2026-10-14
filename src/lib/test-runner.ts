@@ -103,7 +103,9 @@ import { GET as handleTimetableGet, PATCH as handleTimetablePatch } from "@/app/
 import { GET as handleExaminationsGet, POST as handleExaminationsPost, PUT as handleExaminationsPut } from "@/app/api/examinations/route";
 import { GET as handleHallTicketGet, POST as handleHallTicketPost } from "@/app/api/examinations/hall-ticket/route";
 import { GET as handleSeatingGet, POST as handleSeatingPost } from "@/app/api/examinations/seating/route";
-import { GET as handleTranscriptsGet } from "@/app/api/examinations/transcripts/route";
+import { GET as handleTranscriptsGet, POST as handleTranscriptsPost } from "@/app/api/examinations/transcripts/route";
+import { NadAbcEngine } from "@/lib/curriculum/nad-abc-engine";
+import { TokenBudgetEngine } from "@/lib/ai/token-budget-engine";
 import { POST as handleCreatePaymentOrder } from "@/app/api/payments/create-order/route";
 import { POST as handleVerifyPayment } from "@/app/api/payments/verify/route";
 import { GET as handleAnnouncementsGet, POST as handleAnnouncementsPost } from "@/app/api/announcements/route";
@@ -179,12 +181,36 @@ import {
 } from "@/lib/inventory/inventory-engine";
 import { GET as handleAdmissionsGet, POST as handleAdmissionsPost } from "@/app/api/admissions/route";
 import { calculateCompositeMeritScore, validateApplicantData } from "@/lib/admissions/admissions-engine";
-import { GET as handleHrLeavesGet, POST as handleHrLeavesPost } from "@/app/api/hr/leaves/route";
-import { GET as handleHrPayrollGet } from "@/app/api/hr/payroll/route";
+import { GET as handleHrLeavesGet, POST as handleHrLeavesPost, PATCH as handleHrLeavesPatch } from "@/app/api/hr/leaves/route";
+import { GET as handleHrPayrollGet, POST as handleHrPayrollPost } from "@/app/api/hr/payroll/route";
+import { hrPayrollStore } from "@/lib/hr/hr-store";
+import {
+  evaluateUgcCasPromotion,
+  createDdoAttestedRecord,
+  UGC_ACADEMIC_LEVELS,
+} from "@/lib/hr/ugc-cas-engine";
+import {
+  PAY_MATRIX_7TH_CPC,
+  compute7thCpcSalary,
+  computeAnnualIncrement,
+  computeDaArrears,
+} from "@/lib/hr/pay-matrix-engine";
+import {
+  computeNpsDeductions,
+  generateNsdlCraScfBatch,
+  auditForm12BBDeclaration,
+  generateForm16Statement,
+  processH2HCorporatePayout,
+} from "@/lib/hr/nps-tax-engine";
+import { StatutorySocialSecurityEngine } from "@/lib/hr/statutory-social-security-engine";
+import { FacultyWorkloadHonorariumEngine } from "@/lib/hr/faculty-workload-honorarium-engine";
+import { LifecycleOperationsEngine } from "@/lib/hr/lifecycle-operations-engine";
+import { FacultyAcademicEngine } from "@/lib/faculty/faculty-academic-engine";
 import { GET as handleAlumniDirectoryGet } from "@/app/api/alumni/directory/route";
 import { POST as handleAlumniVerificationPost } from "@/app/api/alumni/verification/route";
 import { GET as handleClinicGet, POST as handleClinicPost } from "@/app/api/clinic/route";
 import { checkTriageUrgency } from "@/lib/clinic/clinic-engine";
+import { clinicStore } from "@/lib/clinic/clinic-store";
 import { GET as handleEventsGet, POST as handleEventsPost } from "@/app/api/events/route";
 import { detectVenueBookingConflict } from "@/lib/events/events-engine";
 import { eventsStore } from "@/lib/events/events-store";
@@ -280,6 +306,139 @@ import {
   GET as handleTestingBenchmarkGet,
   POST as handleTestingBenchmarkPost,
 } from "@/app/api/testing/benchmark/route";
+import {
+  GET as handleApprovalsGet,
+  POST as handleApprovalsPost,
+} from "@/app/api/workflows/approvals/route";
+import {
+  GET as handleIntegrationsGet,
+  POST as handleIntegrationsPost,
+} from "@/app/api/integrations/route";
+import {
+  GET as handleSelfServiceGet,
+  POST as handleSelfServicePost,
+} from "@/app/api/self-service/route";
+import { approvalEngine } from "@/lib/workflow/approval-engine";
+import { integrationHub } from "@/lib/integrations/integration-hub";
+import { selfServiceStore } from "@/lib/self-service/self-service-engine";
+import {
+  GET as handleEarlyWarningGet,
+  POST as handleEarlyWarningPost,
+} from "@/app/api/analytics/early-warning/route";
+import {
+  GET as handleSubstitutionGet,
+  POST as handleSubstitutionPost,
+} from "@/app/api/faculty/substitution/route";
+import {
+  GET as handleEmergencyBroadcastGet,
+  POST as handleEmergencyBroadcastPost,
+} from "@/app/api/emergency/broadcast/route";
+import {
+  GET as handleVerifyCredentialGet,
+} from "@/app/api/verify/credential/route";
+import {
+  POST as handleInstallmentsPost,
+} from "@/app/api/finance/installments/route";
+import { computeScholarRiskScore } from "@/lib/academic/early-warning-engine";
+import { evaluateSubstituteCandidates } from "@/lib/faculty/smart-substitution-engine";
+import {
+  GET as handleCareerRoadmapGet,
+  POST as handleCareerRoadmapPost,
+} from "@/app/api/students/career-roadmap/route";
+import {
+  GET as handleActivityPointsGet,
+  POST as handleActivityPointsPost,
+} from "@/app/api/students/activity-points/route";
+import {
+  GET as handleQuestionPaperGet,
+  POST as handleQuestionPaperPost,
+} from "@/app/api/faculty/question-paper-generator/route";
+import {
+  GET as handleResearchPortfolioGet,
+  POST as handleResearchPortfolioPost,
+} from "@/app/api/faculty/research-portfolio/route";
+import {
+  GET as handleCpcIncrementGet,
+  POST as handleCpcIncrementPost,
+} from "@/app/api/hr/cpc-increment/route";
+import {
+  GET as handleIncomeTaxGet,
+  POST as handleIncomeTaxPost,
+} from "@/app/api/hr/income-tax/route";
+import { evaluateStudentCareerRoadmap } from "@/lib/academic/career-roadmap-engine";
+import { computeStudentActivitySummary } from "@/lib/academic/student-activity-points-engine";
+import { generateAutonomousQuestionPaper } from "@/lib/faculty/exam-paper-generator-engine";
+import { calculatePublicationApiPoints, calculateGrantApiPoints } from "@/lib/faculty/faculty-research-portfolio-engine";
+import { computeAnnualIncrement as computePayIncrement } from "@/lib/hr/pay-matrix-engine";
+import { analyzeTaxAndGenerateForm16 } from "@/lib/hr/income-tax-tds-engine";
+
+// Group 73: Core Enterprise Modules Upgrades
+import {
+  calculateCompositeMeritScore as calculateCounselingMeritScore,
+  executeCounselingAllocation,
+  generateSeatAllotmentOrder,
+  generateMeritRankings,
+} from "@/lib/admissions/counseling-engine";
+import {
+  GET as handleAdmissionsCounselingGet,
+  POST as handleAdmissionsCounselingPost,
+} from "@/app/api/admissions/counseling/route";
+
+import {
+  getAllRepositoryItems,
+  depositRepositoryItem,
+  generateCitation,
+  requestSecuredDownload,
+  getRepositoryAnalytics,
+} from "@/lib/library/elibrary-repository-engine";
+import {
+  GET as handleELibraryGet,
+  POST as handleELibraryPost,
+} from "@/app/api/library/elibrary/route";
+
+import {
+  getAllProtocols,
+  submitProtocol,
+  castBoardVote,
+  getIRBAnalytics,
+} from "@/lib/research/ethics-clearance-engine";
+import {
+  GET as handleEthicsClearanceGet,
+  POST as handleEthicsClearancePost,
+} from "@/app/api/research/ethics-clearance/route";
+
+import {
+  getAllHealthPassports,
+  updateImmunization,
+  certifyMedicalFitness,
+  getHealthClearanceAnalytics,
+} from "@/lib/clinic/medical-clearance-engine";
+import {
+  GET as handleMedicalClearanceGet,
+  POST as handleMedicalClearancePost,
+} from "@/app/api/clinic/medical-clearance/route";
+
+import {
+  getAllInspections,
+  recordMoveIn,
+  conductMoveOutAudit,
+  getHostelInventoryAnalytics,
+} from "@/lib/hostel/hostel-inventory-engine";
+import {
+  GET as handleHostelInventoryAuditGet,
+  POST as handleHostelInventoryAuditPost,
+} from "@/app/api/hostel/inventory-audit/route";
+
+import {
+  getAllComplianceRecords,
+  inspectAndCertifyRoadworthiness,
+  updateComplianceCertificates,
+  getFleetComplianceAnalytics,
+} from "@/lib/transport/fleet-compliance-engine";
+import {
+  GET as handleFleetComplianceGet,
+  POST as handleFleetCompliancePost,
+} from "@/app/api/transport/compliance/route";
 
 async function runTestSuite() {
   console.log("=================================================");
@@ -5446,7 +5605,7 @@ By breaking down large monolithic systems into decoupled microservices, systems 
   const updateStageRes = await handleAdmissionsPost(updateStageReq);
   assert(updateStageRes.status === 200, "POST /api/admissions (action: UPDATE_STAGE) transitions admissions pipeline with 200 OK");
 
-  // 2. HR, Leave Entitlements & Cryptographic Payroll
+  // 2. HR, Leave Entitlements, Batch Payroll & Cryptographic Compliance Engine
   const hrLeavesReq = new NextRequest("http://localhost:3000/api/hr/leaves", {
     headers: { Cookie: `classroom_session=${adminToken}` },
   });
@@ -5455,20 +5614,137 @@ By breaking down large monolithic systems into decoupled microservices, systems 
   const hrLeavesData = await hrLeavesRes.json();
   assert(hrLeavesData.leaveQuotas.casualLeaveTotal === 12, "Institutional faculty casual leave entitlement calibrated to 12 days/year");
 
+  // Reset test staff leaves for repeatable test execution
+  hrPayrollStore.saveLeaves(hrPayrollStore.getLeaves().filter(l => l.staffEmail !== "provost.evans@classroom.edu"));
+
+  // Dynamic leave application with lecture substitution
   const applyLeaveReq = new NextRequest("http://localhost:3000/api/hr/leaves", {
     method: "POST",
     headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
     body: JSON.stringify({
-      leaveType: "MEDICAL_LEAVE",
+      leaveType: "DUTY_LEAVE",
       days: 3,
       startDate: "2026-11-10",
       endDate: "2026-11-12",
-      reason: "Post-conference recovery",
+      reason: "UGC National Research Symposium Presentation",
+      substituteFacultyEmail: "sunita.deshmukh@classroom.edu",
+      substituteRemarks: "Lectures for AI-401 delegated to Prof. Sunita",
     }),
   });
   const applyLeaveRes = await handleHrLeavesPost(applyLeaveReq);
   assert(applyLeaveRes.status === 201, "POST /api/hr/leaves files leave petition with 201 Created");
+  const applyLeaveData = await applyLeaveRes.json();
+  assert(applyLeaveData.application.substituteFacultyEmail === "sunita.deshmukh@classroom.edu", "Leave petition records alternate lecture handover");
 
+  // Approval and dynamic quota reconciliation
+  const approveLeaveReq = new NextRequest("http://localhost:3000/api/hr/leaves", {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      leaveId: applyLeaveData.application.id,
+      action: "APPROVE",
+    }),
+  });
+  const approveLeaveRes = await handleHrLeavesPatch(approveLeaveReq);
+  assert(approveLeaveRes.status === 200, "PATCH /api/hr/leaves approves staff leave application with 200 OK");
+
+  // Verify dynamic quota reflects approved days
+  const updatedQuotas = hrPayrollStore.calculateStaffLeaveQuotas(applyLeaveData.application.staffEmail);
+  assert(updatedQuotas.dutyLeaveTaken >= 3, "Dynamic leave ledger increments duty leave taken by approved 3 days");
+  assert(updatedQuotas.dutyLeaveRemaining === updatedQuotas.dutyLeaveTotal - updatedQuotas.dutyLeaveTaken, "Remaining quota recalculated dynamically");
+
+  // Loss of Pay (LOP) Salary Deduction Engine
+  const sampleStaff = hrPayrollStore.getStaffMembers()[0];
+  const slipWithLop = hrPayrollStore.computeSalarySlip(sampleStaff, "October 2026", 2);
+  assert(slipWithLop.lopDays === 2, "Salary computation applies 2 Loss-of-Pay days");
+  assert(slipWithLop.lopDeduction > 0, "Loss of Pay triggers automated wage deduction");
+  assert(slipWithLop.netPay === slipWithLop.grossSalary - slipWithLop.totalDeductions, "Net pay equals gross salary minus all statutory and LOP deductions");
+
+  // Monthly Batch Payroll Run
+  const runBatchPayrollReq = new NextRequest("http://localhost:3000/api/hr/payroll", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "RUN_BATCH_PAYROLL",
+      payPeriod: "October 2026",
+    }),
+  });
+  const runBatchPayrollRes = await handleHrPayrollPost(runBatchPayrollReq);
+  assert(runBatchPayrollRes.status === 200, "POST /api/hr/payroll (action: RUN_BATCH_PAYROLL) processes institution-wide payroll with 200 OK");
+  const batchPayrollData = await runBatchPayrollRes.json();
+  assert(batchPayrollData.payrollRun.totalEmployees >= 4, "Batch payroll aggregates all active staff members");
+  assert(batchPayrollData.payrollRun.totalGross > 0, "Batch payroll calculates total gross wages");
+  assert(batchPayrollData.payrollRun.status === "PROCESSED", "Batch payroll run marked as PROCESSED");
+
+  // Payroll Run Disbursement
+  const disburseReq = new NextRequest("http://localhost:3000/api/hr/payroll", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "DISBURSE",
+      runId: batchPayrollData.payrollRun.id,
+    }),
+  });
+  const disburseRes = await handleHrPayrollPost(disburseReq);
+  assert(disburseRes.status === 200, "POST /api/hr/payroll (action: DISBURSE) disburses salary ledger with 200 OK");
+  const disburseData = await disburseRes.json();
+  assert(disburseData.payrollRun.status === "DISBURSED", "Batch payroll status updated to DISBURSED");
+
+  // Corporate Banking NACH / NEFT Payout File Generation
+  const bankExportReq = new NextRequest("http://localhost:3000/api/hr/payroll?action=BANK_EXPORT&period=October 2026", {
+    headers: { Cookie: `classroom_session=${adminToken}` },
+  });
+  const bankExportRes = await handleHrPayrollGet(bankExportReq);
+  assert(bankExportRes.status === 200, "GET /api/hr/payroll?action=BANK_EXPORT returns 200 OK");
+  const bankCsv = await bankExportRes.text();
+  assert(bankCsv.includes("BeneficiaryName,AccountNumber,IFSC"), "Bank export includes standard NACH/NEFT CSV payout headers");
+  assert(bankCsv.includes("Dr. Alan Turing"), "Bank payout file contains active faculty beneficiary records");
+
+  // EPFO ECR (Electronic Challan cum Return) Generation
+  const epfoExportReq = new NextRequest("http://localhost:3000/api/hr/payroll?action=EPFO_EXPORT&period=October 2026", {
+    headers: { Cookie: `classroom_session=${adminToken}` },
+  });
+  const epfoExportRes = await handleHrPayrollGet(epfoExportReq);
+  assert(epfoExportRes.status === 200, "GET /api/hr/payroll?action=EPFO_EXPORT returns 200 OK");
+  const epfoText = await epfoExportRes.text();
+  assert(epfoText.includes("#"), "EPFO export file follows statutory hash-delimited ECR format");
+
+  // Statutory Tax Declaration (Section 115BAC vs Old Regime)
+  const taxDeclReq = new NextRequest("http://localhost:3000/api/hr/payroll", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "UPDATE_TAX_DECLARATION",
+      staffId: "fac-01",
+      taxRegime: "OLD_REGIME",
+      section80cDeclared: 150000,
+      section80dDeclared: 25000,
+    }),
+  });
+  const taxDeclRes = await handleHrPayrollPost(taxDeclReq);
+  assert(taxDeclRes.status === 200, "POST /api/hr/payroll (action: UPDATE_TAX_DECLARATION) updates tax regime with 200 OK");
+  const taxDeclData = await taxDeclRes.json();
+  assert(taxDeclData.staff.taxRegime === "OLD_REGIME", "Staff tax regime successfully switched and persisted");
+
+  // Biometric Terminal Hardware Sensor Punch Ingress
+  const bioPunchReq = new NextRequest("http://localhost:3000/api/hr/payroll", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "RECORD_BIOMETRIC_PUNCH",
+      staffId: "fac-01",
+      terminalId: "BIO-ZKTECO-01",
+      punchMode: "FINGERPRINT",
+      punchType: "PUNCH_IN",
+    }),
+  });
+  const bioPunchRes = await handleHrPayrollPost(bioPunchReq);
+  assert(bioPunchRes.status === 200, "POST /api/hr/payroll (action: RECORD_BIOMETRIC_PUNCH) captures sensor event with 200 OK");
+  const bioPunchData = await bioPunchRes.json();
+  assert(bioPunchData.punch.status === "AUTHENTICATED", "Biometric punch hardware authentication successful");
+  assert(bioPunchData.punch.token.startsWith("BIO-TOKEN-"), "Biometric hardware assigns cryptographic terminal token");
+
+  // Single staff salary slip calculation
   const hrPayrollReq = new NextRequest("http://localhost:3000/api/hr/payroll?payPeriod=October 2026", {
     headers: { Cookie: `classroom_session=${adminToken}` },
   });
@@ -5477,6 +5753,208 @@ By breaking down large monolithic systems into decoupled microservices, systems 
   const hrPayrollData = await hrPayrollRes.json();
   assert(hrPayrollData.salarySlip.netPay > 0, "HR payroll yields positive net pay after PF and TDS deductions");
   assert(typeof hrPayrollData.salarySlip.verificationHash === "string", "Salary slip sealed with SHA-256 cryptographic verification checksum");
+
+  // -------------------------------------------------------------
+  // HR & PAYROLL ENTERPRISE STATUTORY AUDIT & 7TH CPC SUITE
+  // -------------------------------------------------------------
+
+  // A. 7th CPC Academic Pay Matrix & Increment Engine Assertions
+  assert(PAY_MATRIX_7TH_CPC["LEVEL_10"].academicGradePay === 6000, "7th CPC Level 10 has Academic Grade Pay ₹6,000");
+  assert(PAY_MATRIX_7TH_CPC["LEVEL_10"].entryPay === 57700, "7th CPC Level 10 entry basic pay is ₹57,700");
+  assert(PAY_MATRIX_7TH_CPC["LEVEL_14"].entryPay === 144200, "7th CPC Level 14 Senior Professor entry pay is ₹1,44,200");
+  const incrResult = computeAnnualIncrement("LEVEL_10", 1);
+  assert(incrResult.newCellIndex === 2 && incrResult.newBasicPay === 59400, "Annual 3% compound increment moves Level 10 Cell 1 to Cell 2 (₹59,400)");
+
+  // B. 7th CPC Retroactive DA Arrears Engine & API
+  const daArrearsCalc = computeDaArrears(57700, "2026-01", "2026-06", 46, 50, true);
+  assert(daArrearsCalc.monthsCount === 6, "DA arrears correctly spans 6 calendar months (Jan to Jun 2026)");
+  assert(daArrearsCalc.totalGrossArrears === 13848, "6 months of 4% differential on ₹57,700 yields ₹13,848 gross arrears");
+  assert(daArrearsCalc.totalPfDeduction === 1662, "12% PF recovery on gross DA arrears is ₹1,662");
+  assert(daArrearsCalc.totalNetArrears === 12186, "Net payable arrears after PF deduction equals ₹12,186");
+
+  const daArrearsApiReq = new NextRequest("http://localhost:3000/api/hr/payroll?action=DA_ARREARS&staffId=fac-01&fromMonth=2026-01&toMonth=2026-06&oldDaRate=46&newDaRate=50", {
+    headers: { Cookie: `classroom_session=${adminToken}` },
+  });
+  const daArrearsApiRes = await handleHrPayrollGet(daArrearsApiReq);
+  assert(daArrearsApiRes.status === 200, "GET /api/hr/payroll?action=DA_ARREARS returns 200 OK");
+  const daArrearsApiData = await daArrearsApiRes.json();
+  assert(daArrearsApiData.monthlyBreakdown.length === 6, "DA Arrears API provides month-by-month due-drawn ledger");
+  assert(daArrearsApiData.totalNetArrears > 0, "DA Arrears API computes positive net arrears");
+
+  // C. National Pension System (NPS Tier-I) & NSDL CRA Batch Export
+  const npsCalc = computeNpsDeductions(57700, 23080);
+  assert(npsCalc.pensionableSalary === 80780, "NPS pensionable salary is Basic Pay + DA (₹57,700 + ₹23,080 = ₹80,780)");
+  assert(npsCalc.employeeNps === 8078, "Employee Tier-I contribution is strictly 10% (₹8,078)");
+  assert(npsCalc.universityNps === 11309, "University/Govt contribution is statutory 14% (₹11,309)");
+
+  const npsScfReq = new NextRequest("http://localhost:3000/api/hr/payroll?action=NPS_SCF&period=October 2026", {
+    headers: { Cookie: `classroom_session=${adminToken}` },
+  });
+  const npsScfRes = await handleHrPayrollGet(npsScfReq);
+  assert(npsScfRes.status === 200, "GET /api/hr/payroll?action=NPS_SCF returns 200 OK");
+  const npsScfText = await npsScfRes.text();
+  assert(npsScfText.includes("NSDL_CRA_BATCH"), "NSDL CRA SCF batch file has standard header");
+  assert(npsScfText.includes("110023456789"), "NSDL CRA batch file includes valid 12-digit PRAN subscriber records");
+
+  // D. UGC CAS 2018 PBAS API Evaluation & Promotion Engine
+  const casEval = evaluateUgcCasPromotion({
+    staffId: "fac-01",
+    facultyName: "Dr. Alan Turing",
+    currentLevel: "LEVEL_10",
+    category1Teaching: { hoursTaught: 500, assignedHours: 512 },
+    category2Governance: { examDutiesAssigned: 10, examDutiesAttended: 10, committeeRoles: 3, studentMentoringHours: 80 },
+    category3Research: {
+      ugcCarePapersCount: 4,
+      scopusPapersCount: 3,
+      sponsoredProjectsFundingLakhs: 15,
+      patentsGrantedCount: 1,
+      phdStudentsGuidedCount: 2,
+    },
+  });
+  assert(casEval.targetLevel === "LEVEL_11", "UGC CAS evaluates promotion from Level 10 to Level 11");
+  assert(casEval.isEligible === true, "Faculty meets UGC 2018 PBAS thresholds for Level 10 -> 11 promotion");
+  assert(casEval.categories.category3.score >= 50, "Category 3 Research score reflects UGC-CARE papers, patents, and Ph.D. supervision");
+
+  const casGetReq = new NextRequest("http://localhost:3000/api/hr/payroll?action=CAS_EVALUATION&staffId=fac-01", {
+    headers: { Cookie: `classroom_session=${adminToken}` },
+  });
+  const casGetRes = await handleHrPayrollGet(casGetReq);
+  assert(casGetRes.status === 200, "GET /api/hr/payroll?action=CAS_EVALUATION returns 200 OK");
+  const casGetData = await casGetRes.json();
+  assert(casGetData.totalApiScore >= 80, "CAS Evaluation API calculates composite PBAS score");
+
+  // E. Official e-Service Book (DDO Cryptographic Audit Trail)
+  const serviceBookGetReq = new NextRequest("http://localhost:3000/api/hr/payroll?action=SERVICE_BOOK&staffId=fac-01", {
+    headers: { Cookie: `classroom_session=${adminToken}` },
+  });
+  const serviceBookGetRes = await handleHrPayrollGet(serviceBookGetReq);
+  assert(serviceBookGetRes.status === 200, "GET /api/hr/payroll?action=SERVICE_BOOK returns 200 OK");
+  const serviceBookGetData = await serviceBookGetRes.json();
+  assert(Array.isArray(serviceBookGetData.entries) && serviceBookGetData.entries.length >= 1, "e-Service Book yields attested historical service entries");
+  assert(typeof serviceBookGetData.entries[0].signatureHash === "string", "Service record entry is attested with SHA-256 digital signature");
+
+  const addServiceRecReq = new NextRequest("http://localhost:3000/api/hr/payroll", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "ADD_SERVICE_RECORD",
+      staffId: "fac-01",
+      actionType: "ANNUAL_INCREMENT",
+      remarks: "Annual increment sanctioned as per 7th CPC Level 10 Cell 2",
+      attestedBy: "DDO_REGISTRAR",
+    }),
+  });
+  const addServiceRecRes = await handleHrPayrollPost(addServiceRecReq);
+  assert(addServiceRecRes.status === 200, "POST /api/hr/payroll (action: ADD_SERVICE_RECORD) records new event with 200 OK");
+  const addServiceRecData = await addServiceRecRes.json();
+  assert(addServiceRecData.entry.actionType === "ANNUAL_INCREMENT", "New service record action type saved");
+
+  // F. Form 12BB Proof Verification & Landlord PAN Statutory Enforcement
+  const auditForm12bbBreachReq = new NextRequest("http://localhost:3000/api/hr/payroll", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "AUDIT_FORM12BB",
+      staffId: "fac-01",
+      assessmentYear: "2026-2027",
+      declaredRent: 140000,
+      landlordPan: "", // Missing PAN for rent > 1,00,000 -> breach
+      section80cDeclared: 150000,
+      section80dDeclared: 25000,
+    }),
+  });
+  const auditForm12bbBreachRes = await handleHrPayrollPost(auditForm12bbBreachReq);
+  assert(auditForm12bbBreachRes.status === 200, "POST /api/hr/payroll (action: AUDIT_FORM12BB) executes audit with 200 OK");
+  const breachData = await auditForm12bbBreachRes.json();
+  assert(breachData.panMandatoryBreach === true, "Form 12BB audit detects mandatory Landlord PAN breach when rent exceeds ₹1,00,000");
+  assert(breachData.auditStatus === "REJECTED_PAN_MISSING", "Audit status set to REJECTED_PAN_MISSING for non-compliant declaration");
+
+  const auditForm12bbValidReq = new NextRequest("http://localhost:3000/api/hr/payroll", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "AUDIT_FORM12BB",
+      staffId: "fac-01",
+      assessmentYear: "2026-2027",
+      declaredRent: 140000,
+      landlordPan: "ABCDE1234F", // Valid PAN provided
+      section80cDeclared: 150000,
+      section80dDeclared: 25000,
+      section24bDeclared: 200000,
+    }),
+  });
+  const auditForm12bbValidRes = await handleHrPayrollPost(auditForm12bbValidReq);
+  assert(auditForm12bbValidRes.status === 200, "POST /api/hr/payroll (action: AUDIT_FORM12BB) verified with valid PAN");
+  const validData = await auditForm12bbValidRes.json();
+  assert(validData.panMandatoryBreach === false, "Form 12BB audit passes with valid Landlord PAN");
+  assert(validData.auditStatus === "VERIFIED", "Form 12BB marked as VERIFIED");
+  assert(validData.deductions.section80C === 150000, "Section 80C capped at ₹1,50,000 limit");
+
+  // G. TRACES-Aligned Form 16 Part A & B TDS Statement
+  const form16Req = new NextRequest("http://localhost:3000/api/hr/payroll?action=FORM16&staffId=fac-01&assessmentYear=2026-2027", {
+    headers: { Cookie: `classroom_session=${adminToken}` },
+  });
+  const form16Res = await handleHrPayrollGet(form16Req);
+  assert(form16Res.status === 200, "GET /api/hr/payroll?action=FORM16 returns 200 OK");
+  const form16Data = await form16Res.json();
+  assert(form16Data.form16.partA.certificateNumber.startsWith("FORM16-"), "Form 16 Part A issued with unique certificate number");
+  assert(form16Data.form16.partB.standardDeduction === 50000, "Form 16 Part B includes statutory ₹50,000 standard deduction");
+  assert(typeof form16Data.form16.partB.digitalSealHash === "string", "Form 16 sealed with TRACES-aligned digital checksum");
+
+  // H. Host-to-Host (H2H) Corporate Banking Payout with Maker-Checker 2FA
+  const h2hInvalidOtpReq = new NextRequest("http://localhost:3000/api/hr/payroll", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "PROCESS_H2H_PAYOUT",
+      payPeriod: "October 2026",
+      makerId: "DDO_FIN_ADMIN",
+      checkerId: "REGISTRAR_EXEC",
+      twoFactorOtp: "INVALID-OTP",
+    }),
+  });
+  const h2hInvalidOtpRes = await handleHrPayrollPost(h2hInvalidOtpReq);
+  assert(h2hInvalidOtpRes.status === 400, "H2H corporate payout rejects invalid 2FA OTP with 400 Bad Request");
+
+  const h2hValidReq = new NextRequest("http://localhost:3000/api/hr/payroll", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "PROCESS_H2H_PAYOUT",
+      payPeriod: "October 2026",
+      makerId: "DDO_FIN_ADMIN",
+      checkerId: "REGISTRAR_EXEC",
+      twoFactorOtp: "2FA-APPROVE-8849",
+    }),
+  });
+  const h2hValidRes = await handleHrPayrollPost(h2hValidReq);
+  assert(h2hValidRes.status === 200, "H2H corporate payout processes successfully with 200 OK under valid 2FA");
+  const h2hData = await h2hValidRes.json();
+  assert(h2hData.batchReferenceId.startsWith("H2H-BATCH-"), "H2H payout generates corporate batch reference ID");
+  assert(h2hData.totalDisbursed > 0, "H2H payout disburses positive salary total");
+  assert(h2hData.transactions.length >= 1, "H2H payout executes transactions with individual banking UTRs");
+  assert(h2hData.transactions[0].utrNumber.startsWith("CORP-UTR-"), "Transactions assigned unique UTR numbers");
+
+  // I. Live Timetable Substitution Conflict Check on Leave Application
+  const leaveWithSubReq = new NextRequest("http://localhost:3000/api/hr/leaves", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      leaveType: "CASUAL_LEAVE",
+      days: 1,
+      startDate: "2026-10-15",
+      endDate: "2026-10-15",
+      reason: "National Academic Conference Presentation",
+      substituteFacultyEmail: "sunita.deshmukh@classroom.edu",
+      substituteRemarks: "Covering CS301 Algorithms lecture",
+    }),
+  });
+  const leaveWithSubRes = await handleHrLeavesPost(leaveWithSubReq);
+  assert(leaveWithSubRes.status === 201, "POST /api/hr/leaves submits leave application with 201 Created");
+  const leaveWithSubData = await leaveWithSubRes.json();
+  assert(leaveWithSubData.leave.status === "PENDING", "Leave application created in PENDING status");
+  assert(typeof leaveWithSubData.substitutionCheck === "object", "Leave application conducts live timetable substitution conflict check");
+
 
   // 3. Alumni Network & Graduate Verification Seal
   const alumniDirReq = new NextRequest("http://localhost:3000/api/alumni/directory", {
@@ -7052,6 +7530,2242 @@ By breaking down large monolithic systems into decoupled microservices, systems 
   const authBenchPostData = await authBenchPostRes.json();
   assert(authBenchPostData.success === true, "Benchmark run returns success: true");
   assert(authBenchPostData.benchmarkResult.successfulOperations === 25, "Benchmark execution confirms 25 successful operations");
+
+  // =========================================================================
+  // GROUP 66: STATUTORY SOCIAL SECURITY (ESIC/GRATUITY/10E/24Q), 200-POINT ROSTER,
+  // GUEST HONORARIUM & DIGITAL NO-DUES OPERATIONS SUITE (PHASES A, B, C)
+  // =========================================================================
+  console.log("\n📦 Running Group 66: Statutory Social Security (ESIC/Gratuity/10E/24Q), 200-Point Roster, Guest Honorarium & Digital No-Dues Operations Suite");
+
+  // 66.1 Statutory Social Security Engine (ESIC, Gratuity, LWF, 10E, 24Q)
+  const esicEligible = StatutorySocialSecurityEngine.computeEsic({
+    employeeId: "supp-01",
+    employeeName: "Ramesh Kumar",
+    ipNumber: "11982736451234001",
+    monthlyGrossWage: 18500,
+    paidDaysInMonth: 30,
+  });
+  assert(esicEligible.isEligible === true, "ESIC engine identifies employee earning <= ₹21,000 as eligible under ESI Act 1948");
+  assert(esicEligible.employeeContribution === 139, "ESIC employee contribution accurately computed at 0.75% of gross wage");
+  assert(esicEligible.employerContribution === 601, "ESIC employer contribution accurately computed at 3.25% of gross wage");
+  assert(esicEligible.totalContribution === 740, "ESIC total contribution sums to 4.00% (₹740)");
+
+  const esicExempt = StatutorySocialSecurityEngine.computeEsic({
+    employeeId: "fac-01",
+    employeeName: "Dr. Alan Turing",
+    ipNumber: "11982736451234010",
+    monthlyGrossWage: 85000,
+    paidDaysInMonth: 30,
+  });
+  assert(esicExempt.isEligible === false, "ESIC engine marks high-wage professor exempt (> ₹21,000 statutory ceiling)");
+  assert(esicExempt.wageLimitExceeded === true, "ESIC wageLimitExceeded flag set to true");
+
+  const esicChallanText = StatutorySocialSecurityEngine.generateEsicChallanText([esicEligible], "11000342910001001", "October 2026");
+  assert(esicChallanText.includes("ESIC_MONTHLY_CONTRIBUTION_RETURN"), "ESIC challan generator renders standard header");
+  assert(esicChallanText.includes("11982736451234001#RAMESH KUMAR#30#18500#139#601#740"), "ESIC challan renders record row with IP details");
+  assert(esicChallanText.includes("TRAILER#TOTAL_IPS:1#TOTAL_WAGES:18500#TOTAL_AMOUNT:740"), "ESIC challan embeds trailer validation totals");
+
+  const gratuityTenYears = StatutorySocialSecurityEngine.computeGratuity({
+    employeeId: "fac-01",
+    employeeName: "Dr. Alan Turing",
+    joiningDate: "2016-07-01",
+    exitDate: "2026-07-01",
+    lastDrawnBasic: 89000,
+    lastDrawnDa: 12460,
+  });
+  assert(gratuityTenYears.isEligible === true, "Gratuity engine approves employee completing >= 5 years continuous service");
+  assert(gratuityTenYears.serviceYearsCompleted === 10, "Gratuity calculates 10 completed years of service");
+  assert(gratuityTenYears.payableGratuity === 585346, "Gratuity calculates ₹5,85,346 using (15/26) * (Last Drawn Basic+DA) * 10");
+  assert(gratuityTenYears.statutoryCapApplied === false, "Statutory cap not applied when gratuity < ₹20 Lakhs");
+
+  const gratuityShortService = StatutorySocialSecurityEngine.computeGratuity({
+    employeeId: "fac-03",
+    employeeName: "Junior Lecturer",
+    joiningDate: "2023-01-01",
+    exitDate: "2026-01-01",
+    lastDrawnBasic: 57700,
+    lastDrawnDa: 8078,
+  });
+  assert(gratuityShortService.isEligible === false, "Gratuity denied when service < 5 years without death/disablement");
+  assert(gratuityShortService.payableGratuity === 0, "Payable gratuity is ₹0 when vesting criteria unfulfilled");
+
+  const gratuityCapped = StatutorySocialSecurityEngine.computeGratuity({
+    employeeId: "fac-dean",
+    employeeName: "Senior Dean",
+    joiningDate: "1988-01-01",
+    exitDate: "2026-01-01",
+    lastDrawnBasic: 180000,
+    lastDrawnDa: 25200,
+  });
+  assert(gratuityCapped.rawGratuityCalculated > 2000000, "Raw gratuity for 38 years exceeds ₹20 Lakhs");
+  assert(gratuityCapped.payableGratuity === 2000000, "Gratuity capped at statutory ceiling of ₹20,00,000 under Payment of Gratuity Act");
+  assert(gratuityCapped.statutoryCapApplied === true, "statutoryCapApplied flag confirmed true");
+
+  const lwfMh = StatutorySocialSecurityEngine.computeLwf("MAHARASHTRA", 45000);
+  assert(lwfMh.employeeShare === 12 && lwfMh.employerShare === 36, "Maharashtra LWF calculates Employee ₹12, Employer ₹36");
+
+  const lwfDl = StatutorySocialSecurityEngine.computeLwf("DELHI", 35000);
+  assert(lwfDl.employeeShare === 1 && lwfDl.employerShare === 3, "Delhi LWF calculates Employee ₹1, Employer ₹3");
+
+  const sec89Relief = StatutorySocialSecurityEngine.computeSection89Relief({
+    employeeId: "fac-01",
+    employeeName: "Dr. Alan Turing",
+    panNumber: "ABCDE1234F",
+    currentFinancialYear: "2026-2027",
+    arrearsPertainingYear: "2025-2026",
+    salaryExcludingArrearsCurrentYear: 1600000,
+    arrearsAmount: 200000,
+    salaryPriorYear: 500000,
+  });
+  assert(sec89Relief.form10EEligible === true, "Section 89(1) tax relief identifies eligible relief on lump sum arrears");
+  assert(sec89Relief.section89ReliefGranted > 0, "Section 89(1) calculates positive tax relief amount");
+
+  const form24QStruct = StatutorySocialSecurityEngine.generateForm24QStructure(
+    "DELA00914G",
+    "2026-2027",
+    "Q2",
+    [{ bsrCode: "0002148", challanDate: "2026-09-07", challanSerialNo: "00142", tdsAmount: 45000, surchargeAmount: 0, cessAmount: 1800, interestAmount: 0, feeAmount: 0, totalDeposit: 46800 }],
+    [{ pan: "ABCDE1234F", name: "Dr. Alan Turing", grossSalary: 1200000, standardDeduction: 75000, chapterVIAExemptions: 0, taxableIncome: 1125000, tdsDeducted: 11700, taxRegime: "NEW_REGIME" }]
+  );
+  assert(form24QStruct.header.formType === "24Q", "Form 24Q structure generates 24Q form type");
+  assert(form24QStruct.header.fvuVersion === "8.6", "Form 24Q targets NSDL FVU version 8.6");
+  assert(form24QStruct.audit.isChallanSufficient === true, "Form 24Q confirms challan deposit covers total deducted TDS");
+
+  // 66.2 Faculty Academic Workload, 200-Point Roster & Honorarium Engine (Phase B)
+  assert(FacultyWorkloadHonorariumEngine.get200PointRosterCategory(1) === "SC", "200-Point Roster Point #1 mapped to SC");
+  assert(FacultyWorkloadHonorariumEngine.get200PointRosterCategory(3) === "OBC", "200-Point Roster Point #3 mapped to OBC");
+  assert(FacultyWorkloadHonorariumEngine.get200PointRosterCategory(4) === "ST", "200-Point Roster Point #4 mapped to ST");
+  assert(FacultyWorkloadHonorariumEngine.get200PointRosterCategory(10) === "EWS", "200-Point Roster Point #10 mapped to EWS");
+  assert(FacultyWorkloadHonorariumEngine.get200PointRosterCategory(2) === "UR", "200-Point Roster Point #2 mapped to UR");
+
+  const rosterAudit = FacultyWorkloadHonorariumEngine.auditRosterStatus(42);
+  assert(rosterAudit.nextRosterPoint === 43, "Roster audit identifies next vacancy as Point #43");
+  assert(rosterAudit.designatedCategoryForNextPost === "SC", "Roster Point #43 designated as SC quota");
+  assert(rosterAudit.isNextPostReserved === true, "Roster Point #43 confirmed as reserved post");
+
+  const screeningResult = FacultyWorkloadHonorariumEngine.evaluateUgcTable3AScorecard({
+    candidateId: "cand-ugc-01",
+    candidateName: "Dr. Applicant Scholar",
+    graduationPercentage: 82, // 15
+    postGraduationPercentage: 84, // 25
+    hasMPhil: false,
+    hasPhd: true, // 30
+    hasNetJrf: true, // 7
+    hasNetOnly: false,
+    hasSletSet: false,
+    peerReviewedPublicationsCount: 5, // 10
+    teachingExperienceYears: 3, // 6
+    hasNationalInternationalAward: true, // 3
+    hasStateAward: false,
+  });
+  assert(screeningResult.graduationScore === 15, "UGC Table 3A awards 15 marks for Graduation >= 80%");
+  assert(screeningResult.postGraduationScore === 25, "UGC Table 3A awards 25 marks for Post-Graduation >= 80%");
+  assert(screeningResult.phdScore === 30, "UGC Table 3A awards 30 marks for Ph.D. degree");
+  assert(screeningResult.netJrfScore === 7, "UGC Table 3A awards 7 marks for NET with JRF");
+  assert(screeningResult.publicationsScore === 10, "UGC Table 3A awards max 10 marks for 5 publications");
+  assert(screeningResult.experienceScore === 6, "UGC Table 3A awards 6 marks for 3 years teaching experience");
+  assert(screeningResult.totalAcademicScore === 96, "UGC Table 3A computes 96/100 total academic screening score");
+  assert(screeningResult.isShortlistedForInterview === true, "Candidate shortlisted for direct recruitment interview");
+
+  const guestClaim = FacultyWorkloadHonorariumEngine.computeGuestLectureHonorarium({
+    id: "GLB-101",
+    facultyName: "Dr. Visiting Specialist",
+    facultyEmail: "guest@apex.edu",
+    courseCode: "CS-402",
+    department: "Computer Science",
+    lecturesDelivered: 24,
+    payPeriod: "October 2026",
+  });
+  assert(guestClaim.billPayable === 36000, "Guest faculty honorarium computes ₹36,000 for 24 lectures at ₹1,500");
+  assert(guestClaim.ceilingExceeded === false, "₹36,000 within UGC monthly ceiling of ₹50,000");
+
+  const guestClaimCapped = FacultyWorkloadHonorariumEngine.computeGuestLectureHonorarium({
+    id: "GLB-102",
+    facultyName: "Dr. Heavy Lecturer",
+    facultyEmail: "heavy@apex.edu",
+    courseCode: "CS-101",
+    department: "Computer Science",
+    lecturesDelivered: 45,
+    payPeriod: "October 2026",
+  });
+  assert(guestClaimCapped.rawAmountClaimed === 67500, "Raw claim for 45 lectures is ₹67,500");
+  assert(guestClaimCapped.billPayable === 50000, "Guest honorarium strictly capped at ₹50,000 under UGC 2019 order");
+  assert(guestClaimCapped.ceilingExceeded === true, "ceilingExceeded flag confirmed true");
+
+  const examRemun = FacultyWorkloadHonorariumEngine.computeExamDutyRemuneration({
+    facultyName: "Prof. Examiner",
+    scriptsEvaluated: 120, // 120 * 30 = 3600
+    questionPapersSet: 2,  // 2 * 2500 = 5000
+    practicalExamDays: 3,  // 3 * 1500 = 4500
+    taDaAllowance: 750,
+  });
+  assert(examRemun.scriptTotal === 3600, "Theory script evaluation remuneration computes ₹3,600 (120 * ₹30)");
+  assert(examRemun.paperSetTotal === 5000, "Question paper setting remuneration computes ₹5,000 (2 * ₹2,500)");
+  assert(examRemun.practicalTotal === 4500, "Practical examination remuneration computes ₹4,500 (3 * ₹1,500)");
+  assert(examRemun.grandTotalRemuneration === 13850, "Grand total examination remuneration sums to ₹13,850");
+
+  const phdQuotaAvailable = FacultyWorkloadHonorariumEngine.checkPhdGuideQuota("PROFESSOR", 7);
+  assert(phdQuotaAvailable.canAdmitMoreScholars === true, "Professor guiding 7 scholars can admit 1 more scholar");
+  assert(phdQuotaAvailable.remainingSlots === 1, "Remaining slots equals 1 (Quota: 8)");
+
+  const phdQuotaFull = FacultyWorkloadHonorariumEngine.checkPhdGuideQuota("PROFESSOR", 8);
+  assert(phdQuotaFull.canAdmitMoreScholars === false, "Professor guiding 8 scholars cannot admit more scholars");
+  assert(phdQuotaFull.complianceStatus === "QUOTA_FULL", "Compliance status reports QUOTA_FULL");
+
+  // 66.3 Employee Lifecycle, No-Dues Clearance & Operations Engine (Phase C)
+  let noDuesPipeline = LifecycleOperationsEngine.initiateNoDues(
+    "fac-01",
+    "Dr. Alan Turing",
+    "Computer Science",
+    "Professor",
+    "2026-10-01",
+    "2026-10-31",
+    "Superannuation"
+  );
+  assert(noDuesPipeline.overallStatus === "IN_PROGRESS", "No-Dues clearance pipeline initializes in IN_PROGRESS status");
+  assert(noDuesPipeline.checkpoints.library.cleared === false, "Library checkpoint initialized in pending status");
+
+  noDuesPipeline = LifecycleOperationsEngine.updateDepartmentClearance(noDuesPipeline, "library", true, "All books returned.");
+  noDuesPipeline = LifecycleOperationsEngine.updateDepartmentClearance(noDuesPipeline, "laboratory", true, "Lab keys handed over.");
+  noDuesPipeline = LifecycleOperationsEngine.updateDepartmentClearance(noDuesPipeline, "hostel", true, "Quarters vacated.");
+  noDuesPipeline = LifecycleOperationsEngine.updateDepartmentClearance(noDuesPipeline, "itServices", true, "Laptop surrendered.");
+  noDuesPipeline = LifecycleOperationsEngine.updateDepartmentClearance(noDuesPipeline, "finance", true, "Imprest reconciled.");
+  noDuesPipeline = LifecycleOperationsEngine.updateDepartmentClearance(noDuesPipeline, "examBranch", true, "Marks uploaded.");
+  noDuesPipeline = LifecycleOperationsEngine.updateDepartmentClearance(noDuesPipeline, "registrar", true, "Final release approved.");
+
+  assert(noDuesPipeline.overallStatus === "CLEARANCE_COMPLETE", "No-Dues pipeline transitions to CLEARANCE_COMPLETE when all 7 departments clear");
+  assert(typeof noDuesPipeline.relievingCertificateHash === "string" && noDuesPipeline.relievingCertificateHash.length === 64, "Digital relieving certificate hash generated with SHA-256 seal");
+
+  const latePunchEval = LifecycleOperationsEngine.evaluateLatePunches([
+    { date: "2026-10-01", punchInTime: "09:05", scheduledStartTime: "09:00", graceMinutes: 15 },
+    { date: "2026-10-02", punchInTime: "09:25", scheduledStartTime: "09:00", graceMinutes: 15 },
+    { date: "2026-10-03", punchInTime: "09:30", scheduledStartTime: "09:00", graceMinutes: 15 },
+    { date: "2026-10-04", punchInTime: "09:22", scheduledStartTime: "09:00", graceMinutes: 15 },
+  ], 2.0);
+  assert(latePunchEval.latePunchesCount === 3, "3 punches past 15-min grace identified as late marks");
+  assert(latePunchEval.clDeductionsDays === 0.5, "3 late marks trigger 0.5 Casual Leave deduction");
+
+  const staffLoan = LifecycleOperationsEngine.createStaffLoan({
+    id: "LN-101",
+    employeeId: "fac-01",
+    employeeName: "Dr. Alan Turing",
+    loanType: "FESTIVAL_ADVANCE",
+    principalAmount: 10000,
+    tenureMonths: 10,
+    interestRateAnnual: 0,
+  });
+  assert(staffLoan.monthlyEmi === 1000, "Festival advance creates ₹1,000 monthly EMI (₹10,000 / 10)");
+  assert(staffLoan.remainingBalance === 10000, "Initial remaining balance equals principal");
+
+  const loanRecovery = LifecycleOperationsEngine.recoverMonthlyEmi(staffLoan);
+  assert(loanRecovery.recoveredThisMonth === 1000, "Monthly loan recovery recovers ₹1,000 EMI");
+  assert(loanRecovery.updatedAccount.remainingBalance === 9000, "Remaining loan balance reduced to ₹9,000");
+
+  const subsistenceEarly = LifecycleOperationsEngine.calculateSubsistenceAllowance(80000, 14, 2);
+  assert(subsistenceEarly.allowancePercent === 50, "Subsistence allowance is 50% for first 90 days under FR 53");
+  assert(subsistenceEarly.subsistenceBasic === 40000, "Basic component is ₹40,000");
+
+  const subsistenceLate = LifecycleOperationsEngine.calculateSubsistenceAllowance(80000, 14, 5);
+  assert(subsistenceLate.allowancePercent === 75, "Subsistence allowance increases to 75% after 90 days");
+  assert(subsistenceLate.subsistenceBasic === 60000, "Basic component is ₹60,000");
+
+  const sbiCmp = LifecycleOperationsEngine.generateSbiCmpFormat([
+    { employeeId: "fac-01", employeeName: "Alan Turing", bankName: "SBI", accountNumber: "38920194821", ifscCode: "SBIN0004128", netPay: 75000 },
+  ], "DDO99104");
+  assert(sbiCmp.startsWith("H|DDO99104|1|75000|"), "SBI CMP format embeds header with DDO code and batch total");
+  assert(sbiCmp.includes("D|1|38920194821|SBIN0004128|75000|ALAN TURING|SALARY_OCT2026"), "SBI CMP embeds pipe-delimited employee detail row");
+  assert(sbiCmp.endsWith("T|EOF"), "SBI CMP format terminates with standard trailer");
+
+  const hdfcEnet = LifecycleOperationsEngine.generateHdfcEnetFormat([
+    { employeeId: "fac-01", employeeName: "Alan Turing", bankName: "HDFC", accountNumber: "50100239102", ifscCode: "HDFC0001928", netPay: 75000 },
+  ], "APEXUNIV");
+  assert(hdfcEnet.includes("Transaction Type,Beneficiary Code"), "HDFC Enet format outputs corporate CSV header");
+  assert(hdfcEnet.includes("PAYROLL,fac-01,50100239102,\"Alan Turing\",75000,INR,NEFT,HDFC0001928,APEX_UNIVERSITY_PAYROLL"), "HDFC Enet outputs valid payroll row");
+
+  // 66.4 API Route End-to-End Execution (Phases A, B, C)
+  const esicApiReq = new NextRequest("http://localhost:3000/api/hr/payroll?action=ESIC_CHALLAN&period=October 2026", {
+    headers: { Cookie: `classroom_session=${adminToken}` },
+  });
+  const esicApiRes = await handleHrPayrollGet(esicApiReq);
+  assert(esicApiRes.status === 200, "GET /api/hr/payroll?action=ESIC_CHALLAN returns 200 OK");
+  const esicApiData = await esicApiRes.json();
+  assert(esicApiData.success === true, "ESIC API returns success: true");
+  assert(esicApiData.eligibleCount >= 3, "ESIC API identifies eligible lower-wage staff members");
+
+  const esicTxtReq = new NextRequest("http://localhost:3000/api/hr/payroll?action=ESIC_CHALLAN&format=TXT&period=October 2026", {
+    headers: { Cookie: `classroom_session=${adminToken}` },
+  });
+  const esicTxtRes = await handleHrPayrollGet(esicTxtReq);
+  assert(esicTxtRes.status === 200, "GET /api/hr/payroll?action=ESIC_CHALLAN&format=TXT returns 200 OK text file");
+
+  const form10eReq = new NextRequest("http://localhost:3000/api/hr/payroll?action=FORM_10E&staffId=fac-01&arrearsAmount=95000", {
+    headers: { Cookie: `classroom_session=${adminToken}` },
+  });
+  const form10eRes = await handleHrPayrollGet(form10eReq);
+  assert(form10eRes.status === 200, "GET /api/hr/payroll?action=FORM_10E returns 200 OK");
+  const form10eData = await form10eRes.json();
+  assert(form10eData.success === true, "Form 10E API returns success: true");
+  assert(typeof form10eData.form10E.arrearsTaxRelief === "number", "Form 10E computes arrears tax relief");
+
+  const form24qReq = new NextRequest("http://localhost:3000/api/hr/payroll?action=FORM_24Q&quarter=Q2", {
+    headers: { Cookie: `classroom_session=${adminToken}` },
+  });
+  const form24qRes = await handleHrPayrollGet(form24qReq);
+  assert(form24qRes.status === 200, "GET /api/hr/payroll?action=FORM_24Q returns 200 OK");
+  const form24qData = await form24qRes.json();
+  assert(form24qData.form24Q.header.formType === "24Q", "Form 24Q API generates 24Q structure");
+
+  const rosterApiReq = new NextRequest("http://localhost:3000/api/hr/payroll?action=ROSTER_200&cadreSize=42", {
+    headers: { Cookie: `classroom_session=${adminToken}` },
+  });
+  const rosterApiRes = await handleHrPayrollGet(rosterApiReq);
+  assert(rosterApiRes.status === 200, "GET /api/hr/payroll?action=ROSTER_200 returns 200 OK");
+  const rosterApiData = await rosterApiRes.json();
+  assert(rosterApiData.rosterReport.nextRosterPoint === 43, "Roster API identifies next roster point #43");
+
+  const noDuesGetReq = new NextRequest("http://localhost:3000/api/hr/payroll?action=NO_DUES_STATUS&employeeId=fac-01", {
+    headers: { Cookie: `classroom_session=${adminToken}` },
+  });
+  const noDuesGetRes = await handleHrPayrollGet(noDuesGetReq);
+  assert(noDuesGetRes.status === 200, "GET /api/hr/payroll?action=NO_DUES_STATUS returns 200 OK");
+  const noDuesGetData = await noDuesGetRes.json();
+  assert(noDuesGetData.noDues.overallStatus === "IN_PROGRESS", "No-Dues status reports IN_PROGRESS");
+
+  const loansGetReq = new NextRequest("http://localhost:3000/api/hr/payroll?action=STAFF_LOANS&staffId=fac-01", {
+    headers: { Cookie: `classroom_session=${adminToken}` },
+  });
+  const loansGetRes = await handleHrPayrollGet(loansGetReq);
+  assert(loansGetRes.status === 200, "GET /api/hr/payroll?action=STAFF_LOANS returns 200 OK");
+
+  const bankSbiReq = new NextRequest("http://localhost:3000/api/hr/payroll?action=BANK_EXPORT_ADVANCED&format=SBI_CMP&period=October 2026", {
+    headers: { Cookie: `classroom_session=${adminToken}` },
+  });
+  const bankSbiRes = await handleHrPayrollGet(bankSbiReq);
+  assert(bankSbiRes.status === 200, "GET /api/hr/payroll?action=BANK_EXPORT_ADVANCED (SBI_CMP) returns 200 OK");
+
+  const lateAuditReq = new NextRequest("http://localhost:3000/api/hr/payroll?action=LATE_PUNCH_AUDIT", {
+    headers: { Cookie: `classroom_session=${adminToken}` },
+  });
+  const lateAuditRes = await handleHrPayrollGet(lateAuditReq);
+  assert(lateAuditRes.status === 200, "GET /api/hr/payroll?action=LATE_PUNCH_AUDIT returns 200 OK");
+
+  const gratuityPostReq = new NextRequest("http://localhost:3000/api/hr/payroll", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "CALCULATE_GRATUITY",
+      employeeId: "fac-01",
+      joiningDate: "2016-07-01",
+      exitDate: "2026-07-01",
+      lastDrawnBasic: 89000,
+      lastDrawnDa: 12460,
+    }),
+  });
+  const gratuityPostRes = await handleHrPayrollPost(gratuityPostReq);
+  assert(gratuityPostRes.status === 200, "POST /api/hr/payroll (action: CALCULATE_GRATUITY) returns 200 OK");
+  const gratuityPostData = await gratuityPostRes.json();
+  assert(gratuityPostData.gratuity.isEligible === true, "Gratuity POST returns eligible status");
+
+  const ugcScreeningReq = new NextRequest("http://localhost:3000/api/hr/payroll", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "EVALUATE_UGC_SCREENING",
+      candidateName: "Dr. Applicant Scholar",
+      graduationPercentage: 85,
+      postGraduationPercentage: 86,
+      hasPhd: true,
+      hasNetJrf: true,
+      peerReviewedPublicationsCount: 6,
+      teachingExperienceYears: 4,
+    }),
+  });
+  const ugcScreeningRes = await handleHrPayrollPost(ugcScreeningReq);
+  assert(ugcScreeningRes.status === 200, "POST /api/hr/payroll (action: EVALUATE_UGC_SCREENING) returns 200 OK");
+  const ugcScreeningData = await ugcScreeningRes.json();
+  assert(ugcScreeningData.screening.isShortlistedForInterview === true, "UGC screening POST marks candidate shortlisted");
+
+  const guestBillReq = new NextRequest("http://localhost:3000/api/hr/payroll", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "SUBMIT_GUEST_LECTURE_BILL",
+      facultyName: "Dr. Guest Lecturer",
+      courseCode: "CS-401",
+      department: "Computer Science",
+      lecturesDelivered: 20,
+    }),
+  });
+  const guestBillRes = await handleHrPayrollPost(guestBillReq);
+  assert(guestBillRes.status === 200, "POST /api/hr/payroll (action: SUBMIT_GUEST_LECTURE_BILL) returns 200 OK");
+  const guestBillData = await guestBillRes.json();
+  assert(guestBillData.claim.billPayable === 30000, "Guest lecture bill POST computes ₹30,000 for 20 lectures");
+
+  const initNoDuesReq = new NextRequest("http://localhost:3000/api/hr/payroll", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "INITIATE_NO_DUES",
+      employeeId: "fac-01",
+      employeeName: "Dr. Alan Turing",
+      department: "Computer Science",
+      designation: "Professor",
+      reason: "Superannuation",
+    }),
+  });
+  const initNoDuesRes = await handleHrPayrollPost(initNoDuesReq);
+  assert(initNoDuesRes.status === 200, "POST /api/hr/payroll (action: INITIATE_NO_DUES) returns 200 OK");
+  const initNoDuesData = await initNoDuesRes.json();
+  assert(initNoDuesData.noDues.overallStatus === "IN_PROGRESS", "No-Dues POST initializes in IN_PROGRESS status");
+
+  const applyLoanReq = new NextRequest("http://localhost:3000/api/hr/payroll", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "APPLY_STAFF_LOAN",
+      employeeId: "fac-01",
+      employeeName: "Dr. Alan Turing",
+      loanType: "FESTIVAL_ADVANCE",
+      principalAmount: 10000,
+      tenureMonths: 10,
+    }),
+  });
+  const applyLoanRes = await handleHrPayrollPost(applyLoanReq);
+  assert(applyLoanRes.status === 200, "POST /api/hr/payroll (action: APPLY_STAFF_LOAN) returns 200 OK");
+  const applyLoanData = await applyLoanRes.json();
+  assert(applyLoanData.loan.monthlyEmi === 1000, "Staff loan POST computes monthly EMI ₹1,000");
+
+  const holdSalaryReq = new NextRequest("http://localhost:3000/api/hr/payroll", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "TOGGLE_SALARY_HOLD",
+      staffId: "fac-01",
+      holdStatus: "ON_HOLD",
+      holdReason: "Disciplinary vigilance inquiry",
+      suspensionMonths: 1,
+    }),
+  });
+  const holdSalaryRes = await handleHrPayrollPost(holdSalaryReq);
+  assert(holdSalaryRes.status === 200, "POST /api/hr/payroll (action: TOGGLE_SALARY_HOLD) places salary on hold with 200 OK");
+  const holdSalaryData = await holdSalaryRes.json();
+  assert(holdSalaryData.staff.holdStatus === "ON_HOLD", "Staff status confirmed ON_HOLD");
+  assert(holdSalaryData.subsistenceAllowance.allowancePercent === 50, "Subsistence allowance granted at 50% basic pay");
+
+  const releaseSalaryReq = new NextRequest("http://localhost:3000/api/hr/payroll", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "TOGGLE_SALARY_HOLD",
+      staffId: "fac-01",
+      holdStatus: "RELEASED",
+    }),
+  });
+  const releaseSalaryRes = await handleHrPayrollPost(releaseSalaryReq);
+  assert(releaseSalaryRes.status === 200, "POST /api/hr/payroll releases salary from hold with 200 OK");
+  const releaseSalaryData = await releaseSalaryRes.json();
+  assert(releaseSalaryData.staff.holdStatus === "RELEASED", "Staff status restored to RELEASED");
+
+  // =========================================================================
+  // GROUP 67: FACULTY ACADEMIC GOVERNANCE, COURSE LESSON PLANS, BLOOM TAXONOMY,
+  // LECTURE SUBSTITUTION & UGC ASAR SUITE
+  // =========================================================================
+  console.log("\n📦 Running Group 67: Faculty Academic Governance, Course Lesson Plans, Bloom Taxonomy, Lecture Substitution & UGC ASAR Suite");
+
+  // 67.1 Standard Course Lesson Plan Generation & Bloom's Taxonomy Tagging
+  const generatedPlan = FacultyAcademicEngine.generateStandardLessonPlan(
+    "CS-301",
+    "Advanced Algorithms & Systems",
+    "fac-01",
+    "alan.turing@classroom.edu"
+  );
+  assert(generatedPlan.length === 10, "FacultyAcademicEngine generates 10 standard curriculum modules");
+  assert(generatedPlan[0].topic.includes("Course Introduction"), "First module introduces course prerequisites");
+  assert(generatedPlan[0].bloomLevel === "L1_REMEMBER", "Introductory lecture tagged Bloom Level L1 (Remember)");
+  assert(generatedPlan[3].bloomLevel === "L3_APPLY", "Algorithmic design lecture tagged Bloom Level L3 (Apply)");
+  assert(generatedPlan[9].bloomLevel === "L6_CREATE", "Capstone lecture tagged Bloom Level L6 (Create)");
+  assert(generatedPlan.some((p) => p.deliveryMode === "LAB"), "Lesson plan includes hands-on laboratory sessions");
+
+  // 67.2 Syllabus Coverage Telemetry & On-Track Auditing
+  const initialCoverage = FacultyAcademicEngine.computeSyllabusCoverage(
+    "CS-301",
+    "Advanced Algorithms & Systems",
+    "alan.turing@classroom.edu",
+    generatedPlan
+  );
+  assert(initialCoverage.totalPlannedLectures === 10, "Total planned lectures computed as 10");
+  assert(initialCoverage.completedLectures === 4, "Initial completed lectures computed as 4");
+  assert(initialCoverage.completionPercentage === 40.0, "Coverage percentage accurately computed at 40.0%");
+  assert(initialCoverage.status === "ON_TRACK", "Initial delivery status confirmed ON_TRACK");
+
+  // All completed edge case
+  const completedPlan = generatedPlan.map((p) => ({ ...p, status: "COMPLETED" as const }));
+  const fullCoverage = FacultyAcademicEngine.computeSyllabusCoverage(
+    "CS-301",
+    "Advanced Algorithms & Systems",
+    "alan.turing@classroom.edu",
+    completedPlan
+  );
+  assert(fullCoverage.completionPercentage === 100.0, "Completed plan evaluates to 100% completion");
+  assert(fullCoverage.status === "COMPLETED", "Full syllabus marked COMPLETED");
+
+  // Behind schedule edge case
+  const delayedPlan = generatedPlan.map((p, idx) => ({
+    ...p,
+    status: idx === 0 ? ("COMPLETED" as const) : idx < 5 ? ("MISSED" as const) : ("PLANNED" as const),
+  }));
+  const delayedCoverage = FacultyAcademicEngine.computeSyllabusCoverage(
+    "CS-301",
+    "Advanced Algorithms & Systems",
+    "alan.turing@classroom.edu",
+    delayedPlan
+  );
+  assert(delayedCoverage.status === "BEHIND_SCHEDULE", "Plan with excessive missed lectures flagged BEHIND_SCHEDULE");
+
+  // 67.3 Proctorial Mentee Risk Telemetry (<75% attendance / low CGPA)
+  const menteeCohort = [
+    { id: "stu-01", name: "Rohan Verma", rollNo: "CS2026-001", attendanceRate: 64.5, cgpa: 7.2 },
+    { id: "stu-02", name: "Ananya Iyer", rollNo: "CS2026-002", attendanceRate: 88.0, cgpa: 4.6 },
+    { id: "stu-03", name: "Devansh Singh", rollNo: "CS2026-003", attendanceRate: 77.5, cgpa: 5.8 },
+    { id: "stu-04", name: "Priya Sharma", rollNo: "CS2026-004", attendanceRate: 94.0, cgpa: 9.1 },
+  ];
+  const menteeAudits = FacultyAcademicEngine.auditMenteeRisks(menteeCohort);
+  assert(menteeAudits.length === 4, "Audit evaluated all 4 cohort mentees");
+  assert(menteeAudits[0].riskSeverity === "HIGH_RISK", "Student with 64.5% attendance classified HIGH_RISK");
+  assert(menteeAudits[0].flags.some((f) => f.includes("Attendance critical")), "Attendance critical flag raised for <75%");
+  assert(menteeAudits[1].riskSeverity === "HIGH_RISK", "Student with 4.6 CGPA classified HIGH_RISK on academic probation");
+  assert(menteeAudits[2].riskSeverity === "MODERATE", "Student with borderline metrics classified MODERATE risk");
+  assert(menteeAudits[3].riskSeverity === "NORMAL", "High-achieving student classified NORMAL risk");
+
+  // 67.4 UGC PBAS Annual Self-Appraisal Report (ASAR) 2018 Table 1 & 2
+  const asarDossier = FacultyAcademicEngine.generateUgcAsarReport({
+    facultyName: "Dr. Alan Turing",
+    facultyEmail: "alan.turing@classroom.edu",
+    employeeCode: "FAC-CS-108",
+    designation: "Professor",
+    department: "Computer Science",
+    vidwanId: "VID-98124",
+    orcidId: "0000-0002-1825-0097",
+    allocatedHoursPerWeek: 16,
+    deliveredHoursPerWeek: 16,
+    syllabusCompletionRate: 95,
+    examDutyDays: 5,
+    institutionalCommitteeRoles: 2,
+    menteeCount: 20,
+    publicationsCount: 6,
+    firstAuthorCount: 4,
+    sponsoredGrantsLakhs: 30,
+  });
+  assert(asarDossier.category1Score >= 95, "Category I Teaching Activity score awarded >= 95/100");
+  assert(asarDossier.category1Grading === "GOOD", "Category I Grading awarded GOOD");
+  assert(asarDossier.category2Score >= 40, "Category II Governance & Activity score awarded >= 40/50");
+  assert(asarDossier.category3ResearchScore >= 200, "Category III Research score awarded based on publications & grants");
+  assert(asarDossier.overallGrading === "GOOD", "Overall UGC ASAR appraisal graded GOOD");
+  assert(asarDossier.verificationHash.startsWith("UGC-ASAR-"), "Cryptographic ASAR verification seal prefixed with UGC-ASAR-");
+
+  // 67.5 Faculty & HR EmployeeStaff Identity Synchronization
+  const facForSync = await prisma.faculty.findFirst({
+    where: { employeeCode: "FAC-CS-108" },
+    include: { user: true, department: true },
+  });
+  assert(!!facForSync, "Target faculty FAC-CS-108 found for HR synchronization");
+  const syncedHrStaff = await FacultyAcademicEngine.syncFacultyWithEmployeeStaff(facForSync!.userId);
+  assert(syncedHrStaff.email === facForSync!.user.email, "Synced HR staff matches faculty user email");
+  assert(syncedHrStaff.status === "ACTIVE", "Synced HR staff marked ACTIVE in payroll roster");
+  assert(syncedHrStaff.basicPay >= 57700, "Synced HR staff basic pay set according to 7th CPC academic pay matrix");
+
+  const dbStaffRecord = await prisma.employeeStaff.findUnique({
+    where: { email: facForSync!.user.email },
+  });
+  assert(!!dbStaffRecord, "EmployeeStaff table record verified in database");
+  assert(dbStaffRecord?.cadre === "TEACHING", "EmployeeStaff cadre set to TEACHING");
+
+  // 67.6 Faculty API End-to-End Route Execution (GET & POST Actions)
+  // GET: Lesson Plan template
+  const lessonPlanGetReq = new NextRequest("http://localhost:3000/api/faculty?action=LESSON_PLAN&courseCode=CS-301", {
+    headers: { Cookie: `classroom_session=${adminToken}` },
+  });
+  const lessonPlanGetRes = await handleFacultyGet(lessonPlanGetReq);
+  assert(lessonPlanGetRes.status === 200, "GET /api/faculty?action=LESSON_PLAN returns 200 OK");
+  const lessonPlanGetData = await lessonPlanGetRes.json();
+  assert(lessonPlanGetData.success === true, "Lesson plan retrieval returns success: true");
+  assert(Array.isArray(lessonPlanGetData.lessonPlans), "Lesson plan returns units array");
+
+  // POST: Save Course Lesson Plan
+  const savePlanReq = new NextRequest("http://localhost:3000/api/faculty", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "SAVE_LESSON_PLAN",
+      courseCode: "CS-301",
+      courseTitle: "Advanced Algorithms",
+      facultyEmail: facForSync!.user.email,
+      units: [
+        {
+          weekNumber: 1,
+          lectureNumber: 1,
+          topic: "Algorithm Analysis & Asymptotic Bounds",
+          plannedDate: "2026-08-05",
+          deliveryMode: "CLASSROOM",
+          bloomLevel: "L2_UNDERSTAND",
+          status: "PLANNED",
+          remarks: "Initial lecture session",
+        },
+        {
+          weekNumber: 2,
+          lectureNumber: 2,
+          topic: "Divide and Conquer Paradigms",
+          plannedDate: "2026-08-12",
+          deliveryMode: "CLASSROOM",
+          bloomLevel: "L3_APPLY",
+          status: "PLANNED",
+        },
+      ],
+    }),
+  });
+  const savePlanRes = await handleFacultyPost(savePlanReq);
+  assert(savePlanRes.status === 200, "POST /api/faculty (action: SAVE_LESSON_PLAN) returns 200 OK");
+  const savePlanData = await savePlanRes.json();
+  assert(savePlanData.count === 2, "Course lesson plan saved with 2 lecture units");
+
+  // Fetch saved plan and update actual delivery
+  const savedDbPlan = await prisma.courseLessonPlan.findFirst({
+    where: { courseCode: "CS-301", facultyEmail: facForSync!.user.email },
+  });
+  assert(!!savedDbPlan, "Course lesson plan verified in database");
+
+  const deliverReq = new NextRequest("http://localhost:3000/api/faculty", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "RECORD_LECTURE_DELIVERY",
+      planId: savedDbPlan!.id,
+      actualDate: "2026-08-05",
+      status: "COMPLETED",
+      remarks: "Covered Recurrence Relations and Master Theorem thoroughly",
+    }),
+  });
+  const deliverRes = await handleFacultyPost(deliverReq);
+  assert(deliverRes.status === 200, "POST /api/faculty (action: RECORD_LECTURE_DELIVERY) returns 200 OK");
+  const deliverData = await deliverRes.json();
+  assert(deliverData.lecture.status === "COMPLETED", "Lecture status updated to COMPLETED");
+
+  // POST: Create Lecture Substitution Request & Award Duty Credits
+  const subRequestReq = new NextRequest("http://localhost:3000/api/faculty", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "CREATE_SUBSTITUTION_REQUEST",
+      originalFacultyEmail: facForSync!.user.email,
+      substituteFacultyEmail: "substitute.faculty@classroom.edu",
+      courseCode: "CS-301",
+      courseTitle: "Advanced Algorithms",
+      scheduledDate: "2026-10-15",
+      slotTime: "10:00 AM - 11:00 AM",
+    }),
+  });
+  const subRequestRes = await handleFacultyPost(subRequestReq);
+  assert(subRequestRes.status === 200, "POST /api/faculty (action: CREATE_SUBSTITUTION_REQUEST) returns 200 OK");
+  const subRequestData = await subRequestRes.json();
+  assert(subRequestData.substitution.status === "PENDING_CONSENT", "Substitution initialized with PENDING_CONSENT");
+  assert(subRequestData.substitution.dutyCreditsAwarded === 1.0, "Substitute awarded 1.0 compensatory Duty Credit");
+
+  // POST: Respond to Lecture Substitution Consent (Accept)
+  const consentReq = new NextRequest("http://localhost:3000/api/faculty", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "RESPOND_SUBSTITUTION_CONSENT",
+      substitutionId: subRequestData.substitution.id,
+      decision: "ACCEPT",
+      responseNotes: "Gladly accepted, will conduct the dynamic programming tutorial.",
+    }),
+  });
+  const consentRes = await handleFacultyPost(consentReq);
+  assert(consentRes.status === 200, "POST /api/faculty (action: RESPOND_SUBSTITUTION_CONSENT) returns 200 OK");
+  const consentData = await consentRes.json();
+  assert(consentData.substitution.status === "ACCEPTED", "Substitution status transitioned to ACCEPTED");
+
+  // GET: Substitutions list
+  const subsGetReq = new NextRequest(`http://localhost:3000/api/faculty?action=SUBSTITUTIONS&facultyEmail=${facForSync!.user.email}`, {
+    headers: { Cookie: `classroom_session=${adminToken}` },
+  });
+  const subsGetRes = await handleFacultyGet(subsGetReq);
+  assert(subsGetRes.status === 200, "GET /api/faculty?action=SUBSTITUTIONS returns 200 OK");
+  const subsGetData = await subsGetRes.json();
+  assert(subsGetData.substitutions.length >= 1, "Substitutions endpoint returns recorded delegations");
+
+  // GET: Mentee Risks
+  const menteeRisksGetReq = new NextRequest("http://localhost:3000/api/faculty?action=MENTEE_RISKS", {
+    headers: { Cookie: `classroom_session=${adminToken}` },
+  });
+  const menteeRisksGetRes = await handleFacultyGet(menteeRisksGetReq);
+  assert(menteeRisksGetRes.status === 200, "GET /api/faculty?action=MENTEE_RISKS returns 200 OK");
+  const menteeRisksGetData = await menteeRisksGetRes.json();
+  assert(Array.isArray(menteeRisksGetData.menteeRisks), "Mentee risks endpoint returns student audit telemetry");
+
+  // POST: Record Proctorial Mentoring Session
+  const mentorLogReq = new NextRequest("http://localhost:3000/api/faculty", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "RECORD_MENTORING_SESSION",
+      studentId: "stu-01",
+      studentRollNo: "CS2026-001",
+      studentName: "Rohan Verma",
+      category: "ATTENDANCE_INTERVENTION",
+      discussionNotes: "Discussed medical leave recovery plan and recommended makeup lab hours.",
+      actionItems: "Submit medical certificate to Dean's office within 48 hours.",
+      riskLevel: "HIGH_RISK",
+      parentContacted: true,
+    }),
+  });
+  const mentorLogRes = await handleFacultyPost(mentorLogReq);
+  assert(mentorLogRes.status === 200, "POST /api/faculty (action: RECORD_MENTORING_SESSION) returns 200 OK");
+  const mentorLogData = await mentorLogRes.json();
+  assert(mentorLogData.mentoringSession.studentRollNo === "CS2026-001", "Mentoring session saved with student roll number");
+  assert(mentorLogData.mentoringSession.parentContacted === true, "Mentoring session flags parent contact confirmation");
+
+  // GET: UGC ASAR 2018 Appraisal Dossier
+  const asarGetReq = new NextRequest(`http://localhost:3000/api/faculty?action=UGC_ASAR&facultyEmail=${facForSync!.user.email}`, {
+    headers: { Cookie: `classroom_session=${adminToken}` },
+  });
+  const asarGetRes = await handleFacultyGet(asarGetReq);
+  assert(asarGetRes.status === 200, "GET /api/faculty?action=UGC_ASAR returns 200 OK");
+  const asarGetData = await asarGetRes.json();
+  assert(asarGetData.asarDossier.overallGrading === "GOOD", "UGC ASAR endpoint evaluates overall grading to GOOD");
+
+  // POST: Internal Seed Money Grant Application
+  const seedGrantReq = new NextRequest("http://localhost:3000/api/faculty", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "APPLY_SEED_GRANT",
+      title: "Fault-Tolerant Quantum Consensus for Scalable Enterprise Ledgers",
+      amountRequested: 250000,
+      remarks: "Institutional seed grant proposal for high-throughput distributed state machines",
+    }),
+  });
+  const seedGrantRes = await handleFacultyPost(seedGrantReq);
+  assert(seedGrantRes.status === 200, "POST /api/faculty (action: APPLY_SEED_GRANT) returns 200 OK");
+  const seedGrantData = await seedGrantRes.json();
+  assert(seedGrantData.grantClaim.claimType === "SEED_MONEY_GRANT", "Seed money grant claim recorded in database");
+  assert(seedGrantData.grantClaim.amountRequested === 250000, "Seed grant amount set to ₹2,50,000");
+
+  // POST: National/International Conference Registration Claim
+  const confClaimReq = new NextRequest("http://localhost:3000/api/faculty", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "SUBMIT_CONFERENCE_CLAIM",
+      title: "IEEE Symposium on Security and Privacy 2026 Registration Fee",
+      amountRequested: 25000,
+      remarks: "Oral paper presentation on Zero-Knowledge Knowledge Graphs",
+      proofDocumentUrl: "https://ieee.org/receipt-7821.pdf",
+    }),
+  });
+  const confClaimRes = await handleFacultyPost(confClaimReq);
+  assert(confClaimRes.status === 200, "POST /api/faculty (action: SUBMIT_CONFERENCE_CLAIM) returns 200 OK");
+  const confClaimData = await confClaimRes.json();
+  assert(confClaimData.conferenceClaim.claimType === "CONFERENCE_REGISTRATION", "Conference reimbursement claim recorded");
+
+  // GET: Research Claims list
+  const claimsGetReq = new NextRequest("http://localhost:3000/api/faculty?action=RESEARCH_CLAIMS", {
+    headers: { Cookie: `classroom_session=${adminToken}` },
+  });
+  const claimsGetRes = await handleFacultyGet(claimsGetReq);
+  assert(claimsGetRes.status === 200, "GET /api/faculty?action=RESEARCH_CLAIMS returns 200 OK");
+  const claimsGetData = await claimsGetRes.json();
+  assert(claimsGetData.claims.length >= 2, "Research claims endpoint lists recorded seed grants and conference claims");
+
+  // GET: Official Bilingual Printable Payslip with QR Seal
+  const printPayslipReq = new NextRequest(`http://localhost:3000/api/faculty?action=PRINT_PAYSLIP&facultyEmail=${facForSync!.user.email}`, {
+    headers: { Cookie: `classroom_session=${adminToken}` },
+  });
+  const printPayslipRes = await handleFacultyGet(printPayslipReq);
+  assert(printPayslipRes.status === 200, "GET /api/faculty?action=PRINT_PAYSLIP returns 200 OK");
+  const printPayslipData = await printPayslipRes.json();
+  assert(printPayslipData.institutionHeader.pan === "AAATA0001A", "Payslip embeds institutional PAN identifier");
+  assert(printPayslipData.qrSeal.startsWith("VERIFIED-PAYSLIP:"), "Payslip issues cryptographic QR verification seal");
+  assert(printPayslipData.payslip.grossSalary > 0, "Payslip provides computed gross earnings breakdown");
+
+  // POST: Update Research Identifiers (Vidwan, ORCID, Scopus, Google Scholar)
+  const updateIdsReq = new NextRequest("http://localhost:3000/api/faculty", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "UPDATE_RESEARCH_IDS",
+      facultyId: facForSync!.id,
+      vidwanId: "IN-VID-2026-108",
+      orcidId: "0000-0002-9988-1122",
+      scopusAuthorId: "57218940123",
+      googleScholarId: "gscholar_108_alan",
+    }),
+  });
+  const updateIdsRes = await handleFacultyPost(updateIdsReq);
+  assert(updateIdsRes.status === 200, "POST /api/faculty (action: UPDATE_RESEARCH_IDS) returns 200 OK");
+  const updateIdsData = await updateIdsRes.json();
+  assert(updateIdsData.faculty.vidwanId === "IN-VID-2026-108", "Vidwan ID successfully updated");
+  assert(updateIdsData.faculty.orcidId === "0000-0002-9988-1122", "ORCID ID successfully updated");
+  assert(updateIdsData.faculty.scopusAuthorId === "57218940123", "Scopus Author ID successfully updated");
+  assert(updateIdsData.faculty.googleScholarId === "gscholar_108_alan", "Google Scholar ID successfully updated");
+
+  // =========================================================================
+  // TEST GROUP 68: NEP 2020 Compliance (APAAR/ABC), NAAC SSR, AI Token Budgets,
+  // Barcode Wedge Circulation, Clinical Stock Decrement & Placement ATS Offers
+  // =========================================================================
+  console.log("\n📌 Group 68: NEP 2020 (APAAR/ABC), NAAC SSR, AI Token Budgets, Barcode Circulation & ATS Offers");
+
+  const studentForGroup68 = await prisma.student.findFirst({
+    include: { user: true, program: true },
+  });
+  assert(!!studentForGroup68, "Enrolled student located for NEP 2020 verification");
+
+  // 68.1 NEP 2020 APAAR ID Validation & UGC 10-Point Credit Transfer
+  const validApaarCheck = NadAbcEngine.validateApaarId("2026-9812-4019");
+  assert(validApaarCheck.isValid === true && validApaarCheck.normalizedId === "2026-9812-4019", "Valid 12-digit APAAR ID passes NEP 2020 validation");
+
+  const invalidApaarCheck = NadAbcEngine.validateApaarId("1234-invalid");
+  assert(invalidApaarCheck.isValid === false, "Malformed non-12-digit APAAR ID rejected");
+
+  const derivedAbc = NadAbcEngine.deriveAbcAccountId("2026-9812-4019");
+  assert(derivedAbc === "ABC-IND-98124019", "ABC Account ID derived deterministically from APAAR ID");
+
+  const gradeO = NadAbcEngine.calculateUgcGrade(95);
+  assert(gradeO.letterGrade === "O" && gradeO.gradePoints === 10, "95% maps to UGC Outstanding (O) grade with 10 grade points");
+
+  const gradeA = NadAbcEngine.calculateUgcGrade(75);
+  assert(gradeA.letterGrade === "A" && gradeA.gradePoints === 8, "75% maps to UGC Very Good (A) grade with 8 grade points");
+
+  const gradeF = NadAbcEngine.calculateUgcGrade(35);
+  assert(gradeF.letterGrade === "F" && gradeF.gradePoints === 0, "35% maps to UGC Fail (F) grade with 0 grade points");
+
+  const abcDossier = NadAbcEngine.generateTranscriptDossier({
+    studentId: studentForGroup68!.id,
+    studentName: `${studentForGroup68!.user.firstName} ${studentForGroup68!.user.lastName}`,
+    rollNumber: studentForGroup68!.rollNumber,
+    admissionNumber: studentForGroup68!.admissionNumber,
+    apaarId: "2026-9812-4019",
+    courses: [
+      { code: "CS-401", title: "Distributed Cloud Systems", semester: 4, credits: 4, scorePercentage: 92 },
+      { code: "CS-402", title: "Autonomous Neural Systems", semester: 4, credits: 4, scorePercentage: 86 },
+    ],
+  });
+  assert(abcDossier.totalCreditsEarned === 8, "Transcript dossier totals 8 earned academic credits");
+  assert(abcDossier.cumulativeGpa >= 9.0, "Dossier cumulative GPA calculates above 9.0 on UGC 10-point scale");
+  assert(abcDossier.nadVerificationSeal.startsWith("NAD-ABC-"), "Dossier generates SHA-256 seal prefixed with NAD-ABC-");
+
+  const nadXml = NadAbcEngine.generateDigilockerNadXml(abcDossier);
+  assert(nadXml.includes("<NadAcademicCreditExchange") && nadXml.includes("<ApaarId>2026-9812-4019</ApaarId>"), "Digilocker NAD XML contains credit exchange envelope with valid APAAR ID");
+  assert(nadXml.includes("<CreditRepository>") && nadXml.includes("<CourseRecord>"), "NAD XML contains CreditRepository and CourseRecord payload");
+
+  // 68.2 Transcript API NEP 2020 Endpoints (format=nad_xml, format=abc_json, and UPDATE_APAAR_ID)
+  const updateApaarReq = new NextRequest("http://localhost:3000/api/examinations/transcripts", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "UPDATE_APAAR_ID",
+      studentId: studentForGroup68!.id,
+      apaarId: "2026-9812-4019",
+    }),
+  });
+  const updateApaarRes = await handleTranscriptsPost(updateApaarReq);
+  assert(updateApaarRes.status === 200, "POST /api/examinations/transcripts (action: UPDATE_APAAR_ID) returns 200 OK");
+  const updateApaarData = await updateApaarRes.json();
+  assert(updateApaarData.student.apaarId === "2026-9812-4019", "Student profile updated with 12-digit APAAR ID");
+  assert(updateApaarData.student.abcAccountId.startsWith("ABC-IND-"), "Student profile linked with ABC account ID");
+
+  const abcJsonReq = new NextRequest(`http://localhost:3000/api/examinations/transcripts?format=abc_json&studentId=${studentForGroup68!.id}`, {
+    headers: { Cookie: `classroom_session=${adminToken}` },
+  });
+  const abcJsonRes = await handleTranscriptsGet(abcJsonReq);
+  assert(abcJsonRes.status === 200, "GET /api/examinations/transcripts?format=abc_json returns 200 OK");
+  const abcJsonData = await abcJsonRes.json();
+  assert(abcJsonData.success === true && !!abcJsonData.apaarDossier, "Transcripts endpoint outputs complete APAAR / ABC JSON dossier");
+
+  const nadXmlReq = new NextRequest(`http://localhost:3000/api/examinations/transcripts?format=nad_xml&studentId=${studentForGroup68!.id}`, {
+    headers: { Cookie: `classroom_session=${adminToken}` },
+  });
+  const nadXmlRes = await handleTranscriptsGet(nadXmlReq);
+  assert(nadXmlRes.status === 200, "GET /api/examinations/transcripts?format=nad_xml returns 200 OK");
+  const nadXmlContent = await nadXmlRes.text();
+  assert(nadXmlContent.includes("<NadAcademicCreditExchange"), "Digilocker NAD XML endpoint returns valid XML credit transfer payload");
+
+  // 68.3 NAAC Self Study Report (SSR) Assembly & Criteria 1-7 Dossier Engine
+  const genSsrReq = new NextRequest("http://localhost:3000/api/accreditation", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({ action: "GENERATE_SSR" }),
+  });
+  const genSsrRes = await handleAccreditationPost(genSsrReq);
+  assert(genSsrRes.status === 201, "POST /api/accreditation (action: GENERATE_SSR) returns 201 Created");
+  const genSsrData = await genSsrRes.json();
+  assert(genSsrData.success === true, "SSR generation returns success: true");
+  assert(genSsrData.ssr.criteriaBreakdown.length === 7, "NAAC SSR dossier synthesizes all 7 National Assessment Criteria");
+  assert(genSsrData.ssr.executiveSummary.swocAnalysis.strengths.length >= 3, "NAAC SSR incorporates institutional SWOC Strengths analysis");
+  assert(genSsrData.ssr.executiveSummary.swocAnalysis.weaknesses.length >= 2, "NAAC SSR incorporates SWOC Weaknesses & Opportunities analysis");
+  assert(genSsrData.ssr.verificationHash.startsWith("NAAC-SSR-"), "SSR issued with cryptographic NAAC-SSR- verification seal");
+
+  const getSsrReq = new NextRequest("http://localhost:3000/api/accreditation?tab=ssr", {
+    headers: { Cookie: `classroom_session=${adminToken}` },
+  });
+  const getSsrRes = await handleAccreditationGet(getSsrReq);
+  assert(getSsrRes.status === 200, "GET /api/accreditation?tab=ssr returns 200 OK");
+  const getSsrData = await getSsrRes.json();
+  assert(getSsrData.ssr.institutionName.toUpperCase().includes("APEX"), "SSR GET tab returns populated institution dossier");
+
+  // 68.4 AI Multi-Agent Tiered Daily Token Budgeting & Governance
+  TokenBudgetEngine.resetAll();
+  assert(TokenBudgetEngine.getDailyLimit("STUDENT") === 10000, "Student daily AI allowance set to 10,000 tokens");
+  assert(TokenBudgetEngine.getDailyLimit("FACULTY") === 50000, "Faculty daily AI allowance set to 50,000 tokens");
+  assert(TokenBudgetEngine.getDailyLimit("SUPER_ADMIN") === 100000, "Super Admin daily AI allowance set to 100,000 tokens");
+
+  const initialQuota = TokenBudgetEngine.checkQuota("ai-test-usr-101", "STUDENT", 500);
+  assert(initialQuota.allowed === true && initialQuota.consumed === 0, "New student allowed initial token query");
+
+  TokenBudgetEngine.recordUsage("ai-test-usr-101", 9800);
+  const nearLimitQuota = TokenBudgetEngine.checkQuota("ai-test-usr-101", "STUDENT", 100);
+  assert(nearLimitQuota.allowed === true, "Query within remaining 200 token budget permitted");
+
+  const exceedQuota = TokenBudgetEngine.checkQuota("ai-test-usr-101", "STUDENT", 300);
+  assert(exceedQuota.allowed === false, "Query exceeding daily limit (9800 + 300 > 10000) correctly rejected");
+
+  const aiQueryReq = new NextRequest("http://localhost:3000/api/ai/query", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({ prompt: "What are the core requirements for NAAC Criterion 3?" }),
+  });
+  const aiQueryRes = await handleAiQuery(aiQueryReq);
+  assert(aiQueryRes.status === 200, "POST /api/ai/query executes successfully under authorized budget");
+  const aiQueryData = await aiQueryRes.json();
+  assert(aiQueryData.success === true, "AI query returns success: true");
+
+  TokenBudgetEngine.recordUsage("usr-exhausted-01", 10000);
+  const aiExhaustReq = new NextRequest("http://localhost:3000/api/ai/query", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ prompt: "Exhausted query test", userId: "usr-exhausted-01" }),
+  });
+  const aiExhaustRes = await handleAiQuery(aiExhaustReq);
+  assert(aiExhaustRes.status === 429, "POST /api/ai/query blocks over-budget user with 429 Too Many Requests");
+  const aiExhaustData = await aiExhaustRes.json();
+  assert(aiExhaustData.error.includes("Daily AI token limit reached"), "429 response message specifies daily limit exhaustion");
+
+  // 68.5 Clinical Pharmacy Automatic Inventory Stock Decrement
+  const pharmacyStock = clinicStore.getPharmacyStock();
+  let pcm = pharmacyStock.find((m) => m.name.toLowerCase().includes("paracetamol"));
+  assert(!!pcm, "Paracetamol medication found in clinic pharmacy repository");
+  if (pcm!.stock < 10) {
+    pcm = clinicStore.restockMedicine(pcm!.id, 50);
+  }
+  const startingStock = pcm!.stock;
+
+  const medConsultReq = new NextRequest("http://localhost:3000/api/clinic", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "LOG_CONSULTATION",
+      patientName: "Vikram Seth",
+      patientRoll: studentForGroup68!.rollNumber,
+      chiefComplaint: "Acute tension migraine and high body temperature",
+      vitals: { bp: "120/80", pulseRate: 74, temperatureF: 101.4, spo2Percent: 98 },
+      diagnosis: "Viral pyrexia with cephalalgia",
+      prescriptions: [
+        { name: "Paracetamol 650mg Tabs", dosage: "650mg", frequency: "BD", days: 3 },
+      ],
+    }),
+  });
+  const medConsultRes = await handleClinicPost(medConsultReq);
+  assert(medConsultRes.status === 200, "POST /api/clinic (action: LOG_CONSULTATION) returns 200 OK");
+
+  const updatedPharmacy = clinicStore.getPharmacyStock();
+  const updatedPcm = updatedPharmacy.find((m) => m.name.toLowerCase().includes("paracetamol"));
+  assert(updatedPcm!.stock === startingStock - 6, `Clinical prescription automatically deducted 6 tablets (starting: ${startingStock}, remaining: ${updatedPcm!.stock})`);
+
+  // 68.6 Rapid Hardware Wedge Barcode Circulation Scan Engine
+  const libBook = await prisma.libraryBook.findFirst({ where: { availableCopies: { gt: 1 } } });
+  assert(!!libBook, "Library book catalog item identified for circulation test");
+  const bookCopiesBefore = libBook!.availableCopies;
+
+  const scanCheckoutReq = new NextRequest("http://localhost:3000/api/library", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "RAPID_CIRCULATION_SCAN",
+      barcode: libBook!.isbn,
+      studentRollOrId: studentForGroup68!.rollNumber,
+      operation: "CHECKOUT",
+    }),
+  });
+  const scanCheckoutRes = await handleLibraryPost(scanCheckoutReq);
+  assert(scanCheckoutRes.status === 200, "POST /api/library (action: RAPID_CIRCULATION_SCAN - CHECKOUT) returns 200 OK");
+  const scanCheckoutData = await scanCheckoutRes.json();
+  assert(scanCheckoutData.success === true && scanCheckoutData.mode === "RAPID_CHECKOUT", "Rapid checkout completed in atomic scan");
+
+  const bookAfterCheckout = await prisma.libraryBook.findUnique({ where: { id: libBook!.id } });
+  assert(bookAfterCheckout!.availableCopies === bookCopiesBefore - 1, "Catalog inventory decremented by 1 following rapid checkout");
+
+  const scanReturnReq = new NextRequest("http://localhost:3000/api/library", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "RAPID_CIRCULATION_SCAN",
+      barcode: libBook!.isbn,
+      studentRollOrId: studentForGroup68!.rollNumber,
+      operation: "RETURN",
+    }),
+  });
+  const scanReturnRes = await handleLibraryPost(scanReturnReq);
+  assert(scanReturnRes.status === 200, "POST /api/library (action: RAPID_CIRCULATION_SCAN - RETURN) returns 200 OK");
+  const scanReturnData = await scanReturnRes.json();
+  assert(scanReturnData.success === true && scanReturnData.mode === "RAPID_RETURN", "Rapid return completed with loan marked RETURNED");
+
+  const bookAfterReturn = await prisma.libraryBook.findUnique({ where: { id: libBook!.id } });
+  assert(bookAfterReturn!.availableCopies === bookCopiesBefore, "Catalog inventory replenished to initial copies after rapid return");
+
+  // 68.7 Placement ATS Cryptographic Offer Letter Issuance Engine
+  const genOfferReq = new NextRequest("http://localhost:3000/api/careers", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "GENERATE_OFFER_LETTER",
+      candidateName: `${studentForGroup68!.user.firstName} ${studentForGroup68!.user.lastName}`,
+      candidateRollNo: studentForGroup68!.rollNumber,
+      companyName: "Google DeepMind",
+      jobTitle: "Senior Systems Research Engineer",
+      ctc: "45.0 LPA",
+      joiningDate: "2026-11-01",
+      location: "London / Bengaluru Labs",
+    }),
+  });
+  const genOfferRes = await handleCareersPost(genOfferReq);
+  assert(genOfferRes.status === 201, "POST /api/careers (action: GENERATE_OFFER_LETTER) returns 201 Created");
+  const genOfferData = await genOfferRes.json();
+  assert(genOfferData.success === true, "Placement offer letter generation returns success: true");
+  assert(genOfferData.offerLetter.offerRef.startsWith("OFFER-"), "Offer letter reference has standardized OFFER- prefix");
+  assert(genOfferData.offerLetter.digitalSeal.startsWith("APEX-PLACEMENTS-"), "Cryptographic digital seal generated with APEX-PLACEMENTS- prefix");
+  assert(genOfferData.offerLetter.ctc === "45.0 LPA", "Offer letter confirms 45.0 LPA compensation package");
+  assert(genOfferData.offerLetter.companyName === "Google DeepMind", "Offer letter confirms recruiting enterprise partner");
+
+  // =========================================================================
+  // GROUP 69: Unified Multi-Tier Approval Workflows, Integration Hub & Self-Service Desk
+  // =========================================================================
+  console.log("\n📌 Group 69: Unified Multi-Tier Approval Workflows, Integration Hub & Self-Service Desk");
+
+  // 69.1 Multi-Tier Institutional Approval Engine
+  const testWf = approvalEngine.createWorkflowItem({
+    workflowType: "PURCHASE_REQUISITION",
+    institutionId: "inst-apex-01",
+    requesterId: "fac-chen-01",
+    requesterName: "Dr. Wei Chen",
+    requesterRole: "HOD",
+    entityId: "po-quantum-lab-01",
+    title: "Liquid Helium Cryostat Purchase for Quantum Computing Lab",
+    description: "Requisitioning 50L Cryostat dewars for Qubit coherence experiments.",
+    metadata: { estimatedCost: 15000, vendor: "CryoTech Systems Ltd" },
+  });
+
+  assert(testWf.id.startsWith("WF-REQ-"), "Workflow requisition created with WF-REQ- prefix");
+  assert(testWf.currentLevel === 1, "New workflow requisition initialized at Level 1");
+  assert(testWf.requiredLevels === 2, "Purchase requisition configured for 2-tier approval");
+  assert(testWf.status === "PENDING", "Workflow status is PENDING upon creation");
+
+  // Unauthorized Level 1 attempt (Student trying to approve HOD purchase)
+  const unauthorizedDecision = approvalEngine.processDecision(
+    testWf.id,
+    { userId: "usr-stu-01", role: "STUDENT", name: "Alex Mercer" },
+    "APPROVE",
+    "Student unauthorized approval attempt"
+  );
+  assert(unauthorizedDecision.success === false, "Unauthorized role correctly blocked from deciding workflow");
+
+  // Authorized Level 1 Approval (HOD/Accountant)
+  const l1Decision = approvalEngine.processDecision(
+    testWf.id,
+    { userId: "usr-acct-01", role: "ACCOUNTANT", name: "Chief Financial Accountant" },
+    "APPROVE",
+    "Budget line item cleared under Sponsored Research Equipment Grant."
+  );
+  assert(l1Decision.success === true, "Authorized Level 1 officer approves requisition");
+  assert(l1Decision.workflow!.currentLevel === 2, "Workflow successfully escalated to Level 2 (Executive Tier)");
+  assert(l1Decision.workflow!.status === "PENDING", "Status remains PENDING while awaiting final level approval");
+
+  // Authorized Level 2 Final Approval (Principal)
+  const l2Decision = approvalEngine.processDecision(
+    testWf.id,
+    { userId: "usr-prin-01", role: "PRINCIPAL", name: "Dr. Arthur Pendelton" },
+    "APPROVE",
+    "Sanctioned and approved under Institute Research Capex 2026."
+  );
+  assert(l2Decision.success === true, "Principal approves final Level 2 tier");
+  assert(l2Decision.workflow!.status === "APPROVED", "Workflow transitioned to APPROVED upon final level completion");
+  assert(l2Decision.workflow!.completionSeal!.startsWith("APPROVED-SEAL-"), "Workflow stamped with cryptographic completion seal");
+
+  // Workflow API GET & POST verification
+  const submitWfReq = new NextRequest("http://localhost:3000/api/workflows/approvals", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "SUBMIT",
+      workflowType: "GRADE_CORRECTION",
+      entityId: "exam-cs402-grade-corr",
+      title: "Mid-Term Question 4 Revaluation Discrepancy",
+      description: "Answer script question 4 re-totaling adds 3 marks following evaluator re-check.",
+      metadata: { originalMarks: 72, revisedMarks: 75, courseCode: "CS-402" },
+    }),
+  });
+  const submitWfRes = await handleApprovalsPost(submitWfReq);
+  assert(submitWfRes.status === 201, "POST /api/workflows/approvals (action: SUBMIT) returns 201 Created");
+  const submitWfData = await submitWfRes.json();
+  assert(submitWfData.success === true, "Workflow submission returned success: true");
+  const createdWfId = submitWfData.workflow.id;
+
+  const decideWfReq = new NextRequest("http://localhost:3000/api/workflows/approvals", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "DECIDE",
+      workflowId: createdWfId,
+      decision: "APPROVE",
+      remarks: "CoE reviewed original answer key; verified revised total.",
+    }),
+  });
+  const decideWfRes = await handleApprovalsPost(decideWfReq);
+  assert(decideWfRes.status === 200, "POST /api/workflows/approvals (action: DECIDE) returns 200 OK");
+
+  const getWfReq = new NextRequest("http://localhost:3000/api/workflows/approvals?status=PENDING", {
+    method: "GET",
+    headers: { Cookie: `classroom_session=${adminToken}` },
+  });
+  const getWfRes = await handleApprovalsGet(getWfReq);
+  assert(getWfRes.status === 200, "GET /api/workflows/approvals returns 200 OK");
+  const getWfData = await getWfRes.json();
+  assert(getWfData.success === true && typeof getWfData.summary.total === "number", "Workflow GET returns summary metrics");
+
+  // 69.2 Enterprise Integration Management Hub
+  const getIntegrationsReq = new NextRequest("http://localhost:3000/api/integrations", {
+    method: "GET",
+    headers: { Cookie: `classroom_session=${adminToken}` },
+  });
+  const getIntegrationsRes = await handleIntegrationsGet(getIntegrationsReq);
+  assert(getIntegrationsRes.status === 200, "GET /api/integrations returns 200 OK");
+  const integrationsData = await getIntegrationsRes.json();
+  assert(integrationsData.connectors.length >= 8, "Integration Hub catalogs all 8 core campus connectors");
+  assert(integrationsData.summary.totalConnectors >= 8, "Integration summary aggregates total connectors");
+
+  const pingReq = new NextRequest("http://localhost:3000/api/integrations", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({ action: "PING_TEST", connectorId: "razorpay" }),
+  });
+  const pingRes = await handleIntegrationsPost(pingReq);
+  assert(pingRes.status === 200, "POST /api/integrations (action: PING_TEST) returns 200 OK");
+  const pingData = await pingRes.json();
+  assert(pingData.success === true && pingData.latencyMs > 0, "Connector ping test reports valid response latency");
+
+  // Webhook HMAC Verification
+  const whTestPayload = JSON.stringify({ event: "payment.captured", id: "pay_test_12345" });
+  const whTestSecret = "apex_wh_secret_super_secure_key_2026";
+  const validSig = crypto.createHmac("sha256", whTestSecret).update(whTestPayload).digest("hex");
+  const isValidHmac = integrationHub.verifyWebhookHMAC(whTestPayload, validSig, whTestSecret);
+  assert(isValidHmac === true, "Integration Hub correctly validates genuine HMAC-SHA256 webhook signature");
+  const isInvalidHmac = integrationHub.verifyWebhookHMAC(whTestPayload, "forged_malicious_signature_hex", whTestSecret);
+  assert(isInvalidHmac === false, "Integration Hub correctly rejects forged webhook signature");
+
+  // 69.3 Universal Student & Staff Self-Service Desk
+  const submitSsrReq = new NextRequest("http://localhost:3000/api/self-service", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "SUBMIT_REQUEST",
+      requestType: "BONAFIDE_CERTIFICATE",
+      purpose: "Passport office institutional bonafide proof letter",
+      urgency: "HIGH",
+      userIdentifier: "CS2026-0042",
+    }),
+  });
+  const submitSsrRes = await handleSelfServicePost(submitSsrReq);
+  assert(submitSsrRes.status === 201, "POST /api/self-service (action: SUBMIT_REQUEST) returns 201 Created");
+  const submitSsrData = await submitSsrRes.json();
+  assert(submitSsrData.request.id.startsWith("SSR-"), "Service request issued with SSR- prefix");
+  assert(submitSsrData.request.verificationToken.startsWith("APEX-DOC-"), "Service request stamped with APEX-DOC- verification token");
+  assert(submitSsrData.request.slaHours === 24, "Bonafide certificate assigned statutory 24-hour SLA");
+
+  const resolveSsrReq = new NextRequest("http://localhost:3000/api/self-service", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "UPDATE_STATUS",
+      requestId: submitSsrData.request.id,
+      status: "COMPLETED",
+      remarks: "Digital Bonafide letter generated and sealed with Registrar cryptographic signature.",
+    }),
+  });
+  const resolveSsrRes = await handleSelfServicePost(resolveSsrReq);
+  assert(resolveSsrRes.status === 200, "POST /api/self-service (action: UPDATE_STATUS) returns 200 OK");
+  const resolveSsrData = await resolveSsrRes.json();
+  assert(resolveSsrData.request.status === "COMPLETED", "Service request marked COMPLETED");
+  assert(resolveSsrData.request.digitalCertificateDocUrl!.includes("download"), "Completed service request exposes downloadable digital certificate");
+
+  const getDeskSsrReq = new NextRequest("http://localhost:3000/api/self-service", {
+    method: "GET",
+    headers: { Cookie: `classroom_session=${adminToken}` },
+  });
+  const getDeskSsrRes = await handleSelfServiceGet(getDeskSsrReq);
+  assert(getDeskSsrRes.status === 200, "GET /api/self-service returns 200 OK");
+  const getDeskSsrData = await getDeskSsrRes.json();
+  assert(getDeskSsrData.success === true && Array.isArray(getDeskSsrData.requests), "Self-service GET returns populated requests list");
+  assert(getDeskSsrData.summary.total > 0, "Self-service summary reflects active institutional requests");
+
+  // =========================================================================
+  // Group 70: Enterprise Bug Elimination, Idempotency Safeguards & Self-Service Hardening
+  // =========================================================================
+  console.log("\n📌 Group 70: Enterprise Bug Elimination, Idempotency Safeguards & Self-Service Hardening");
+
+  // 70.1 Challan Approval Double-Credit / Idempotency Prevention
+  const targetFeeForChallan = await prisma.studentFee.findFirst({
+    include: { student: { include: { user: true } } },
+  });
+  assert(!!targetFeeForChallan, "Target student fee located for offline challan testing");
+
+  const group70StudentToken = await signJwt({
+    userId: targetFeeForChallan!.student.userId,
+    email: targetFeeForChallan!.student.user.email,
+    role: "STUDENT",
+    institutionId: targetFeeForChallan!.student.user.institutionId,
+  });
+
+  const initialFeePaid = targetFeeForChallan!.paidAmount;
+  const testChallanRef = `CHL-TEST-${Date.now()}`;
+  const testChallanTxn = await prisma.paymentTransaction.create({
+    data: {
+      studentFeeId: targetFeeForChallan!.id,
+      amount: 500,
+      paymentMethod: "BANK_CHALLAN",
+      referenceNumber: testChallanRef,
+      status: "PENDING",
+      gatewayResponse: "Test offline branch challan for idempotency verification",
+    },
+  });
+
+  // First approval: should succeed
+  const approveChallanReq1 = new NextRequest("http://localhost:3000/api/finance", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "APPROVE_CHALLAN",
+      transactionId: testChallanTxn.id,
+    }),
+  });
+  const approveChallanRes1 = await handleFinancePost(approveChallanReq1);
+  assert(approveChallanRes1.status === 200, "First APPROVE_CHALLAN request succeeds with 200 OK");
+  const approveChallanData1 = await approveChallanRes1.json();
+  assert(approveChallanData1.success === true, "First challan reconciliation applies fee credit");
+
+  const feeAfterFirstApproval = await prisma.studentFee.findUnique({
+    where: { id: targetFeeForChallan!.id },
+  });
+  assert(feeAfterFirstApproval!.paidAmount === initialFeePaid + 500, "Student fee credited exactly ₹500 on first approval");
+
+  // Second approval (Replay / Duplicate Submission): MUST be rejected
+  const approveChallanReq2 = new NextRequest("http://localhost:3000/api/finance", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "APPROVE_CHALLAN",
+      transactionId: testChallanTxn.id,
+    }),
+  });
+  const approveChallanRes2 = await handleFinancePost(approveChallanReq2);
+  assert(approveChallanRes2.status === 400, "Duplicate APPROVE_CHALLAN is correctly blocked with 400 Bad Request");
+  const approveChallanData2 = await approveChallanRes2.json();
+  assert(approveChallanData2.error.includes("Duplicate settlement blocked"), "Duplicate challan error message indicates duplicate settlement prevention");
+
+  const feeAfterSecondApproval = await prisma.studentFee.findUnique({
+    where: { id: targetFeeForChallan!.id },
+  });
+  assert(feeAfterSecondApproval!.paidAmount === initialFeePaid + 500, "Student fee balance remains intact without double crediting");
+
+  // 70.2 Online Payment Signature Verification Idempotency Guard
+  const testPaymentId = `pay_idemp_${Date.now()}`;
+  const testOrderId = `order_sb_idemp_${Date.now()}`;
+  const validTestSig = `sig_sb_idemp_${Date.now()}`;
+
+  const verifyPayReq1 = new NextRequest("http://localhost:3000/api/payments/verify", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      feeId: targetFeeForChallan!.id,
+      orderId: testOrderId,
+      paymentId: testPaymentId,
+      signature: validTestSig,
+      amount: 250,
+    }),
+  });
+  const verifyPayRes1 = await handleVerifyPayment(verifyPayReq1);
+  assert(verifyPayRes1.status === 200, "POST /api/payments/verify processes first payment successfully");
+
+  // Duplicate payment callback with identical paymentId
+  const verifyPayReq2 = new NextRequest("http://localhost:3000/api/payments/verify", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      feeId: targetFeeForChallan!.id,
+      orderId: testOrderId,
+      paymentId: testPaymentId,
+      signature: validTestSig,
+      amount: 250,
+    }),
+  });
+  const verifyPayRes2 = await handleVerifyPayment(verifyPayReq2);
+  assert(verifyPayRes2.status === 200, "Duplicate payment webhook returns 200 OK with idempotency flag");
+  const verifyPayData2 = await verifyPayRes2.json();
+  assert(verifyPayData2.alreadyProcessed === true, "Duplicate payment returns alreadyProcessed: true to prevent double crediting");
+
+  // 70.3 Student Request Schema & Category Expansion (BONAFIDE & FEE_CONCESSION)
+  const bonafideReq = new NextRequest("http://localhost:3000/api/students/requests", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${group70StudentToken}` },
+    body: JSON.stringify({
+      type: "BONAFIDE",
+      title: "Bonafide Certificate Request for Bus Pass",
+      reason: "Applying for state transport student concessional monthly pass.",
+    }),
+  });
+  const bonafideRes = await handleStudentRequestsPost(bonafideReq);
+  assert(bonafideRes.status === 200 || bonafideRes.status === 201, "POST /api/students/requests accepts BONAFIDE type without schema error");
+  const bonafideData = await bonafideRes.json();
+  assert(bonafideData.success === true, "BONAFIDE request successfully created in database");
+
+  const feeConcessionReq = new NextRequest("http://localhost:3000/api/students/requests", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${group70StudentToken}` },
+    body: JSON.stringify({
+      type: "FEE_CONCESSION",
+      title: "Fee Concession Application for Single Parent Scholar",
+      reason: "Merit-cum-means financial assistance petition for Semester 5 tuition.",
+    }),
+  });
+  const feeConcessionRes = await handleStudentRequestsPost(feeConcessionReq);
+  assert(feeConcessionRes.status === 200 || feeConcessionRes.status === 201, "POST /api/students/requests accepts FEE_CONCESSION type without schema error");
+
+  // 70.4 Staff / Advisor Submission on Behalf of Student via studentId
+  const staffOnBehalfReq = new NextRequest("http://localhost:3000/api/students/requests", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      studentId: targetFeeForChallan!.studentId,
+      type: "DOCUMENT_REQUEST",
+      title: "Registrar Expedited Transcript Dispatch",
+      reason: "Scholar required urgent stamped transcript for overseas university visa appointment.",
+    }),
+  });
+  const staffOnBehalfRes = await handleStudentRequestsPost(staffOnBehalfReq);
+  assert(staffOnBehalfRes.status === 200 || staffOnBehalfRes.status === 201, "Staff submission with studentId resolves student profile successfully");
+  const staffOnBehalfData = await staffOnBehalfRes.json();
+  assert(staffOnBehalfData.request.studentId === targetFeeForChallan!.studentId, "Staff request successfully linked to target scholar record");
+
+  // 70.5 Resilient JSON Parsing on Empty Body
+  const emptyJsonReq = new NextRequest("http://localhost:3000/api/workflows/approvals", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: "",
+  });
+  const emptyJsonRes = await handleApprovalsPost(emptyJsonReq);
+  assert(emptyJsonRes.status === 400, "Empty JSON POST to approvals returns 400 Bad Request without crashing");
+
+  // =========================================================================
+  // GROUP 71: Autonomous Intelligence, Competitor Benchmark & Flagship Enterprise Evolution (GAP-01 to GAP-06)
+  // =========================================================================
+  console.log("\n🧪 Running Group 71: Autonomous Intelligence, Competitor Benchmark & Flagship Enterprise Evolution");
+
+  // 71.1 Academic Early Warning & Dropout Radar Engine (GAP-01)
+  const highRiskProfile = computeScholarRiskScore({
+    studentId: "std-test-at-risk",
+    studentName: "Devon AtRisk",
+    rollNumber: "CS-2024-999",
+    programCode: "BTECH-CSE",
+    currentSemester: 4,
+    attendanceRate: 48,
+    ciaAveragePercentage: 35,
+    backlogCount: 3,
+    feeDueAmount: 45000,
+    totalFeeAmount: 60000,
+    unsubmittedAssignmentsCount: 5,
+    unresolvedGrievancesOrClinicVisits: 2,
+  });
+  assert(highRiskProfile.compositeRiskScore > 65, "Early warning engine computes high composite risk score (>65) for multi-pillar distress");
+  assert(highRiskProfile.riskTier === "HIGH" || highRiskProfile.riskTier === "CRITICAL", "Early warning classifies high-distress scholar into HIGH/CRITICAL tier");
+  assert(highRiskProfile.primaryDrivers.length > 0, "Early warning identifies explainable primary risk factors");
+
+  const lowRiskProfile = computeScholarRiskScore({
+    studentId: "std-test-stellar",
+    studentName: "Stellar Scholar",
+    rollNumber: "CS-2024-001",
+    programCode: "BTECH-CSE",
+    currentSemester: 4,
+    attendanceRate: 96,
+    ciaAveragePercentage: 92,
+    backlogCount: 0,
+    feeDueAmount: 0,
+    totalFeeAmount: 60000,
+    unsubmittedAssignmentsCount: 0,
+    unresolvedGrievancesOrClinicVisits: 0,
+  });
+  assert(lowRiskProfile.compositeRiskScore < 25, "Early warning computes low risk score (<25) for high-performing scholar");
+  assert(lowRiskProfile.riskTier === "LOW", "Early warning classifies stellar scholar into LOW tier");
+
+  // API Integration: GET /api/analytics/early-warning (Cohort Radar)
+  const earlyWarningCohortReq = new NextRequest("http://localhost:3000/api/analytics/early-warning", {
+    headers: { Cookie: `classroom_session=${adminToken}` },
+  });
+  const earlyWarningCohortRes = await handleEarlyWarningGet(earlyWarningCohortReq);
+  assert(earlyWarningCohortRes.status === 200, "GET /api/analytics/early-warning returns 200 OK for leadership cohort radar");
+  const earlyWarningCohortData = await earlyWarningCohortRes.json();
+  assert(earlyWarningCohortData.success === true && earlyWarningCohortData.summary != null, "Cohort radar returns aggregate summary metrics");
+  assert(Array.isArray(earlyWarningCohortData.profiles), "Cohort radar returns scholar evaluated profiles");
+
+  // API Integration: POST /api/analytics/early-warning (LOG_INTERVENTION)
+  const targetStudentForRadar = await prisma.student.findFirst();
+  assert(targetStudentForRadar != null, "Found student for early warning intervention test");
+
+  const logInterventionReq = new NextRequest("http://localhost:3000/api/analytics/early-warning", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "LOG_INTERVENTION",
+      studentId: targetStudentForRadar!.id,
+      interventionType: "ACADEMIC_TUTORING",
+      notes: "Assigned mentor for remedial coaching in Applied Mathematics.",
+    }),
+  });
+  const logInterventionRes = await handleEarlyWarningPost(logInterventionReq);
+  assert(logInterventionRes.status === 201, "POST /api/analytics/early-warning (LOG_INTERVENTION) creates intervention with 201 Created");
+  const logInterventionData = await logInterventionRes.json();
+  assert(logInterventionData.record?.id != null, "Logged intervention receives unique persistence ID");
+
+  // API Integration: POST /api/analytics/early-warning (UPDATE_STATUS)
+  const updateInterventionReq = new NextRequest("http://localhost:3000/api/analytics/early-warning", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "UPDATE_STATUS",
+      interventionId: logInterventionData.record.id,
+      newStatus: "IN_INTERVENTION",
+      notesUpdate: "Scholar attended initial peer tutoring workshop.",
+    }),
+  });
+  const updateInterventionRes = await handleEarlyWarningPost(updateInterventionReq);
+  assert(updateInterventionRes.status === 200, "POST /api/analytics/early-warning (UPDATE_STATUS) updates status to IN_INTERVENTION with 200 OK");
+
+  // 71.2 Smart Automated Substitute Faculty Allocation Engine (GAP-02)
+  const absentFac = await prisma.faculty.findFirst({ include: { user: true } });
+  assert(absentFac != null, "Found faculty record for substitution evaluation");
+
+  const subTargetSlot = {
+    dayOfWeek: "MONDAY",
+    startTime: "09:00",
+    endTime: "10:30",
+    courseId: "crs-gen",
+    courseCode: "CS-402",
+    courseName: "Cloud Systems Architecture",
+    departmentId: absentFac!.departmentId,
+    roomId: "rm-1",
+    roomName: "Lab 3B",
+    sectionId: "sec-1",
+    sectionName: "CSE-4A",
+  };
+
+  const subCandidates = [
+    {
+      id: "fac-candidate-1",
+      name: "Dr. Alan Turing",
+      email: "alan@apex.edu",
+      departmentId: absentFac!.departmentId,
+      designation: "PROFESSOR",
+      specializations: ["Computer Science", "Cloud Systems Architecture"],
+      currentWeeklyHours: 10,
+      currentDayHours: 2,
+    },
+    {
+      id: "fac-candidate-2",
+      name: "Dr. Timetable Clash",
+      email: "clash@apex.edu",
+      departmentId: absentFac!.departmentId,
+      designation: "ASSISTANT_PROFESSOR",
+      specializations: ["Computer Science"],
+      currentWeeklyHours: 12,
+      currentDayHours: 3,
+    },
+    {
+      id: "fac-candidate-3",
+      name: "Dr. Overloaded Professor",
+      email: "overload@apex.edu",
+      departmentId: absentFac!.departmentId,
+      designation: "PROFESSOR",
+      specializations: ["Computer Science", "Cloud Systems Architecture"],
+      currentWeeklyHours: 16,
+      currentDayHours: 4,
+    },
+  ];
+
+  const subExistingSlots = [
+    { facultyId: "fac-candidate-2", dayOfWeek: "MONDAY", startTime: "09:00", endTime: "10:30" },
+  ];
+
+  const subEvaluations = evaluateSubstituteCandidates(
+    subTargetSlot,
+    absentFac!.id,
+    subCandidates,
+    subExistingSlots
+  );
+
+  const candidate1Eval = subEvaluations.find((e) => e.facultyId === "fac-candidate-1");
+  const candidate2Eval = subEvaluations.find((e) => e.facultyId === "fac-candidate-2");
+  const candidate3Eval = subEvaluations.find((e) => e.facultyId === "fac-candidate-3");
+
+  assert(candidate1Eval?.isEligible === true && candidate1Eval.score > 60, "Eligible candidate with domain match receives high suitability score");
+  assert(candidate2Eval?.isEligible === false, "Candidate with timetable slot clash is marked ineligible");
+  assert(candidate3Eval?.isEligible === false, "Candidate exceeding AICTE weekly workload cap (16 hrs) is marked ineligible");
+
+  // API Integration: GET /api/faculty/substitution (Recommend Mode)
+  const getSubRecReq = new NextRequest("http://localhost:3000/api/faculty/substitution?mode=recommend&courseCode=CS-402&startTime=14:00&endTime=15:30", {
+    headers: { Cookie: `classroom_session=${adminToken}` },
+  });
+  const getSubRecRes = await handleSubstitutionGet(getSubRecReq);
+  assert(getSubRecRes.status === 200, "GET /api/faculty/substitution?mode=recommend returns 200 OK");
+  const getSubRecData = await getSubRecRes.json();
+  assert(getSubRecData.success === true && Array.isArray(getSubRecData.recommendations), "Recommendations endpoint returns scored candidate array");
+
+  // API Integration: POST /api/faculty/substitution (ASSIGN_SUBSTITUTE)
+  const assignSubReq = new NextRequest("http://localhost:3000/api/faculty/substitution", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "ASSIGN_SUBSTITUTE",
+      absentFacultyId: absentFac!.id,
+      absentFacultyName: `${absentFac!.user.firstName} ${absentFac!.user.lastName}`,
+      substituteFacultyId: "fac-candidate-1",
+      substituteFacultyName: "Dr. Alan Turing",
+      date: "2026-10-20",
+      dayOfWeek: "MONDAY",
+      startTime: "14:00",
+      endTime: "15:30",
+      courseCode: "CS-402",
+      courseName: "Cloud Systems Architecture",
+      roomName: "Lab 3B",
+      sectionName: "CSE-4A",
+    }),
+  });
+  const assignSubRes = await handleSubstitutionPost(assignSubReq);
+  assert(assignSubRes.status === 201, "POST /api/faculty/substitution (ASSIGN_SUBSTITUTE) issues digital pass with 201 Created");
+  const assignSubData = await assignSubRes.json();
+  assert((assignSubData.assignment?.substitutionPassNumber || assignSubData.record?.substitutionPassNumber)?.startsWith("SUB-"), "Confirmed substitution issues digital pass with SUB- prefix");
+
+  // 71.3 Outcome-Based Education (OBE) Automated Attainment Calculator (GAP-03)
+  const batchAttainmentReq = new NextRequest("http://localhost:3000/api/examinations/co-po", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "CALCULATE_BATCH_ATTAINMENT",
+      courseCode: "CS-402",
+      batchYear: "2024",
+      directWeightage: 0.8,
+      indirectWeightage: 0.2,
+      targetScoreThreshold: 60,
+    }),
+  });
+  const batchAttainmentRes = await handleCoPoPost(batchAttainmentReq);
+  assert(batchAttainmentRes.status === 200, "POST /api/examinations/co-po (action: CALCULATE_BATCH_ATTAINMENT) returns 200 OK");
+  const batchAttainmentData = await batchAttainmentRes.json();
+  assert(batchAttainmentData.success === true, "Batch OBE attainment calculation completes successfully");
+  assert(batchAttainmentData.articulation != null && Array.isArray(batchAttainmentData.articulation.outcomes), "Direct and indirect attainment recorded in articulation outcomes");
+  assert(Array.isArray(batchAttainmentData.poAttainments) && batchAttainmentData.poAttainments.length > 0, "Calculates accredited PO attainment vector across NBA POs");
+  assert(typeof (batchAttainmentData.poAttainments[0].attainedLevel ?? batchAttainmentData.poAttainments[0].attained) === "number", "Computed PO attainment provides quantified attained score on 0-3 scale");
+
+  // 71.4 Multi-Channel Emergency Dispatch & Safe Campus Beacon Protocol (GAP-04)
+  const triggerEmergencyReq = new NextRequest("http://localhost:3000/api/emergency/broadcast", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "DISPATCH_EMERGENCY",
+      category: "WEATHER",
+      severity: "CRITICAL",
+      headline: "FLASH FLOOD ALERT: Campus Evacuation Protocol",
+      instructions: "Move to designated assembly points on higher ground immediately.",
+      affectedLocations: ["North Campus", "Sports Complex", "Block B"],
+    }),
+  });
+  const triggerEmergencyRes = await handleEmergencyBroadcastPost(triggerEmergencyReq);
+  assert(triggerEmergencyRes.status === 201, "POST /api/emergency/broadcast (action: DISPATCH_EMERGENCY) activates mass emergency protocol with 201 Created");
+  const triggerEmergencyData = await triggerEmergencyRes.json();
+  assert(triggerEmergencyData.incident?.id?.startsWith("EMRG-") || triggerEmergencyData.incident?.id?.startsWith("EMG-"), "Active emergency assigned unique EMRG- incident ID");
+  assert((triggerEmergencyData.incident?.incidentSeal || triggerEmergencyData.incident?.clerySeal)?.startsWith("CLERY-SEAL-"), "Emergency dispatch generates statutory Clery Act audit seal");
+  assert((triggerEmergencyData.incident?.channelsDispatched || triggerEmergencyData.incident?.dispatchedChannels)?.length === 4, "Emergency broadcast simultaneously dispatches across 4 channels (SMS, WhatsApp, Email, Banner)");
+
+  const emergencyIncidentId = triggerEmergencyData.incident.id;
+
+  // Submit Safety Beacon (Scholar reporting safe)
+  const submitBeaconReq = new NextRequest("http://localhost:3000/api/emergency/broadcast", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "SUBMIT_BEACON",
+      incidentId: emergencyIncidentId,
+      status: "SAFE",
+      currentLocation: "Admin Building Auditorium Floor 2",
+    }),
+  });
+  const submitBeaconRes = await handleEmergencyBroadcastPost(submitBeaconReq);
+  assert(submitBeaconRes.status === 200, "POST /api/emergency/broadcast (action: SUBMIT_BEACON) records scholar safety status");
+  const submitBeaconData = await submitBeaconRes.json();
+  assert(submitBeaconData.beacon?.status === "SAFE", "Safety beacon recorded as SAFE on incident muster roll");
+
+  // Query Muster Status
+  const getMusterReq = new NextRequest(`http://localhost:3000/api/emergency/broadcast?incidentId=${emergencyIncidentId}`, {
+    headers: { Cookie: `classroom_session=${adminToken}` },
+  });
+  const getMusterRes = await handleEmergencyBroadcastGet(getMusterReq);
+  assert(getMusterRes.status === 200, "GET /api/emergency/broadcast?incidentId=... returns muster roll stats with 200 OK");
+  const getMusterData = await getMusterRes.json();
+  assert(getMusterData.muster?.safeCount >= 1, "Muster roll reflects at least 1 verified safe individual");
+
+  // Issue All-Clear
+  const allClearReq = new NextRequest("http://localhost:3000/api/emergency/broadcast", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "ALL_CLEAR",
+      incidentId: emergencyIncidentId,
+    }),
+  });
+  const allClearRes = await handleEmergencyBroadcastPost(allClearReq);
+  assert(allClearRes.status === 200, "POST /api/emergency/broadcast (action: ALL_CLEAR) marks incident resolved with 200 OK");
+  const allClearData = await allClearRes.json();
+  assert(allClearData.incident?.status === "ALL_CLEAR", "Incident status successfully updated to ALL_CLEAR");
+
+  // 71.5 Public Cryptographic Credential & Degree Verification Gateway (GAP-05)
+  const validCredReq = new NextRequest(`http://localhost:3000/api/verify/credential?id=${encodeURIComponent(targetStudentForRadar!.rollNumber)}`);
+  const validCredRes = await handleVerifyCredentialGet(validCredReq);
+  assert(validCredRes.status === 200, "GET /api/verify/credential returns 200 OK unauthenticated");
+  const validCredData = await validCredRes.json();
+  assert(validCredData.verified === true, "Accredited credential verified successfully");
+  assert(typeof validCredData.credential?.digitalSeal === "string" && (validCredData.credential.digitalSeal.startsWith("APEX-SEAL-") || validCredData.credential.digitalSeal.length >= 32), "Public credential includes valid SHA-256 tamper-evident seal");
+  assert(validCredData.credential?.scholarNameMasked?.includes("*"), "Public verification masks student surname PII for FERPA/privacy protection");
+
+  const forgedCredReq = new NextRequest("http://localhost:3000/api/verify/credential?id=FORGED-DEGREE-FAKE-999");
+  const forgedCredRes = await handleVerifyCredentialGet(forgedCredReq);
+  assert(forgedCredRes.status === 404, "GET /api/verify/credential for forged ID returns 404 Not Found");
+  const forgedCredData = await forgedCredRes.json();
+  assert(forgedCredData.verified === false, "Forged credential verification returns verified: false");
+
+  // 71.6 Bursar Flexi-Pay Dynamic Installment Customizer (GAP-06)
+  const validFlexiReq = new NextRequest("http://localhost:3000/api/finance/installments", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "CREATE_CUSTOM_PLAN",
+      studentFeeId: targetFeeForChallan!.id,
+      concessionAmount: 500,
+      customSplits: [
+        { title: "Term 1: Registration Downpayment", percentage: 50, dueDaysFromNow: 15 },
+        { title: "Term 2: Mid-Term Milestone", percentage: 25, dueDaysFromNow: 60 },
+        { title: "Term 3: End-Term Clearance", percentage: 25, dueDaysFromNow: 120 },
+      ],
+    }),
+  });
+  const validFlexiRes = await handleInstallmentsPost(validFlexiReq);
+  assert(validFlexiRes.status === 201, "POST /api/finance/installments (action: CREATE_CUSTOM_PLAN) creates schedule with 201 Created");
+  const validFlexiData = await validFlexiRes.json();
+  assert(validFlexiData.success === true && Array.isArray(validFlexiData.plan?.milestones), "Flexi-Pay plan generates custom milestones");
+  assert(validFlexiData.plan.milestones.length === 3, "Flexi-Pay creates exactly 3 milestone tranches matching custom configuration");
+
+  const invalidFlexiReq = new NextRequest("http://localhost:3000/api/finance/installments", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "CREATE_CUSTOM_PLAN",
+      studentFeeId: targetFeeForChallan!.id,
+      concessionAmount: 0,
+      customSplits: [
+        { title: "Milestone A", percentage: 40, dueDaysFromNow: 15 },
+        { title: "Milestone B", percentage: 30, dueDaysFromNow: 45 },
+      ],
+    }),
+  });
+  const invalidFlexiRes = await handleInstallmentsPost(invalidFlexiReq);
+  assert(invalidFlexiRes.status === 400, "POST /api/finance/installments rejects split percentages that do not sum to 100%");
+
+  // TEST 72: Enterprise Student, Faculty, and HR & Payroll Commercial Upgrades
+  console.log("\n📌 Group 72: Student Career & AICTE, Faculty Exam & Research, and 7th CPC / Section 192 Upgrades");
+
+  // 72.1 Student Upgrade 1: AI Career Roadmap & Skill Gap Radar
+  const targetStudent = await prisma.student.findFirst({ include: { user: true, program: true } });
+  assert(targetStudent !== null, "Target student located in database for Group 72 tests");
+  if (!targetStudent) throw new Error("Target student not found in test database");
+
+  const careerDirect = evaluateStudentCareerRoadmap({
+    studentId: targetStudent.id,
+    studentName: `${targetStudent.user.firstName} ${targetStudent.user.lastName}`,
+    rollNumber: targetStudent.rollNumber,
+    programTitle: targetStudent.program?.name || "B.Tech Computer Science & Engineering",
+    currentSemester: targetStudent.currentSemester,
+    cgpa: targetStudent.cgpa,
+    targetRole: "Full-Stack Cloud Architect",
+    completedCourseCodes: ["CS-101", "CS-201", "CS-301"],
+  });
+  assert(careerDirect.skillMatchPercentage > 0, "Career Roadmap engine computes positive role readiness percentage");
+  assert(Array.isArray(careerDirect.skillsBreakdown) && careerDirect.skillsBreakdown.length >= 2, "Career Roadmap identifies skills breakdown from completed courses");
+  assert(Array.isArray(careerDirect.missingCriticalSkills), "Career Roadmap identifies critical skill gaps for cloud architect role");
+  assert(Array.isArray(careerDirect.recommendedInstitutionalElectives) && careerDirect.recommendedInstitutionalElectives.length >= 1, "Career Roadmap curates targeted university electives");
+  assert(careerDirect.atsResumeSnippet.verifiedCredentialSeal.startsWith("APEX-CAREER-"), "Career Roadmap attaches cryptographic seal");
+
+  const careerGetReq = new NextRequest(`http://localhost:3000/api/students/career-roadmap?studentId=${targetStudent.id}`, {
+    method: "GET",
+    headers: { Cookie: `classroom_session=${adminToken}` },
+  });
+  const careerGetRes = await handleCareerRoadmapGet(careerGetReq);
+  assert(careerGetRes.status === 200, "GET /api/students/career-roadmap returns 200 OK");
+  const careerGetData = await careerGetRes.json();
+  assert(careerGetData.success === true && careerGetData.analysis.targetRole === "Full-Stack Cloud Architect", "GET /api/students/career-roadmap retrieves scholar analysis");
+
+  const careerPostReq = new NextRequest("http://localhost:3000/api/students/career-roadmap", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      studentId: targetStudent.id,
+      targetRole: "AI & Large Language Models Engineer",
+    }),
+  });
+  const careerPostRes = await handleCareerRoadmapPost(careerPostReq);
+  assert(careerPostRes.status === 200, "POST /api/students/career-roadmap updates target career role with 200 OK");
+  const careerPostData = await careerPostRes.json();
+  assert(careerPostData.analysis.targetRole === "AI & Large Language Models Engineer", "Target role updated to AI & Large Language Models Engineer");
+
+  // 72.2 Student Upgrade 2: AICTE 100 Activity Points & Degree Clearance
+  const aicteDirect = computeStudentActivitySummary(
+    targetStudent.id,
+    `${targetStudent.user.firstName} ${targetStudent.user.lastName}`,
+    targetStudent.rollNumber
+  );
+  assert(aicteDirect.totalPointsRequired === 100, "AICTE Activity Points engine enforces statutory 100-point threshold");
+  assert(typeof aicteDirect.totalPointsEarned === "number", "AICTE engine computes cumulative earned activity points");
+  assert(typeof aicteDirect.pointsByCategory.TECHNICAL_HACKATHONS === "number", "Technical Hackathons category points computed");
+  assert(typeof aicteDirect.degreeClearanceGranted === "boolean", "Degree clearance status evaluated based on 100-point threshold");
+
+  const aicteGetReq = new NextRequest(`http://localhost:3000/api/students/activity-points?studentId=${targetStudent.id}`, {
+    method: "GET",
+    headers: { Cookie: `classroom_session=${adminToken}` },
+  });
+  const aicteGetRes = await handleActivityPointsGet(aicteGetReq);
+  assert(aicteGetRes.status === 200, "GET /api/students/activity-points returns 200 OK");
+  const aicteGetData = await aicteGetRes.json();
+  assert(aicteGetData.success === true && Array.isArray(aicteGetData.summary.claims), "GET /api/students/activity-points returns verified claims ledger");
+
+  const aictePostReq = new NextRequest("http://localhost:3000/api/students/activity-points", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "SUBMIT_CLAIM",
+      studentId: targetStudent.id,
+      category: "TECHNICAL_HACKATHONS",
+      title: "Smart India Hackathon 2025 National Winner",
+      description: "National Finalist & 1st Runner Up in Software Edition",
+      activityDate: "2026-02-20",
+      pointsClaimed: 30,
+      evidenceUrl: "https://apex.edu/credentials/sih-2025-winner.pdf",
+    }),
+  });
+  const aictePostRes = await handleActivityPointsPost(aictePostReq);
+  assert(aictePostRes.status === 200 || aictePostRes.status === 201, "POST /api/students/activity-points (action: SUBMIT_CLAIM) logs claim with 200/201 OK");
+  const aictePostData = await aictePostRes.json();
+  assert(aictePostData.claim.status === "SUBMITTED", "AICTE claim submitted for faculty verification");
+
+  // 72.3 Faculty Upgrade 1: Autonomous Exam Paper Generator
+  const paperDirect = generateAutonomousQuestionPaper({
+    courseCode: "CS-402",
+    courseTitle: "Advanced Distributed Systems & Cloud Architecture",
+    departmentCode: "CSE",
+    examinationTitle: "End-Semester University Examination 2026",
+    paperSet: "SET_A",
+    facultyName: "Dr. Rajesh K. Sharma",
+    totalMarks: 100,
+  });
+  assert(paperDirect.paperSet === "SET_A", "Autonomous exam generator produces requested paper set");
+  assert(paperDirect.sections.length === 3, "Exam paper synthesizes Part A, Part B, and Part C sections");
+  assert(paperDirect.bloomDistributionAchieved.rememberUnderstandPercent > 0, "Achieved Bloom remember/understand weight computed");
+  assert(paperDirect.bloomDistributionAchieved.applyAnalyzePercent > 0, "Achieved Bloom apply/analyze weight computed");
+  assert(paperDirect.cryptographicPaperSeal.startsWith("APEX-QP-SEAL-"), "Paper controller attaches SHA-256 seal");
+
+  const qpGetReq = new NextRequest("http://localhost:3000/api/faculty/question-paper-generator", {
+    method: "GET",
+    headers: { Cookie: `classroom_session=${adminToken}` },
+  });
+  const qpGetRes = await handleQuestionPaperGet(qpGetReq);
+  assert(qpGetRes.status === 200, "GET /api/faculty/question-paper-generator returns 200 OK");
+  const qpGetData = await qpGetRes.json();
+  assert(qpGetData.stats.totalQuestionsInBank >= 10, "Question bank statistics confirm populated question repository");
+
+  const qpPostReq = new NextRequest("http://localhost:3000/api/faculty/question-paper-generator", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "GENERATE_PAPER",
+      courseCode: "CS-402",
+      courseTitle: "Advanced Distributed Systems",
+      departmentCode: "CSE",
+      examinationTitle: "Summative Examination 2026",
+      facultyName: "Dr. Rajesh K. Sharma",
+      generateParallelSets: true,
+    }),
+  });
+  const qpPostRes = await handleQuestionPaperPost(qpPostReq);
+  assert(qpPostRes.status === 200, "POST /api/faculty/question-paper-generator produces parallel sets with 200 OK");
+  const qpPostData = await qpPostRes.json();
+  assert(qpPostData.setA && qpPostData.setB, "Parallel Set A and Set B generated simultaneously with non-identical question sequencing");
+  assert(qpPostData.setA.cryptographicPaperSeal !== qpPostData.setB.cryptographicPaperSeal, "Parallel sets have unique cryptographic seals");
+
+  // 72.4 Faculty Upgrade 2: UGC Research, Grants, Patents & Consultancy Portfolio
+  const pubPointsFirst = calculatePublicationApiPoints("SCOPUS", 5.2, "FIRST_AUTHOR");
+  const pubPointsCo = calculatePublicationApiPoints("SCOPUS", 5.2, "CO_AUTHOR");
+  assert(pubPointsFirst > pubPointsCo, "UGC 70:30 authorship formula awards more points to first author than co-author");
+  assert(pubPointsFirst === 31.5, "Scopus IF 5.2 paper receives exactly 31.5 points (45 total * 70%)");
+
+  const grantPointsPI = calculateGrantApiPoints(4500000, "PRINCIPAL_INVESTIGATOR");
+  assert(grantPointsPI === 10, "Extramural grant > 10 Lakhs awards 10 points to Principal Investigator");
+
+  const resGetReq = new NextRequest("http://localhost:3000/api/faculty/research-portfolio?facultyId=fac-demo-01", {
+    method: "GET",
+    headers: { Cookie: `classroom_session=${adminToken}` },
+  });
+  const resGetRes = await handleResearchPortfolioGet(resGetReq);
+  assert(resGetRes.status === 200, "GET /api/faculty/research-portfolio returns 200 OK");
+  const resGetData = await resGetRes.json();
+  assert(resGetData.portfolio.ugcApiSummary.totalUgcResearchScore > 0, "Research portfolio aggregates UGC API score");
+  assert(resGetData.portfolio.ugcApiSummary.eligibleForAssociateProfessorCas === true, "CAS associate professor eligibility threshold verified");
+
+  const resPostReq = new NextRequest("http://localhost:3000/api/faculty/research-portfolio", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "ADD_PUBLICATION",
+      facultyId: "fac-demo-01",
+      facultyName: "Dr. Rajesh K. Sharma",
+      title: "Zero-Trust Resilient Microservices in Distributed Clouds",
+      journalName: "IEEE Transactions on Services Computing",
+      indexing: "IEEE_XPLORE",
+      impactFactor: 4.8,
+      authorshipRole: "FIRST_AUTHOR",
+      totalAuthors: 2,
+      doi: "10.1109/TSC.2026.991203",
+      publicationYear: 2026,
+    }),
+  });
+  const resPostRes = await handleResearchPortfolioPost(resPostReq);
+  assert(resPostRes.status === 200, "POST /api/faculty/research-portfolio registers publication with 200 OK");
+  const resPostData = await resPostRes.json();
+  assert(resPostData.portfolio.publications.length >= 3, "Publication appended to faculty research portfolio dossier");
+
+  // 72.5 HR & Payroll Upgrade 1: 7th CPC Pay Matrix, Increments, CAS & DA Arrears
+  const incSimDirect = computePayIncrement("LEVEL_12", 84700);
+  assert(incSimDirect.newBasicPay === 87200, "Level 12 Cell 3 (84,700) advances vertically to Cell 4 (87,200) with 3% increment");
+  assert(incSimDirect.incrementAmount === 2500, "Monthly vertical increment step is exactly ₹2,500");
+
+  const cpcGetReq = new NextRequest("http://localhost:3000/api/hr/cpc-increment?level=LEVEL_12", {
+    method: "GET",
+    headers: { Cookie: `classroom_session=${adminToken}` },
+  });
+  const cpcGetRes = await handleCpcIncrementGet(cpcGetReq);
+  assert(cpcGetRes.status === 200, "GET /api/hr/cpc-increment returns 200 OK");
+  const cpcGetData = await cpcGetRes.json();
+  assert(cpcGetData.currentLevelData.entryPay === 79800, "Level 12 entry pay matches 7th CPC pay commission norms (₹79,800)");
+
+  const cpcPostReq = new NextRequest("http://localhost:3000/api/hr/cpc-increment", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "APPLY_CAS_PROMOTION",
+      employeeId: "EMP-FAC-01",
+      employeeName: "Dr. Rajesh K. Sharma",
+      fromLevel: "LEVEL_12",
+      toLevel: "LEVEL_13A",
+      currentBasic: 95300,
+      effectiveDate: "2026-08-01",
+    }),
+  });
+  const cpcPostRes = await handleCpcIncrementPost(cpcPostReq);
+  assert(cpcPostRes.status === 200, "POST /api/hr/cpc-increment (action: APPLY_CAS_PROMOTION) executes Rule 13 fixation");
+  const cpcPostData = await cpcPostRes.json();
+  assert(cpcPostData.promotionDetails.promotedBasicPay >= 131400, "Level 12 to 13A CAS promotion fixes basic pay in Level 13A cell");
+  assert(cpcPostData.promotionDetails.verificationSeal.startsWith("CAS-PROM-SEAL-"), "Promotion fixation order signed with cryptographic seal");
+
+  const daArrearsReq = new NextRequest("http://localhost:3000/api/hr/cpc-increment", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "COMPUTE_DA_ARREARS",
+      employeeId: "EMP-FAC-01",
+      employeeName: "Dr. Rajesh K. Sharma",
+      academicLevel: "LEVEL_12",
+      basicPay: 87200,
+      fromMonth: "2026-01",
+      toMonth: "2026-03",
+      oldDaPercent: 46,
+      newDaPercent: 50,
+    }),
+  });
+  const daArrearsRes = await handleCpcIncrementPost(daArrearsReq);
+  assert(daArrearsRes.status === 200, "POST /api/hr/cpc-increment (action: COMPUTE_DA_ARREARS) computes retroactive DA");
+  const daArrearsData = await daArrearsRes.json();
+  assert(daArrearsData.arrears.monthsCount === 3, "DA arrears evaluated across exactly 3 months");
+  assert(daArrearsData.arrears.totalGrossArrears === (Math.round(87200 * 0.04) * 3), "Gross DA arrears equals 4% differential over 3 months");
+  assert(daArrearsData.arrears.totalPfDeduction > 0, "Statutory 12% PF contribution deducted from retroactive DA arrears");
+
+  // 72.6 HR & Payroll Upgrade 2: Income Tax Section 192 TDS Planner & Form 16 Part B
+  const taxDirect = analyzeTaxAndGenerateForm16({
+    employeeId: "EMP-FAC-01",
+    employeeName: "Dr. Rajesh K. Sharma",
+    panNumber: "ABCDE1234F",
+    financialYear: "2025-26",
+    annualGrossSalary: 1450000,
+    basicSalary: 850000,
+    daAmount: 425000,
+    hraReceived: 170000,
+    rentPaidAnnual: 240000,
+    isMetroCity: true,
+    section80C: 150000,
+    section80D: 25000,
+    section80CCD1B_Nps: 50000,
+    section24HomeLoanInterest: 180000,
+    otherTaxSavingInvestments: 0,
+  });
+  assert(taxDirect.newRegime.standardDeduction === 75000, "New Tax Regime (Section 115BAC) applies ₹75,000 standard deduction");
+  assert(taxDirect.oldRegime.standardDeduction === 50000, "Old Tax Regime applies ₹50,000 standard deduction");
+  assert(taxDirect.oldRegime.exemptionsUnderSection10 > 0, "Old Tax Regime grants HRA exemption under Section 10(13A)");
+  assert(taxDirect.recommendedRegime === "NEW_REGIME" || taxDirect.recommendedRegime === "OLD_REGIME", "Tax engine recommends optimal regime");
+  assert(taxDirect.form16PartB.digitalSeal.startsWith("FORM16-SEAL-"), "Form 16 Part B generates tamper-evident cryptographic seal");
+
+  const taxGetReq = new NextRequest("http://localhost:3000/api/hr/income-tax", {
+    method: "GET",
+    headers: { Cookie: `classroom_session=${adminToken}` },
+  });
+  const taxGetRes = await handleIncomeTaxGet(taxGetReq);
+  assert(taxGetRes.status === 200, "GET /api/hr/income-tax returns 200 OK");
+  const taxGetData = await taxGetRes.json();
+  assert(taxGetData.taxData.newRegime.monthlyTdsWithholding > 0, "Monthly TDS withholding rate scheduled across pay cycles");
+
+  const taxPostReq = new NextRequest("http://localhost:3000/api/hr/income-tax", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "LOCK_TAX_REGIME",
+      employeeId: "EMP-FAC-01",
+      employeeName: "Dr. Rajesh K. Sharma",
+      panNumber: "ABCDE1234F",
+      selectedRegime: "NEW_REGIME",
+      annualGrossSalary: 1500000,
+      basicSalary: 900000,
+      daAmount: 450000,
+      hraReceived: 180000,
+      rentPaidAnnual: 0,
+    }),
+  });
+  const taxPostRes = await handleIncomeTaxPost(taxPostReq);
+  assert(taxPostRes.status === 200, "POST /api/hr/income-tax (action: LOCK_TAX_REGIME) locks regime choice with 200 OK");
+  const taxPostData = await taxPostRes.json();
+  assert(taxPostData.taxData.selectedRegime === "NEW_REGIME", "Tax regime choice confirmed as NEW_REGIME");
+
+  const taxForm16Req = new NextRequest("http://localhost:3000/api/hr/income-tax", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "GENERATE_FORM_16",
+      employeeId: "EMP-FAC-01",
+      employeeName: "Dr. Rajesh K. Sharma",
+      panNumber: "ABCDE1234F",
+      financialYear: "2025-26",
+    }),
+  });
+  const taxForm16Res = await handleIncomeTaxPost(taxForm16Req);
+  assert(taxForm16Res.status === 200, "POST /api/hr/income-tax (action: GENERATE_FORM_16) generates Form 16 Part B with 200 OK");
+  const taxForm16Data = await taxForm16Res.json();
+  assert(taxForm16Data.form16.employerTan === "DELA12345B", "Form 16 Part B includes institutional TAN (DELA12345B)");
+
+  // =================================================================================================
+  // TEST 73: Core Institutional Enterprise Modules (Admissions, Library, Research, Clinic, Hostel, Transport)
+  // =================================================================================================
+  console.log("\n📌 Group 73: Core Institutional Enterprise Modules Upgrades");
+
+  // 73.1 Admissions Statutory Merit Rank, Quota Allotment & Sealed Orders
+  const meritDirect = calculateCounselingMeritScore(95.0, 98.0);
+  assert(meritDirect === 96.8, "Composite merit formula (40% Board + 60% Entrance) accurately yields 96.8");
+
+  const testCohort = generateMeritRankings([
+    {
+      applicantId: "APP-TEST-01",
+      applicationNo: "APEX-2026-9901",
+      fullName: "Test Candidate",
+      category: "GENERAL",
+      isPwd: false,
+      boardExamPercent: 94,
+      entranceScore: 98,
+      preferredPrograms: ["CSE", "AI_DS"],
+    },
+  ]);
+  assert(testCohort[0].generalMeritRank === 1, "Direct counseling engine assigns General Merit Rank 1");
+  const simRound = executeCounselingAllocation({ rankedApplicants: testCohort, roundNumber: 1 });
+  assert(simRound.totalAllocated === 1, "Direct counseling engine allocates seat in Round 1");
+  const directOrder = generateSeatAllotmentOrder({ applicant: simRound.allocatedApplicants[0], counselingRound: 1 });
+  assert(directOrder.verificationSeal.startsWith("APEX-SEAT-ALLOT-"), "Direct allotment order sealed with cryptographic SHA-256 seal");
+
+  const counselingGetReq = new NextRequest("http://localhost:3000/api/admissions/counseling", {
+    method: "GET",
+    headers: { Cookie: `classroom_session=${adminToken}` },
+  });
+  const counselingGetRes = await handleAdmissionsCounselingGet(counselingGetReq);
+  assert(counselingGetRes.status === 200, "GET /api/admissions/counseling returns 200 OK with ranked candidates and seat matrix");
+  const counselingGetData = await counselingGetRes.json();
+  assert(counselingGetData.rankedCohort.length >= 4, "Ranked counseling cohort includes registered applicants");
+  assert(counselingGetData.seatMatrix.length >= 4, "Statutory reservation quotas (Open, OBC-NCL, SC, ST, EWS) active");
+
+  const counselingCalcReq = new NextRequest("http://localhost:3000/api/admissions/counseling", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "COMPUTE_MERIT_SCORE",
+      boardMarksPercentage: 92.5,
+      entranceExamScore: 96.0,
+    }),
+  });
+  const counselingCalcRes = await handleAdmissionsCounselingPost(counselingCalcReq);
+  assert(counselingCalcRes.status === 200, "POST /api/admissions/counseling (COMPUTE_MERIT_SCORE) returns 200 OK");
+  const counselingCalcData = await counselingCalcRes.json();
+  assert(counselingCalcData.compositeMeritScore === 94.6, "Direct API composite merit score matches statutory formula (94.6)");
+
+  const counselingOrderReq = new NextRequest("http://localhost:3000/api/admissions/counseling", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "GENERATE_ORDER",
+      candidateId: "APP-2026-001",
+      candidateName: "Aryan Gupta",
+      category: "GENERAL",
+      meritRank: 1,
+      allottedProgram: "B.Tech Computer Science & Engineering",
+      quotaCategory: "OPEN_MERIT",
+      reportingDeadline: "2026-07-25",
+    }),
+  });
+  const counselingOrderRes = await handleAdmissionsCounselingPost(counselingOrderReq);
+  assert(counselingOrderRes.status === 200, "POST /api/admissions/counseling (GENERATE_ORDER) issues official allotment order");
+  const counselingOrderData = await counselingOrderRes.json();
+  assert(counselingOrderData.order.digitalSeal.startsWith("APEX-SEAT-ALLOT-"), "Official seat allotment order signed with cryptographic SHA-256 seal");
+
+  // 73.2 Digital E-Library & Institutional Repository (IR)
+  const repoItems = getAllRepositoryItems();
+  assert(repoItems.length >= 5, "Institutional digital repository seeded with academic theses and publications");
+  assert(repoItems[0].doi.startsWith("10.5555/apex-ir/"), "Institutional DOI handles assigned according to ISO 26324");
+
+  const bibtexCite = generateCitation(repoItems[0].id, "BIBTEX");
+  assert(bibtexCite.citation.includes("@techreport"), "BibTeX citation export contains @techreport syntax");
+  const apaCite = generateCitation(repoItems[0].id, "APA");
+  assert(apaCite.citation.includes("https://doi.org/"), "APA 7th citation contains resolvable DOI URL");
+
+  const downloadPass = requestSecuredDownload(repoItems[0].id, {
+    name: "Dr. Faculty Scholar",
+    email: "scholar@apex.edu",
+    role: "RESEARCHER",
+  });
+  assert(downloadPass.watermarkSeal.startsWith("APEX-IR-SEAL-"), "Secured e-library download pass issues cryptographic watermark seal");
+
+  const eLibGetReq = new NextRequest("http://localhost:3000/api/library/elibrary?itemType=FACULTY_PAPER", {
+    method: "GET",
+    headers: { Cookie: `classroom_session=${adminToken}` },
+  });
+  const eLibGetRes = await handleELibraryGet(eLibGetReq);
+  assert(eLibGetRes.status === 200, "GET /api/library/elibrary returns 200 OK with repository search");
+  const eLibGetData = await eLibGetRes.json();
+  assert(eLibGetData.items.length >= 1, "Faculty paper filter queries institutional repository correctly");
+
+  const eLibPostReq = new NextRequest("http://localhost:3000/api/library/elibrary", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "DEPOSIT_ITEM",
+      itemType: "THESIS",
+      title: "Real-Time Sub-Millisecond Neural Network Inference on Edge FPGAs",
+      author: "Aditi Roy",
+      department: "Electrical Engineering",
+      abstract: "Investigation into low-precision quantized neural network architectures synthesized on Xilinx UltraScale+ FPGAs.",
+      license: "CC-BY-4.0",
+      keywords: ["FPGA", "Neural Networks", "Quantization"],
+    }),
+  });
+  const eLibPostRes = await handleELibraryPost(eLibPostReq);
+  assert(eLibPostRes.status === 200, "POST /api/library/elibrary (DEPOSIT_ITEM) deposits work and registers DOI with 200 OK");
+  const eLibPostData = await eLibPostRes.json();
+  assert(eLibPostData.item.doi.includes("ele-"), "New deposit assigned department-specific institutional DOI");
+
+  // 73.3 Research Ethics & Institutional Review Board (IRB)
+  const protocols = getAllProtocols();
+  assert(protocols.length >= 4, "Ethics protocols registry seeded with 3-tier risk classifications");
+  const irbAnalytics = getIRBAnalytics();
+  assert(irbAnalytics.total >= 4, "IRB analytics calculate total protocols and approval percentage");
+
+  const irbGetReq = new NextRequest("http://localhost:3000/api/research/ethics-clearance", {
+    method: "GET",
+    headers: { Cookie: `classroom_session=${adminToken}` },
+  });
+  const irbGetRes = await handleEthicsClearanceGet();
+  assert(irbGetRes.status === 200, "GET /api/research/ethics-clearance returns 200 OK");
+
+  const irbSubmitReq = new NextRequest("http://localhost:3000/api/research/ethics-clearance", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "SUBMIT_PROTOCOL",
+      title: "Non-Invasive Optical Biosensing for Continuous Blood Glucose Monitoring",
+      principalInvestigator: "Dr. Vikram Seth",
+      piEmail: "v.seth@apex.edu",
+      department: "Biomedical Engineering & Medicine",
+      riskTier: "EXPEDITED",
+      studyType: "HUMAN_SUBJECTS",
+      vulnerablePopulationsInvolved: false,
+      dataPrivacyProtocol: "De-identified optical PPG sensor streams stored with salt hash encryption",
+    }),
+  });
+  const irbSubmitRes = await handleEthicsClearancePost(irbSubmitReq);
+  assert(irbSubmitRes.status === 200, "POST /api/research/ethics-clearance (SUBMIT_PROTOCOL) registers protocol with 200 OK");
+  const irbSubmitData = await irbSubmitRes.json();
+  const newProtocolId = irbSubmitData.protocol.id;
+
+  const irbVoteReq = new NextRequest("http://localhost:3000/api/research/ethics-clearance", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "CAST_VOTE",
+      protocolId: newProtocolId,
+      memberName: "Dr. Robert Vance, MD",
+      role: "CHAIRPERSON",
+      decision: "APPROVE",
+      remarks: "Expedited protocol satisfies all clinical safety requirements.",
+    }),
+  });
+  const irbVoteRes = await handleEthicsClearancePost(irbVoteReq);
+  assert(irbVoteRes.status === 200, "POST /api/research/ethics-clearance (CAST_VOTE) records member deliberation vote with 200 OK");
+  const irbVoteData = await irbVoteRes.json();
+  assert(irbVoteData.protocol.status === "APPROVED", "Expedited protocol status transitions to APPROVED upon quorum clearance");
+  assert(irbVoteData.protocol.ethicsClearanceSeal.startsWith("APEX-IRB-SEAL-"), "Approved protocol receives cryptographic IRB clearance seal");
+
+  // 73.4 Student Health Clinic Medical Clearance & Immunizations
+  const passports = getAllHealthPassports();
+  assert(passports.length >= 4, "Student health passports seeded with complete immunization histories");
+  const clinicAnalytics = getHealthClearanceAnalytics();
+  assert(clinicAnalytics.complianceRate > 0, "Clinic compliance rate evaluated across mandatory vaccines");
+
+  const clinicHealthGetReq = new NextRequest("http://localhost:3000/api/clinic/medical-clearance", {
+    method: "GET",
+    headers: { Cookie: `classroom_session=${adminToken}` },
+  });
+  const clinicHealthGetRes = await handleMedicalClearanceGet();
+  assert(clinicHealthGetRes.status === 200, "GET /api/clinic/medical-clearance returns 200 OK");
+
+  const clinicVaccineReq = new NextRequest("http://localhost:3000/api/clinic/medical-clearance", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "UPDATE_IMMUNIZATION",
+      studentId: "STU-2026-003",
+      vaccineName: "Meningococcal (MenACWY)",
+      doseDate: "2026-03-15",
+    }),
+  });
+  const clinicVaccineRes = await handleMedicalClearancePost(clinicVaccineReq);
+  assert(clinicVaccineRes.status === 200, "POST /api/clinic/medical-clearance (UPDATE_IMMUNIZATION) logs dose with 200 OK");
+  const clinicVaccineData = await clinicVaccineRes.json();
+  assert(clinicVaccineData.passport.immunizations.some((i: any) => i.vaccineName.includes("MenACWY") && i.compliant), "MenACWY vaccine marked compliant after dose entry");
+
+  const clinicCertReq = new NextRequest("http://localhost:3000/api/clinic/medical-clearance", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "CERTIFY_FITNESS",
+      studentId: "STU-2026-003",
+      officerName: "Dr. Arvind Swaminathan, MD",
+      fitnessCategory: "FIT_FOR_ALL",
+      physicianNotes: "Hostel residency clearance granted following completion of residential immunization booster.",
+    }),
+  });
+  const clinicCertRes = await handleMedicalClearancePost(clinicCertReq);
+  assert(clinicCertRes.status === 200, "POST /api/clinic/medical-clearance (CERTIFY_FITNESS) issues statutory health clearance");
+  const clinicCertData = await clinicCertRes.json();
+  assert(clinicCertData.passport.medicalClearanceSeal.startsWith("APEX-MED-FIT-SEAL-"), "Health passport certified with cryptographic medical seal");
+
+  // 73.5 Hostel Move-In/Move-Out Room Asset Inspection & Deposit Clearance
+  const inspections = getAllInspections();
+  assert(inspections.length >= 3, "Hostel room inventory audits seeded with caution deposit tracking");
+  const hostelAnalytics = getHostelInventoryAnalytics();
+  assert(hostelAnalytics.totalAudits >= 3, "Hostel inventory analytics calculate damage levies and deposit refunds");
+
+  const hostelAuditGetReq = new NextRequest("http://localhost:3000/api/hostel/inventory-audit", {
+    method: "GET",
+    headers: { Cookie: `classroom_session=${adminToken}` },
+  });
+  const hostelAuditGetRes = await handleHostelInventoryAuditGet();
+  assert(hostelAuditGetRes.status === 200, "GET /api/hostel/inventory-audit returns 200 OK");
+
+  const hostelAuditPostReq = new NextRequest("http://localhost:3000/api/hostel/inventory-audit", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "CONDUCT_MOVE_OUT_AUDIT",
+      inspectionId: "INSP-2026-083",
+      assets: [
+        { itemName: "Study Table & Drawers", category: "FURNITURE", moveInStatus: "GOOD", moveOutStatus: "GOOD", damageCharge: 0 },
+        { itemName: "Ergonomic Mesh Chair", category: "FURNITURE", moveInStatus: "GOOD", moveOutStatus: "GOOD", damageCharge: 0 },
+        { itemName: "Single Bed Frame & Mattress", category: "FURNITURE", moveInStatus: "GOOD", moveOutStatus: "GOOD", damageCharge: 0 },
+        { itemName: "Room & Wardrobe RFID Keys", category: "KEY", moveInStatus: "PRISTINE", moveOutStatus: "DAMAGED", damageCharge: 20, notes: "Smart card chip cracked" },
+        { itemName: "Ceiling Fan & LED Fixtures", category: "ELECTRICAL", moveInStatus: "GOOD", moveOutStatus: "GOOD", damageCharge: 0 },
+      ],
+      wardenName: "Chief Warden Dr. H. C. Verma",
+      wardenNotes: "Vacate audit completed. $20 key replacement charged. Net $480 caution refund released.",
+    }),
+  });
+  const hostelAuditPostRes = await handleHostelInventoryAuditPost(hostelAuditPostReq);
+  assert(hostelAuditPostRes.status === 200, "POST /api/hostel/inventory-audit (CONDUCT_MOVE_OUT_AUDIT) processes audit with 200 OK");
+  const hostelAuditPostData = await hostelAuditPostRes.json();
+  assert(hostelAuditPostData.inspection.totalDamageDeductions === 20, "Damage deduction correctly calculated ($20)");
+  assert(hostelAuditPostData.inspection.refundableAmount === 480, "Refundable caution deposit correctly equals $480 ($500 - $20)");
+  assert(hostelAuditPostData.inspection.clearanceSeal.startsWith("APEX-HOSTEL-CLEAR-"), "Official hostel clearance voucher signed with SHA-256 seal");
+
+  // 73.6 Transport Fleet Regulatory Safety & Driver Compliance
+  const fleetRecords = getAllComplianceRecords();
+  assert(fleetRecords.length >= 4, "Transport fleet compliance seeded with RTO certifications and driver records");
+  const fleetAnalytics = getFleetComplianceAnalytics();
+  assert(fleetAnalytics.total >= 4, "Fleet compliance analytics calculate roadworthy, renewal due, and grounded buses");
+
+  const fleetCompGetReq = new NextRequest("http://localhost:3000/api/transport/compliance", {
+    method: "GET",
+    headers: { Cookie: `classroom_session=${adminToken}` },
+  });
+  const fleetCompGetRes = await handleFleetComplianceGet();
+  assert(fleetCompGetRes.status === 200, "GET /api/transport/compliance returns 200 OK");
+
+  const fleetInspectReq = new NextRequest("http://localhost:3000/api/transport/compliance", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "INSPECT_AND_CERTIFY",
+      vehicleId: "BUS-01",
+      officerName: "Transport Safety Director Major K. S. Rao",
+      inspectionNotes: "Annual physical roadworthiness inspection cleared. Speed governor verified.",
+    }),
+  });
+  const fleetInspectRes = await handleFleetCompliancePost(fleetInspectReq);
+  assert(fleetInspectRes.status === 200, "POST /api/transport/compliance (INSPECT_AND_CERTIFY) certifies vehicle with 200 OK");
+  const fleetInspectData = await fleetInspectRes.json();
+  assert(fleetInspectData.record.complianceStatus === "FULLY_COMPLIANT_FIT", "Vehicle confirmed FULLY_COMPLIANT_FIT");
+  assert(fleetInspectData.record.complianceSeal.startsWith("APEX-BUS-FIT-SEAL-"), "Roadworthiness certification stamped with cryptographic seal");
 
   console.log("\n=================================================");
   console.log(`🎉 ALL ${passedTests}/${totalTests} TESTS PASSED SUCCESSFULLY!`);

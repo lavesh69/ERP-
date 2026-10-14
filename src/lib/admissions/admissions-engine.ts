@@ -10,6 +10,7 @@ export type AdmissionStage =
   | "MERIT_SHORTLISTED"
   | "OFFER_EXTENDED"
   | "SEAT_CONFIRMED"
+  | "ENROLLED"
   | "REJECTED";
 
 export interface ApplicantLead {

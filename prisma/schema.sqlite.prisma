@@ -240,6 +240,8 @@ model Student {
   cgpa            Float    @default(0.0)
   attendanceRate  Float    @default(100.0)
   status          String   @default("ACTIVE") // ACTIVE, GRADUATED, SUSPENDED, LEAVE
+  apaarId         String?  @unique // 12-digit Automated Permanent Academic Account Registry (NEP 2020)
+  abcAccountId    String?  // Academic Bank of Credits (ABC) Account ID
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
@@ -269,6 +271,10 @@ model Faculty {
   qualification String?  // Ph.D., M.Tech, etc.
   officeRoom    String?
   weeklyHours   Int      @default(18)
+  vidwanId      String?
+  orcidId       String?
+  scopusAuthorId String?
+  googleScholarId String?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
@@ -484,6 +490,10 @@ model AttendanceSession {
   section Section @relation(fields: [sectionId], references: [id], onDelete: Cascade)
   room    Room?   @relation(fields: [roomId], references: [id], onDelete: SetNull)
   records AttendanceRecord[]
+
+  @@index([courseId])
+  @@index([facultyId])
+  @@index([sectionId])
 }
 
 model AttendanceRecord {
@@ -506,6 +516,7 @@ model AttendanceRecord {
   student Student           @relation(fields: [studentId], references: [id], onDelete: Cascade)
 
   @@unique([sessionId, studentId])
+  @@index([studentId])
 }
 
 model BleDevice {
@@ -651,6 +662,9 @@ model StudentFee {
   student      Student              @relation(fields: [studentId], references: [id], onDelete: Cascade)
   feeStructure FeeStructure         @relation(fields: [feeStructureId], references: [id], onDelete: Cascade)
   transactions PaymentTransaction[]
+
+  @@index([status, dueDate])
+  @@index([studentId])
 }
 
 model PaymentTransaction {
@@ -923,3 +937,286 @@ model RAGChunk {
 
   document RAGDocument @relation(fields: [ragDocumentId], references: [id], onDelete: Cascade)
 }
+
+
+// ==========================================
+// 19. HUMAN RESOURCES, STATUTORY PAYROLL & UGC GOVERNANCE
+// ==========================================
+
+model EmployeeStaff {
+  id                 String   @id @default(uuid())
+  userId             String?  @unique
+  institutionId      String?
+  employeeCode       String   @unique
+  fullName           String
+  email              String   @unique
+  designation        String
+  department         String
+  cadre              String   @default("TEACHING") // TEACHING, NON_TEACHING_A, NON_TEACHING_B, NON_TEACHING_C, NON_TEACHING_D
+  academicLevel      String   @default("LEVEL_10") // LEVEL_10, LEVEL_11, LEVEL_12, LEVEL_13A, LEVEL_14, LEVEL_15
+  basicPay           Float    @default(57700)
+  pensionScheme      String   @default("NPS") // NPS, GPF_OPS, EPFO_PF
+  pranNumber         String?
+  pfUan              String?
+  panNumber          String?
+  joiningDate        DateTime @default(now())
+  superannuationDate DateTime?
+  status             String   @default("ACTIVE") // ACTIVE, ON_LEAVE, SABBATICAL, SUSPENDED, RETIRED
+  bankAccount        String?
+  ifscCode           String?
+  bankName           String?
+  taxRegime          String   @default("NEW_REGIME") // NEW_REGIME, OLD_REGIME
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  serviceRecords     ServiceRecord[]
+  payslips           StaffPayslip[]
+  leaveApplications  StaffLeaveRecord[]
+  taxDeclarations    TaxDeclaration12BB[]
+  loans              StaffLoan[]
+  noDues             NoDuesClearance[]
+
+  @@index([department, status])
+  @@index([employeeCode])
+}
+
+model ServiceRecord {
+  id              String   @id @default(uuid())
+  employeeId      String
+  eventType       String   // APPOINTMENT, PROMOTION_CAS, ANNUAL_INCREMENT, POLICE_VERIFICATION, MEDICAL_FITNESS, DISCIPLINARY, SUPERANNUATION
+  title           String
+  description     String
+  orderNumber     String?
+  effectiveDate   DateTime
+  verifiedByDdo   Boolean  @default(false)
+  ddoSignature    String?
+  createdAt       DateTime @default(now())
+
+  employee        EmployeeStaff @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@index([employeeId, effectiveDate])
+}
+
+model StaffPayslip {
+  id                 String   @id @default(uuid())
+  employeeId         String
+  payPeriod          String   // "October 2026"
+  basicPay           Float
+  hra                Float
+  da                 Float
+  specialAllowance   Float    @default(0)
+  grossSalary        Float
+  lopDays            Int      @default(0)
+  lopDeduction       Float    @default(0)
+  npsEmployee        Float    @default(0)
+  npsEmployer        Float    @default(0)
+  epfDeduction       Float    @default(0)
+  esicDeduction      Float    @default(0)
+  lwfDeduction       Float    @default(0)
+  loanEmiDeduction   Float    @default(0)
+  tdsDeduction       Float    @default(0)
+  profTax            Float    @default(200)
+  totalDeductions    Float
+  netPay             Float
+  status             String   @default("PROCESSED") // PROCESSED, DISBURSED
+  holdStatus         String   @default("RELEASED") // RELEASED, ON_HOLD
+  holdReason         String?
+  disbursedAt        DateTime?
+  utrNumber          String?
+  verificationHash   String
+  createdAt          DateTime @default(now())
+
+  employee           EmployeeStaff @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@index([employeeId, payPeriod])
+}
+
+model StaffLeaveRecord {
+  id                     String   @id @default(uuid())
+  employeeId             String
+  leaveType              String   // CASUAL_LEAVE, MEDICAL_LEAVE, EARNED_LEAVE, DUTY_LEAVE, STUDY_LEAVE, MATERNITY_LEAVE, RESTRICTED_HOLIDAY
+  days                   Int
+  startDate              DateTime
+  endDate                DateTime
+  reason                 String
+  status                 String   @default("PENDING_HOD") // PENDING_HOD, RECOMMENDED, APPROVED, REJECTED
+  substituteFacultyEmail String?
+  substituteRemarks      String?
+  approvedBy             String?
+  appliedAt              DateTime @default(now())
+
+  employee               EmployeeStaff @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@index([employeeId, status])
+}
+
+model TaxDeclaration12BB {
+  id                 String   @id @default(uuid())
+  employeeId         String
+  financialYear      String   // "2026-2027"
+  taxRegime          String   @default("NEW_REGIME")
+  declared80C        Float    @default(0)
+  declared80D        Float    @default(0)
+  declaredHraRent    Float    @default(0)
+  landlordPan        String?
+  declaredHomeLoan24 Float    @default(0)
+  verificationStatus String   @default("SUBMITTED") // DRAFT, SUBMITTED, VERIFIED, REJECTED
+  verifiedBy         String?
+  verifiedRemarks    String?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  employee           EmployeeStaff @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@index([employeeId, financialYear])
+}
+
+model StaffLoan {
+  id              String   @id @default(uuid())
+  employeeId      String
+  loanType        String   // FESTIVAL_ADVANCE, COMPUTER_ADVANCE, HOUSING_ADVANCE, SALARY_ADVANCE
+  principalAmount Float
+  interestRate    Float    @default(0.0)
+  totalRepayment  Float
+  tenureMonths    Int
+  emiAmount       Float
+  recoveredAmount Float    @default(0.0)
+  remainingAmount Float
+  status          String   @default("ACTIVE") // ACTIVE, REPAID, DEFAULTED, WAIVED
+  disbursedDate   DateTime @default(now())
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  employee        EmployeeStaff @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@index([employeeId, status])
+}
+
+model NoDuesClearance {
+  id                 String   @id @default(uuid())
+  employeeId         String
+  resignationDate    DateTime
+  targetRelieveDate  DateTime
+  reason             String
+  status             String   @default("IN_PROGRESS") // IN_PROGRESS, APPROVED, REJECTED, RELIEVED
+  libraryClearance   Boolean  @default(false)
+  libraryRemarks     String?
+  labClearance       Boolean  @default(false)
+  labRemarks         String?
+  hostelClearance    Boolean  @default(false)
+  hostelRemarks      String?
+  itClearance        Boolean  @default(false)
+  itRemarks          String?
+  financeClearance   Boolean  @default(false)
+  financeRemarks     String?
+  examClearance      Boolean  @default(false)
+  examRemarks        String?
+  registrarApproved  Boolean  @default(false)
+  registrarRemarks   String?
+  relievingLetterUrl String?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  employee           EmployeeStaff @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@index([employeeId, status])
+}
+
+model GuestLectureBill {
+  id             String   @id @default(uuid())
+  facultyName    String
+  facultyEmail   String
+  courseCode     String
+  department     String
+  lectureDate    DateTime
+  topic          String
+  durationHours  Float    @default(1.0)
+  ratePerLecture Float    @default(1500.0)
+  claimAmount    Float
+  status         String   @default("SUBMITTED") // SUBMITTED, HOD_APPROVED, DEAN_VERIFIED, PAID
+  approvedBy     String?
+  payPeriod      String?  // E.g., "October 2026"
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([facultyEmail, payPeriod])
+}
+
+model CourseLessonPlan {
+  id            String    @id @default(uuid())
+  courseCode    String
+  courseTitle   String
+  facultyId     String
+  facultyEmail  String
+  weekNumber    Int
+  lectureNumber Int
+  topic         String
+  plannedDate   DateTime
+  actualDate    DateTime?
+  deliveryMode  String    @default("CLASSROOM") // CLASSROOM, LAB, HYBRID, DIGITAL_LMS
+  bloomLevel    String    @default("L2_UNDERSTAND") // L1_REMEMBER, L2_UNDERSTAND, L3_APPLY, L4_ANALYZE, L5_EVALUATE, L6_CREATE
+  status        String    @default("PLANNED") // PLANNED, COMPLETED, RESCHEDULED, MISSED
+  remarks       String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([courseCode, facultyEmail])
+}
+
+model LectureSubstitution {
+  id                     String    @id @default(uuid())
+  leaveApplicationId     String?
+  originalFacultyEmail   String
+  substituteFacultyEmail String
+  courseCode             String
+  courseTitle            String
+  scheduledDate          DateTime
+  slotTime               String
+  status                 String    @default("PENDING_CONSENT") // PENDING_CONSENT, ACCEPTED, DECLINED, COMPLETED
+  dutyCreditsAwarded     Float     @default(1.0)
+  responseNotes          String?
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
+
+  @@index([substituteFacultyEmail, status])
+  @@index([originalFacultyEmail])
+}
+
+model FacultyMentoringLog {
+  id              String    @id @default(uuid())
+  facultyId       String
+  facultyEmail    String
+  studentId       String
+  studentRollNo   String
+  studentName     String
+  sessionDate     DateTime  @default(now())
+  category        String    // ACADEMIC_PROGRESS, ATTENDANCE_CONCERN, CAREER_COUNSELING, PERSONAL_WELLBEING, DISCIPLINARY
+  discussionNotes String
+  actionItems     String?
+  riskLevel       String    @default("NORMAL") // NORMAL, ELEVATED, CRITICAL_AT_RISK
+  parentContacted Boolean   @default(false)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([facultyEmail, studentId])
+  @@index([riskLevel])
+}
+
+model FacultyResearchClaim {
+  id               String    @id @default(uuid())
+  facultyEmail     String
+  facultyName      String
+  claimType        String    // SEED_MONEY_GRANT, CONFERENCE_REGISTRATION, TRAVEL_GRANT, PUBLICATION_INCENTIVE, CONSULTANCY_SHARE
+  title            String
+  amountRequested  Float
+  amountApproved   Float     @default(0.0)
+  status           String    @default("SUBMITTED") // SUBMITTED, DEAN_RESEARCH_APPROVED, FINANCE_SANCTIONED, DISBURSED, REJECTED
+  proofDocumentUrl String?
+  remarks          String?
+  disbursedDate    DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  @@index([facultyEmail, status])
+}
+

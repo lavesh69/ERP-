@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getOptionalSession } from "@/lib/auth/admin-guard";
 import { hostelStore } from "@/lib/hostel/hostel-store";
+import { prisma } from "@/lib/db/prisma";
 
 export async function GET(request: NextRequest) {
   try {
@@ -86,6 +87,40 @@ export async function POST(request: NextRequest) {
         studentRoll,
         branch: branch || "Engineering",
       });
+
+      // Synchronize with Finance Ledger if student exists in database
+      try {
+        const student = await prisma.student.findFirst({
+          where: {
+            OR: [
+              { rollNumber: studentRoll },
+              { admissionNumber: studentRoll },
+              { id: studentId || "" },
+            ],
+          },
+        });
+        if (student) {
+          const feeStructure =
+            (await prisma.feeStructure.findFirst({
+              where: { title: { contains: "Hostel" } },
+            })) || (await prisma.feeStructure.findFirst());
+
+          if (feeStructure) {
+            await prisma.studentFee.create({
+              data: {
+                studentId: student.id,
+                feeStructureId: feeStructure.id,
+                totalAmount: 1200,
+                dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+                status: "PENDING",
+              },
+            });
+          }
+        }
+      } catch (err) {
+        console.warn("[Hostel-Finance Link Warning]:", err);
+      }
+
       return NextResponse.json({ message: `Bed ${bedNumber} allocated successfully`, ...result });
     }
 

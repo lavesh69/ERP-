@@ -444,7 +444,7 @@ export async function POST(req: NextRequest) {
       for (const res of exam.results) {
         const graceEval = applyGraceMarks(res.marksObtained, exam.totalMarks, graceLimit);
         if (graceEval.passedWithGrace) {
-          const newPercentage = (graceEval.finalMarks / exam.totalMarks) * 100;
+          const newPercentage = exam.totalMarks > 0 ? (graceEval.finalMarks / exam.totalMarks) * 100 : 0;
           const ugcGrade = calculateUgcLetterGrade(newPercentage);
 
           await prisma.examResult.update({
@@ -688,7 +688,7 @@ export async function PUT(req: NextRequest) {
       for (const entry of batchEntries) {
         if (!entry.studentId || entry.marksObtained === undefined || entry.marksObtained === "") continue;
 
-        const percentage = (Number(entry.marksObtained) / exam.totalMarks) * 100;
+        const percentage = exam.totalMarks > 0 ? (Number(entry.marksObtained) / exam.totalMarks) * 100 : 0;
         const ugcGrade = calculateUgcLetterGrade(percentage);
 
         const res = await prisma.examResult.upsert({
@@ -775,7 +775,7 @@ export async function PUT(req: NextRequest) {
       }
     }
 
-    const percentage = (Number(marksObtained) / exam.totalMarks) * 100;
+    const percentage = exam.totalMarks > 0 ? (Number(marksObtained) / exam.totalMarks) * 100 : 0;
     const ugcGrade = calculateUgcLetterGrade(percentage);
 
     const result = await prisma.examResult.upsert({

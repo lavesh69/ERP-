@@ -22,7 +22,9 @@ import {
   Camera,
   Sparkles,
   RefreshCw,
+  Globe,
 } from "lucide-react";
+import DigitalELibraryTab from "@/components/library/DigitalELibraryTab";
 
 interface ActiveLoan {
   id: string;
@@ -61,6 +63,7 @@ export default function LibraryPage() {
   const { showToast, currentRole, refreshTrigger, triggerRefresh } = useApp();
   const isStudent = currentRole === "STUDENT" || currentRole === "PARENT";
 
+  const [activeTab, setActiveTab] = useState<"physical" | "digital">("physical");
   const [loading, setLoading] = useState(true);
   const [books, setBooks] = useState<LibraryBookItem[]>([]);
   const [students, setStudents] = useState<StudentOption[]>([]);
@@ -403,6 +406,42 @@ export default function LibraryPage() {
           )}
         </div>
 
+        {/* Navigation Tabs */}
+        <div className="flex border-b border-border dark:border-charcoal-800 space-x-2 overflow-x-auto pb-px">
+          <button
+            onClick={() => setActiveTab("physical")}
+            className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-all whitespace-nowrap ${
+              activeTab === "physical"
+                ? "border-rose-primary text-rose-primary dark:text-rose-light dark:border-rose-light"
+                : "border-transparent text-charcoal-600 dark:text-ivory-400 hover:text-charcoal-900 dark:hover:text-white"
+            }`}
+          >
+            <Book className="w-4 h-4" />
+            <span>Physical Circulation & Loans</span>
+            {books.length > 0 && (
+              <span className="px-1.5 py-0.5 rounded-full text-xs font-bold bg-rose-100 dark:bg-rose-900/60 text-rose-700 dark:text-rose-300">
+                {books.length}
+              </span>
+            )}
+          </button>
+          <button
+            onClick={() => setActiveTab("digital")}
+            className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-all whitespace-nowrap ${
+              activeTab === "digital"
+                ? "border-rose-primary text-rose-primary dark:text-rose-light dark:border-rose-light"
+                : "border-transparent text-charcoal-600 dark:text-ivory-400 hover:text-charcoal-900 dark:hover:text-white"
+            }`}
+          >
+            <Globe className="w-4 h-4" />
+            <span>Digital Repository & E-Library (IR)</span>
+            <span className="px-1.5 py-0.5 rounded-full text-xs font-bold bg-cyan-100 dark:bg-cyan-900/60 text-cyan-700 dark:text-cyan-300">
+              DOI & Preprints
+            </span>
+          </button>
+        </div>
+
+        {activeTab === "physical" && (
+          <>
         {/* 4 Library KPI Cards */}
         {loading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -643,6 +682,11 @@ export default function LibraryPage() {
             </div>
           )}
         </div>
+        </>
+        )}
+
+        {/* Digital Institutional Repository Tab */}
+        {activeTab === "digital" && <DigitalELibraryTab />}
 
         {/* Modal: Add Book */}
         <Modal

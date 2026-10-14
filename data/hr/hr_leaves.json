@@ -1,0 +1,40 @@
+[
+  {
+    "id": "lv-01",
+    "staffEmail": "faculty.ai@apex.edu",
+    "leaveType": "CASUAL_LEAVE",
+    "days": 2,
+    "startDate": "2026-10-15",
+    "endDate": "2026-10-16",
+    "reason": "Personal family commitment",
+    "status": "APPROVED",
+    "approvedBy": "hr.manager@apex.edu"
+  },
+  {
+    "id": "lv-024130",
+    "staffEmail": "provost.evans@classroom.edu",
+    "leaveType": "DUTY_LEAVE",
+    "days": 3,
+    "startDate": "2026-11-10",
+    "endDate": "2026-11-12",
+    "reason": "UGC National Research Symposium Presentation",
+    "status": "APPROVED",
+    "substituteFacultyEmail": "sunita.deshmukh@classroom.edu",
+    "substituteRemarks": "Lectures for AI-401 delegated to Prof. Sunita",
+    "appliedAt": "2026-10-14",
+    "approvedBy": "provost.evans@classroom.edu"
+  },
+  {
+    "id": "lv-024242",
+    "staffEmail": "provost.evans@classroom.edu",
+    "leaveType": "CASUAL_LEAVE",
+    "days": 1,
+    "startDate": "2026-10-15",
+    "endDate": "2026-10-15",
+    "reason": "National Academic Conference Presentation",
+    "status": "PENDING",
+    "substituteFacultyEmail": "sunita.deshmukh@classroom.edu",
+    "substituteRemarks": "Covering CS301 Algorithms lecture",
+    "appliedAt": "2026-10-14"
+  }
+]

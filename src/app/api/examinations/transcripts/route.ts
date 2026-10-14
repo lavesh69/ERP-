@@ -12,6 +12,7 @@ import {
 import { logger } from "@/lib/logging/logger";
 
 import { generateTranscriptHtml } from "@/lib/examinations/transcript-template";
+import { NadAbcEngine } from "@/lib/curriculum/nad-abc-engine";
 
 const HMAC_SECRET = process.env.JWT_SECRET || "apex-university-coe-secure-key";
 
@@ -219,6 +220,63 @@ export async function GET(req: NextRequest) {
       });
     }
 
+    if (searchParams.get("format") === "nad_xml") {
+      const apaarId = student.apaarId || "2026-9812-4019";
+      const dossier = NadAbcEngine.generateTranscriptDossier({
+        studentId: student.id,
+        studentName: `${student.user.firstName} ${student.user.lastName}`,
+        rollNumber: student.rollNumber,
+        admissionNumber: student.admissionNumber,
+        apaarId,
+        institutionCode: institution?.code || "APEX-UNIV",
+        institutionName: institution?.name || "Apex University of Science & Technology",
+        programCode: student.program.code,
+        programName: student.program.name,
+        currentSemester: student.currentSemester,
+        courses: coursesBreakdown.map((c: any) => ({
+          code: c.code,
+          title: c.title,
+          semester: student.currentSemester,
+          credits: c.credits,
+          letterGrade: c.grade as any,
+          scorePercentage: c.compositeScore,
+        })),
+      });
+      const xml = NadAbcEngine.generateNadDigilockerXml(dossier);
+      return new NextResponse(xml, {
+        status: 200,
+        headers: {
+          "Content-Type": "application/xml; charset=utf-8",
+          "Content-Disposition": `attachment; filename=NAD_${student.rollNumber}_Credits.xml`,
+        },
+      });
+    }
+
+    if (searchParams.get("format") === "abc_json") {
+      const apaarId = student.apaarId || "2026-9812-4019";
+      const dossier = NadAbcEngine.generateTranscriptDossier({
+        studentId: student.id,
+        studentName: `${student.user.firstName} ${student.user.lastName}`,
+        rollNumber: student.rollNumber,
+        admissionNumber: student.admissionNumber,
+        apaarId,
+        institutionCode: institution?.code || "APEX-UNIV",
+        institutionName: institution?.name || "Apex University of Science & Technology",
+        programCode: student.program.code,
+        programName: student.program.name,
+        currentSemester: student.currentSemester,
+        courses: coursesBreakdown.map((c: any) => ({
+          code: c.code,
+          title: c.title,
+          semester: student.currentSemester,
+          credits: c.credits,
+          letterGrade: c.grade as any,
+          scorePercentage: c.compositeScore,
+        })),
+      });
+      return NextResponse.json({ success: true, apaarDossier: dossier });
+    }
+
     return NextResponse.json({ success: true, transcript });
   } catch (error: any) {
     logger.error("Transcript GET Error", error);
@@ -228,3 +286,54 @@ export async function GET(req: NextRequest) {
     );
   }
 }
+
+export async function POST(req: NextRequest) {
+  try {
+    const session = await getOptionalSession(req);
+    const body = await req.json();
+    const { action, studentId, apaarId } = body;
+
+    if (action === "UPDATE_APAAR_ID") {
+      const validation = NadAbcEngine.validateApaarId(apaarId);
+      if (!validation.isValid) {
+        return NextResponse.json({ error: validation.error }, { status: 400 });
+      }
+
+      let targetId = studentId;
+      if (!targetId && session?.userId) {
+        const myStudent = await prisma.student.findFirst({
+          where: { userId: session.userId },
+        });
+        if (myStudent) targetId = myStudent.id;
+      }
+
+      if (!targetId) {
+        return NextResponse.json({ error: "studentId is required" }, { status: 400 });
+      }
+
+      const abcAccountId = NadAbcEngine.deriveAbcAccountId(validation.normalizedId);
+      const updated = await prisma.student.update({
+        where: { id: targetId },
+        data: {
+          apaarId: validation.normalizedId,
+          abcAccountId,
+        },
+      });
+
+      return NextResponse.json({
+        success: true,
+        message: "APAAR ID & Academic Bank of Credits account linked successfully",
+        student: updated,
+      });
+    }
+
+    return NextResponse.json({ error: `Unknown action: ${action}` }, { status: 400 });
+  } catch (error: any) {
+    logger.error("Transcript POST Error", error);
+    return NextResponse.json(
+      { error: error.message || "Failed to process transcript request" },
+      { status: 500 }
+    );
+  }
+}
+

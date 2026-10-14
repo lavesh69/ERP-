@@ -202,6 +202,22 @@ export const clinicStore = {
       }
     }
 
+    // Automatically decrement pharmacy inventory based on prescriptions
+    if (newCase.prescriptions && Array.isArray(newCase.prescriptions)) {
+      if (!store.pharmacyStock) store.pharmacyStock = [...DEFAULT_PHARMACY];
+      for (const rx of newCase.prescriptions) {
+        const query = rx.name.toLowerCase();
+        const med = store.pharmacyStock.find(
+          (m) => m.name.toLowerCase().includes(query) || query.includes(m.name.toLowerCase()) || m.id.toLowerCase() === query
+        );
+        if (med) {
+          const mult = rx.frequency === "TID" ? 3 : rx.frequency === "BD" ? 2 : 1;
+          const qty = Math.min(med.stock, Math.max(1, (rx.days || 3) * mult));
+          med.stock = Math.max(0, med.stock - qty);
+        }
+      }
+    }
+
     store.consultations.unshift(newCase);
     writeStore(store);
     return newCase;

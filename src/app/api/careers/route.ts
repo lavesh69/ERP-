@@ -1,4 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
+import crypto from "crypto";
+import fs from "fs";
+import path from "path";
 import { prisma } from "@/lib/db/prisma";
 import { getOptionalSession } from "@/lib/auth/admin-guard";
 import { logger } from "@/lib/logging/logger";
@@ -9,8 +12,10 @@ import {
   computeAtsScore,
 } from "@/lib/careers/ats-engine";
 
-// In-Memory Scheduled Interviews registry
-const SCHEDULED_INTERVIEWS: ScheduledInterview[] = [
+const CAREERS_DIR = path.join(process.cwd(), "data", "careers");
+const INTERVIEWS_FILE = path.join(CAREERS_DIR, "scheduled_interviews.json");
+
+const DEFAULT_INTERVIEWS: ScheduledInterview[] = [
   {
     id: "intv-sample-01",
     jobId: "job-sample-01",
@@ -38,6 +43,32 @@ const SCHEDULED_INTERVIEWS: ScheduledInterview[] = [
     status: "CONFIRMED",
   },
 ];
+
+function loadInterviews(): ScheduledInterview[] {
+  try {
+    if (!fs.existsSync(CAREERS_DIR)) {
+      fs.mkdirSync(CAREERS_DIR, { recursive: true });
+    }
+    if (fs.existsSync(INTERVIEWS_FILE)) {
+      const data = fs.readFileSync(INTERVIEWS_FILE, "utf-8");
+      return JSON.parse(data);
+    }
+  } catch (err) {
+    logger.error("Failed to read scheduled_interviews.json", err);
+  }
+  return [...DEFAULT_INTERVIEWS];
+}
+
+function saveInterviews(interviews: ScheduledInterview[]): void {
+  try {
+    if (!fs.existsSync(CAREERS_DIR)) {
+      fs.mkdirSync(CAREERS_DIR, { recursive: true });
+    }
+    fs.writeFileSync(INTERVIEWS_FILE, JSON.stringify(interviews, null, 2), "utf-8");
+  } catch (err) {
+    logger.error("Failed to persist scheduled_interviews.json", err);
+  }
+}
 
 export async function GET(req: NextRequest) {
   try {
@@ -132,9 +163,10 @@ export async function GET(req: NextRequest) {
     const totalApplicationsCount = jobs.reduce((acc, j) => acc + j.applications.length, 0);
     const topRecruitersCount = new Set(jobs.map((j) => j.companyName)).size;
 
+    const allInterviews = loadInterviews();
     const visibleInterviews = canViewApplications
-      ? SCHEDULED_INTERVIEWS
-      : SCHEDULED_INTERVIEWS.filter(
+      ? allInterviews
+      : allInterviews.filter(
           (intv) =>
             session?.userId &&
             (intv.candidateName.toLowerCase().includes(session.fullName?.toLowerCase() || "") ||
@@ -148,7 +180,7 @@ export async function GET(req: NextRequest) {
         activeDrivesCount: jobs.filter((j) => j.status === "ACTIVE").length,
         totalApplicationsCount,
         topRecruitersCount,
-        scheduledInterviewsCount: SCHEDULED_INTERVIEWS.length,
+        scheduledInterviewsCount: allInterviews.length,
         placementRate: "95.6%",
         averageCtc: "$148,500",
       },
@@ -249,7 +281,9 @@ export async function POST(req: NextRequest) {
         status: "CONFIRMED",
       };
 
-      SCHEDULED_INTERVIEWS.push(interview);
+      const interviews = loadInterviews();
+      interviews.push(interview);
+      saveInterviews(interviews);
 
       logger.info("Interview scheduled", {
         candidateName,
@@ -267,7 +301,55 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // 4. Student Application Submission
+    // 4. Action: Generate Placement Offer Letter
+    if (body.action === "GENERATE_OFFER_LETTER") {
+      const allowedRoles = ["SUPER_ADMIN", "INSTITUTION_ADMIN", "PLACEMENT_OFFICER", "PRINCIPAL", "HOD"];
+      if (!session || !allowedRoles.includes(session.role)) {
+        return NextResponse.json(
+          { error: "Access denied. Only placement officers or administrators can issue offer letters." },
+          { status: 403 }
+        );
+      }
+
+      const { candidateName, candidateRollNo, companyName, jobTitle, ctc, joiningDate, location } = body;
+      if (!candidateName || !companyName || !jobTitle) {
+        return NextResponse.json(
+          { error: "candidateName, companyName, and jobTitle are mandatory parameters" },
+          { status: 400 }
+        );
+      }
+
+      const offerRef = `OFFER-${Date.now().toString(36).toUpperCase()}-${Math.floor(Math.random() * 9000 + 1000)}`;
+      const issuedAt = new Date().toISOString();
+      const hash = crypto.createHash("sha256").update(`${offerRef}:${candidateName}:${companyName}:${issuedAt}`).digest("hex");
+
+      const offerLetter = {
+        offerRef,
+        candidateName,
+        candidateRollNo: candidateRollNo || "CS2026-NIL",
+        companyName,
+        jobTitle,
+        ctc: ctc || "12.5 LPA",
+        joiningDate: joiningDate || new Date(Date.now() + 90 * 86400000).toISOString().split("T")[0],
+        location: location || "Bangalore, India",
+        issuedAt,
+        digitalSeal: `APEX-PLACEMENTS-${hash.slice(0, 16).toUpperCase()}`,
+        status: "ISSUED",
+      };
+
+      logger.info("Placement offer letter generated", { offerRef, candidateName, companyName });
+
+      return NextResponse.json(
+        {
+          success: true,
+          message: `Placement offer letter ${offerRef} successfully generated for ${candidateName} at ${companyName}`,
+          offerLetter,
+        },
+        { status: 201 }
+      );
+    }
+
+    // 5. Student Application Submission
     if (!session) {
       return NextResponse.json({ error: "Authentication required to apply for recruitment opportunities" }, { status: 401 });
     }

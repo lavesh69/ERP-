@@ -1,0 +1,123 @@
+[
+  {
+    "id": "q-101",
+    "courseCode": "CS-402",
+    "unitNumber": 1,
+    "questionText": "Define CAP Theorem and state why network partitions cannot be completely eliminated in distributed clusters.",
+    "bloomLevel": "L1_REMEMBER",
+    "difficulty": "EASY",
+    "marks": 4,
+    "coMapping": "CO1",
+    "modelAnswerSummary": "State Consistency, Availability, Partition tolerance trade-off with network latency reality."
+  },
+  {
+    "id": "q-102",
+    "courseCode": "CS-402",
+    "unitNumber": 1,
+    "questionText": "Explain the difference between strong consistency and eventual consistency with a distributed database example.",
+    "bloomLevel": "L2_UNDERSTAND",
+    "difficulty": "EASY",
+    "marks": 4,
+    "coMapping": "CO1",
+    "modelAnswerSummary": "Contrast synchronous quorum read/writes vs background gossip anti-entropy synchronization."
+  },
+  {
+    "id": "q-103",
+    "courseCode": "CS-402",
+    "unitNumber": 1,
+    "questionText": "Calculate the read and write quorums (R, W) required for strict serializability in a 9-node distributed storage cluster.",
+    "bloomLevel": "L3_APPLY",
+    "difficulty": "MEDIUM",
+    "marks": 6,
+    "coMapping": "CO1",
+    "modelAnswerSummary": "Apply R + W > N and W > N/2. For N=9, R=5, W=5 or R=4, W=6 satisfies strict quorum intersection."
+  },
+  {
+    "id": "q-201",
+    "courseCode": "CS-402",
+    "unitNumber": 2,
+    "questionText": "Analyze the Raft consensus leader election protocol during split-vote scenarios and show how randomized election timeouts prevent livelock.",
+    "bloomLevel": "L4_ANALYZE",
+    "difficulty": "MEDIUM",
+    "marks": 10,
+    "coMapping": "CO2",
+    "modelAnswerSummary": "Detailed phase breakdown of candidate requestVote RPCs, majority grant, and randomized jitter 150-300ms."
+  },
+  {
+    "id": "q-202",
+    "courseCode": "CS-402",
+    "unitNumber": 2,
+    "questionText": "Design a fault-tolerant geo-replicated state machine using multi-Paxos that survives cross-regional fiber outages.",
+    "bloomLevel": "L6_CREATE",
+    "difficulty": "HARD",
+    "marks": 16,
+    "coMapping": "CO2",
+    "modelAnswerSummary": "Architecture diagram with leader lease, witness nodes in third region, and pipeline commit log protocol."
+  },
+  {
+    "id": "q-301",
+    "courseCode": "CS-402",
+    "unitNumber": 3,
+    "questionText": "Derive the mathematical formulation of Scaled Dot-Product Attention and explain why sqrt(d_k) scaling prevents vanishing softmax gradients.",
+    "bloomLevel": "L4_ANALYZE",
+    "difficulty": "MEDIUM",
+    "marks": 10,
+    "coMapping": "CO3",
+    "modelAnswerSummary": "Derivation: Softmax(Q K^T / sqrt(d_k)) V. Variance of dot products grows with dimension d_k without scaling."
+  },
+  {
+    "id": "q-302",
+    "courseCode": "CS-402",
+    "unitNumber": 3,
+    "questionText": "Evaluate FlashAttention IO-awareness compared to standard attention when training 32k context-length language models on modern GPU SRAM.",
+    "bloomLevel": "L5_EVALUATE",
+    "difficulty": "HARD",
+    "marks": 12,
+    "coMapping": "CO3",
+    "modelAnswerSummary": "Critical evaluation of HBM vs SRAM bandwidth bottlenecks, tiling outer loops, and online softmax recomputation."
+  },
+  {
+    "id": "q-401",
+    "courseCode": "CS-402",
+    "unitNumber": 4,
+    "questionText": "Describe the Circuit Breaker pattern states (Closed, Open, Half-Open) and write a pseudo-code implementation handling timeout thresholds.",
+    "bloomLevel": "L3_APPLY",
+    "difficulty": "MEDIUM",
+    "marks": 8,
+    "coMapping": "CO4",
+    "modelAnswerSummary": "State transition machine with failure rate tripping threshold, sleep window timer, and canary probe requests."
+  },
+  {
+    "id": "q-402",
+    "courseCode": "CS-402",
+    "unitNumber": 4,
+    "questionText": "Architect an event-driven saga orchestration pipeline for an enterprise university fee settlement system that guarantees idempotency.",
+    "bloomLevel": "L6_CREATE",
+    "difficulty": "HARD",
+    "marks": 16,
+    "coMapping": "CO5",
+    "modelAnswerSummary": "Choreography vs orchestrator comparison, compensating rollback transactions, and outbox pattern with Kafka/RabbitMQ."
+  },
+  {
+    "id": "q-501",
+    "courseCode": "CS-402",
+    "unitNumber": 5,
+    "questionText": "Explain how HMAC-SHA256 tokens verify request authenticity and prevent parameter tampering in RESTful webhook endpoints.",
+    "bloomLevel": "L2_UNDERSTAND",
+    "difficulty": "EASY",
+    "marks": 4,
+    "coMapping": "CO5",
+    "modelAnswerSummary": "Secret pre-shared key, hash computation over full raw request payload, and constant-time string comparison."
+  },
+  {
+    "id": "q-502",
+    "courseCode": "CS-402",
+    "unitNumber": 5,
+    "questionText": "Demonstrate how formal verification using TLA+ model checking identifies distributed race conditions in two-phase commit protocols.",
+    "bloomLevel": "L4_ANALYZE",
+    "difficulty": "HARD",
+    "marks": 10,
+    "coMapping": "CO5",
+    "modelAnswerSummary": "Specification of states, temporal logic invariants (Inv_NoTwoDecisions), and state-space exploration."
+  }
+]

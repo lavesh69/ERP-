@@ -13,8 +13,22 @@ export async function GET(request: NextRequest) {
     const tab = searchParams.get("tab") || "summary";
     const category = searchParams.get("category") || undefined;
 
+    const GRIEVANCE_ADMIN_ROLES = ["SUPER_ADMIN", "INSTITUTION_ADMIN", "PRINCIPAL", "HOD"];
+    const isLeadership = GRIEVANCE_ADMIN_ROLES.includes(session.role);
+
     if (tab === "list") {
-      const list = grievancesStore.getGrievances(category);
+      let list = grievancesStore.getGrievances(category);
+      if (!isLeadership) {
+        list = list.filter(
+          (g: any) =>
+            (session.studentId && g.grievantRollOrId === session.studentId) ||
+            (session.email && g.grievantRollOrId === session.email) ||
+            (session.fullName && g.grievantName?.toLowerCase() === session.fullName?.toLowerCase()) ||
+            (session.name && g.grievantName?.toLowerCase() === session.name?.toLowerCase())
+        );
+      } else if (session.role === "HOD") {
+        list = list.filter((g: any) => g.category !== "POSH" && g.category !== "SEXUAL_HARASSMENT");
+      }
       return NextResponse.json({ success: true, grievances: list });
     }
 
@@ -62,7 +76,15 @@ export async function POST(request: NextRequest) {
       });
     }
 
+    const GRIEVANCE_ADMIN_ROLES = ["SUPER_ADMIN", "INSTITUTION_ADMIN", "PRINCIPAL", "HOD"];
+
     if (action === "RESOLVE_GRIEVANCE") {
+      if (!GRIEVANCE_ADMIN_ROLES.includes(session.role)) {
+        return NextResponse.json(
+          { error: "Forbidden: Resolving statutory grievances requires committee or administrative authority" },
+          { status: 403 }
+        );
+      }
       const { grievanceId, actionTakenReport, status } = body;
       if (!grievanceId || !actionTakenReport) {
         return NextResponse.json({ error: "Grievance ID and Action Taken Report (ATR) are required" }, { status: 400 });
@@ -73,6 +95,12 @@ export async function POST(request: NextRequest) {
     }
 
     if (action === "SCHEDULE_HEARING") {
+      if (!GRIEVANCE_ADMIN_ROLES.includes(session.role)) {
+        return NextResponse.json(
+          { error: "Forbidden: Scheduling statutory committee hearings requires administrative authority" },
+          { status: 403 }
+        );
+      }
       const { grievanceId, hearingDate, notes } = body;
       if (!grievanceId || !hearingDate) {
         return NextResponse.json({ error: "Grievance ID and Hearing Date are required" }, { status: 400 });

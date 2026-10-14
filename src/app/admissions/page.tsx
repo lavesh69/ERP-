@@ -26,7 +26,9 @@ import {
   CheckSquare,
   Square,
   ExternalLink,
+  UserCheck,
 } from "lucide-react";
+import AdmissionsCounselingTab from "@/components/admissions/AdmissionsCounselingTab";
 
 interface AdmissionsSummary {
   totalApplicants: number;
@@ -39,7 +41,7 @@ interface AdmissionsSummary {
 
 export default function AdmissionsPage() {
   const { currentUser } = useApp();
-  const [activeTab, setActiveTab] = useState<"pipeline" | "register" | "quotas" | "analytics">("pipeline");
+  const [activeTab, setActiveTab] = useState<"pipeline" | "register" | "quotas" | "analytics" | "counseling">("pipeline");
   const [loading, setLoading] = useState(true);
   const [summary, setSummary] = useState<AdmissionsSummary | null>(null);
   const [applicants, setApplicants] = useState<any[]>([]);
@@ -197,6 +199,28 @@ export default function AdmissionsPage() {
       fetchData();
     } catch (err: any) {
       setStatusMessage({ type: "error", text: err.message });
+    }
+  };
+
+  const handleProvisionStudent = async (applicantId: string) => {
+    try {
+      setLoading(true);
+      const res = await fetch("/api/admissions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "PROVISION_STUDENT",
+          applicantId,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to provision student");
+      setStatusMessage({ type: "success", text: data.message });
+      fetchData();
+    } catch (err: any) {
+      setStatusMessage({ type: "error", text: err.message });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -375,6 +399,7 @@ export default function AdmissionsPage() {
         {[
           { id: "pipeline", label: "Applicant Pipeline", icon: UserPlus, count: summary?.totalApplicants },
           { id: "quotas", label: "Program Quotas & Cutoffs", icon: GraduationCap },
+          { id: "counseling", label: "Merit & Counseling Allotment", icon: Award },
           { id: "analytics", label: "Enrollment Funnel Analytics", icon: TrendingUp },
         ].map((tab) => {
           const Icon = tab.icon;
@@ -634,6 +659,21 @@ export default function AdmissionsPage() {
                         </button>
                       </>
                     )}
+                    {lead.stage === "SEAT_CONFIRMED" && (
+                      <button
+                        onClick={() => handleProvisionStudent(lead.id)}
+                        className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600 text-white hover:bg-emerald-700 transition-colors flex items-center gap-1 shadow-sm"
+                      >
+                        <UserCheck className="w-3.5 h-3.5" />
+                        Enroll in SIS
+                      </button>
+                    )}
+                    {lead.stage === "ENROLLED" && (
+                      <span className="text-xs text-emerald-700 dark:text-emerald-300 font-bold px-2.5 py-1 bg-emerald-50 dark:bg-emerald-950/60 rounded-lg border border-emerald-300 dark:border-emerald-800 flex items-center gap-1">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                        Enrolled in SIS
+                      </span>
+                    )}
                     {lead.stage === "REJECTED" && (
                       <span className="text-xs text-rose-500 font-medium px-2 py-1 bg-rose-50 dark:bg-rose-950/40 rounded-lg">
                         Application Closed
@@ -830,6 +870,9 @@ export default function AdmissionsPage() {
           </div>
         </div>
       )}
+
+      {/* TAB: STATUTORY MERIT & COUNSELING ALLOTMENT */}
+      {activeTab === "counseling" && <AdmissionsCounselingTab />}
 
       {/* MODAL: New Applicant */}
       {showAppModal && (

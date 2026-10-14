@@ -4,13 +4,139 @@ import { getOptionalSession, requireAdminAuth, requireRoleAuth } from "@/lib/aut
 import { hashPassword } from "@/lib/auth/password";
 import { logger } from "@/lib/logging/logger";
 import { logAuditEvent } from "@/lib/audit/logger";
+import { FacultyAcademicEngine } from "@/lib/faculty/faculty-academic-engine";
+import { hrPayrollStore } from "@/lib/hr/hr-store";
 
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
     const idParam = searchParams.get("id");
     const meParam = searchParams.get("me");
+    const action = searchParams.get("action");
     const session = await getOptionalSession(req);
+
+    // 0. Dedicated Faculty Governance Actions
+    if (action === "LESSON_PLAN") {
+      const courseCode = searchParams.get("courseCode") || "CS301";
+      const facultyEmail = searchParams.get("facultyEmail") || session?.email || "faculty@classroom.edu";
+      const plans = await prisma.courseLessonPlan.findMany({
+        where: { courseCode, facultyEmail },
+        orderBy: [{ weekNumber: "asc" }, { lectureNumber: "asc" }],
+      });
+      if (plans.length === 0) {
+        const generated = FacultyAcademicEngine.generateStandardLessonPlan(
+          courseCode,
+          "Advanced Algorithms & Systems",
+          "fac-01",
+          facultyEmail
+        );
+        return NextResponse.json({
+          success: true,
+          courseCode,
+          isTemplate: true,
+          lessonPlans: generated,
+          coverage: FacultyAcademicEngine.computeSyllabusCoverage(courseCode, "Advanced Algorithms & Systems", facultyEmail, generated),
+        });
+      }
+      const formatted = plans.map((p) => ({
+        id: p.id,
+        weekNumber: p.weekNumber,
+        lectureNumber: p.lectureNumber,
+        topic: p.topic,
+        plannedDate: p.plannedDate.toISOString().split("T")[0],
+        actualDate: p.actualDate ? p.actualDate.toISOString().split("T")[0] : undefined,
+        deliveryMode: p.deliveryMode,
+        bloomLevel: p.bloomLevel,
+        status: p.status,
+        remarks: p.remarks,
+      }));
+      return NextResponse.json({
+        success: true,
+        courseCode,
+        isTemplate: false,
+        lessonPlans: formatted,
+        coverage: FacultyAcademicEngine.computeSyllabusCoverage(courseCode, "Course Curriculum", facultyEmail, formatted as any),
+      });
+    }
+
+    if (action === "SUBSTITUTIONS") {
+      const facultyEmail = searchParams.get("facultyEmail") || session?.email || "alan.turing@classroom.edu";
+      const substitutions = await prisma.lectureSubstitution.findMany({
+        where: {
+          OR: [
+            { substituteFacultyEmail: facultyEmail },
+            { originalFacultyEmail: facultyEmail },
+          ],
+        },
+        orderBy: { createdAt: "desc" },
+      });
+      return NextResponse.json({ success: true, substitutions });
+    }
+
+    if (action === "MENTEE_RISKS") {
+      const facultyEmail = searchParams.get("facultyEmail") || session?.email || "alan.turing@classroom.edu";
+      const students = await prisma.student.findMany({
+        take: 10,
+        include: { user: true },
+      });
+      const menteeList = students.map((s, idx) => ({
+        id: s.id,
+        name: `${s.user.firstName} ${s.user.lastName}`,
+        rollNo: s.rollNumber,
+        attendanceRate: idx === 1 ? 68.5 : idx === 3 ? 72.0 : 88.5,
+        cgpa: idx === 1 ? 4.8 : 7.6,
+      }));
+      const audits = FacultyAcademicEngine.auditMenteeRisks(menteeList);
+      return NextResponse.json({ success: true, menteeRisks: audits });
+    }
+
+    if (action === "UGC_ASAR") {
+      const facultyEmail = searchParams.get("facultyEmail") || session?.email || "alan.turing@classroom.edu";
+      const dossier = FacultyAcademicEngine.generateUgcAsarReport({
+        facultyName: searchParams.get("facultyName") || "Dr. Alan Turing",
+        facultyEmail,
+        employeeCode: "FAC-CSE-01",
+        designation: "Professor",
+        department: "Computer Science",
+        allocatedHoursPerWeek: 16,
+        deliveredHoursPerWeek: 16,
+        syllabusCompletionRate: 94,
+        examDutyDays: 4,
+        institutionalCommitteeRoles: 2,
+        menteeCount: 18,
+        publicationsCount: 6,
+        firstAuthorCount: 4,
+        sponsoredGrantsLakhs: 25,
+      });
+      return NextResponse.json({ success: true, asarDossier: dossier });
+    }
+
+    if (action === "RESEARCH_CLAIMS") {
+      const facultyEmail = searchParams.get("facultyEmail") || session?.email || "alan.turing@classroom.edu";
+      const claims = await prisma.facultyResearchClaim.findMany({
+        where: { facultyEmail },
+        orderBy: { createdAt: "desc" },
+      });
+      return NextResponse.json({ success: true, claims });
+    }
+
+    if (action === "PRINT_PAYSLIP") {
+      const facultyEmail = searchParams.get("facultyEmail") || session?.email || "alan.turing@classroom.edu";
+      const staff = hrPayrollStore.getStaffByEmail(facultyEmail) || hrPayrollStore.getStaffMembers()[0];
+      const slip = hrPayrollStore.computeSalarySlip(staff, "October 2026");
+      return NextResponse.json({
+        success: true,
+        institutionHeader: {
+          institutionName: "APEX INSTITUTE OF HIGHER EDUCATION & RESEARCH",
+          tagline: "Accredited Grade 'A++' by NAAC • Approved by UGC & AICTE",
+          address: "Knowledge City, Institutional Area, Sector 62, New Delhi 110092",
+          pan: "AAATA0001A",
+          tan: "DELA000412",
+        },
+        payslip: slip,
+        qrSeal: `VERIFIED-PAYSLIP:${slip.verificationHash}:${slip.payPeriod}`,
+      });
+    }
 
     // 1. Single Faculty Dossier Request (Targeted)
     let targetFacultyId = idParam;
@@ -414,6 +540,174 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const { action } = body;
 
+    // Faculty Academic Lesson Plans & Syllabus Delivery
+    if (action === "SAVE_LESSON_PLAN") {
+      const { courseCode, courseTitle, facultyEmail, units } = body;
+      if (!courseCode || !units || !Array.isArray(units)) {
+        return NextResponse.json({ error: "courseCode and units array are required" }, { status: 400 });
+      }
+      const targetEmail = facultyEmail || session?.email || "faculty@classroom.edu";
+      await prisma.courseLessonPlan.deleteMany({
+        where: { courseCode, facultyEmail: targetEmail },
+      });
+      const created = await Promise.all(
+        units.map((u: any) =>
+          prisma.courseLessonPlan.create({
+            data: {
+              courseCode,
+              courseTitle: courseTitle || "Course Curriculum",
+              facultyId: u.facultyId || "fac-01",
+              facultyEmail: targetEmail,
+              weekNumber: Number(u.weekNumber),
+              lectureNumber: Number(u.lectureNumber),
+              topic: String(u.topic),
+              plannedDate: new Date(u.plannedDate || Date.now()),
+              actualDate: u.actualDate ? new Date(u.actualDate) : null,
+              deliveryMode: u.deliveryMode || "CLASSROOM",
+              bloomLevel: u.bloomLevel || "L2_UNDERSTAND",
+              status: u.status || "PLANNED",
+              remarks: u.remarks || null,
+            },
+          })
+        )
+      );
+      return NextResponse.json({ success: true, count: created.length, message: "Course lesson plan saved successfully" });
+    }
+
+    if (action === "RECORD_LECTURE_DELIVERY") {
+      const { planId, actualDate, status, remarks } = body;
+      const updated = await prisma.courseLessonPlan.update({
+        where: { id: planId },
+        data: {
+          actualDate: actualDate ? new Date(actualDate) : new Date(),
+          status: status || "COMPLETED",
+          remarks,
+        },
+      });
+      return NextResponse.json({ success: true, lecture: updated });
+    }
+
+    if (action === "CREATE_SUBSTITUTION_REQUEST") {
+      const { originalFacultyEmail, substituteFacultyEmail, courseCode, courseTitle, scheduledDate, slotTime } = body;
+      const sub = await prisma.lectureSubstitution.create({
+        data: {
+          originalFacultyEmail: originalFacultyEmail || session?.email || "original@classroom.edu",
+          substituteFacultyEmail,
+          courseCode,
+          courseTitle: courseTitle || "Lecture Session",
+          scheduledDate: new Date(scheduledDate || Date.now()),
+          slotTime: slotTime || "10:00 AM - 11:00 AM",
+          status: "PENDING_CONSENT",
+          dutyCreditsAwarded: 1.0,
+        },
+      });
+      return NextResponse.json({ success: true, substitution: sub });
+    }
+
+    if (action === "RESPOND_SUBSTITUTION_CONSENT") {
+      const { substitutionId, decision, responseNotes } = body;
+      const newStatus = decision === "ACCEPT" ? "ACCEPTED" : "DECLINED";
+      const updated = await prisma.lectureSubstitution.update({
+        where: { id: substitutionId },
+        data: {
+          status: newStatus,
+          responseNotes,
+        },
+      });
+      return NextResponse.json({
+        success: true,
+        message: `Substitution request ${newStatus.toLowerCase()} successfully`,
+        substitution: updated,
+      });
+    }
+
+    if (action === "RECORD_MENTORING_SESSION") {
+      const { studentId, studentRollNo, studentName, category, discussionNotes, actionItems, riskLevel, parentContacted } = body;
+      const record = await prisma.facultyMentoringLog.create({
+        data: {
+          facultyId: session?.userId || "fac-01",
+          facultyEmail: session?.email || "faculty@classroom.edu",
+          studentId,
+          studentRollNo: studentRollNo || "ROLL-001",
+          studentName: studentName || "Scholar",
+          category: category || "ACADEMIC_PROGRESS",
+          discussionNotes,
+          actionItems,
+          riskLevel: riskLevel || "NORMAL",
+          parentContacted: Boolean(parentContacted),
+        },
+      });
+      return NextResponse.json({ success: true, mentoringSession: record });
+    }
+
+    if (action === "GENERATE_UGC_ASAR") {
+      const { facultyName, facultyEmail, employeeCode, designation, department } = body;
+      const dossier = FacultyAcademicEngine.generateUgcAsarReport({
+        facultyName: facultyName || "Dr. Alan Turing",
+        facultyEmail: facultyEmail || session?.email || "alan.turing@classroom.edu",
+        employeeCode: employeeCode || "FAC-01",
+        designation: designation || "Professor",
+        department: department || "Computer Science",
+        allocatedHoursPerWeek: Number(body.allocatedHoursPerWeek) || 16,
+        deliveredHoursPerWeek: Number(body.deliveredHoursPerWeek) || 16,
+        syllabusCompletionRate: Number(body.syllabusCompletionRate) || 92,
+        examDutyDays: Number(body.examDutyDays) || 5,
+        institutionalCommitteeRoles: Number(body.institutionalCommitteeRoles) || 2,
+        menteeCount: Number(body.menteeCount) || 20,
+        publicationsCount: Number(body.publicationsCount) || 5,
+        firstAuthorCount: Number(body.firstAuthorCount) || 3,
+        sponsoredGrantsLakhs: Number(body.sponsoredGrantsLakhs) || 20,
+      });
+      return NextResponse.json({ success: true, asarDossier: dossier });
+    }
+
+    if (action === "APPLY_SEED_GRANT") {
+      const { title, amountRequested, remarks } = body;
+      const claim = await prisma.facultyResearchClaim.create({
+        data: {
+          facultyEmail: session?.email || "faculty@classroom.edu",
+          facultyName: session?.name || "Faculty Member",
+          claimType: "SEED_MONEY_GRANT",
+          title,
+          amountRequested: Number(amountRequested) || 150000,
+          status: "SUBMITTED",
+          remarks,
+        },
+      });
+      return NextResponse.json({ success: true, grantClaim: claim });
+    }
+
+    if (action === "SUBMIT_CONFERENCE_CLAIM") {
+      const { title, amountRequested, remarks, proofDocumentUrl } = body;
+      const claim = await prisma.facultyResearchClaim.create({
+        data: {
+          facultyEmail: session?.email || "faculty@classroom.edu",
+          facultyName: session?.name || "Faculty Member",
+          claimType: "CONFERENCE_REGISTRATION",
+          title,
+          amountRequested: Number(amountRequested) || 15000,
+          status: "SUBMITTED",
+          proofDocumentUrl,
+          remarks,
+        },
+      });
+      return NextResponse.json({ success: true, conferenceClaim: claim });
+    }
+
+    if (action === "UPDATE_RESEARCH_IDS") {
+      const { facultyId, vidwanId, orcidId, scopusAuthorId, googleScholarId } = body;
+      const updated = await prisma.faculty.update({
+        where: { id: facultyId },
+        data: {
+          vidwanId,
+          orcidId,
+          scopusAuthorId,
+          googleScholarId,
+        },
+      });
+      return NextResponse.json({ success: true, faculty: updated });
+    }
+
     // Faculty Self-Service: Apply for Leave with Substitute Faculty Allocation
     if (action === "APPLY_LEAVE") {
       if (!session) {
@@ -702,6 +996,11 @@ export async function POST(req: NextRequest) {
         },
       },
       include: { facultyProfile: true },
+    });
+
+    // Auto-reconcile with EmployeeStaff & HrPayrollStore to eliminate identity drift
+    await FacultyAcademicEngine.syncFacultyWithEmployeeStaff(facultyUser.id).catch((err) => {
+      logger.error("Failed to auto-sync EmployeeStaff on onboarding", err);
     });
 
     logger.info("Faculty onboarded", {

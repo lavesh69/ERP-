@@ -346,6 +346,13 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: "Transaction record not found" }, { status: 404 });
       }
 
+      if (txn.status !== "PENDING") {
+        return NextResponse.json(
+          { error: `Transaction has already been processed (Current status: ${txn.status}). Duplicate settlement blocked.` },
+          { status: 400 }
+        );
+      }
+
       if (
         session.role !== "SUPER_ADMIN" &&
         session.institutionId &&

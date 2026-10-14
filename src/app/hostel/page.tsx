@@ -25,8 +25,10 @@ import {
   Leaf,
   Scale,
   Moon,
+  Wrench,
 } from "lucide-react";
 import { NightRollCallView } from "@/components/hostel/NightRollCallView";
+import HostelAssetAuditTab from "@/components/hostel/HostelAssetAuditTab";
 
 interface HostelSummary {
   totalBlocks: number;
@@ -42,7 +44,7 @@ interface HostelSummary {
 
 export default function HostelPage() {
   const { currentUser, currentRole } = useApp();
-  const [activeTab, setActiveTab] = useState<"matrix" | "allocations" | "gatepass" | "mess" | "night-rollcall">("matrix");
+  const [activeTab, setActiveTab] = useState<"matrix" | "allocations" | "gatepass" | "mess" | "night-rollcall" | "asset-audit">("matrix");
   const [loading, setLoading] = useState(true);
   const [summary, setSummary] = useState<HostelSummary | null>(null);
   const [rooms, setRooms] = useState<any[]>([]);
@@ -454,6 +456,7 @@ export default function HostelPage() {
           { id: "gatepass", label: "Gate Pass & Night Outpass", icon: Clock, count: summary?.pendingGatePasses },
           { id: "mess", label: "Dining & Mess Management", icon: Utensils },
           { id: "night-rollcall", label: "Night Curfew Roll-Call (21:30)", icon: Moon },
+          { id: "asset-audit", label: "Room Inventory & Deposit Clearance", icon: Wrench },
         ].map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
@@ -1168,6 +1171,9 @@ export default function HostelPage() {
           showToast={(msg, type) => setStatusMessage({ type: type === "error" ? "error" : "success", text: msg })}
         />
       )}
+
+      {/* TAB 6: ROOM INVENTORY & DEPOSIT CLEARANCE */}
+      {activeTab === "asset-audit" && <HostelAssetAuditTab />}
 
       {/* MODAL: Request Outpass */}
       {showPassModal && (

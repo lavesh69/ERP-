@@ -34,6 +34,7 @@ import {
   Pause,
   ExternalLink,
 } from "lucide-react";
+import FleetComplianceTab from "@/components/transport/FleetComplianceTab";
 
 interface FleetSummary {
   totalVehicles: number;
@@ -49,7 +50,7 @@ interface FleetSummary {
 
 export default function TransportPage() {
   const { currentUser } = useApp();
-  const [activeTab, setActiveTab] = useState<"fleet" | "map" | "routes" | "passes" | "maintenance">("fleet");
+  const [activeTab, setActiveTab] = useState<"fleet" | "map" | "routes" | "passes" | "maintenance" | "compliance">("fleet");
   const [loading, setLoading] = useState(true);
   const [summary, setSummary] = useState<FleetSummary | null>(null);
   const [routes, setRoutes] = useState<any[]>([]);
@@ -309,6 +310,7 @@ export default function TransportPage() {
           { id: "routes", label: "Routes & Schedules", icon: Navigation },
           { id: "passes", label: "Digital Bus Passes", icon: CreditCard, count: summary?.activeBusPasses },
           { id: "maintenance", label: "Vehicle Safety & Service", icon: Wrench },
+          { id: "compliance", label: "Regulatory & Driver Safety", icon: ShieldCheck },
         ].map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
@@ -1240,6 +1242,9 @@ export default function TransportPage() {
           </div>
         </div>
       )}
+
+      {/* TAB 5: REGULATORY SAFETY & DRIVER COMPLIANCE */}
+      {activeTab === "compliance" && <FleetComplianceTab />}
 
       {/* MODAL: Issue Bus Pass */}
       {showPassModal && (

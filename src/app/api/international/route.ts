@@ -20,7 +20,28 @@ export async function GET(request: NextRequest) {
     }
 
     if (tab === "students") {
-      const students = internationalStore.getStudents(type);
+      let students = internationalStore.getStudents(type);
+      const isStaffOrOfficer = [
+        "SUPER_ADMIN",
+        "INSTITUTION_ADMIN",
+        "REGISTRAR",
+        "PRINCIPAL",
+        "HOD",
+        "RESEARCH_COORDINATOR",
+      ].includes(session.role);
+
+      if (!isStaffOrOfficer) {
+        students = students.map((s: any) => ({
+          ...s,
+          passportNumber:
+            s.studentRollOrId === session.studentId ||
+            s.studentName?.toLowerCase() === session.fullName?.toLowerCase()
+              ? s.passportNumber
+              : s.passportNumber
+              ? `${s.passportNumber.slice(0, 2)}****${s.passportNumber.slice(-2)}`
+              : undefined,
+        }));
+      }
       return NextResponse.json({ success: true, students });
     }
 

@@ -37,10 +37,46 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { action } = body;
 
+    const CLEARANCE_ADMIN_ROLES = [
+      "SUPER_ADMIN",
+      "INSTITUTION_ADMIN",
+      "PRINCIPAL",
+      "EXAMINATION_CONTROLLER",
+      "HOD",
+      "ACCOUNTANT",
+      "LIBRARIAN",
+      "FACULTY",
+    ];
+
+    if (action === "UPDATE_CLEARANCE" || action === "BULK_CLEAR_ALL") {
+      if (!CLEARANCE_ADMIN_ROLES.includes(session.role)) {
+        return NextResponse.json(
+          { error: "Forbidden: Only designated administrative officers can sign off convocation clearances" },
+          { status: 403 }
+        );
+      }
+    }
+
+    const ROLE_DEPT_PERMISSIONS: Partial<Record<string, NoDuesDepartment[]>> = {
+      LIBRARIAN: ["LIBRARY"],
+      ACCOUNTANT: ["FINANCE"],
+      HOD: ["LABORATORY", "SPORTS_COUNCIL", "ALUMNI_ASSOCIATION"],
+      FACULTY: ["LABORATORY"],
+    };
+
     if (action === "UPDATE_CLEARANCE") {
       const { candidateId, department, isCleared } = body;
       if (!candidateId || !department) {
         return NextResponse.json({ error: "Candidate ID and department are required" }, { status: 400 });
+      }
+
+      const isExecutive = ["SUPER_ADMIN", "INSTITUTION_ADMIN", "PRINCIPAL", "EXAMINATION_CONTROLLER"].includes(session.role);
+      const allowedDepts = ROLE_DEPT_PERMISSIONS[session.role];
+      if (!isExecutive && (!allowedDepts || !allowedDepts.includes(department as NoDuesDepartment))) {
+        return NextResponse.json(
+          { error: `Forbidden: Role ${session.role} is not authorized to sign off ${department} clearances.` },
+          { status: 403 }
+        );
       }
 
       const updated = convocationStore.updateClearance(
@@ -57,6 +93,14 @@ export async function POST(request: NextRequest) {
     }
 
     if (action === "BULK_CLEAR_ALL") {
+      const isExecutive = ["SUPER_ADMIN", "INSTITUTION_ADMIN", "PRINCIPAL", "EXAMINATION_CONTROLLER"].includes(session.role);
+      if (!isExecutive) {
+        return NextResponse.json(
+          { error: "Forbidden: Only institution executives can perform bulk no-dues clearance across all departments." },
+          { status: 403 }
+        );
+      }
+
       const { candidateIds, isCleared = true } = body;
       if (!Array.isArray(candidateIds) || candidateIds.length === 0) {
         return NextResponse.json({ error: "candidateIds array is required" }, { status: 400 });

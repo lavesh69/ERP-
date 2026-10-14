@@ -59,18 +59,29 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const session = await getOptionalSession(request);
-    const userId = session?.userId || "usr-stu-01";
-    const userName = session?.email?.split("@")[0] || "Alex Mercer";
-    const userRole = session?.role || "STUDENT";
+    if (!session) {
+      return NextResponse.json({ error: "Authentication required to access cafeteria services" }, { status: 401 });
+    }
+    const userId = session.userId || "usr-stu-01";
+    const userName = session.fullName || session.email?.split("@")[0] || "Scholar";
+    const userRole = session.role || "STUDENT";
 
     const body = await request.json();
     const { action } = body;
 
     if (action === "TOP_UP_WALLET") {
       const { amount, reference } = body;
-      const topUpAmount = Number(amount);
+      const topUpAmount = Math.round(Number(amount) * 100) / 100;
       if (isNaN(topUpAmount) || topUpAmount <= 0) {
         return NextResponse.json({ error: "Invalid top-up amount" }, { status: 400 });
+      }
+
+      const isStaffOrBursar = ["SUPER_ADMIN", "INSTITUTION_ADMIN", "ACCOUNTANT"].includes(session.role);
+      if (!isStaffOrBursar && (!reference || typeof reference !== "string" || reference.trim().length === 0)) {
+        return NextResponse.json(
+          { error: "Payment reference or transaction token required for smart card top up" },
+          { status: 400 }
+        );
       }
 
       const updatedWallet = canteenStore.topUpWallet(userId, topUpAmount, reference || "UPI-WALLET-TOPUP");
@@ -107,6 +118,14 @@ export async function POST(request: NextRequest) {
     }
 
     if (action === "UPDATE_ORDER_STATUS") {
+      const CANTEEN_STAFF_ROLES = ["SUPER_ADMIN", "INSTITUTION_ADMIN", "ACCOUNTANT", "FACULTY", "PRINCIPAL"];
+      if (!CANTEEN_STAFF_ROLES.includes(session.role)) {
+        return NextResponse.json(
+          { error: "Forbidden: Only cafeteria staff or administrators can update kitchen order status" },
+          { status: 403 }
+        );
+      }
+
       const { orderId, status } = body;
       if (!orderId || !status) {
         return NextResponse.json({ error: "Order ID and target status required" }, { status: 400 });

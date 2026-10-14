@@ -11,6 +11,7 @@ import {
   FeeHeadItem,
   calculateFeeStructureTotal,
   StudentInstallmentPlan,
+  InstallmentMilestone,
   generateInstallmentSchedule,
   LateFineRule,
   computeLateFine,
@@ -344,6 +345,34 @@ export async function getStudentInstallments(studentFeeId?: string): Promise<Stu
   }
 
   return store.installmentPlans;
+}
+
+export function createCustomInstallmentPlan(data: {
+  studentFeeId: string;
+  studentId: string;
+  studentName: string;
+  rollNo: string;
+  totalFee: number;
+  milestones: InstallmentMilestone[];
+}): StudentInstallmentPlan {
+  const store = readStore();
+  // Remove any existing plan for this student fee
+  store.installmentPlans = store.installmentPlans.filter((p) => p.studentFeeId !== data.studentFeeId);
+
+  const newPlan: StudentInstallmentPlan = {
+    id: `plan-flexi-${Date.now()}`,
+    studentFeeId: data.studentFeeId,
+    studentId: data.studentId,
+    studentName: data.studentName,
+    rollNo: data.rollNo,
+    totalFee: data.totalFee,
+    milestones: data.milestones,
+    createdAt: new Date().toISOString(),
+  };
+
+  store.installmentPlans.push(newPlan);
+  writeStore(store);
+  return newPlan;
 }
 
 export function getActiveLateFineRule(): LateFineRule {

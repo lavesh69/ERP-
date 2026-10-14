@@ -1,0 +1,173 @@
+[
+  {
+    "id": "INSP-2026-081",
+    "studentId": "STU-2026-001",
+    "studentName": "Alex Rivera",
+    "rollNo": "CS2026-001",
+    "roomNumber": "B-204",
+    "blockName": "Mandela International House",
+    "academicYear": "2025-2026",
+    "cautionDepositAmount": 500,
+    "totalDamageDeductions": 0,
+    "refundableAmount": 500,
+    "moveInDate": "2025-08-10",
+    "moveOutDate": "2026-05-20",
+    "inspectionStatus": "CLEARED_REFUND_APPROVED",
+    "assets": [
+      {
+        "itemName": "Study Table & Drawers",
+        "category": "FURNITURE",
+        "moveInStatus": "PRISTINE",
+        "moveOutStatus": "GOOD",
+        "damageCharge": 0
+      },
+      {
+        "itemName": "Ergonomic Mesh Chair",
+        "category": "FURNITURE",
+        "moveInStatus": "PRISTINE",
+        "moveOutStatus": "GOOD",
+        "damageCharge": 0
+      },
+      {
+        "itemName": "Single Bed Frame & Mattress",
+        "category": "FURNITURE",
+        "moveInStatus": "PRISTINE",
+        "moveOutStatus": "GOOD",
+        "damageCharge": 0
+      },
+      {
+        "itemName": "Room & Wardrobe RFID Keys",
+        "category": "KEY",
+        "moveInStatus": "PRISTINE",
+        "moveOutStatus": "GOOD",
+        "damageCharge": 0
+      },
+      {
+        "itemName": "Ceiling Fan & LED Fixtures",
+        "category": "ELECTRICAL",
+        "moveInStatus": "PRISTINE",
+        "moveOutStatus": "GOOD",
+        "damageCharge": 0
+      }
+    ],
+    "clearanceSeal": "APEX-HOSTEL-CLEAR-91F2C40A7B2011DE",
+    "wardenSignoff": "Chief Warden Dr. H. C. Verma",
+    "clearedAt": "2026-05-20T11:00:00.000Z",
+    "wardenNotes": "All assets in pristine condition. Zero deductions. Full caution deposit release authorized."
+  },
+  {
+    "id": "INSP-2026-082",
+    "studentId": "STU-2026-002",
+    "studentName": "Priya Sharma",
+    "rollNo": "ME2025-042",
+    "roomNumber": "C-112",
+    "blockName": "Curie Women's Hall",
+    "academicYear": "2025-2026",
+    "cautionDepositAmount": 500,
+    "totalDamageDeductions": 45,
+    "refundableAmount": 455,
+    "moveInDate": "2025-08-12",
+    "moveOutDate": "2026-05-22",
+    "inspectionStatus": "CLEARED_REFUND_APPROVED",
+    "assets": [
+      {
+        "itemName": "Study Table & Drawers",
+        "category": "FURNITURE",
+        "moveInStatus": "PRISTINE",
+        "moveOutStatus": "GOOD",
+        "damageCharge": 0
+      },
+      {
+        "itemName": "Ergonomic Mesh Chair",
+        "category": "FURNITURE",
+        "moveInStatus": "PRISTINE",
+        "moveOutStatus": "DAMAGED",
+        "damageCharge": 30,
+        "notes": "Armrest cracked"
+      },
+      {
+        "itemName": "Single Bed Frame & Mattress",
+        "category": "FURNITURE",
+        "moveInStatus": "PRISTINE",
+        "moveOutStatus": "GOOD",
+        "damageCharge": 0
+      },
+      {
+        "itemName": "Room & Wardrobe RFID Keys",
+        "category": "KEY",
+        "moveInStatus": "PRISTINE",
+        "moveOutStatus": "MISSING",
+        "damageCharge": 15,
+        "notes": "Duplicate wardrobe key charged"
+      },
+      {
+        "itemName": "Ceiling Fan & LED Fixtures",
+        "category": "ELECTRICAL",
+        "moveInStatus": "PRISTINE",
+        "moveOutStatus": "GOOD",
+        "damageCharge": 0
+      }
+    ],
+    "clearanceSeal": "APEX-HOSTEL-CLEAR-44E890B2CD91A578",
+    "wardenSignoff": "Warden Prof. Sarita Sundaram",
+    "clearedAt": "2026-05-22T14:30:00.000Z",
+    "wardenNotes": "Student accepted deductions for damaged armrest ($30) and replacement key ($15). Net refund $455 approved."
+  },
+  {
+    "id": "INSP-2026-083",
+    "studentId": "STU-2026-003",
+    "studentName": "Marcus Vance",
+    "rollNo": "EE2024-019",
+    "roomNumber": "A-305",
+    "blockName": "Aryabhata Engineering Hall",
+    "academicYear": "2025-2026",
+    "cautionDepositAmount": 500,
+    "totalDamageDeductions": 20,
+    "refundableAmount": 480,
+    "moveInDate": "2025-08-11",
+    "inspectionStatus": "CLEARED_REFUND_APPROVED",
+    "assets": [
+      {
+        "itemName": "Study Table & Drawers",
+        "category": "FURNITURE",
+        "moveInStatus": "GOOD",
+        "moveOutStatus": "GOOD",
+        "damageCharge": 0
+      },
+      {
+        "itemName": "Ergonomic Mesh Chair",
+        "category": "FURNITURE",
+        "moveInStatus": "GOOD",
+        "moveOutStatus": "GOOD",
+        "damageCharge": 0
+      },
+      {
+        "itemName": "Single Bed Frame & Mattress",
+        "category": "FURNITURE",
+        "moveInStatus": "GOOD",
+        "moveOutStatus": "GOOD",
+        "damageCharge": 0
+      },
+      {
+        "itemName": "Room & Wardrobe RFID Keys",
+        "category": "KEY",
+        "moveInStatus": "PRISTINE",
+        "moveOutStatus": "DAMAGED",
+        "damageCharge": 20,
+        "notes": "Smart card chip cracked"
+      },
+      {
+        "itemName": "Ceiling Fan & LED Fixtures",
+        "category": "ELECTRICAL",
+        "moveInStatus": "GOOD",
+        "moveOutStatus": "GOOD",
+        "damageCharge": 0
+      }
+    ],
+    "wardenNotes": "Vacate audit completed. $20 key replacement charged. Net $480 caution refund released.",
+    "moveOutDate": "2026-10-14",
+    "wardenSignoff": "Chief Warden Dr. H. C. Verma",
+    "clearedAt": "2026-10-14T15:50:25.835Z",
+    "clearanceSeal": "APEX-HOSTEL-CLEAR-BE2B088007730876"
+  }
+]

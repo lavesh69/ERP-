@@ -22,6 +22,11 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ success: true, dossier });
     }
 
+    if (tab === "ssr") {
+      const ssr = accreditationStore.generateSSRDossier();
+      return NextResponse.json({ success: true, ssr });
+    }
+
     const summary = accreditationStore.getSummary();
     return NextResponse.json({ success: true, summary });
   } catch (error: any) {
@@ -47,6 +52,18 @@ export async function POST(request: NextRequest) {
         message: `AQAR Annual Quality Assurance Report generated successfully (${dossier.verificationHash})`,
         dossier,
       });
+    }
+
+    if (action === "GENERATE_SSR") {
+      const ssr = accreditationStore.generateSSRDossier();
+      return NextResponse.json(
+        {
+          success: true,
+          message: `NAAC Self Study Report (SSR) generated successfully (${ssr.verificationHash})`,
+          ssr,
+        },
+        { status: 201 }
+      );
     }
 
     return NextResponse.json({ error: `Unknown action: ${action}` }, { status: 400 });

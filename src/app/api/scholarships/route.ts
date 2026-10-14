@@ -270,13 +270,41 @@ export async function PATCH(req: NextRequest) {
       data: { status },
     });
 
+    // Auto-credit approved scholarship amount as a concession in the student fee ledger
+    if (status === "APPROVED") {
+      try {
+        const activeFee = await prisma.studentFee.findFirst({
+          where: {
+            studentId: application.studentId,
+            status: { in: ["PENDING", "PARTIAL"] },
+          },
+          orderBy: { dueDate: "asc" },
+        });
+
+        if (activeFee) {
+          const discountAddition = application.scholarship.amount;
+          const newDiscount = activeFee.discountAmount + discountAddition;
+          const isFullySettled = activeFee.paidAmount + newDiscount >= activeFee.totalAmount;
+          await prisma.studentFee.update({
+            where: { id: activeFee.id },
+            data: {
+              discountAmount: newDiscount,
+              status: isFullySettled ? "PAID" : activeFee.status,
+            },
+          });
+        }
+      } catch (feeErr: any) {
+        logger.warn("Could not automatically credit scholarship to active fee", { error: feeErr?.message || String(feeErr) });
+      }
+    }
+
     // Create a real student notification
     await prisma.notification.create({
       data: {
         userId: application.student.userId,
         title: status === "APPROVED" ? "Scholarship Fellowship Approved!" : "Scholarship Review Update",
         message: status === "APPROVED"
-          ? `Congratulations! Your fellowship application for ${application.scholarship.title} ($${application.scholarship.amount.toLocaleString()}) has been APPROVED. ${remarks ? `Remarks: ${remarks}` : ""}`
+          ? `Congratulations! Your fellowship application for ${application.scholarship.title} ($${application.scholarship.amount.toLocaleString()}) has been APPROVED and credited to your fee ledger. ${remarks ? `Remarks: ${remarks}` : ""}`
           : `Your fellowship application for ${application.scholarship.title} was reviewed and marked as ${status}. ${remarks ? `Remarks: ${remarks}` : ""}`,
         type: status === "APPROVED" ? "SUCCESS" : "INFO",
         isRead: false,

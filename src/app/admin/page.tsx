@@ -34,29 +34,35 @@ import {
   Edit2,
   Gauge,
   Zap,
+  XCircle,
+  FileText,
+  ChevronRight,
+  Check,
+  ExternalLink,
+  AlertTriangle,
 } from "lucide-react";
 import PasswordStrengthMeter from "@/components/auth/PasswordStrengthMeter";
 
 export default function SuperAdminPage() {
   const { showToast, refreshTrigger, triggerRefresh } = useApp();
-  const [activeTab, setActiveTab] = useState<"tenants" | "users" | "features" | "audit" | "system">("tenants");
+  const [activeTab, setActiveTab] = useState<"tenants" | "users" | "features" | "audit" | "system" | "approvals" | "integrations" | "radar">("tenants");
 
   // Restore tab on mount from URL query param (?tab=users) or localStorage
   useEffect(() => {
     if (typeof window !== "undefined") {
       const urlTab = new URLSearchParams(window.location.search).get("tab") as any;
-      if (urlTab && ["tenants", "users", "features", "audit", "system"].includes(urlTab)) {
+      if (urlTab && ["tenants", "users", "features", "audit", "system", "approvals", "integrations", "radar"].includes(urlTab)) {
         setActiveTab(urlTab);
       } else {
         const savedTab = localStorage.getItem("admin_active_tab") as any;
-        if (savedTab && ["tenants", "users", "features", "audit", "system"].includes(savedTab)) {
+        if (savedTab && ["tenants", "users", "features", "audit", "system", "approvals", "integrations", "radar"].includes(savedTab)) {
           setActiveTab(savedTab);
         }
       }
     }
   }, []);
 
-  const handleTabChange = (tab: "tenants" | "users" | "features" | "audit" | "system") => {
+  const handleTabChange = (tab: "tenants" | "users" | "features" | "audit" | "system" | "approvals" | "integrations" | "radar") => {
     setActiveTab(tab);
     if (typeof window !== "undefined") {
       try {
@@ -149,6 +155,38 @@ export default function SuperAdminPage() {
   const [benchmarkIterations, setBenchmarkIterations] = useState(50);
   const [benchmarkConcurrency, setBenchmarkConcurrency] = useState(10);
   const [benchmarkResult, setBenchmarkResult] = useState<any>(null);
+
+  // Workflows & Approvals State
+  const [workflows, setWorkflows] = useState<any[]>([]);
+  const [workflowSummary, setWorkflowSummary] = useState<any>({ total: 0, pending: 0, approved: 0, rejected: 0 });
+  const [isLoadingWorkflows, setIsLoadingWorkflows] = useState(false);
+  const [workflowStatusFilter, setWorkflowStatusFilter] = useState("ALL");
+  const [workflowTypeFilter, setWorkflowTypeFilter] = useState("ALL");
+  const [decisionModal, setDecisionModal] = useState<{
+    isOpen: boolean;
+    workflow: any | null;
+    decision: "APPROVE" | "REJECT";
+    remarks: string;
+    isSubmitting: boolean;
+  }>({
+    isOpen: false,
+    workflow: null,
+    decision: "APPROVE",
+    remarks: "",
+    isSubmitting: false,
+  });
+
+  // Integrations State
+  const [connectors, setConnectors] = useState<any[]>([]);
+  const [integrationSummary, setIntegrationSummary] = useState<any>({ total: 0, configured: 0, sandbox: 0, unconfigured: 0 });
+  const [isLoadingIntegrations, setIsLoadingIntegrations] = useState(false);
+  const [pingLatencies, setPingLatencies] = useState<Record<string, { latencyMs: number; status: string; timestamp: string }>>({});
+  const [pingingConnector, setPingingConnector] = useState<string | null>(null);
+
+  // Early Warning & Retention Radar State
+  const [radarData, setRadarData] = useState<any>(null);
+  const [isLoadingRadar, setIsLoadingRadar] = useState(false);
+  const [radarFilterTier, setRadarFilterTier] = useState<string>("ALL");
 
   // 1. Fetch persisted settings, tenants, and audit logs on mount
   useEffect(() => {
@@ -367,9 +405,121 @@ export default function SuperAdminPage() {
     }
   };
 
+  const fetchWorkflows = async () => {
+    setIsLoadingWorkflows(true);
+    try {
+      const res = await fetch("/api/workflows/approvals");
+      if (res.ok) {
+        const data = await res.json();
+        setWorkflows(data.workflows || []);
+        if (data.summary) setWorkflowSummary(data.summary);
+      }
+    } catch (err) {
+      console.error("Workflows fetch error:", err);
+    } finally {
+      setIsLoadingWorkflows(false);
+    }
+  };
+
+  const fetchIntegrations = async () => {
+    setIsLoadingIntegrations(true);
+    try {
+      const res = await fetch("/api/integrations");
+      if (res.ok) {
+        const data = await res.json();
+        setConnectors(data.connectors || []);
+        if (data.summary) setIntegrationSummary(data.summary);
+      }
+    } catch (err) {
+      console.error("Integrations fetch error:", err);
+    } finally {
+      setIsLoadingIntegrations(false);
+    }
+  };
+
+  const handleTestPing = async (connectorId: string) => {
+    setPingingConnector(connectorId);
+    try {
+      const res = await fetch("/api/integrations", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "PING_TEST", connectorId }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setPingLatencies((prev) => ({
+          ...prev,
+          [connectorId]: {
+            latencyMs: data.latencyMs,
+            status: data.status,
+            timestamp: new Date().toLocaleTimeString(),
+          },
+        }));
+        showToast(`${connectorId} ping successful (${data.latencyMs}ms)`, "success");
+      } else {
+        showToast(data.error || "Ping test failed", "error");
+      }
+    } catch {
+      showToast("Network error performing connector ping", "error");
+    } finally {
+      setPingingConnector(null);
+    }
+  };
+
+  const handleWorkflowDecisionSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!decisionModal.workflow) return;
+    setDecisionModal((prev) => ({ ...prev, isSubmitting: true }));
+    try {
+      const res = await fetch("/api/workflows/approvals", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "DECIDE",
+          workflowId: decisionModal.workflow.id,
+          decision: decisionModal.decision,
+          remarks: decisionModal.remarks || `${decisionModal.decision}D by Super Admin`,
+        }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        showToast(data.message || `Workflow ${decisionModal.decision}D successfully`, "success");
+        setDecisionModal({ isOpen: false, workflow: null, decision: "APPROVE", remarks: "", isSubmitting: false });
+        fetchWorkflows();
+      } else {
+        showToast(data.error || "Failed to process workflow decision", "error");
+        setDecisionModal((prev) => ({ ...prev, isSubmitting: false }));
+      }
+    } catch {
+      showToast("Network error processing decision", "error");
+      setDecisionModal((prev) => ({ ...prev, isSubmitting: false }));
+    }
+  };
+
+  const fetchEarlyWarning = async () => {
+    setIsLoadingRadar(true);
+    try {
+      const res = await fetch("/api/analytics/early-warning");
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setRadarData(data);
+      }
+    } catch {
+      // ignore
+    } finally {
+      setIsLoadingRadar(false);
+    }
+  };
+
   useEffect(() => {
     if (activeTab === "users") {
       fetchUsers();
+    } else if (activeTab === "approvals") {
+      fetchWorkflows();
+    } else if (activeTab === "integrations") {
+      fetchIntegrations();
+    } else if (activeTab === "radar") {
+      fetchEarlyWarning();
     }
   }, [activeTab, userRoleFilter, userStatusFilter, refreshTrigger]);
 
@@ -608,6 +758,9 @@ export default function SuperAdminPage() {
           {[
             { id: "tenants", label: "Institutions & Campuses", icon: Building2 },
             { id: "users", label: "User Accounts & RBAC", icon: Users },
+            { id: "approvals", label: "Multi-Tier Approvals", icon: ShieldCheck },
+            { id: "radar", label: "Early Warning Radar", icon: AlertTriangle },
+            { id: "integrations", label: "Integration Gateway", icon: Cpu },
             { id: "features", label: "Feature Flags & AI Config", icon: Settings },
             { id: "audit", label: "Security & Audit Logs", icon: Lock },
             { id: "system", label: "Database & Telemetry Health", icon: Activity },
@@ -1360,6 +1513,616 @@ export default function SuperAdminPage() {
             </div>
           </div>
         )}
+
+        {/* Tab: Multi-Tier Approvals */}
+        {activeTab === "approvals" && (
+          <div className="flex flex-col gap-6">
+            {/* Metric Summary Cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="glass-panel p-5 rounded-2xl border border-border dark:border-charcoal-800 shadow-soft">
+                <span className="text-[10px] font-bold text-charcoal-500 uppercase tracking-wider block">Total Requisitions</span>
+                <div className="text-2xl font-display font-extrabold text-charcoal-900 dark:text-ivory-100 mt-1">
+                  {workflowSummary.total || workflows.length}
+                </div>
+                <span className="text-[11px] text-charcoal-500 mt-1 block">Active across 8 tracks</span>
+              </div>
+              <div className="glass-panel p-5 rounded-2xl border border-border dark:border-charcoal-800 shadow-soft">
+                <span className="text-[10px] font-bold text-amber-600 uppercase tracking-wider block">Pending Decision</span>
+                <div className="text-2xl font-display font-extrabold text-amber-600 mt-1">
+                  {workflowSummary.pending}
+                </div>
+                <span className="text-[11px] text-amber-600/80 mt-1 block">Awaiting role authorization</span>
+              </div>
+              <div className="glass-panel p-5 rounded-2xl border border-border dark:border-charcoal-800 shadow-soft">
+                <span className="text-[10px] font-bold text-emerald-600 uppercase tracking-wider block">Approved & Sealed</span>
+                <div className="text-2xl font-display font-extrabold text-emerald-600 mt-1">
+                  {workflowSummary.approved}
+                </div>
+                <span className="text-[11px] text-emerald-600/80 mt-1 block">Cryptographic SHA-256 seal</span>
+              </div>
+              <div className="glass-panel p-5 rounded-2xl border border-border dark:border-charcoal-800 shadow-soft">
+                <span className="text-[10px] font-bold text-rose-600 uppercase tracking-wider block">Rejected / Archived</span>
+                <div className="text-2xl font-display font-extrabold text-rose-600 mt-1">
+                  {workflowSummary.rejected}
+                </div>
+                <span className="text-[11px] text-rose-600/80 mt-1 block">With documented remarks</span>
+              </div>
+            </div>
+
+            {/* Filter and Control Bar */}
+            <div className="glass-panel p-4 rounded-2xl flex flex-wrap items-center justify-between gap-4 border border-border dark:border-charcoal-800 shadow-soft">
+              <div className="flex flex-wrap items-center gap-3">
+                <div className="flex items-center gap-2">
+                  <Filter className="h-4 w-4 text-charcoal-400" />
+                  <span className="text-xs font-bold text-charcoal-700 dark:text-ivory-200">Status:</span>
+                  <select
+                    value={workflowStatusFilter}
+                    onChange={(e) => setWorkflowStatusFilter(e.target.value)}
+                    className="bg-ivory-100 dark:bg-charcoal-900 border border-border dark:border-charcoal-700 rounded-xl px-3 py-1.5 text-xs font-medium text-charcoal-900 dark:text-ivory-100"
+                  >
+                    <option value="ALL">All Statuses</option>
+                    <option value="PENDING">Pending Only</option>
+                    <option value="APPROVED">Approved Only</option>
+                    <option value="REJECTED">Rejected Only</option>
+                  </select>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-bold text-charcoal-700 dark:text-ivory-200">Track:</span>
+                  <select
+                    value={workflowTypeFilter}
+                    onChange={(e) => setWorkflowTypeFilter(e.target.value)}
+                    className="bg-ivory-100 dark:bg-charcoal-900 border border-border dark:border-charcoal-700 rounded-xl px-3 py-1.5 text-xs font-medium text-charcoal-900 dark:text-ivory-100"
+                  >
+                    <option value="ALL">All Workflow Tracks</option>
+                    <option value="PURCHASE_REQUISITION">Purchase Requisition</option>
+                    <option value="FEE_WAIVER">Fee Waiver</option>
+                    <option value="GRADE_CORRECTION">Grade Correction</option>
+                    <option value="STAFF_LEAVE">Staff Leave</option>
+                    <option value="ADMISSION_APPROVAL">Admission Approval</option>
+                    <option value="ATTENDANCE_CONDONATION">Attendance Condonation</option>
+                    <option value="DOCUMENT_VERIFICATION">Document Verification</option>
+                    <option value="STUDENT_PETITION">Student Petition</option>
+                  </select>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={fetchWorkflows}
+                disabled={isLoadingWorkflows}
+                className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-ivory-100 dark:bg-charcoal-800 hover:bg-rose-container text-charcoal-800 dark:text-ivory-200 border border-border dark:border-charcoal-700 text-xs font-bold transition-all cursor-pointer"
+              >
+                <RefreshCw className={`h-3.5 w-3.5 ${isLoadingWorkflows ? "animate-spin" : ""}`} />
+                <span>Refresh Workflows</span>
+              </button>
+            </div>
+
+            {/* Requisitions Table */}
+            <div className="glass-panel rounded-2xl overflow-hidden border border-border dark:border-charcoal-800 shadow-soft">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs">
+                  <thead className="bg-ivory-200/50 dark:bg-charcoal-800/50 border-b border-border dark:border-charcoal-700 text-charcoal-500 font-bold uppercase tracking-wider text-[10px]">
+                    <tr>
+                      <th className="p-3.5">Requisition ID</th>
+                      <th className="p-3.5">Track &amp; Title</th>
+                      <th className="p-3.5">Requester</th>
+                      <th className="p-3.5">Tier / Level</th>
+                      <th className="p-3.5">Status</th>
+                      <th className="p-3.5">Audit Seal</th>
+                      <th className="p-3.5 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border/60 dark:divide-charcoal-800/80">
+                    {workflows
+                      .filter((w) => workflowStatusFilter === "ALL" || w.status === workflowStatusFilter)
+                      .filter((w) => workflowTypeFilter === "ALL" || w.workflowType === workflowTypeFilter)
+                      .map((w) => (
+                        <tr key={w.id} className="hover:bg-ivory-50 dark:hover:bg-charcoal-800/40 transition-colors">
+                          <td className="p-3.5 font-mono font-bold text-rose-primary">
+                            {w.id}
+                          </td>
+                          <td className="p-3.5">
+                            <div className="font-bold text-charcoal-900 dark:text-ivory-100">{w.title}</div>
+                            <div className="text-[11px] text-charcoal-500">{w.workflowType}</div>
+                          </td>
+                          <td className="p-3.5">
+                            <div className="font-medium text-charcoal-900 dark:text-ivory-100">{w.requesterName}</div>
+                            <div className="text-[10px] text-charcoal-400 font-mono">{w.requesterRole}</div>
+                          </td>
+                          <td className="p-3.5">
+                            <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800">
+                              Level {w.currentLevel} of {w.maxLevels}
+                            </span>
+                          </td>
+                          <td className="p-3.5">
+                            <span
+                              className={`px-2 py-0.5 rounded-full text-[10px] font-bold inline-flex items-center gap-1 ${
+                                w.status === "APPROVED"
+                                  ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-400"
+                                  : w.status === "REJECTED"
+                                  ? "bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-400"
+                                  : "bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-400"
+                              }`}
+                            >
+                              <span
+                                className={`h-1.5 w-1.5 rounded-full ${
+                                  w.status === "APPROVED"
+                                    ? "bg-emerald-500"
+                                    : w.status === "REJECTED"
+                                    ? "bg-rose-500"
+                                    : "bg-amber-500 animate-pulse"
+                                }`}
+                              />
+                              {w.status}
+                            </span>
+                          </td>
+                          <td className="p-3.5 font-mono text-[10px] text-charcoal-500">
+                            {w.completionSeal ? (
+                              <span className="inline-flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-bold" title={w.completionSeal}>
+                                <ShieldCheck className="h-3.5 w-3.5" />
+                                {w.completionSeal.substring(0, 18)}...
+                              </span>
+                            ) : (
+                              <span className="text-charcoal-400 italic">Pending Completion</span>
+                            )}
+                          </td>
+                          <td className="p-3.5 text-right">
+                            {w.status === "PENDING" ? (
+                              <div className="flex items-center justify-end gap-1.5">
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    setDecisionModal({
+                                      isOpen: true,
+                                      workflow: w,
+                                      decision: "APPROVE",
+                                      remarks: "",
+                                      isSubmitting: false,
+                                    })
+                                  }
+                                  className="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold shadow-xs transition-all cursor-pointer"
+                                >
+                                  Approve
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    setDecisionModal({
+                                      isOpen: true,
+                                      workflow: w,
+                                      decision: "REJECT",
+                                      remarks: "",
+                                      isSubmitting: false,
+                                    })
+                                  }
+                                  className="px-2.5 py-1 rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-[11px] font-bold shadow-xs transition-all cursor-pointer"
+                                >
+                                  Reject
+                                </button>
+                              </div>
+                            ) : (
+                              <span className="text-[11px] text-charcoal-400 italic">Decision Logged</span>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    {workflows.length === 0 && (
+                      <tr>
+                        <td colSpan={7} className="p-8 text-center text-charcoal-400 italic">
+                          No institutional approval requisitions currently on record.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Tab: Integration Gateway */}
+        {activeTab === "integrations" && (
+          <div className="flex flex-col gap-6">
+            {/* Integration Summary Header */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="glass-panel p-5 rounded-2xl border border-border dark:border-charcoal-800 shadow-soft">
+                <span className="text-[10px] font-bold text-charcoal-500 uppercase tracking-wider block">Total Connectors</span>
+                <div className="text-2xl font-display font-extrabold text-charcoal-900 dark:text-ivory-100 mt-1">
+                  {integrationSummary.total || connectors.length || 8}
+                </div>
+                <span className="text-[11px] text-charcoal-500 mt-1 block">Campus Enterprise Gateways</span>
+              </div>
+              <div className="glass-panel p-5 rounded-2xl border border-border dark:border-charcoal-800 shadow-soft">
+                <span className="text-[10px] font-bold text-emerald-600 uppercase tracking-wider block">Live Configured</span>
+                <div className="text-2xl font-display font-extrabold text-emerald-600 mt-1">
+                  {integrationSummary.configured || connectors.filter((c) => c.status === "CONFIGURED_LIVE").length}
+                </div>
+                <span className="text-[11px] text-emerald-600/80 mt-1 block">Production keys active</span>
+              </div>
+              <div className="glass-panel p-5 rounded-2xl border border-border dark:border-charcoal-800 shadow-soft">
+                <span className="text-[10px] font-bold text-amber-600 uppercase tracking-wider block">Sandbox Active</span>
+                <div className="text-2xl font-display font-extrabold text-amber-600 mt-1">
+                  {integrationSummary.sandbox || connectors.filter((c) => c.status === "SANDBOX_ACTIVE").length}
+                </div>
+                <span className="text-[11px] text-amber-600/80 mt-1 block">Safe simulation enabled</span>
+              </div>
+              <div className="glass-panel p-5 rounded-2xl border border-border dark:border-charcoal-800 shadow-soft">
+                <span className="text-[10px] font-bold text-indigo-600 uppercase tracking-wider block">Operational Health</span>
+                <div className="text-2xl font-display font-extrabold text-indigo-600 mt-1">
+                  100%
+                </div>
+                <span className="text-[11px] text-indigo-600/80 mt-1 block">HMAC Webhooks Verified</span>
+              </div>
+            </div>
+
+            {/* Connectors Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {connectors.map((connector) => {
+                const latencyInfo = pingLatencies[connector.id];
+                const isPinging = pingingConnector === connector.id;
+
+                return (
+                  <div
+                    key={connector.id}
+                    className="glass-panel glass-card-hover p-6 rounded-2xl border border-border dark:border-charcoal-800 shadow-soft flex flex-col justify-between gap-4"
+                  >
+                    <div>
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <h3 className="font-display font-bold text-base text-charcoal-900 dark:text-ivory-100">
+                              {connector.name}
+                            </h3>
+                            <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800">
+                              {connector.category}
+                            </span>
+                          </div>
+                          <p className="text-xs text-charcoal-600 dark:text-charcoal-400 mt-1 leading-relaxed">
+                            {connector.description}
+                          </p>
+                        </div>
+
+                        <span
+                          className={`px-2.5 py-1 rounded-full text-[10px] font-bold shrink-0 flex items-center gap-1 ${
+                            connector.status === "CONFIGURED_LIVE"
+                              ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-400"
+                              : connector.status === "SANDBOX_ACTIVE"
+                              ? "bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-400"
+                              : "bg-charcoal-100 text-charcoal-800 dark:bg-charcoal-800 dark:text-charcoal-300"
+                          }`}
+                        >
+                          <span
+                            className={`h-1.5 w-1.5 rounded-full ${
+                              connector.status === "CONFIGURED_LIVE"
+                                ? "bg-emerald-500"
+                                : connector.status === "SANDBOX_ACTIVE"
+                                ? "bg-amber-500 animate-pulse"
+                                : "bg-charcoal-400"
+                            }`}
+                          />
+                          {connector.status}
+                        </span>
+                      </div>
+
+                      {/* Keys breakdown */}
+                      <div className="mt-4 pt-3 border-t border-border/60 dark:border-charcoal-800/80 flex flex-col gap-2 text-xs">
+                        <div className="flex flex-wrap items-center gap-1.5">
+                          <span className="text-[10px] font-bold text-charcoal-400 uppercase">Configured:</span>
+                          {connector.configuredKeys && connector.configuredKeys.length > 0 ? (
+                            connector.configuredKeys.map((k: string) => (
+                              <span key={k} className="px-1.5 py-0.5 rounded text-[10px] font-mono bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
+                                {k}
+                              </span>
+                            ))
+                          ) : (
+                            <span className="text-[10px] text-charcoal-400 italic">None (Sandbox Active)</span>
+                          )}
+                        </div>
+
+                        {connector.missingKeys && connector.missingKeys.length > 0 && (
+                          <div className="flex flex-wrap items-center gap-1.5">
+                            <span className="text-[10px] font-bold text-charcoal-400 uppercase">Production Pending:</span>
+                            {connector.missingKeys.map((k: string) => (
+                              <span key={k} className="px-1.5 py-0.5 rounded text-[10px] font-mono bg-charcoal-100 dark:bg-charcoal-800 text-charcoal-500 dark:text-charcoal-400">
+                                {k}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+
+                        <div className="text-[11px] text-charcoal-500 font-mono mt-1">
+                          Webhook Route: <span className="text-charcoal-700 dark:text-ivory-200">{connector.webhookEndpoint}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Action Bar */}
+                    <div className="pt-3 border-t border-border/60 dark:border-charcoal-800/80 flex items-center justify-between gap-3">
+                      <div className="text-[11px]">
+                        {latencyInfo ? (
+                          <span className="text-emerald-600 dark:text-emerald-400 font-bold flex items-center gap-1">
+                            <CheckCircle2 className="h-3.5 w-3.5" />
+                            Ping: {latencyInfo.latencyMs}ms ({latencyInfo.timestamp})
+                          </span>
+                        ) : (
+                          <span className="text-charcoal-400 text-[10px]">No latency telemetry recorded</span>
+                        )}
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        {connector.documentationUrl && (
+                          <a
+                            href={connector.documentationUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="p-2 rounded-xl text-charcoal-400 hover:text-charcoal-700 dark:hover:text-ivory-100 transition-colors"
+                            title="Documentation"
+                          >
+                            <ExternalLink className="h-3.5 w-3.5" />
+                          </a>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => handleTestPing(connector.id)}
+                          disabled={isPinging}
+                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-ivory-100 dark:bg-charcoal-800 hover:bg-rose-container text-charcoal-800 dark:text-ivory-100 border border-border dark:border-charcoal-700 text-xs font-bold transition-all cursor-pointer"
+                        >
+                          <Zap className={`h-3 w-3 ${isPinging ? "animate-spin text-amber-500" : "text-amber-500"}`} />
+                          <span>{isPinging ? "Probing..." : "Test Ping"}</span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Tab: Early Warning & Retention Radar */}
+        {activeTab === "radar" && (
+          <div className="flex flex-col gap-6">
+            {/* Metric Summary Cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="glass-panel p-5 rounded-2xl border border-border dark:border-charcoal-800 shadow-soft">
+                <span className="text-[10px] font-bold text-charcoal-500 uppercase tracking-wider block">Scholars Evaluated</span>
+                <div className="text-2xl font-display font-extrabold text-charcoal-900 dark:text-ivory-100 mt-1">
+                  {radarData?.summary?.totalEvaluated || 0}
+                </div>
+                <span className="text-[11px] text-charcoal-500 mt-1 block">Active semester enrollment</span>
+              </div>
+              <div className="glass-panel p-5 rounded-2xl border border-border dark:border-charcoal-800 shadow-soft">
+                <span className="text-[10px] font-bold text-rose-600 uppercase tracking-wider block">Critical Risk Tier</span>
+                <div className="text-2xl font-display font-extrabold text-rose-600 mt-1">
+                  {radarData?.summary?.criticalCount || 0}
+                </div>
+                <span className="text-[11px] text-rose-600/80 mt-1 block">Immediate intervention required</span>
+              </div>
+              <div className="glass-panel p-5 rounded-2xl border border-border dark:border-charcoal-800 shadow-soft">
+                <span className="text-[10px] font-bold text-amber-600 uppercase tracking-wider block">High Risk Tier</span>
+                <div className="text-2xl font-display font-extrabold text-amber-600 mt-1">
+                  {radarData?.summary?.highCount || 0}
+                </div>
+                <span className="text-[11px] text-amber-600/80 mt-1 block">Proactive mentoring advised</span>
+              </div>
+              <div className="glass-panel p-5 rounded-2xl border border-border dark:border-charcoal-800 shadow-soft">
+                <span className="text-[10px] font-bold text-indigo-600 uppercase tracking-wider block">Active Interventions</span>
+                <div className="text-2xl font-display font-extrabold text-indigo-600 mt-1">
+                  {radarData?.summary?.interventionsActive || 0}
+                </div>
+                <span className="text-[11px] text-indigo-600/80 mt-1 block">Counseling cases open</span>
+              </div>
+            </div>
+
+            {/* Filter Bar */}
+            <div className="flex items-center justify-between gap-4 glass-panel p-4 rounded-2xl border border-border dark:border-charcoal-800">
+              <div className="flex items-center gap-2 overflow-x-auto text-xs">
+                {["ALL", "CRITICAL", "HIGH", "MODERATE", "LOW"].map((tier) => (
+                  <button
+                    key={tier}
+                    type="button"
+                    onClick={() => setRadarFilterTier(tier)}
+                    className={`px-3 py-1.5 rounded-xl font-bold transition-all cursor-pointer ${
+                      radarFilterTier === tier
+                        ? "bg-rose-primary text-white shadow-sm"
+                        : "bg-ivory-100 dark:bg-charcoal-800 text-charcoal-600 dark:text-ivory-300 hover:bg-rose-container"
+                    }`}
+                  >
+                    {tier}
+                  </button>
+                ))}
+              </div>
+              <button
+                type="button"
+                onClick={fetchEarlyWarning}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-ivory-100 dark:bg-charcoal-800 hover:bg-rose-container text-xs font-bold transition-all cursor-pointer"
+              >
+                <RefreshCw className={`h-3.5 w-3.5 ${isLoadingRadar ? "animate-spin" : ""}`} />
+                <span>Refresh Radar</span>
+              </button>
+            </div>
+
+            {/* Scholars Radar Roster */}
+            <div className="glass-panel rounded-2xl border border-border dark:border-charcoal-800 shadow-soft overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs">
+                  <thead className="bg-ivory-100 dark:bg-charcoal-900 border-b border-border dark:border-charcoal-800 text-[10px] font-bold text-charcoal-500 uppercase tracking-wider">
+                    <tr>
+                      <th className="py-3 px-4">Scholar</th>
+                      <th className="py-3 px-4">Program / Sem</th>
+                      <th className="py-3 px-4">Risk Index</th>
+                      <th className="py-3 px-4">Primary Risk Drivers</th>
+                      <th className="py-3 px-4 text-right">Intervention</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border/60 dark:divide-charcoal-800">
+                    {isLoadingRadar ? (
+                      <tr>
+                        <td colSpan={5} className="py-8 text-center text-charcoal-500">
+                          <div className="flex items-center justify-center gap-2">
+                            <RefreshCw className="h-4 w-4 animate-spin text-rose-primary" />
+                            <span>Computing multi-factorial retention radar...</span>
+                          </div>
+                        </td>
+                      </tr>
+                    ) : (radarData?.profiles || [])
+                        .filter((p: any) => radarFilterTier === "ALL" || p.riskTier === radarFilterTier)
+                        .length === 0 ? (
+                      <tr>
+                        <td colSpan={5} className="py-8 text-center text-charcoal-500">
+                          No scholars found in selected risk tier.
+                        </td>
+                      </tr>
+                    ) : (
+                      (radarData?.profiles || [])
+                        .filter((p: any) => radarFilterTier === "ALL" || p.riskTier === radarFilterTier)
+                        .map((profile: any) => {
+                          const tierColor =
+                            profile.riskTier === "CRITICAL"
+                              ? "bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300 border-rose-200 dark:border-rose-900"
+                              : profile.riskTier === "HIGH"
+                              ? "bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300 border-amber-200 dark:border-amber-900"
+                              : profile.riskTier === "MODERATE"
+                              ? "bg-indigo-100 text-indigo-800 dark:bg-indigo-950/60 dark:text-indigo-300 border-indigo-200 dark:border-indigo-900"
+                              : "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 border-emerald-200 dark:border-emerald-900";
+
+                          return (
+                            <tr key={profile.studentId} className="hover:bg-ivory-50 dark:hover:bg-charcoal-900/40 transition-colors">
+                              <td className="py-3.5 px-4">
+                                <div className="font-bold text-charcoal-900 dark:text-ivory-100">{profile.studentName}</div>
+                                <div className="text-[10px] text-charcoal-500 font-mono">{profile.rollNumber}</div>
+                              </td>
+                              <td className="py-3.5 px-4">
+                                <span className="font-semibold text-charcoal-800 dark:text-ivory-200">{profile.programCode}</span>
+                                <div className="text-[10px] text-charcoal-500">Semester {profile.currentSemester}</div>
+                              </td>
+                              <td className="py-3.5 px-4">
+                                <div className="flex items-center gap-2">
+                                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${tierColor}`}>
+                                    {profile.riskTier} ({profile.compositeRiskScore}/100)
+                                  </span>
+                                </div>
+                              </td>
+                              <td className="py-3.5 px-4">
+                                <div className="flex flex-col gap-1 max-w-md">
+                                  {profile.primaryDrivers.slice(0, 2).map((d: string, idx: number) => (
+                                    <div key={idx} className="text-[11px] text-charcoal-700 dark:text-charcoal-300 flex items-start gap-1">
+                                      <span className="text-rose-500 shrink-0">•</span>
+                                      <span className="truncate">{d}</span>
+                                    </div>
+                                  ))}
+                                </div>
+                              </td>
+                              <td className="py-3.5 px-4 text-right">
+                                <button
+                                  type="button"
+                                  onClick={async () => {
+                                    try {
+                                      const res = await fetch("/api/analytics/early-warning", {
+                                        method: "POST",
+                                        headers: { "Content-Type": "application/json" },
+                                        body: JSON.stringify({
+                                          action: "LOG_INTERVENTION",
+                                          studentId: profile.studentId,
+                                          interventionType: profile.riskTier === "CRITICAL" ? "ATTENDANCE_CONTRACT" : "ACADEMIC_TUTORING",
+                                          notes: `Proactive retention intervention initiated for ${profile.studentName}: ${profile.recommendedInterventions[0] || "Routine Mentoring"}`,
+                                        }),
+                                      });
+                                      if (res.ok) {
+                                        showToast(`Intervention assigned for ${profile.studentName}`, "success");
+                                        fetchEarlyWarning();
+                                      }
+                                    } catch {
+                                      showToast("Failed to assign intervention", "error");
+                                    }
+                                  }}
+                                  className="px-3 py-1.5 rounded-xl bg-rose-primary hover:bg-rose-dark text-white text-[11px] font-bold shadow-sm transition-all cursor-pointer"
+                                >
+                                  Assign Counselor
+                                </button>
+                              </td>
+                            </tr>
+                          );
+                        })
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Modal: Workflow Approval / Rejection Decision */}
+        <Modal
+          isOpen={decisionModal.isOpen}
+          onClose={() => setDecisionModal({ ...decisionModal, isOpen: false })}
+          title={`Process Requisition: ${decisionModal.workflow?.title || ""}`}
+          description={`Record formal institutional ${decisionModal.decision} decision on requisition ${decisionModal.workflow?.id || ""}.`}
+        >
+          <form onSubmit={handleWorkflowDecisionSubmit} className="flex flex-col gap-4 text-xs">
+            <div className="p-3 rounded-xl bg-ivory-100 dark:bg-charcoal-900 border border-border dark:border-charcoal-700 space-y-1">
+              <div className="flex items-center justify-between">
+                <span className="font-bold text-charcoal-700 dark:text-ivory-200">Requisition ID:</span>
+                <span className="font-mono text-rose-primary font-bold">{decisionModal.workflow?.id}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="font-bold text-charcoal-700 dark:text-ivory-200">Track Type:</span>
+                <span>{decisionModal.workflow?.workflowType}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="font-bold text-charcoal-700 dark:text-ivory-200">Current Tier:</span>
+                <span className="font-bold">Level {decisionModal.workflow?.currentLevel} of {decisionModal.workflow?.maxLevels}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="font-bold text-charcoal-700 dark:text-ivory-200">Decision Mode:</span>
+                <span className={`font-bold ${decisionModal.decision === "APPROVE" ? "text-emerald-600" : "text-rose-600"}`}>
+                  {decisionModal.decision}
+                </span>
+              </div>
+            </div>
+
+            <div>
+              <label className="font-bold text-charcoal-700 dark:text-charcoal-300 block mb-1">
+                Executive Remarks &amp; Justification
+              </label>
+              <textarea
+                rows={3}
+                value={decisionModal.remarks}
+                onChange={(e) => setDecisionModal({ ...decisionModal, remarks: e.target.value })}
+                placeholder={
+                  decisionModal.decision === "APPROVE"
+                    ? "Approved under institutional guidelines and regulatory compliance..."
+                    : "Rejected due to insufficient documentation or policy conflict..."
+                }
+                className="w-full bg-ivory-100 dark:bg-charcoal-900 border border-border dark:border-charcoal-700 rounded-xl p-2.5 font-medium text-charcoal-900 dark:text-ivory-100"
+              />
+            </div>
+
+            <div className="flex items-center justify-end gap-2 pt-3 border-t border-border dark:border-charcoal-700">
+              <button
+                type="button"
+                onClick={() => setDecisionModal({ ...decisionModal, isOpen: false })}
+                className="px-4 py-2 rounded-xl bg-ivory-100 dark:bg-charcoal-700 text-charcoal-700 dark:text-charcoal-300 text-xs font-bold"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={decisionModal.isSubmitting}
+                className={`px-5 py-2.5 rounded-xl text-white text-xs font-bold shadow-md transition-all cursor-pointer ${
+                  decisionModal.decision === "APPROVE"
+                    ? "bg-emerald-600 hover:bg-emerald-700"
+                    : "bg-rose-600 hover:bg-rose-700"
+                }`}
+              >
+                {decisionModal.isSubmitting
+                  ? "Recording..."
+                  : `Confirm ${decisionModal.decision}`}
+              </button>
+            </div>
+          </form>
+        </Modal>
 
         {/* Modal: Provision New Institution */}
         <Modal

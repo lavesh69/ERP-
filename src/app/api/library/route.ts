@@ -258,16 +258,18 @@ export async function POST(req: NextRequest) {
         // Fallback for timeout or network restrictions
       }
 
-      // Fallback synthetic catalog inference
+      // Fallback: prompt manual entry if not found in catalog or OpenLibrary
       return NextResponse.json({
         success: true,
-        source: "INFERRED_CATALOG",
+        source: "MANUAL_ENTRY_REQUIRED",
+        found: false,
         isbn: cleanIsbn,
-        title: `Academic Treatise (ISBN: ${cleanIsbn})`,
-        author: "Apex Faculty Board",
-        category: "Computer Science & AI",
-        publishYear: 2026,
-        publisher: "University Academic Press",
+        title: `Uncataloged ISBN (${cleanIsbn})`,
+        author: "Unknown Author",
+        category: "General Acquisition",
+        publishYear: new Date().getFullYear(),
+        publisher: "Pending Cataloging",
+        requiresManualReview: true,
       });
     }
 
@@ -362,6 +364,137 @@ export async function POST(req: NextRequest) {
       });
 
       return NextResponse.json({ success: true, loan });
+    }
+
+    // Action: Rapid Barcode / RFID Hardware Wedge Circulation Scanner (GAP-LIB-001)
+    if (action === "RAPID_CIRCULATION_SCAN") {
+      const { barcode, studentRollOrId, operation = "CHECKOUT" } = body;
+      if (!barcode || !studentRollOrId) {
+        return NextResponse.json(
+          { error: "barcode and studentRollOrId are required for rapid circulation" },
+          { status: 400 }
+        );
+      }
+
+      const cleanBarcode = String(barcode).trim();
+      const cleanStudent = String(studentRollOrId).trim();
+
+      // Resolve book
+      const book = await prisma.libraryBook.findFirst({
+        where: {
+          OR: [
+            { isbn: cleanBarcode },
+            { id: cleanBarcode },
+            { title: { contains: cleanBarcode } },
+          ],
+        },
+      });
+
+      if (!book) {
+        return NextResponse.json({ error: `Book barcode [${cleanBarcode}] not found in catalog` }, { status: 404 });
+      }
+
+      // Resolve student
+      const student = await prisma.student.findFirst({
+        where: {
+          OR: [
+            { rollNumber: cleanStudent },
+            { admissionNumber: cleanStudent },
+            { id: cleanStudent },
+          ],
+        },
+        include: { user: true },
+      });
+
+      if (!student) {
+        return NextResponse.json({ error: `Student ID / Roll [${cleanStudent}] not recognized` }, { status: 404 });
+      }
+
+      if (operation === "CHECKOUT") {
+        if (book.availableCopies <= 0) {
+          return NextResponse.json(
+            { error: `"${book.title}" is currently out of circulation stock (0 copies available)` },
+            { status: 400 }
+          );
+        }
+
+        const activeLoansCount = await prisma.bookLoan.count({
+          where: { studentId: student.id, status: "ISSUED" },
+        });
+
+        if (activeLoansCount >= 4) {
+          return NextResponse.json(
+            { error: `Student loan quota reached (Max 4 active books permitted)` },
+            { status: 400 }
+          );
+        }
+
+        const loan = await prisma.bookLoan.create({
+          data: {
+            bookId: book.id,
+            studentId: student.id,
+            dueDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000),
+            status: "ISSUED",
+          },
+        });
+
+        await prisma.libraryBook.update({
+          where: { id: book.id },
+          data: { availableCopies: book.availableCopies - 1 },
+        });
+
+        return NextResponse.json({
+          success: true,
+          mode: "RAPID_CHECKOUT",
+          message: `Issued "${book.title}" to ${student.user.firstName} ${student.user.lastName} (${student.rollNumber}).`,
+          book: { id: book.id, title: book.title, isbn: book.isbn },
+          student: { id: student.id, name: `${student.user.firstName} ${student.user.lastName}`, roll: student.rollNumber },
+          loanId: loan.id,
+          dueDate: loan.dueDate.toISOString().split("T")[0],
+        });
+      } else {
+        // Return operation
+        const activeLoan = await prisma.bookLoan.findFirst({
+          where: {
+            bookId: book.id,
+            studentId: student.id,
+            status: "ISSUED",
+          },
+        });
+
+        if (!activeLoan) {
+          return NextResponse.json({ error: "No active checkout record found for this book and student" }, { status: 404 });
+        }
+
+        const now = new Date();
+        const dueDate = new Date(activeLoan.dueDate);
+        let fineAmount = 0;
+        if (now > dueDate) {
+          const daysOverdue = Math.ceil((now.getTime() - dueDate.getTime()) / (1000 * 60 * 60 * 24));
+          fineAmount = daysOverdue * 5.0;
+        }
+
+        await prisma.bookLoan.update({
+          where: { id: activeLoan.id },
+          data: {
+            status: "RETURNED",
+            returnedAt: now,
+            fineAmount,
+          },
+        });
+
+        await prisma.libraryBook.update({
+          where: { id: book.id },
+          data: { availableCopies: { increment: 1 } },
+        });
+
+        return NextResponse.json({
+          success: true,
+          mode: "RAPID_RETURN",
+          message: `Returned "${book.title}" from ${student.user.firstName} ${student.user.lastName}.`,
+          fineAmount,
+        });
+      }
     }
 
     // Action: Return book with fine calculation

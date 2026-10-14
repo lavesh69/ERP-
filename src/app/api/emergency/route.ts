@@ -37,6 +37,21 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Authentication required to dispatch emergency alert" }, { status: 401 });
     }
 
+    const EMERGENCY_COMMAND_ROLES = [
+      "SUPER_ADMIN",
+      "INSTITUTION_ADMIN",
+      "PRINCIPAL",
+      "HOD",
+      "FACULTY",
+    ];
+
+    if (!EMERGENCY_COMMAND_ROLES.includes(session.role)) {
+      return NextResponse.json(
+        { error: "Forbidden: Campus emergency broadcasts require security or administrative authorization" },
+        { status: 403 }
+      );
+    }
+
     const body = await request.json();
     const { action } = body;
 

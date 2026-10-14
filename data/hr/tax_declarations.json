@@ -1,0 +1,121 @@
+{
+  "EMP-FAC-01": {
+    "employeeId": "EMP-FAC-01",
+    "employeeName": "Dr. Rajesh K. Sharma",
+    "panNumber": "ABCDE1234F",
+    "financialYear": "2025-26",
+    "assessmentYear": "2026-27",
+    "newRegime": {
+      "regime": "NEW_REGIME",
+      "grossSalary": 1200000,
+      "exemptionsUnderSection10": 0,
+      "standardDeduction": 75000,
+      "chapterVIA_Deductions": 0,
+      "totalTaxableIncome": 1125000,
+      "taxSlabBreakdown": [
+        {
+          "slab": "₹0 to ₹3,00,000",
+          "ratePercent": 0,
+          "taxableInSlab": 300000,
+          "taxAmount": 0
+        },
+        {
+          "slab": "₹3,00,001 to ₹7,00,000",
+          "ratePercent": 5,
+          "taxableInSlab": 400000,
+          "taxAmount": 20000
+        },
+        {
+          "slab": "₹7,00,001 to ₹10,00,000",
+          "ratePercent": 10,
+          "taxableInSlab": 300000,
+          "taxAmount": 30000
+        },
+        {
+          "slab": "₹10,00,001 to ₹12,00,000",
+          "ratePercent": 15,
+          "taxableInSlab": 125000,
+          "taxAmount": 18750
+        },
+        {
+          "slab": "₹12,00,001 to ₹15,00,000",
+          "ratePercent": 20,
+          "taxableInSlab": 0,
+          "taxAmount": 0
+        },
+        {
+          "slab": "Above ₹15,00,000",
+          "ratePercent": 30,
+          "taxableInSlab": 0,
+          "taxAmount": 0
+        }
+      ],
+      "baseTax": 68750,
+      "rebate87A": 0,
+      "taxAfterRebate": 68750,
+      "healthAndEducationCess4Pct": 2750,
+      "totalAnnualTaxPayable": 71500,
+      "monthlyTdsWithholding": 5958
+    },
+    "oldRegime": {
+      "regime": "OLD_REGIME",
+      "grossSalary": 1200000,
+      "exemptionsUnderSection10": 0,
+      "standardDeduction": 50000,
+      "chapterVIA_Deductions": 0,
+      "totalTaxableIncome": 1150000,
+      "taxSlabBreakdown": [
+        {
+          "slab": "₹0 to ₹2,50,000",
+          "ratePercent": 0,
+          "taxableInSlab": 250000,
+          "taxAmount": 0
+        },
+        {
+          "slab": "₹2,50,001 to ₹5,00,000",
+          "ratePercent": 5,
+          "taxableInSlab": 250000,
+          "taxAmount": 12500
+        },
+        {
+          "slab": "₹5,00,001 to ₹10,00,000",
+          "ratePercent": 20,
+          "taxableInSlab": 500000,
+          "taxAmount": 100000
+        },
+        {
+          "slab": "Above ₹10,00,000",
+          "ratePercent": 30,
+          "taxableInSlab": 150000,
+          "taxAmount": 45000
+        }
+      ],
+      "baseTax": 157500,
+      "rebate87A": 0,
+      "taxAfterRebate": 157500,
+      "healthAndEducationCess4Pct": 6300,
+      "totalAnnualTaxPayable": 163800,
+      "monthlyTdsWithholding": 13650
+    },
+    "recommendedRegime": "NEW_REGIME",
+    "annualTaxSavings": 92300,
+    "selectedRegime": "NEW_REGIME",
+    "monthlyTdsWithholding": 5958,
+    "form16PartB": {
+      "certificateNumber": "FORM16-B-2025-26-EMP-FAC-01-025675",
+      "employerName": "Apex Institute of Technology & Management",
+      "employerTan": "DELA12345B",
+      "assessmentYear": "2026-27",
+      "grossTotalIncome": 1200000,
+      "totalDeductions": 75000,
+      "totalTaxableIncome": 1125000,
+      "taxOnTotalIncome": 68750,
+      "rebateUnderSection87A": 0,
+      "cessAmount": 2750,
+      "netTaxPayable": 71500,
+      "totalTaxDeductedAtSource": 71500,
+      "taxRefundOrDue": 0,
+      "digitalSeal": "FORM16-SEAL-2775D21577D75011C8FDD47C"
+    }
+  }
+}

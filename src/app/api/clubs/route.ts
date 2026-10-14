@@ -80,6 +80,21 @@ export async function POST(request: NextRequest) {
     }
 
     if (action === "VERIFY_CLAIM") {
+      const CLUB_VERIFIER_ROLES = [
+        "SUPER_ADMIN",
+        "INSTITUTION_ADMIN",
+        "PRINCIPAL",
+        "HOD",
+        "FACULTY",
+        "CLASS_TEACHER",
+        "RESEARCH_COORDINATOR",
+      ];
+      if (!CLUB_VERIFIER_ROLES.includes(session.role)) {
+        return NextResponse.json(
+          { error: "Forbidden: Only faculty coordinators or administrators can verify activity claims" },
+          { status: 403 }
+        );
+      }
       const { claimId, status, pointsAwarded } = body;
       if (!claimId || !status) {
         return NextResponse.json({ error: "Claim ID and decision status are required" }, { status: 400 });

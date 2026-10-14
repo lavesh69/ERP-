@@ -40,10 +40,13 @@ import {
   MessageSquare,
   Printer,
   Sparkles,
+  Target,
 } from "lucide-react";
 import PasswordStrengthMeter from "@/components/auth/PasswordStrengthMeter";
 import { Modal } from "@/components/common/Modal";
 import { Breadcrumbs } from "@/components/common/Breadcrumbs";
+import { CareerRoadmapTab } from "./tabs/CareerRoadmapTab";
+import { ActivityPointsTab } from "./tabs/ActivityPointsTab";
 
 interface StudentProfileData {
   id: string;
@@ -188,7 +191,9 @@ function StudentProfileContent({ initialStudentId }: { initialStudentId?: string
 
   const [loading, setLoading] = useState(true);
   const [student, setStudent] = useState<StudentProfileData | null>(null);
-  const [activeTab, setActiveTab] = useState<"overview" | "academics" | "attendance" | "finance" | "library" | "security" | "requests">(
+  const [activeTab, setActiveTab] = useState<
+    "overview" | "academics" | "attendance" | "finance" | "library" | "security" | "requests" | "career" | "activities"
+  >(
     tabParam === "requests" ? "requests" : "overview"
   );
   const [userSessions, setUserSessions] = useState<Array<{
@@ -212,7 +217,17 @@ function StudentProfileContent({ initialStudentId }: { initialStudentId?: string
   const [loadingRequests, setLoadingRequests] = useState(false);
   const [isNewRequestModalOpen, setIsNewRequestModalOpen] = useState(false);
   const [newRequestForm, setNewRequestForm] = useState<{
-    type: "LEAVE" | "ATTENDANCE_CORRECTION" | "DOCUMENT_REQUEST" | "CERTIFICATE" | "ACADEMIC_CORRECTION";
+    type:
+      | "LEAVE"
+      | "ATTENDANCE_CORRECTION"
+      | "DOCUMENT_REQUEST"
+      | "CERTIFICATE"
+      | "ACADEMIC_CORRECTION"
+      | "RE_EVALUATION"
+      | "ELECTIVE_CHANGE"
+      | "BONAFIDE"
+      | "FEE_CONCESSION"
+      | "GUARDIAN_LINK_REQUEST";
     title: string;
     reason: string;
     attachmentUrl: string;
@@ -1022,6 +1037,8 @@ Registrar Stamp: [APEX-ACADEMIC-SEAL]
           {[
             { id: "overview", label: "Overview & Dossier", icon: User },
             { id: "academics", label: "Courses & Grades", icon: GraduationCap },
+            { id: "career", label: "AI Career Roadmap", icon: Target },
+            { id: "activities", label: "AICTE Activity Points", icon: Award },
             { id: "attendance", label: "Attendance Records", icon: Clock },
             { id: "finance", label: "Bursar Ledgers", icon: DollarSign },
             { id: "library", label: "Library Circulation", icon: Book },
@@ -2179,6 +2196,16 @@ Registrar Stamp: [APEX-ACADEMIC-SEAL]
               </div>
             )}
           </div>
+        )}
+
+        {/* 8. AI Career Roadmap & Skill Gap Radar */}
+        {activeTab === "career" && (
+          <CareerRoadmapTab studentId={student.id} studentName={student.name} />
+        )}
+
+        {/* 9. AICTE 100 Activity Points & Degree Clearance */}
+        {activeTab === "activities" && (
+          <ActivityPointsTab studentId={student.id} studentName={student.name} />
         )}
       </div>
 

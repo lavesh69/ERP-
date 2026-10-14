@@ -321,6 +321,58 @@ export async function POST(req: NextRequest) {
       });
     }
 
+    // Student Action: Update Video Lecture Watch Progress (GAP-LMS-001)
+    if (action === "UPDATE_VIDEO_PROGRESS") {
+      const { chapterId, watchSeconds, durationSeconds, progressPercent } = body;
+      if (!chapterId) {
+        return NextResponse.json({ error: "chapterId is required" }, { status: 400 });
+      }
+
+      const percent = Number(progressPercent) || (durationSeconds > 0 ? (watchSeconds / durationSeconds) * 100 : 0);
+      const isCompleted = percent >= 80;
+
+      let user = session?.userId || session?.sub
+        ? await prisma.user.findUnique({ where: { id: session.userId || session.sub } })
+        : await prisma.user.findFirst({ where: { role: "STUDENT" } });
+
+      const institution = await prisma.institution.findFirst();
+
+      if (user && institution && isCompleted) {
+        const existing = await prisma.auditLog.findFirst({
+          where: {
+            actorUserId: user.id,
+            action: "CHAPTER_COMPLETED",
+            targetEntity: "CourseChapter",
+            targetId: chapterId,
+          },
+        });
+
+        if (!existing) {
+          await prisma.auditLog.create({
+            data: {
+              institutionId: institution.id,
+              actorUserId: user.id,
+              action: "CHAPTER_COMPLETED",
+              targetEntity: "CourseChapter",
+              targetId: chapterId,
+              detailsJson: JSON.stringify({ completedAt: new Date().toISOString(), progressPercent: percent }),
+            },
+          });
+        }
+      }
+
+      return NextResponse.json({
+        success: true,
+        chapterId,
+        watchSeconds: Number(watchSeconds) || 0,
+        progressPercent: Number(percent.toFixed(1)),
+        isCompleted,
+        message: isCompleted
+          ? "Lecture video completed (>80% watched). Next chapter & quiz unlocked!"
+          : `Progress saved (${percent.toFixed(0)}% watched).`,
+      });
+    }
+
     // Student / User Action: Mark Chapter Completed / Incomplete
     const { chapterId, completed } = body;
     if (!chapterId) {

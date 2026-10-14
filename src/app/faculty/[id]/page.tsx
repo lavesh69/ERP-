@@ -29,7 +29,14 @@ import {
   Sparkles,
   MapPin,
   PlusCircle,
+  FileCheck,
+  Landmark,
+  Download,
+  Check,
+  X,
 } from "lucide-react";
+import { QuestionPaperStudioTab } from "@/components/faculty/tabs/QuestionPaperStudioTab";
+import { ResearchGrantsPortfolioTab } from "@/components/faculty/tabs/ResearchGrantsPortfolioTab";
 
 interface CourseAllocation {
   id: string;
@@ -152,7 +159,36 @@ export default function FacultyDetailPage({
   const { showToast, currentUser, currentRole } = useApp();
   const [loading, setLoading] = useState(true);
   const [faculty, setFaculty] = useState<FacultyProfileData | null>(null);
-  const [activeTab, setActiveTab] = useState<"teaching" | "mentees" | "workload" | "research" | "advising">("teaching");
+  const [activeTab, setActiveTab] = useState<
+    "teaching" | "mentees" | "workload" | "research" | "advising" | "lesson-plan" | "substitutions" | "asar-appraisal" | "question-paper" | "research-portfolio"
+  >("teaching");
+
+  // Lesson Plan & Syllabus Coverage State
+  const [lessonPlans, setLessonPlans] = useState<any[]>([]);
+  const [coverageData, setCoverageData] = useState<any>(null);
+  const [isLoadingLessonPlan, setIsLoadingLessonPlan] = useState(false);
+
+  // Substitutions & Duty Credits State
+  const [substitutions, setSubstitutions] = useState<any[]>([]);
+  const [isLoadingSubstitutions, setIsLoadingSubstitutions] = useState(false);
+
+  // UGC ASAR Appraisal State
+  const [asarData, setAsarData] = useState<any>(null);
+  const [isGeneratingAsar, setIsGeneratingAsar] = useState(false);
+
+  // Official Printable Payslip Modal
+  const [payslipModal, setPayslipModal] = useState<{ isOpen: boolean; data: any; loading: boolean }>({
+    isOpen: false,
+    data: null,
+    loading: false,
+  });
+
+  // Seed Money & Conference Grant Modal
+  const [isSeedGrantModalOpen, setIsSeedGrantModalOpen] = useState(false);
+  const [seedGrantTitle, setSeedGrantTitle] = useState("");
+  const [seedGrantAmount, setSeedGrantAmount] = useState(150000);
+  const [seedGrantRemarks, setSeedGrantRemarks] = useState("");
+  const [isSubmittingSeed, setIsSubmittingSeed] = useState(false);
 
   // Edit Profile State
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -237,6 +273,146 @@ export default function FacultyDetailPage({
       setIsSubmittingNote(false);
     }
   };
+
+  const loadLessonPlans = async () => {
+    setIsLoadingLessonPlan(true);
+    try {
+      const res = await fetch(`/api/faculty?action=LESSON_PLAN&courseCode=CS301&facultyEmail=${faculty?.email || ""}`);
+      if (res.ok) {
+        const data = await res.json();
+        setLessonPlans(data.lessonPlans || []);
+        setCoverageData(data.coverage || null);
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setIsLoadingLessonPlan(false);
+    }
+  };
+
+  const loadSubstitutions = async () => {
+    setIsLoadingSubstitutions(true);
+    try {
+      const res = await fetch(`/api/faculty?action=SUBSTITUTIONS&facultyEmail=${faculty?.email || ""}`);
+      if (res.ok) {
+        const data = await res.json();
+        setSubstitutions(data.substitutions || []);
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setIsLoadingSubstitutions(false);
+    }
+  };
+
+  const handleRespondSubstitution = async (subId: string, decision: "ACCEPT" | "DECLINE") => {
+    try {
+      const res = await fetch("/api/faculty", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "RESPOND_SUBSTITUTION_CONSENT",
+          substitutionId: subId,
+          decision,
+          responseNotes: `Delegation response: ${decision}`,
+        }),
+      });
+      if (res.ok) {
+        showToast(`Lecture substitution ${decision === "ACCEPT" ? "accepted (+1.0 Duty Credit)" : "declined"}`, "success");
+        loadSubstitutions();
+      }
+    } catch {
+      showToast("Failed to respond to substitution", "error");
+    }
+  };
+
+  const handleGenerateAsar = async () => {
+    setIsGeneratingAsar(true);
+    try {
+      const res = await fetch("/api/faculty", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "GENERATE_UGC_ASAR",
+          facultyName: faculty?.name,
+          facultyEmail: faculty?.email,
+          employeeCode: faculty?.employeeCode,
+          designation: faculty?.designation,
+          department: faculty?.departmentName,
+          allocatedHoursPerWeek: 16,
+          deliveredHoursPerWeek: 16,
+          syllabusCompletionRate: 94,
+          examDutyDays: 5,
+          institutionalCommitteeRoles: 2,
+          menteeCount: faculty?.mentees?.length || 20,
+          publicationsCount: faculty?.publications?.length || 5,
+          firstAuthorCount: 3,
+          sponsoredGrantsLakhs: 20,
+        }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setAsarData(data.asarDossier);
+        showToast("UGC 2018 Annual Self-Appraisal Dossier compiled successfully", "success");
+      }
+    } catch {
+      showToast("Failed to compile ASAR report", "error");
+    } finally {
+      setIsGeneratingAsar(false);
+    }
+  };
+
+  const handleOpenPrintPayslip = async () => {
+    setPayslipModal({ isOpen: true, data: null, loading: true });
+    try {
+      const res = await fetch(`/api/faculty?action=PRINT_PAYSLIP&facultyEmail=${faculty?.email || ""}`);
+      if (res.ok) {
+        const data = await res.json();
+        setPayslipModal({ isOpen: true, data, loading: false });
+      } else {
+        setPayslipModal({ isOpen: false, data: null, loading: false });
+        showToast("Failed to load payslip data", "error");
+      }
+    } catch {
+      setPayslipModal({ isOpen: false, data: null, loading: false });
+      showToast("Network error loading payslip", "error");
+    }
+  };
+
+  const handleApplySeedGrant = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!seedGrantTitle.trim()) return;
+    setIsSubmittingSeed(true);
+    try {
+      const res = await fetch("/api/faculty", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "APPLY_SEED_GRANT",
+          title: seedGrantTitle.trim(),
+          amountRequested: Number(seedGrantAmount),
+          remarks: seedGrantRemarks.trim(),
+        }),
+      });
+      if (res.ok) {
+        showToast("Internal Seed Money Research Proposal submitted to Dean (Research)", "success");
+        setIsSeedGrantModalOpen(false);
+        setSeedGrantTitle("");
+      }
+    } catch {
+      showToast("Failed to submit grant proposal", "error");
+    } finally {
+      setIsSubmittingSeed(false);
+    }
+  };
+
+  useEffect(() => {
+    if (activeTab === "lesson-plan" && lessonPlans.length === 0) {
+      loadLessonPlans();
+    } else if (activeTab === "substitutions" && substitutions.length === 0) {
+      loadSubstitutions();
+    }
+  }, [activeTab]);
 
   // Advising Booking Modal State
   const [isAdvisingModalOpen, setIsAdvisingModalOpen] = useState(false);
@@ -598,6 +774,11 @@ export default function FacultyDetailPage({
         <div className="flex items-center gap-2 border-b border-border dark:border-charcoal-700 pb-2 overflow-x-auto">
           {[
             { id: "teaching", label: "Teaching & Timetable", icon: BookOpen },
+            { id: "question-paper", label: "Autonomous Exam Paper Studio", icon: Sparkles },
+            { id: "research-portfolio", label: "UGC Research & Grants Portfolio", icon: FlaskConical },
+            { id: "lesson-plan", label: "Course File & Lesson Plans", icon: FileCheck },
+            { id: "substitutions", label: "Lecture Swapping & Duty Credits", icon: Clock },
+            { id: "asar-appraisal", label: "UGC ASAR & Payslip", icon: Award },
             { id: "mentees", label: "Assigned Mentee Wards", icon: Users },
             { id: "workload", label: "Workload & Leave Balance", icon: Clock },
             { id: "research", label: "Research & Publications", icon: FlaskConical },
@@ -1102,6 +1283,302 @@ export default function FacultyDetailPage({
             </div>
           </div>
         )}
+
+        {/* Tab: Course File & Lesson Plans */}
+        {activeTab === "lesson-plan" && (
+          <div className="space-y-6">
+            {/* Syllabus Coverage KPI Bar */}
+            <div className="bg-white dark:bg-charcoal-800 p-6 rounded-2xl border border-border dark:border-charcoal-700 shadow-soft">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-border dark:border-charcoal-700">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <FileCheck className="h-5 w-5 text-rose-primary" />
+                    <h3 className="text-base font-bold text-charcoal-900 dark:text-ivory-100">
+                      Digital Course File & Lesson Plan Delivery Tracker
+                    </h3>
+                  </div>
+                  <p className="text-xs text-charcoal-500 mt-1">
+                    NBA/NAAC Criteria 2 Compliant • Planned vs Actual Delivery with Bloom's Taxonomy Tagging
+                  </p>
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className="text-xs font-bold px-3 py-1.5 rounded-full bg-emerald-100 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-200 border border-emerald-300">
+                    Syllabus Health: {coverageData?.status || "ON_TRACK"}
+                  </span>
+                  <span className="text-sm font-bold font-mono text-rose-primary">
+                    {coverageData?.completionPercentage || 80}% Completed
+                  </span>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
+                <div className="p-3 bg-surface-soft dark:bg-charcoal-900 rounded-xl">
+                  <span className="text-[10px] text-charcoal-500 uppercase font-bold block">Course Code</span>
+                  <span className="font-bold text-sm text-charcoal-900 dark:text-ivory-100">CS301 (Algorithms)</span>
+                </div>
+                <div className="p-3 bg-surface-soft dark:bg-charcoal-900 rounded-xl">
+                  <span className="text-[10px] text-charcoal-500 uppercase font-bold block">Planned Lectures</span>
+                  <span className="font-bold text-sm text-charcoal-900 dark:text-ivory-100">{coverageData?.totalPlannedLectures || 10} Units</span>
+                </div>
+                <div className="p-3 bg-surface-soft dark:bg-charcoal-900 rounded-xl">
+                  <span className="text-[10px] text-charcoal-500 uppercase font-bold block">Delivered on Time</span>
+                  <span className="font-bold text-sm text-emerald-600">{coverageData?.completedLectures || 8} Lectures</span>
+                </div>
+                <div className="p-3 bg-surface-soft dark:bg-charcoal-900 rounded-xl">
+                  <span className="text-[10px] text-charcoal-500 uppercase font-bold block">Deviation / Rescheduled</span>
+                  <span className="font-bold text-sm text-amber-600">{coverageData?.delayedLectures || 0} Lectures</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Lesson Plan Units Table */}
+            <div className="bg-white dark:bg-charcoal-800 rounded-2xl border border-border dark:border-charcoal-700 shadow-soft overflow-hidden">
+              <div className="p-4 border-b border-border dark:border-charcoal-700 bg-surface-soft dark:bg-charcoal-800/80 flex items-center justify-between">
+                <span className="text-xs font-bold text-charcoal-900 dark:text-ivory-100">
+                  Lecture-by-Lecture Planned Delivery Matrix (15-Week Term)
+                </span>
+                <button
+                  onClick={loadLessonPlans}
+                  className="px-3 py-1 rounded-lg text-xs font-bold bg-ivory-200 dark:bg-charcoal-700 text-charcoal-700 dark:text-ivory-200 hover:bg-ivory-300"
+                >
+                  Refresh Tracker
+                </button>
+              </div>
+
+              {isLoadingLessonPlan ? (
+                <div className="p-8 text-center text-xs text-charcoal-500">Loading course lesson plan telemetry...</div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-xs text-left">
+                    <thead className="bg-ivory-50 dark:bg-charcoal-900 text-charcoal-500 font-semibold border-b border-border dark:border-charcoal-700">
+                      <tr>
+                        <th className="p-3">Wk / Lec #</th>
+                        <th className="p-3">Topic & Syllabus Domain</th>
+                        <th className="p-3">Planned Date</th>
+                        <th className="p-3">Actual Date</th>
+                        <th className="p-3">Bloom's Taxonomy</th>
+                        <th className="p-3">Mode</th>
+                        <th className="p-3">Delivery Status</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-border/60 dark:divide-charcoal-700">
+                      {lessonPlans.map((unit: any, idx: number) => (
+                        <tr key={idx} className="hover:bg-ivory-50/50 dark:hover:bg-charcoal-800/50">
+                          <td className="p-3 font-mono font-bold">W{unit.weekNumber}.L{unit.lectureNumber}</td>
+                          <td className="p-3 font-semibold text-charcoal-900 dark:text-ivory-100">{unit.topic}</td>
+                          <td className="p-3 text-charcoal-600 font-mono">{unit.plannedDate}</td>
+                          <td className="p-3 font-mono">{unit.actualDate || "—"}</td>
+                          <td className="p-3">
+                            <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-100 dark:bg-blue-950/40 text-blue-800 dark:text-blue-200">
+                              {unit.bloomLevel}
+                            </span>
+                          </td>
+                          <td className="p-3">
+                            <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-ivory-200 dark:bg-charcoal-700 text-charcoal-700 dark:text-ivory-200">
+                              {unit.deliveryMode}
+                            </span>
+                          </td>
+                          <td className="p-3">
+                            <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
+                              unit.status === "COMPLETED"
+                                ? "bg-emerald-100 text-emerald-800"
+                                : "bg-amber-100 text-amber-800"
+                            }`}>
+                              {unit.status}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Tab: Lecture Swapping & Duty Credits */}
+        {activeTab === "substitutions" && (
+          <div className="space-y-6">
+            <div className="bg-white dark:bg-charcoal-800 p-6 rounded-2xl border border-border dark:border-charcoal-700 shadow-soft">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-border dark:border-charcoal-700">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <Clock className="h-5 w-5 text-blue-600" />
+                    <h3 className="text-base font-bold text-charcoal-900 dark:text-ivory-100">
+                      Timetable Lecture Substitution & Compensatory Duty Credits
+                    </h3>
+                  </div>
+                  <p className="text-xs text-charcoal-500 mt-1">
+                    Peer-to-peer lecture delegation consent with automated timetable swapping and compensatory duty credits.
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="px-3 py-1.5 rounded-xl bg-blue-50 dark:bg-blue-950/40 border border-blue-200 text-blue-800 dark:text-blue-200 font-bold text-xs">
+                    Earned Duty Credits: 2.0 Units
+                  </span>
+                </div>
+              </div>
+
+              {isLoadingSubstitutions ? (
+                <div className="p-8 text-center text-xs text-charcoal-500">Checking pending substitution requests...</div>
+              ) : substitutions.length === 0 ? (
+                <div className="p-8 text-center text-xs text-charcoal-500 italic">
+                  No active or pending lecture substitution delegations found for this semester.
+                </div>
+              ) : (
+                <div className="space-y-3 mt-4">
+                  {substitutions.map((sub: any) => (
+                    <div
+                      key={sub.id}
+                      className="p-4 rounded-xl bg-ivory-50 dark:bg-charcoal-800/80 border border-border dark:border-charcoal-700 flex flex-col md:flex-row md:items-center justify-between gap-3 text-xs"
+                    >
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="font-bold text-charcoal-900 dark:text-ivory-100">{sub.courseCode} ({sub.courseTitle})</span>
+                          <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800">
+                            {sub.status}
+                          </span>
+                        </div>
+                        <p className="text-[11px] text-charcoal-500 mt-1 font-mono">
+                          Delegating Faculty: {sub.originalFacultyEmail} • Scheduled: {new Date(sub.scheduledDate).toLocaleDateString()} ({sub.slotTime})
+                        </p>
+                      </div>
+
+                      {sub.status === "PENDING_CONSENT" && (
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => handleRespondSubstitution(sub.id, "ACCEPT")}
+                            className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center gap-1 shadow-xs"
+                          >
+                            <Check className="w-3.5 h-3.5" /> Accept Lecture (+1.0 Credit)
+                          </button>
+                          <button
+                            onClick={() => handleRespondSubstitution(sub.id, "DECLINE")}
+                            className="px-3 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs flex items-center gap-1 shadow-xs"
+                          >
+                            <X className="w-3.5 h-3.5" /> Decline
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Tab: UGC ASAR 2018 Appraisal & Payslip */}
+        {activeTab === "asar-appraisal" && (
+          <div className="space-y-6">
+            <div className="bg-white dark:bg-charcoal-800 p-6 rounded-2xl border border-border dark:border-charcoal-700 shadow-soft">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-border dark:border-charcoal-700">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <Award className="h-5 w-5 text-amber-500" />
+                    <h3 className="text-base font-bold text-charcoal-900 dark:text-ivory-100">
+                      UGC Regulations 2018 PBAS Annual Self-Appraisal (ASAR)
+                    </h3>
+                  </div>
+                  <p className="text-xs text-charcoal-500 mt-1">
+                    Direct Promotion & CAS Screening Dossier • Ministry of Education & Vidwan Linked
+                  </p>
+                </div>
+                <div className="flex flex-wrap items-center gap-2">
+                  <button
+                    onClick={handleOpenPrintPayslip}
+                    className="px-3.5 py-2 rounded-xl text-xs font-bold bg-ivory-100 dark:bg-charcoal-700 text-charcoal-800 dark:text-ivory-100 border border-border flex items-center gap-1.5 hover:bg-ivory-200"
+                  >
+                    <Landmark className="w-3.5 h-3.5 text-emerald-600" />
+                    <span>Print Official Payslip</span>
+                  </button>
+                  <button
+                    onClick={() => setIsSeedGrantModalOpen(true)}
+                    className="px-3.5 py-2 rounded-xl text-xs font-bold bg-ivory-100 dark:bg-charcoal-700 text-charcoal-800 dark:text-ivory-100 border border-border flex items-center gap-1.5 hover:bg-ivory-200"
+                  >
+                    <FlaskConical className="w-3.5 h-3.5 text-purple-600" />
+                    <span>Apply Seed Grant</span>
+                  </button>
+                  <button
+                    onClick={handleGenerateAsar}
+                    disabled={isGeneratingAsar}
+                    className="px-4 py-2 rounded-xl text-xs font-bold bg-amber-600 hover:bg-amber-700 text-white flex items-center gap-1.5 shadow-sm"
+                  >
+                    <Sparkles className="w-3.5 h-3.5" />
+                    <span>{isGeneratingAsar ? "Compiling Dossier..." : "Compile UGC ASAR Dossier"}</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Research Profiles IDs Grid */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-4">
+                <div className="p-3 rounded-xl bg-surface-soft dark:bg-charcoal-900 border border-border text-xs">
+                  <span className="text-[10px] text-charcoal-500 uppercase font-bold block">Government Vidwan ID</span>
+                  <span className="font-mono font-bold text-charcoal-900 dark:text-ivory-100">VID-2026-9812</span>
+                </div>
+                <div className="p-3 rounded-xl bg-surface-soft dark:bg-charcoal-900 border border-border text-xs">
+                  <span className="text-[10px] text-charcoal-500 uppercase font-bold block">ORCID Identifier</span>
+                  <span className="font-mono font-bold text-charcoal-900 dark:text-ivory-100">0000-0002-1825-0097</span>
+                </div>
+                <div className="p-3 rounded-xl bg-surface-soft dark:bg-charcoal-900 border border-border text-xs">
+                  <span className="text-[10px] text-charcoal-500 uppercase font-bold block">Scopus Author ID</span>
+                  <span className="font-mono font-bold text-charcoal-900 dark:text-ivory-100">57201948291</span>
+                </div>
+                <div className="p-3 rounded-xl bg-surface-soft dark:bg-charcoal-900 border border-border text-xs">
+                  <span className="text-[10px] text-charcoal-500 uppercase font-bold block">Google Scholar h-index</span>
+                  <span className="font-mono font-bold text-emerald-600">18 (i10-index: 24)</span>
+                </div>
+              </div>
+
+              {asarData && (
+                <div className="mt-6 p-5 rounded-xl bg-amber-50/60 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 space-y-4 text-xs">
+                  <div className="flex items-center justify-between pb-3 border-b border-amber-200 dark:border-amber-800">
+                    <div>
+                      <span className="font-bold text-sm text-amber-950 dark:text-amber-200 block">
+                        Annual Performance Appraisal Report (Academic Year {asarData.academicYear})
+                      </span>
+                      <span className="text-[11px] text-amber-700 dark:text-amber-300 font-mono">
+                        Verification Seal: {asarData.verificationHash}
+                      </span>
+                    </div>
+                    <span className="px-3 py-1 rounded-full text-xs font-bold bg-emerald-600 text-white">
+                      Overall Grading: {asarData.overallGrading}
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="p-3 bg-white dark:bg-charcoal-900 rounded-xl border border-amber-200 dark:border-amber-800">
+                      <span className="text-[10px] text-charcoal-500 font-bold block">Category I: Teaching Activities</span>
+                      <span className="text-xl font-bold text-charcoal-900 dark:text-ivory-100">{asarData.category1Score} / 100</span>
+                      <span className="text-[10px] text-emerald-600 font-semibold block mt-1">Grading: {asarData.category1Grading}</span>
+                    </div>
+                    <div className="p-3 bg-white dark:bg-charcoal-900 rounded-xl border border-amber-200 dark:border-amber-800">
+                      <span className="text-[10px] text-charcoal-500 font-bold block">Category II: University Governance</span>
+                      <span className="text-xl font-bold text-charcoal-900 dark:text-ivory-100">{asarData.category2Score} / 50</span>
+                      <span className="text-[10px] text-charcoal-500 block mt-1">Exams, Mentoring, Committees</span>
+                    </div>
+                    <div className="p-3 bg-white dark:bg-charcoal-900 rounded-xl border border-amber-200 dark:border-amber-800">
+                      <span className="text-[10px] text-charcoal-500 font-bold block">Category III: Research Contributions</span>
+                      <span className="text-xl font-bold text-charcoal-900 dark:text-ivory-100">{asarData.category3ResearchScore} Pts</span>
+                      <span className="text-[10px] text-charcoal-500 block mt-1">70:30 Author Rule Applied</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Tab: Autonomous Examination Question Paper Studio */}
+        {activeTab === "question-paper" && (
+          <QuestionPaperStudioTab facultyId={faculty.id} facultyName={faculty.name} />
+        )}
+
+        {/* Tab: UGC Research, Grants, Patents & Consultancy Portfolio */}
+        {activeTab === "research-portfolio" && (
+          <ResearchGrantsPortfolioTab facultyId={faculty.id} facultyName={faculty.name} />
+        )}
       </div>
 
       {/* Edit Profile Modal */}
@@ -1586,6 +2063,227 @@ export default function FacultyDetailPage({
             </div>
           </form>
         </Modal>
+      )}
+
+      {/* Internal Seed Money Grant Application Modal */}
+      {isSeedGrantModalOpen && (
+        <Modal
+          isOpen={isSeedGrantModalOpen}
+          onClose={() => setIsSeedGrantModalOpen(false)}
+          title="Apply for Internal Seed Money Research Grant"
+          description="Institutional research stimulus funding for faculty researchers under Dean (R&D) guidelines."
+        >
+          <form onSubmit={handleApplySeedGrant} className="space-y-4 text-xs">
+            <div>
+              <label className="block font-bold text-charcoal-700 dark:text-charcoal-300 mb-1">
+                Research Project Title *
+              </label>
+              <input
+                type="text"
+                required
+                value={seedGrantTitle}
+                onChange={(e) => setSeedGrantTitle(e.target.value)}
+                placeholder="e.g. Distributed Consensus Architectures for Fault-Tolerant Edge Computing"
+                className="w-full px-3 py-2 rounded-xl bg-ivory-100 dark:bg-charcoal-900 border border-border dark:border-charcoal-700"
+              />
+            </div>
+
+            <div>
+              <label className="block font-bold text-charcoal-700 dark:text-charcoal-300 mb-1">
+                Requested Seed Funding (₹ INR) *
+              </label>
+              <input
+                type="number"
+                required
+                min={25000}
+                max={500000}
+                value={seedGrantAmount}
+                onChange={(e) => setSeedGrantAmount(Number(e.target.value))}
+                className="w-full px-3 py-2 rounded-xl bg-ivory-100 dark:bg-charcoal-900 border border-border dark:border-charcoal-700 font-mono"
+              />
+              <span className="text-[10px] text-charcoal-400 mt-1 block">Maximum seed grant limit: ₹5,00,000 per tenure</span>
+            </div>
+
+            <div>
+              <label className="block font-bold text-charcoal-700 dark:text-charcoal-300 mb-1">
+                Proposal Summary & Equipment Utilization *
+              </label>
+              <textarea
+                rows={3}
+                required
+                value={seedGrantRemarks}
+                onChange={(e) => setSeedGrantRemarks(e.target.value)}
+                placeholder="Detail planned hardware procurement, journal publication targets, and student research assistant roles..."
+                className="w-full px-3 py-2 rounded-xl bg-ivory-100 dark:bg-charcoal-900 border border-border dark:border-charcoal-700"
+              />
+            </div>
+
+            <div className="flex justify-end gap-2 pt-3 border-t border-border dark:border-charcoal-700">
+              <button
+                type="button"
+                onClick={() => setIsSeedGrantModalOpen(false)}
+                className="px-4 py-2 rounded-xl bg-ivory-100 dark:bg-charcoal-700 text-charcoal-700 dark:text-charcoal-300 font-bold"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={isSubmittingSeed || !seedGrantTitle.trim()}
+                className="px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold disabled:opacity-50 shadow-sm"
+              >
+                {isSubmittingSeed ? "Submitting..." : "Submit Proposal"}
+              </button>
+            </div>
+          </form>
+        </Modal>
+      )}
+
+      {/* Official Bilingual University Crest Payslip Modal */}
+      {payslipModal.isOpen && (
+        <div className="fixed inset-0 z-50 bg-charcoal-950/75 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-charcoal-900 rounded-2xl max-w-2xl w-full p-6 border border-border dark:border-charcoal-800 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between pb-3 border-b border-border dark:border-charcoal-800">
+              <div className="flex items-center gap-2">
+                <Landmark className="w-5 h-5 text-emerald-600" />
+                <div>
+                  <h3 className="font-bold text-base text-charcoal-900 dark:text-ivory-100">
+                    Official Salary Payslip • वेतन पर्ची
+                  </h3>
+                  <p className="text-xs text-charcoal-500 font-mono">
+                    APEX INSTITUTE OF HIGHER EDUCATION & RESEARCH • NAAC 'A++'
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setPayslipModal({ isOpen: false, data: null, loading: false })}
+                className="text-charcoal-400 hover:text-charcoal-600 text-sm font-bold"
+              >
+                ✕
+              </button>
+            </div>
+
+            {payslipModal.loading ? (
+              <div className="p-8 text-center text-xs text-charcoal-500">Generating cryptographic payslip...</div>
+            ) : (
+              <div className="space-y-4 text-xs">
+                {/* Employee Info Header */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 p-3 rounded-xl bg-ivory-50 dark:bg-charcoal-800/80 border border-border dark:border-charcoal-700">
+                  <div>
+                    <span className="text-[10px] text-charcoal-500 block">Staff Name</span>
+                    <span className="font-bold text-charcoal-900 dark:text-ivory-100">{payslipModal.data?.payslip?.staffName}</span>
+                  </div>
+                  <div>
+                    <span className="text-[10px] text-charcoal-500 block">Designation</span>
+                    <span className="font-bold text-charcoal-900 dark:text-ivory-100">{payslipModal.data?.payslip?.designation}</span>
+                  </div>
+                  <div>
+                    <span className="text-[10px] text-charcoal-500 block">Pay Period</span>
+                    <span className="font-mono font-bold text-rose-primary">{payslipModal.data?.payslip?.payPeriod}</span>
+                  </div>
+                  <div>
+                    <span className="text-[10px] text-charcoal-500 block">Bank Account</span>
+                    <span className="font-mono text-charcoal-900 dark:text-ivory-100">{payslipModal.data?.payslip?.bankAccount}</span>
+                  </div>
+                </div>
+
+                {/* Earnings & Deductions Tables */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {/* Earnings */}
+                  <div className="rounded-xl border border-border dark:border-charcoal-700 overflow-hidden">
+                    <div className="p-2.5 bg-emerald-50 dark:bg-emerald-950/30 text-emerald-900 dark:text-emerald-200 font-bold border-b border-border dark:border-charcoal-700 flex justify-between">
+                      <span>Gross Earnings (वेतन)</span>
+                      <span>Amount (₹)</span>
+                    </div>
+                    <div className="p-3 space-y-2 text-charcoal-700 dark:text-charcoal-300">
+                      <div className="flex justify-between">
+                        <span>Basic Pay (7th CPC)</span>
+                        <span className="font-mono">₹{payslipModal.data?.payslip?.basicPay?.toLocaleString()}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>House Rent Allowance (HRA)</span>
+                        <span className="font-mono">₹{payslipModal.data?.payslip?.houseRentAllowance?.toLocaleString()}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Dearness Allowance (DA)</span>
+                        <span className="font-mono">₹{payslipModal.data?.payslip?.dearnessAllowance?.toLocaleString()}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Academic Special Allowance</span>
+                        <span className="font-mono">₹{payslipModal.data?.payslip?.specialAllowance?.toLocaleString()}</span>
+                      </div>
+                      <div className="pt-2 border-t border-border flex justify-between font-bold text-charcoal-900 dark:text-ivory-100">
+                        <span>Total Gross Salary</span>
+                        <span className="font-mono text-emerald-600">₹{payslipModal.data?.payslip?.grossSalary?.toLocaleString()}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Deductions */}
+                  <div className="rounded-xl border border-border dark:border-charcoal-700 overflow-hidden">
+                    <div className="p-2.5 bg-rose-50 dark:bg-rose-950/30 text-rose-900 dark:text-rose-200 font-bold border-b border-border dark:border-charcoal-700 flex justify-between">
+                      <span>Deductions (कटौतियां)</span>
+                      <span>Amount (₹)</span>
+                    </div>
+                    <div className="p-3 space-y-2 text-charcoal-700 dark:text-charcoal-300">
+                      <div className="flex justify-between">
+                        <span>Provident Fund (12%)</span>
+                        <span className="font-mono">₹{payslipModal.data?.payslip?.providentFund?.toLocaleString()}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Tax Deducted (Sec 192 TDS)</span>
+                        <span className="font-mono">₹{payslipModal.data?.payslip?.taxDeductedAtSource?.toLocaleString()}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Professional Tax (PT)</span>
+                        <span className="font-mono">₹{payslipModal.data?.payslip?.professionalTax?.toLocaleString()}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Loss of Pay (LOP)</span>
+                        <span className="font-mono">₹{payslipModal.data?.payslip?.lopDeduction?.toLocaleString()}</span>
+                      </div>
+                      <div className="pt-2 border-t border-border flex justify-between font-bold text-charcoal-900 dark:text-ivory-100">
+                        <span>Total Deductions</span>
+                        <span className="font-mono text-rose-600">₹{payslipModal.data?.payslip?.totalDeductions?.toLocaleString()}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Net Pay Callout */}
+                <div className="p-4 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-300 dark:border-emerald-800 flex justify-between items-center text-emerald-950 dark:text-emerald-100">
+                  <div>
+                    <span className="text-[10px] uppercase font-bold tracking-wider block">Net Disbursed Amount (शुद्ध देय राशि)</span>
+                    <span className="text-xl font-bold font-mono">₹{payslipModal.data?.payslip?.netPay?.toLocaleString()}</span>
+                  </div>
+                  <span className="px-3 py-1 rounded-full text-xs font-bold bg-emerald-600 text-white shadow-xs">
+                    DISBURSED & VERIFIED
+                  </span>
+                </div>
+
+                {/* QR Seal & Digital Hash */}
+                <div className="p-2.5 rounded-lg bg-surface-soft dark:bg-charcoal-800 border border-border flex items-center justify-between font-mono text-[10px] text-charcoal-500">
+                  <span>Digital Hash: {payslipModal.data?.payslip?.verificationHash}</span>
+                  <span>Seal: {payslipModal.data?.qrSeal}</span>
+                </div>
+
+                <div className="flex justify-end gap-2 pt-2 border-t border-border">
+                  <button
+                    onClick={() => window.print()}
+                    className="px-3.5 py-2 text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl flex items-center gap-1.5 transition-colors"
+                  >
+                    <Download className="w-3.5 h-3.5" /> Print / Save PDF
+                  </button>
+                  <button
+                    onClick={() => setPayslipModal({ isOpen: false, data: null, loading: false })}
+                    className="px-3 py-2 text-xs font-semibold bg-ivory-100 dark:bg-charcoal-800 text-charcoal-700 dark:text-ivory-200 rounded-xl hover:bg-ivory-200"
+                  >
+                    Close
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
       )}
     </AppShell>
   );
