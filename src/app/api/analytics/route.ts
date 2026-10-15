@@ -37,7 +37,7 @@ export async function GET(req: NextRequest) {
             students: 1,
             passRate: 98.0,
             attendance: student?.attendanceRate || 94.6,
-            grants: "$0.00",
+            grants: "₹0.00",
           },
         ],
       });
@@ -112,8 +112,8 @@ export async function GET(req: NextRequest) {
       0
     );
     const formattedGrant = totalResearchGrant > 0
-      ? `$${(totalResearchGrant / 1000000).toFixed(2)}M`
-      : "$5.62M";
+      ? `₹${(totalResearchGrant / 10000000).toFixed(2)} Cr`
+      : "₹56.2 Cr";
 
     // Attendance
     const presentAttendance = attendanceRecords.filter(
@@ -134,7 +134,7 @@ export async function GET(req: NextRequest) {
         students: studentCount,
         passRate: 94.2 + (dept.code === "CSE" ? 2.0 : -1.0),
         attendance: campusAttendanceRate,
-        grants: dept.code === "CSE" ? "$1.85M" : "$2.40M",
+        grants: dept.code === "CSE" ? "₹18.5 Cr" : "₹24.0 Cr",
       };
     });
 

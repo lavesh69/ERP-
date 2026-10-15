@@ -846,7 +846,7 @@ export default function LibraryPage() {
             <div className="p-3 rounded-xl bg-ivory-50 dark:bg-charcoal-900 border border-border dark:border-charcoal-700 text-[11px] text-charcoal-600 dark:text-charcoal-400 flex items-center gap-2">
               <Calendar className="h-4 w-4 text-rose-primary shrink-0" />
               <span>
-                Due date will be automatically calibrated to 14 days from today. Overdue fee: $1.00/day.
+                Due date will be automatically calibrated to 14 days from today. Overdue fee: ₹10/day.
               </span>
             </div>
 

@@ -80,7 +80,7 @@ export function DayEndCashbookView({ showToast }: DayEndCashbookViewProps) {
             <div className="glass-panel p-5 rounded-2xl shadow-soft">
               <span className="text-[11px] font-bold text-charcoal-500 uppercase">Gross Daily Collections</span>
               <div className="text-2xl font-bold font-display text-academic-success mt-1">
-                ${data.summary?.totalCollectionAmount?.toLocaleString() || 0}.00
+                ₹{data.summary?.totalCollectionAmount?.toLocaleString("en-IN") || 0}.00
               </div>
               <span className="text-[10px] text-charcoal-400 mt-0.5 block">
                 Across {data.summary?.totalTransactionCount || 0} clearing transactions
@@ -126,7 +126,7 @@ export function DayEndCashbookView({ showToast }: DayEndCashbookViewProps) {
                       {method.replace(/_/g, " ")}
                     </span>
                     <span className="text-base font-bold text-charcoal-900 dark:text-ivory-100 block font-mono mt-0.5">
-                      ${info.totalAmount?.toLocaleString() || 0}
+                      ₹{info.totalAmount?.toLocaleString("en-IN") || 0}
                     </span>
                     <span className="text-[10px] text-charcoal-400 block">
                       {info.count} receipts
@@ -175,7 +175,7 @@ export function DayEndCashbookView({ showToast }: DayEndCashbookViewProps) {
                         <td className="p-3.5 text-charcoal-600 dark:text-charcoal-300">{t.feeTitle}</td>
                         <td className="p-3.5 text-charcoal-500">{t.method}</td>
                         <td className="p-3.5 text-right font-bold text-academic-success font-mono">
-                          +${t.amount.toLocaleString()}.00
+                          +₹{t.amount.toLocaleString("en-IN")}.00
                         </td>
                       </tr>
                     ))}

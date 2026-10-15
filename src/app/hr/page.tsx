@@ -43,7 +43,7 @@ import { CpcIncrementTab } from "@/components/hr/tabs/CpcIncrementTab";
 import { IncomeTaxTdsTab } from "@/components/hr/tabs/IncomeTaxTdsTab";
 
 export default function HRPage() {
-  const { currentUser } = useApp();
+  const { currentUser, showToast } = useApp();
   const [activeTab, setActiveTab] = useState<"staff" | "leaves" | "payroll" | "biometric" | "cpc-matrix" | "income-tax">("staff");
   const [loading, setLoading] = useState(true);
   const [leaveData, setLeaveData] = useState<any>(null);
@@ -1102,11 +1102,11 @@ export default function HRPage() {
               <div className="flex items-center justify-between text-xs pt-1 border-t border-border dark:border-charcoal-700/60">
                 <span className="text-[11px] text-charcoal-500">
                   {isNewRegime
-                    ? "✓ Default Regime: Standard Deduction ₹75,000 / $900 applied with concessional slabs."
+                    ? "✓ Default Regime: Standard Deduction ₹75,000 applied with concessional slabs."
                     : "⚠️ Old Regime: Higher base rates; requires Section 80C, 80D & HRA rent receipts proof submission."}
                 </span>
                 <span className="px-2 py-0.5 rounded font-bold text-[11px] bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-200">
-                  {isNewRegime ? `Saving $${monthlyTaxSavings}/mo` : `+$${monthlyTaxSavings}/mo extra tax`}
+                  {isNewRegime ? `Saving ₹${monthlyTaxSavings.toLocaleString("en-IN")}/mo` : `+₹${monthlyTaxSavings.toLocaleString("en-IN")}/mo extra tax`}
                 </span>
               </div>
             </div>
@@ -1164,23 +1164,23 @@ export default function HRPage() {
                   </h4>
                   <div className="flex justify-between py-1">
                     <span className="text-charcoal-600 dark:text-ivory-400">Basic Salary:</span>
-                    <span className="font-semibold">${basicPay.toLocaleString()}</span>
+                    <span className="font-semibold">₹{basicPay.toLocaleString("en-IN")}</span>
                   </div>
                   <div className="flex justify-between py-1">
                     <span className="text-charcoal-600 dark:text-ivory-400">HRA (20%):</span>
-                    <span className="font-semibold">${houseRentAllowance.toLocaleString()}</span>
+                    <span className="font-semibold">₹{houseRentAllowance.toLocaleString("en-IN")}</span>
                   </div>
                   <div className="flex justify-between py-1">
                     <span className="text-charcoal-600 dark:text-ivory-400">Dearness Allowance (DA 14%):</span>
-                    <span className="font-semibold">${dearnessAllowance.toLocaleString()}</span>
+                    <span className="font-semibold">₹{dearnessAllowance.toLocaleString("en-IN")}</span>
                   </div>
                   <div className="flex justify-between py-1">
                     <span className="text-charcoal-600 dark:text-ivory-400">Special Research Allowance (10%):</span>
-                    <span className="font-semibold">${specialAllowance.toLocaleString()}</span>
+                    <span className="font-semibold">₹{specialAllowance.toLocaleString("en-IN")}</span>
                   </div>
                   <div className="flex justify-between pt-2 border-t border-border font-bold text-emerald-600 dark:text-emerald-400">
                     <span>Total Gross Pay:</span>
-                    <span>${grossSalary.toLocaleString()}</span>
+                    <span>₹{grossSalary.toLocaleString("en-IN")}</span>
                   </div>
                 </div>
 
@@ -1191,21 +1191,21 @@ export default function HRPage() {
                   </h4>
                   <div className="flex justify-between py-1">
                     <span className="text-charcoal-600 dark:text-ivory-400">Provident Fund (PF 12%):</span>
-                    <span className="font-semibold">${providentFund.toLocaleString()}</span>
+                    <span className="font-semibold">₹{providentFund.toLocaleString("en-IN")}</span>
                   </div>
                   <div className="flex justify-between py-1">
                     <span className="text-charcoal-600 dark:text-ivory-400">
                       TDS Tax ({isNewRegime ? "New Slab 6.5%" : "Old Slab 9.2%"}):
                     </span>
-                    <span className="font-semibold">${taxDeductedAtSource.toLocaleString()}</span>
+                    <span className="font-semibold">₹{taxDeductedAtSource.toLocaleString("en-IN")}</span>
                   </div>
                   <div className="flex justify-between py-1">
                     <span className="text-charcoal-600 dark:text-ivory-400">Professional Tax:</span>
-                    <span className="font-semibold">${professionalTax}</span>
+                    <span className="font-semibold">₹{professionalTax.toLocaleString("en-IN")}</span>
                   </div>
                   <div className="flex justify-between pt-2 border-t border-border font-bold text-rose-600 dark:text-rose-400">
                     <span>Total Deductions:</span>
-                    <span>${totalDeductions.toLocaleString()}</span>
+                    <span>₹{totalDeductions.toLocaleString("en-IN")}</span>
                   </div>
                 </div>
               </div>
@@ -1214,7 +1214,7 @@ export default function HRPage() {
               <div className="p-4 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-700 text-white flex justify-between items-center shadow-md">
                 <div>
                   <p className="text-xs uppercase tracking-wider font-semibold opacity-90">Net Take-Home Salary</p>
-                  <p className="text-2xl font-bold mt-0.5">${netPay.toLocaleString()}</p>
+                  <p className="text-2xl font-bold mt-0.5">₹{netPay.toLocaleString("en-IN")}</p>
                 </div>
                 <button
                   onClick={() => window.print()}
@@ -1237,15 +1237,15 @@ export default function HRPage() {
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[11px] text-charcoal-600 dark:text-ivory-300">
                   <div>
                     <span className="text-charcoal-400 block">Annual Gross Pay:</span>
-                    <span className="font-semibold text-charcoal-900 dark:text-ivory-100">${(grossSalary * 12).toLocaleString()}</span>
+                    <span className="font-semibold text-charcoal-900 dark:text-ivory-100">₹{(grossSalary * 12).toLocaleString("en-IN")}</span>
                   </div>
                   <div>
                     <span className="text-charcoal-400 block">Standard Deduction:</span>
-                    <span className="font-semibold text-emerald-600">{isNewRegime ? "$900 (₹75k)" : "$600 (₹50k)"}</span>
+                    <span className="font-semibold text-emerald-600">{isNewRegime ? "₹75,000" : "₹50,000"}</span>
                   </div>
                   <div>
                     <span className="text-charcoal-400 block">Annual TDS Deposited:</span>
-                    <span className="font-semibold text-charcoal-900 dark:text-ivory-100">${(taxDeductedAtSource * 12).toLocaleString()}</span>
+                    <span className="font-semibold text-charcoal-900 dark:text-ivory-100">₹{(taxDeductedAtSource * 12).toLocaleString("en-IN")}</span>
                   </div>
                   <div>
                     <span className="text-charcoal-400 block">Form-16 Clearance:</span>
@@ -1728,7 +1728,7 @@ export default function HRPage() {
               <div className="grid grid-cols-2 gap-2 text-xs">
                 <div className="p-3 rounded-xl bg-ivory-50 dark:bg-charcoal-800 border border-border dark:border-charcoal-700">
                   <span className="text-charcoal-500 text-[11px] block">Base Pay Scale</span>
-                  <span className="font-bold text-base text-charcoal-900 dark:text-ivory-100">${selectedStaffProfile.basicPay.toLocaleString()} / mo</span>
+                  <span className="font-bold text-base text-charcoal-900 dark:text-ivory-100">₹{selectedStaffProfile.basicPay.toLocaleString("en-IN")} / mo</span>
                   <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium block mt-0.5">Tier-1 Academic Scale</span>
                 </div>
                 <div className="p-3 rounded-xl bg-ivory-50 dark:bg-charcoal-800 border border-border dark:border-charcoal-700">

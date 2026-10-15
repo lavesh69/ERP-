@@ -44,7 +44,7 @@ export async function GET(req: NextRequest) {
         id: s.id,
         title: s.title,
         provider: s.provider,
-        amount: `$${s.amount.toLocaleString()} / semester`,
+        amount: `₹${s.amount.toLocaleString("en-IN")} / semester`,
         numericAmount: s.amount,
         minCgpa: s.minCgpa,
         deadline: s.deadline.toISOString().split("T")[0],
@@ -82,7 +82,7 @@ export async function GET(req: NextRequest) {
               scholarshipId: s.id,
               scholarshipTitle: s.title,
               provider: s.provider,
-              amount: `$${s.amount.toLocaleString()} / semester`,
+              amount: `₹${s.amount.toLocaleString("en-IN")} / semester`,
               studentId: app.student.id,
               studentName: `${app.student.user.firstName} ${app.student.user.lastName}`,
               rollNumber: app.student.rollNumber,
@@ -304,7 +304,7 @@ export async function PATCH(req: NextRequest) {
         userId: application.student.userId,
         title: status === "APPROVED" ? "Scholarship Fellowship Approved!" : "Scholarship Review Update",
         message: status === "APPROVED"
-          ? `Congratulations! Your fellowship application for ${application.scholarship.title} ($${application.scholarship.amount.toLocaleString()}) has been APPROVED and credited to your fee ledger. ${remarks ? `Remarks: ${remarks}` : ""}`
+          ? `Congratulations! Your fellowship application for ${application.scholarship.title} (₹${application.scholarship.amount.toLocaleString("en-IN")}) has been APPROVED and credited to your fee ledger. ${remarks ? `Remarks: ${remarks}` : ""}`
           : `Your fellowship application for ${application.scholarship.title} was reviewed and marked as ${status}. ${remarks ? `Remarks: ${remarks}` : ""}`,
         type: status === "APPROVED" ? "SUCCESS" : "INFO",
         isRead: false,

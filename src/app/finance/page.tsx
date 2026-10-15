@@ -504,7 +504,7 @@ export default function FinancePage() {
                 Total Revenue Collected
               </span>
               <div className="text-3xl font-display font-bold text-charcoal-900 dark:text-ivory-100 mt-2">
-                ${summary.totalCollected.toLocaleString()}
+                ₹{summary.totalCollected.toLocaleString("en-IN")}
               </div>
               <span className="text-xs text-academic-success font-semibold">
                 {summary.collectionRate}% of Target Term Budget Realized
@@ -516,7 +516,7 @@ export default function FinancePage() {
                 Outstanding Installments
               </span>
               <div className="text-3xl font-display font-bold text-academic-warning mt-2">
-                ${summary.pendingAmount.toLocaleString()}
+                ₹{summary.pendingAmount.toLocaleString("en-IN")}
               </div>
               <span className="text-xs text-charcoal-600 dark:text-charcoal-400">
                 Across {studentFees.filter((f) => f.status !== "PAID").length} pending scholar accounts
@@ -528,7 +528,7 @@ export default function FinancePage() {
                 Total Billed Receivables
               </span>
               <div className="text-3xl font-display font-bold text-rose-primary dark:text-rose-light mt-2">
-                ${summary.totalBilled.toLocaleString()}
+                ₹{summary.totalBilled.toLocaleString("en-IN")}
               </div>
               <span className="text-xs text-charcoal-600 dark:text-charcoal-400">
                 Gross academic ledger for Fall 2026
@@ -596,15 +596,15 @@ export default function FinancePage() {
                     <div className="grid grid-cols-3 gap-2 text-center text-xs bg-surface-soft dark:bg-charcoal-900/60 p-2.5 rounded-xl border border-border/50 dark:border-charcoal-700">
                       <div>
                         <span className="text-[10px] text-charcoal-500 block uppercase">Total Fee</span>
-                        <span className="font-bold text-charcoal-900 dark:text-ivory-100 mt-0.5 block">${l.totalAmount.toLocaleString()}</span>
+                        <span className="font-bold text-charcoal-900 dark:text-ivory-100 mt-0.5 block">₹{l.totalAmount.toLocaleString("en-IN")}</span>
                       </div>
                       <div>
                         <span className="text-[10px] text-charcoal-500 block uppercase">Paid</span>
-                        <span className="font-bold text-academic-success mt-0.5 block">${l.paidAmount.toLocaleString()}</span>
+                        <span className="font-bold text-academic-success mt-0.5 block">₹{l.paidAmount.toLocaleString("en-IN")}</span>
                       </div>
                       <div>
                         <span className="text-[10px] text-charcoal-500 block uppercase">Pending</span>
-                        <span className="font-bold text-academic-warning mt-0.5 block">${l.pendingAmount.toLocaleString()}</span>
+                        <span className="font-bold text-academic-warning mt-0.5 block">₹{l.pendingAmount.toLocaleString("en-IN")}</span>
                       </div>
                     </div>
 
@@ -618,7 +618,7 @@ export default function FinancePage() {
                           }}
                           className="min-h-[36px] px-3 py-1.5 rounded-xl bg-rose-primary hover:bg-rose-dark text-white text-xs font-bold shadow-sm"
                         >
-                          Pay Due (${l.pendingAmount})
+                          Pay Due (₹{l.pendingAmount.toLocaleString("en-IN")})
                         </button>
                       )}
                       <button
@@ -669,13 +669,13 @@ export default function FinancePage() {
                         {l.title}
                       </td>
                       <td className="p-3.5 text-right font-bold text-charcoal-900 dark:text-ivory-100">
-                        ${l.totalAmount.toLocaleString()}
+                        ₹{l.totalAmount.toLocaleString("en-IN")}
                       </td>
                       <td className="p-3.5 text-right font-bold text-academic-success">
-                        ${l.paidAmount.toLocaleString()}
+                        ₹{l.paidAmount.toLocaleString("en-IN")}
                       </td>
                       <td className="p-3.5 text-right font-bold text-academic-warning">
-                        ${l.pendingAmount.toLocaleString()}
+                        ₹{l.pendingAmount.toLocaleString("en-IN")}
                       </td>
                       <td className="p-3.5 text-center">
                         <span
@@ -776,7 +776,7 @@ export default function FinancePage() {
                         {t.feeTitle}
                       </td>
                       <td className="p-3.5 text-right font-bold text-academic-success">
-                        ${t.amount.toLocaleString()}
+                        ₹{t.amount.toLocaleString("en-IN")}
                       </td>
                       <td className="p-3.5 text-charcoal-600 dark:text-charcoal-400">
                         {t.paymentMethod}
@@ -872,7 +872,7 @@ export default function FinancePage() {
               >
                 {studentFees.map((f) => (
                   <option key={f.id} value={f.id}>
-                    {f.studentName} ({f.rollNo}) — {f.title} [Due: ${f.pendingAmount}]
+                    {f.studentName} ({f.rollNo}) — {f.title} [Due: ₹{f.pendingAmount.toLocaleString("en-IN")}]
                   </option>
                 ))}
               </select>
@@ -880,7 +880,7 @@ export default function FinancePage() {
 
             <div>
               <label className="font-bold text-charcoal-700 dark:text-charcoal-300 block mb-1">
-                Payment Amount ($ USD)
+                Payment Amount (₹ INR)
               </label>
               <input
                 type="number"
@@ -1042,7 +1042,7 @@ export default function FinancePage() {
                 disabled={isSubmitting}
                 className="px-4 py-2 rounded-xl bg-academic-success hover:bg-green-700 text-white text-xs font-bold shadow-sm transition-all"
               >
-                {isSubmitting ? "Processing..." : `Authorize $${payAmount.toLocaleString()}.00`}
+                {isSubmitting ? "Processing..." : `Authorize ₹${payAmount.toLocaleString("en-IN")}.00`}
               </button>
             </div>
           </form>
@@ -1096,7 +1096,7 @@ export default function FinancePage() {
                 <div className="pt-3 border-t border-border dark:border-charcoal-700 flex items-center justify-between">
                   <span className="font-sans font-bold text-charcoal-600 dark:text-charcoal-400">TOTAL AMOUNT PAID</span>
                   <span className="text-base font-black text-academic-success">
-                    ${selectedReceipt.amount.toLocaleString()}.00
+                    ₹{selectedReceipt.amount.toLocaleString("en-IN")}.00
                   </span>
                 </div>
               </div>

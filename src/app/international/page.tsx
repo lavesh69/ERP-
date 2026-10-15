@@ -26,6 +26,7 @@ import {
   ArrowRightLeft,
   TrendingUp,
 } from "lucide-react";
+import { useApp } from "@/context/AppContext";
 
 interface Partner {
   id: string;
@@ -60,6 +61,7 @@ interface Student {
 }
 
 export default function InternationalPage() {
+  const { showToast } = useApp();
   const [activeTab, setActiveTab] = useState<"partners" | "students" | "visa" | "forex">("partners");
   const [loading, setLoading] = useState(true);
   const [summary, setSummary] = useState<any>(null);
@@ -1499,7 +1501,7 @@ export default function InternationalPage() {
                       forexAmount * (forexRates[forexCurrency]?.inr || 86.5)
                     ).toLocaleString("en-IN")} INR (Forex Rate: ₹${forexRates[forexCurrency]?.inr})`
                   );
-                  alert("Forex calculation copied to clipboard!");
+                  showToast("Forex calculation copied to clipboard!", "success");
                 }}
                 className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-semibold shadow-sm transition-all"
               >

@@ -110,7 +110,7 @@ export function ConcessionsView({ studentFees, showToast, onConcessionApplied }:
               >
                 {studentFees.map((f) => (
                   <option key={f.id} value={f.id}>
-                    {f.studentName} ({f.rollNo}) — {f.title} [Due: ${f.pendingAmount}]
+                    {f.studentName} ({f.rollNo}) — {f.title} [Due: ₹{f.pendingAmount.toLocaleString("en-IN")}]
                   </option>
                 ))}
               </select>
@@ -119,7 +119,7 @@ export function ConcessionsView({ studentFees, showToast, onConcessionApplied }:
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="font-bold text-charcoal-700 dark:text-charcoal-300 block mb-1">
-                  Concession Amount ($ USD)
+                  Concession Amount (₹ INR)
                 </label>
                 <input
                   type="number"
@@ -169,7 +169,7 @@ export function ConcessionsView({ studentFees, showToast, onConcessionApplied }:
                 disabled={isSubmitting}
                 className="px-4 py-2 rounded-xl bg-academic-success hover:bg-green-700 text-white text-xs font-bold transition-all shadow-sm"
               >
-                {isSubmitting ? "Applying Waiver..." : `Apply $${concessionAmount.toLocaleString()} Concession`}
+                {isSubmitting ? "Applying Waiver..." : `Apply ₹${concessionAmount.toLocaleString("en-IN")} Concession`}
               </button>
             </div>
           </form>
@@ -191,7 +191,7 @@ export function ConcessionsView({ studentFees, showToast, onConcessionApplied }:
                 >
                   <div className="flex justify-between items-start">
                     <span className="font-bold text-charcoal-900 dark:text-ivory-100">{r.studentName}</span>
-                    <span className="font-mono font-bold text-academic-success">+${r.amount}</span>
+                    <span className="font-mono font-bold text-academic-success">+₹{r.amount.toLocaleString("en-IN")}</span>
                   </div>
                   <div className="text-[10px] text-charcoal-400 uppercase font-semibold">
                     {r.category.replace("_", " ")}

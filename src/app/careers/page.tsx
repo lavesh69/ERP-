@@ -44,7 +44,7 @@ export default function CareersPage() {
     totalApplicationsCount: 0,
     topRecruitersCount: 0,
     placementRate: "95.6%",
-    averageCtc: "$148,500",
+    averageCtc: "₹22.5 LPA",
   });
 
   // Scheduled Interviews State
@@ -75,7 +75,7 @@ export default function CareersPage() {
     jobTitle: "",
     type: "FULL_TIME",
     location: "Hybrid / Global Labs",
-    stipend: "$140,000 / year",
+    stipend: "₹18,00,000 / year",
     requirements: "Strong fundamentals in algorithms, neural networks, or systems engineering.",
     deadline: "",
   });
@@ -161,7 +161,7 @@ export default function CareersPage() {
           jobTitle: "",
           type: "FULL_TIME",
           location: "Hybrid / Global Labs",
-          stipend: "$140,000 / year",
+          stipend: "₹18,00,000 / year",
           requirements: "Strong fundamentals in algorithms, neural networks, or systems engineering.",
           deadline: "",
         });
@@ -647,7 +647,7 @@ export default function CareersPage() {
                 value={jobForm.stipend}
                 onChange={(e) => setJobForm({ ...jobForm, stipend: e.target.value })}
                 className="w-full p-2 rounded-lg border border-border dark:border-charcoal-700 bg-white dark:bg-charcoal-800 text-charcoal-900 dark:text-ivory-100"
-                placeholder="e.g. $140,000 / year"
+                placeholder="e.g. ₹18,00,000 / year"
               />
             </div>
             <div>

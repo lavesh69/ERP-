@@ -237,11 +237,11 @@ export default function ScholarshipsPage() {
                     Total Endowment Pool
                   </span>
                   <div className="text-3xl font-display font-extrabold text-charcoal-900 dark:text-ivory-100 mt-1">
-                    $2.45M
+                    ₹24.5 Cr
                   </div>
                 </div>
                 <div className="h-10 w-10 rounded-2xl bg-amber-500/10 text-amber-500 flex items-center justify-center shadow-xs">
-                  <DollarSign className="h-5 w-5" />
+                  <Award className="h-5 w-5" />
                 </div>
               </div>
               <div className="mt-4 pt-3 border-t border-border/60 dark:border-charcoal-800/80 flex items-center justify-between text-[11px]">
@@ -279,7 +279,7 @@ export default function ScholarshipsPage() {
                     Average Grant Per Scholar
                   </span>
                   <div className="text-3xl font-display font-extrabold text-academic-success mt-1">
-                    $12,500
+                    ₹1,25,000
                   </div>
                 </div>
                 <div className="h-10 w-10 rounded-2xl bg-academic-success-subtle text-academic-success flex items-center justify-center shadow-xs">
@@ -559,7 +559,7 @@ export default function ScholarshipsPage() {
         isOpen={isApplyModalOpen}
         onClose={() => setIsApplyModalOpen(false)}
         title={`Fellowship Dossier: ${selectedScholarship?.title || "Scholarship"}`}
-        description={`Endowed by ${selectedScholarship?.provider || "Endowment Foundation"} • Value: ${selectedScholarship?.amount || "$0"}`}
+        description={`Endowed by ${selectedScholarship?.provider || "Endowment Foundation"} • Value: ${selectedScholarship?.amount || "₹0"}`}
       >
         <form onSubmit={handleApply} className="flex flex-col gap-4 text-xs">
           <div>

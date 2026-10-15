@@ -232,15 +232,15 @@ export default function ResearchPage() {
                   Active Sponsored Grants
                 </span>
                 <div className="text-3xl font-display font-extrabold text-charcoal-900 dark:text-ivory-100 mt-1">
-                  $5.62M
+                  ₹56.2 Cr
                 </div>
               </div>
               <div className="h-10 w-10 rounded-2xl bg-rose-primary/10 text-rose-primary dark:text-rose-light flex items-center justify-center shadow-xs">
-                <DollarSign className="h-5 w-5" />
+                <Award className="h-5 w-5" />
               </div>
             </div>
             <div className="mt-4 pt-3 border-t border-border/60 dark:border-charcoal-800/80 flex items-center justify-between text-[11px]">
-              <span className="text-charcoal-500 dark:text-charcoal-400">NSF & NIH Awarded</span>
+              <span className="text-charcoal-500 dark:text-charcoal-400">SERB & DST Awarded</span>
               <span className="text-academic-success font-bold flex items-center gap-0.5">
                 <ArrowUpRight className="h-3.5 w-3.5" /> +14.2% YoY
               </span>
@@ -564,7 +564,7 @@ export default function ResearchPage() {
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="font-bold text-charcoal-700 dark:text-charcoal-300 block mb-1">
-                  Requested Grant ($)
+                  Requested Grant (₹ INR)
                 </label>
                 <input
                   type="number"

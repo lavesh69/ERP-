@@ -520,7 +520,7 @@ export function DetentionCondonationModal({
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className="block text-xs font-semibold text-charcoal-700 dark:text-ivory-300 mb-1">
-                      Condonation Fee ($25)
+                      Condonation Fee (₹1,500)
                     </label>
                     <input
                       type="text"

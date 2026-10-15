@@ -37,7 +37,7 @@ const PROGRAMS: ProgramChoice[] = [
     degree: "Undergraduate (B.Tech)",
     duration: "4 Years",
     seats: 120,
-    feePerYear: "$8,500 / ₹2,40,000",
+    feePerYear: "₹2,40,000 / Year",
   },
   {
     code: "BTECH_AI_ML",
@@ -45,7 +45,7 @@ const PROGRAMS: ProgramChoice[] = [
     degree: "Undergraduate (B.Tech)",
     duration: "4 Years",
     seats: 60,
-    feePerYear: "$8,800 / ₹2,60,000",
+    feePerYear: "₹2,60,000 / Year",
   },
   {
     code: "BTECH_ECE",
@@ -53,7 +53,7 @@ const PROGRAMS: ProgramChoice[] = [
     degree: "Undergraduate (B.Tech)",
     duration: "4 Years",
     seats: 90,
-    feePerYear: "$7,800 / ₹2,10,000",
+    feePerYear: "₹2,10,000 / Year",
   },
   {
     code: "MBA_FINTECH",
@@ -61,7 +61,7 @@ const PROGRAMS: ProgramChoice[] = [
     degree: "Postgraduate (MBA)",
     duration: "2 Years",
     seats: 60,
-    feePerYear: "$10,200 / ₹3,20,000",
+    feePerYear: "₹3,20,000 / Year",
   },
   {
     code: "MTECH_CYBER",
@@ -69,7 +69,7 @@ const PROGRAMS: ProgramChoice[] = [
     degree: "Postgraduate (M.Tech)",
     duration: "2 Years",
     seats: 30,
-    feePerYear: "$9,200 / ₹2,80,000",
+    feePerYear: "₹2,80,000 / Year",
   },
 ];
 
@@ -509,7 +509,7 @@ export default function PublicAdmissionsApplyPage() {
                 </div>
                 <div className="sm:text-right">
                   <div className="text-base font-display font-black text-charcoal-900 dark:text-white">
-                    $50.00 / ₹1,500
+                    ₹1,500
                   </div>
                   <span className="text-[10px] text-emerald-600 font-bold uppercase tracking-wider">
                     Non-Refundable
@@ -526,7 +526,7 @@ export default function PublicAdmissionsApplyPage() {
                   className="w-4 h-4 text-rose-primary rounded border-charcoal-300 focus:ring-rose-primary"
                 />
                 <label htmlFor="payCheck" className="text-xs font-semibold text-charcoal-700 dark:text-charcoal-300 cursor-pointer">
-                  I agree to process the $50 application fee & certify that provided details are authentic under university honor code.
+                  I agree to process the ₹1,500 application fee & certify that provided details are authentic under university honor code.
                 </label>
               </div>
             </div>

@@ -197,7 +197,7 @@ export function RefundsView({ showToast }: RefundsViewProps) {
                         {v.type.replace("_", " ")}
                       </td>
                       <td className="p-3.5 text-right font-bold text-academic-success font-mono">
-                        ${v.amount.toLocaleString()}.00
+                        ₹{v.amount.toLocaleString("en-IN")}.00
                       </td>
                       <td className="p-3.5">
                         <div className="flex items-center gap-1.5 text-[10px]">
@@ -325,7 +325,7 @@ export function RefundsView({ showToast }: RefundsViewProps) {
               </select>
             </div>
             <div>
-              <label className="font-bold text-charcoal-700 dark:text-charcoal-300 block mb-1">Refund Amount ($ USD)</label>
+              <label className="font-bold text-charcoal-700 dark:text-charcoal-300 block mb-1">Refund Amount (₹ INR)</label>
               <input
                 type="number"
                 min="1"

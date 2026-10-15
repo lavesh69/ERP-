@@ -336,7 +336,7 @@ export async function POST(req: NextRequest) {
         semester: body.semester || 4,
         originalGrade: body.originalGrade || "F",
         originalMarks: body.originalMarks || 32,
-        feeAmount: Number(feeAmount) || 50,
+        feeAmount: Number(feeAmount) || 1500,
         feeStatus: "PAID",
         paymentTxn: `TXN-ARREAR-${Date.now().toString().slice(-6)}`,
         registeredAt: new Date().toISOString(),

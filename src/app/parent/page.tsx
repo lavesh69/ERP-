@@ -472,7 +472,7 @@ export default function ParentPortalPage() {
           program: data?.child?.program || "Department of Engineering",
           feeHead: selectedFeeHead.title || "Tuition & Core Academic Levy",
           amount: payAmount,
-          currency: "USD",
+          currency: "INR",
           paymentMethod: payMethod,
           date: new Date().toLocaleString(),
           cryptographicSignature: `sha256:${signatureHash}`,
@@ -501,17 +501,17 @@ export default function ParentPortalPage() {
       ? breakdown.map((item: any) => `
         <tr>
           <td style="padding: 10px 12px; border-bottom: 1px solid #e5e7eb; font-weight: 600;">${item.title}</td>
-          <td style="padding: 10px 12px; border-bottom: 1px solid #e5e7eb; text-align: right; font-family: monospace;">$${item.totalAmount.toLocaleString()}.00</td>
-          <td style="padding: 10px 12px; border-bottom: 1px solid #e5e7eb; text-align: right; font-family: monospace; color: #059669;">$${item.paidAmount.toLocaleString()}.00</td>
-          <td style="padding: 10px 12px; border-bottom: 1px solid #e5e7eb; text-align: right; font-family: monospace; color: ${item.pendingAmount > 0 ? '#e11d48' : '#059669'}; font-weight: bold;">$${item.pendingAmount.toLocaleString()}.00</td>
+          <td style="padding: 10px 12px; border-bottom: 1px solid #e5e7eb; text-align: right; font-family: monospace;">₹${item.totalAmount.toLocaleString("en-IN")}</td>
+          <td style="padding: 10px 12px; border-bottom: 1px solid #e5e7eb; text-align: right; font-family: monospace; color: #059669;">₹${item.paidAmount.toLocaleString("en-IN")}</td>
+          <td style="padding: 10px 12px; border-bottom: 1px solid #e5e7eb; text-align: right; font-family: monospace; color: ${item.pendingAmount > 0 ? '#e11d48' : '#059669'}; font-weight: bold;">₹${item.pendingAmount.toLocaleString("en-IN")}</td>
         </tr>
       `).join("")
       : `
         <tr>
           <td style="padding: 10px 12px; border-bottom: 1px solid #e5e7eb;">Tuition & Core Academic Levy</td>
-          <td style="padding: 10px 12px; border-bottom: 1px solid #e5e7eb; text-align: right; font-family: monospace;">$3,800.00</td>
-          <td style="padding: 10px 12px; border-bottom: 1px solid #e5e7eb; text-align: right; font-family: monospace; color: #059669;">$3,800.00</td>
-          <td style="padding: 10px 12px; border-bottom: 1px solid #e5e7eb; text-align: right; font-family: monospace; color: #059669; font-weight: bold;">$0.00</td>
+          <td style="padding: 10px 12px; border-bottom: 1px solid #e5e7eb; text-align: right; font-family: monospace;">₹1,25,000</td>
+          <td style="padding: 10px 12px; border-bottom: 1px solid #e5e7eb; text-align: right; font-family: monospace; color: #059669;">₹1,25,000</td>
+          <td style="padding: 10px 12px; border-bottom: 1px solid #e5e7eb; text-align: right; font-family: monospace; color: #059669; font-weight: bold;">₹0</td>
         </tr>
       `;
 
@@ -592,7 +592,7 @@ export default function ParentPortalPage() {
           <div style="font-size: 11px; color: #78716c;">Verified against Central Campus Treasury Ledger</div>
         </div>
         <div style="font-size: 26px; font-weight: 900; color: ${finances?.outstandingBalance > 0 ? '#e11d48' : '#059669'}; font-family: monospace;">
-          $${finances?.outstandingBalance?.toLocaleString() || "0.00"}
+          ₹${finances?.outstandingBalance ? finances.outstandingBalance.toLocaleString("en-IN") : "0"}
         </div>
       </div>
 
@@ -925,19 +925,19 @@ export default function ParentPortalPage() {
                 <div className="flex justify-between">
                   <span className="text-charcoal-500 dark:text-charcoal-400">Total Billed:</span>
                   <span className="font-bold text-charcoal-900 dark:text-ivory-100">
-                    ${data?.finances?.totalAmount !== undefined ? data.finances.totalAmount.toLocaleString() : "0.00"}
+                    ₹{data?.finances?.totalAmount !== undefined ? data.finances.totalAmount.toLocaleString("en-IN") : "0"}
                   </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-charcoal-500 dark:text-charcoal-400">Amount Cleared:</span>
                   <span className="font-bold text-academic-success">
-                    ${data?.finances?.paidAmount !== undefined ? data.finances.paidAmount.toLocaleString() : "0.00"}
+                    ₹{data?.finances?.paidAmount !== undefined ? data.finances.paidAmount.toLocaleString("en-IN") : "0"}
                   </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-charcoal-500 dark:text-charcoal-400">Outstanding Balance:</span>
                   <span className="font-bold text-rose-primary dark:text-rose-accent">
-                    ${data?.finances?.outstandingBalance?.toLocaleString() || "0.00"}
+                    ₹{data?.finances?.outstandingBalance ? data.finances.outstandingBalance.toLocaleString("en-IN") : "0"}
                   </span>
                 </div>
               </div>
@@ -950,7 +950,7 @@ export default function ParentPortalPage() {
                   className="w-full py-2 rounded-xl bg-rose-primary hover:bg-rose-dark text-white text-xs font-bold shadow-sm flex items-center justify-center gap-1.5 transition-all btn-primary-glow"
                 >
                   <CreditCard className="h-3.5 w-3.5" />
-                  <span>Settle Balance (${data.finances.outstandingBalance.toLocaleString()})</span>
+                  <span>Settle Balance (₹{data.finances.outstandingBalance.toLocaleString("en-IN")})</span>
                 </button>
               )}
               {data?.finances?.outstandingBalance > 0 && (
@@ -1282,7 +1282,7 @@ export default function ParentPortalPage() {
               >
                 {(data?.finances?.breakdown || []).map((f: any) => (
                   <option key={f.id} value={f.id}>
-                    {f.title} (Due: ${f.pendingAmount.toLocaleString()})
+                    {f.title} (Due: ₹{f.pendingAmount.toLocaleString("en-IN")})
                   </option>
                 ))}
               </select>
@@ -1291,7 +1291,7 @@ export default function ParentPortalPage() {
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="font-bold text-charcoal-700 dark:text-charcoal-300 block mb-1">
-                  Payment Amount ($ USD)
+                  Payment Amount (₹ INR)
                 </label>
                 <input
                   type="number"
@@ -1339,7 +1339,7 @@ export default function ParentPortalPage() {
                 className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-academic-success hover:bg-green-700 text-white text-xs font-bold shadow-sm transition-all"
               >
                 <CreditCard className="h-3.5 w-3.5" />
-                <span>{isProcessingPayment ? "Authorizing..." : `Authorize $${payAmount.toLocaleString()}`}</span>
+                <span>{isProcessingPayment ? "Authorizing..." : `Authorize ₹${payAmount.toLocaleString("en-IN")}`}</span>
               </button>
             </div>
           </form>
@@ -1508,11 +1508,11 @@ export default function ParentPortalPage() {
             <div className="p-3.5 rounded-xl bg-surface-soft dark:bg-charcoal-900/60 border border-border dark:border-charcoal-700 flex flex-col gap-1.5">
               <div className="flex justify-between font-bold">
                 <span>Total Balance to Split:</span>
-                <span className="text-rose-primary">${data?.finances?.outstandingBalance?.toLocaleString() || "0.00"}</span>
+                <span className="text-rose-primary">₹{data?.finances?.outstandingBalance ? data.finances.outstandingBalance.toLocaleString("en-IN") : "0"}</span>
               </div>
               <div className="flex justify-between text-charcoal-500">
                 <span>Proposed Schedule:</span>
-                <span>3 equal monthly payments of ${data?.finances?.outstandingBalance ? (data.finances.outstandingBalance / 3).toFixed(2) : "0.00"}</span>
+                <span>3 equal monthly payments of ₹{data?.finances?.outstandingBalance ? Math.round(data.finances.outstandingBalance / 3).toLocaleString("en-IN") : "0"}</span>
               </div>
             </div>
 
@@ -1606,7 +1606,7 @@ export default function ParentPortalPage() {
               </div>
               <div>
                 <label className="font-bold text-charcoal-700 dark:text-charcoal-300 block mb-1">
-                  Deposit Amount ($)
+                  Deposit Amount (₹)
                 </label>
                 <input
                   type="number"
@@ -1685,7 +1685,7 @@ export default function ParentPortalPage() {
                 <div className="p-3 bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/50 rounded-xl text-center">
                   <span className="text-[10px] font-bold text-emerald-700 dark:text-emerald-400 block uppercase tracking-wide">Eligible Section 80E Tuition Amount</span>
                   <span className="text-2xl font-black text-emerald-800 dark:text-emerald-200">
-                    ${Number(taxCertData.totalTuitionPaid).toLocaleString(undefined, { minimumFractionDigits: 2 })} {taxCertData.currency}
+                    ₹{Number(taxCertData.totalTuitionPaid).toLocaleString("en-IN")} {taxCertData.currency || "INR"}
                   </span>
                 </div>
 
@@ -1764,7 +1764,7 @@ export default function ParentPortalPage() {
                 <div className="p-3 bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/50 rounded-xl text-center">
                   <span className="text-[10px] font-bold text-emerald-700 dark:text-emerald-400 block uppercase tracking-wide">Total Amount Paid</span>
                   <span className="text-2xl font-black text-emerald-800 dark:text-emerald-200">
-                    ${Number(receiptData.amount).toLocaleString(undefined, { minimumFractionDigits: 2 })} {receiptData.currency}
+                    ₹{Number(receiptData.amount).toLocaleString("en-IN")} {receiptData.currency || "INR"}
                   </span>
                 </div>
 

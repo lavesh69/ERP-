@@ -66,7 +66,7 @@ const DEFAULT_CRITERIA: AccreditationCriterion[] = [
     scoreAchieved: 136,
     gradeEquivalent: "A+",
     keyIndicators: [
-      { indicator: "Extramural Sponsored Research Grants", target: ">= $500k/yr", achieved: "$720k", isCompliant: true },
+      { indicator: "Extramural Sponsored Research Grants", target: ">= ₹5 Cr/yr", achieved: "₹7.2 Cr", isCompliant: true },
       { indicator: "Patents Published & Conferred", target: ">= 5/yr", achieved: "8 patents", isCompliant: true },
       { indicator: "Community Outreach / NSS-Rotaract", target: ">= 10 programs", achieved: "14 programs", isCompliant: true },
     ],

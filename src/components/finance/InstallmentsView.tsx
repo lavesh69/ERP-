@@ -66,7 +66,7 @@ export function InstallmentsView({ showToast }: InstallmentsViewProps) {
                   </div>
                   <div className="text-right">
                     <span className="text-xs font-bold text-charcoal-900 dark:text-ivory-100">
-                      ${totalPaid.toLocaleString()} / ${p.totalFee.toLocaleString()}
+                      ₹{totalPaid.toLocaleString("en-IN")} / ₹{p.totalFee.toLocaleString("en-IN")}
                     </span>
                     <span className="text-[10px] text-academic-success font-semibold block">
                       {percentPaid}% Cleared
@@ -115,7 +115,7 @@ export function InstallmentsView({ showToast }: InstallmentsViewProps) {
 
                       <div className="text-right">
                         <span className="font-mono font-bold text-charcoal-900 dark:text-ivory-100 block">
-                          ${m.amount.toLocaleString()}
+                          ₹{m.amount.toLocaleString("en-IN")}
                         </span>
                         <span
                           className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${

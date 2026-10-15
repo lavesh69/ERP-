@@ -1715,7 +1715,7 @@ Registrar Stamp: [APEX-ACADEMIC-SEAL]
                         <div className="text-right">
                           <span className="text-charcoal-500 block text-[10px] uppercase">Paid / Total</span>
                           <span className="font-bold text-charcoal-900 dark:text-ivory-100">
-                            ${f.paid.toLocaleString()} / ${f.total.toLocaleString()}
+                            ₹{f.paid.toLocaleString("en-IN")} / ₹{f.total.toLocaleString("en-IN")}
                           </span>
                         </div>
                         <span
@@ -1738,7 +1738,7 @@ Registrar Stamp: [APEX-ACADEMIC-SEAL]
                         {f.transactions.map((t) => (
                           <div key={t.id} className="flex justify-between text-[11px] text-charcoal-600 dark:text-charcoal-400">
                             <span className="font-mono">{t.reference}</span>
-                            <span>${t.amount.toLocaleString()} via {t.method} on {t.date}</span>
+                            <span>₹{t.amount.toLocaleString("en-IN")} via {t.method} on {t.date}</span>
                           </div>
                         ))}
                       </div>
@@ -2912,7 +2912,7 @@ Registrar Stamp: [APEX-ACADEMIC-SEAL]
                 <span className="text-[11px] text-charcoal-500">Recorded Score: <strong>{selectedReevalExam.marks} / {selectedReevalExam.totalMarks}</strong> ({selectedReevalExam.grade})</span>
               </div>
               <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200 self-center">
-                Scrutiny Fee: $15
+                Scrutiny Fee: ₹1,200
               </span>
             </div>
 

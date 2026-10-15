@@ -67,7 +67,7 @@ export function BacklogPortalView({ showToast, canEdit, isStudent }: Props) {
   const [formName, setFormName] = useState("Rohan Deshmukh");
   const [selectedCourseCode, setSelectedCourseCode] = useState("CS-301");
   const [formSemester, setFormSemester] = useState(4);
-  const [feePerPaper] = useState(50);
+  const [feePerPaper] = useState(1500);
 
   const fetchBacklogs = async () => {
     setIsLoading(true);
@@ -175,7 +175,7 @@ export function BacklogPortalView({ showToast, canEdit, isStudent }: Props) {
           <p className="text-xs text-charcoal-600 dark:text-charcoal-300 mt-1 max-w-2xl leading-relaxed">
             University Senate ordinance permits students with backlog grades (Grade F / Incomplete)
             to register for remedial winter/summer supplementary sessions. Fee is strictly statutory
-            ($50 / paper) with instantaneous hall ticket issuance.
+            (₹{feePerPaper.toLocaleString("en-IN")} / paper) with instantaneous hall ticket issuance.
           </p>
         </div>
 
@@ -188,7 +188,7 @@ export function BacklogPortalView({ showToast, canEdit, isStudent }: Props) {
           </div>
           <div className="px-4 py-2 rounded-xl bg-white dark:bg-charcoal-800 border border-border dark:border-charcoal-700 shadow-xs text-center">
             <div className="text-lg font-bold text-emerald-600 dark:text-emerald-400">
-              ${registrations.length * feePerPaper}
+              ₹{(registrations.length * feePerPaper).toLocaleString("en-IN")}
             </div>
             <div className="text-[10px] text-charcoal-500 uppercase font-semibold">Reconciled Fees</div>
           </div>
@@ -275,7 +275,7 @@ export function BacklogPortalView({ showToast, canEdit, isStudent }: Props) {
                   Statutory Fee
                 </label>
                 <div className="w-full px-3 py-2 rounded-xl text-xs font-bold border border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 flex items-center justify-between">
-                  <span>${feePerPaper}.00</span>
+                  <span>₹{feePerPaper.toLocaleString("en-IN")}</span>
                   <span className="text-[10px] uppercase font-semibold">Immediate Auth</span>
                 </div>
               </div>
@@ -305,7 +305,7 @@ export function BacklogPortalView({ showToast, canEdit, isStudent }: Props) {
               ) : (
                 <>
                   <CreditCard className="h-3.5 w-3.5" />
-                  Pay ${feePerPaper} &amp; Issue Arrear Hall Ticket
+                  Pay ₹{feePerPaper.toLocaleString("en-IN")} &amp; Issue Arrear Hall Ticket
                 </>
               )}
             </button>
@@ -394,7 +394,7 @@ export function BacklogPortalView({ showToast, canEdit, isStudent }: Props) {
                         <td className="py-3 px-3">
                           <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
                             <CheckCircle2 className="h-2.5 w-2.5" />
-                            {reg.feeStatus} (${reg.feeAmount})
+                            {reg.feeStatus} (₹{reg.feeAmount.toLocaleString("en-IN")})
                           </span>
                         </td>
                         <td className="py-3 px-3 text-right">

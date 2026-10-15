@@ -182,7 +182,7 @@ export async function GET(req: NextRequest) {
         topRecruitersCount,
         scheduledInterviewsCount: allInterviews.length,
         placementRate: "95.6%",
-        averageCtc: "$148,500",
+        averageCtc: "₹22.5 LPA",
       },
     });
   } catch (error: any) {
@@ -217,7 +217,7 @@ export async function POST(req: NextRequest) {
           jobTitle,
           type: type || "FULL_TIME",
           location: location || "Hybrid / Global Labs",
-          stipend: stipend || "$140,000 / year",
+          stipend: stipend || "₹18,00,000 / year",
           requirements: requirements || "Proficiency in distributed systems, neural networks, or systems programming.",
           deadline: deadline ? new Date(deadline) : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
           status: "ACTIVE",

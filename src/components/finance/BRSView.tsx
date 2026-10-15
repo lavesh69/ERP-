@@ -295,7 +295,7 @@ export function BRSView({ showToast, onReconciliationComplete }: BRSViewProps) {
                       {e.remitterName}
                     </td>
                     <td className="p-3.5 text-right font-bold text-academic-success font-mono">
-                      +${e.amount.toLocaleString()}.00
+                      +₹{e.amount.toLocaleString("en-IN")}.00
                     </td>
                     <td className="p-3.5 text-charcoal-600 dark:text-charcoal-400 text-[11px] max-w-xs truncate">
                       {e.description}

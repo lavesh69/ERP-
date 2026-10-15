@@ -245,7 +245,7 @@ export default function CanteenPage() {
                   </div>
                   <div>
                     <span className="text-[10px] uppercase font-bold text-amber-200 block">Meal RFID Balance</span>
-                    <span className="text-lg font-mono font-black text-white">${wallet.currentBalance.toFixed(2)}</span>
+                    <span className="text-lg font-mono font-black text-white">₹{wallet.currentBalance.toFixed(2)}</span>
                   </div>
                   <button
                     onClick={() => setShowTopUpModal(true)}
@@ -389,7 +389,7 @@ export default function CanteenPage() {
                       <div className="pt-3 border-t border-border/60 dark:border-charcoal-700/60 flex items-center justify-between">
                         <div>
                           <span className="text-base font-mono font-black text-charcoal-900 dark:text-white">
-                            ${dish.price.toFixed(2)}
+                            ₹{dish.price.toFixed(2)}
                           </span>
                           <span className="text-[10px] text-charcoal-400 block">Est: {dish.prepTimeMins} mins</span>
                         </div>
@@ -462,12 +462,12 @@ export default function CanteenPage() {
                               {item!.name}
                             </span>
                             <span className="text-[10px] text-charcoal-400 font-mono">
-                              ${item!.price.toFixed(2)} × {quantity}
+                              ₹{item!.price.toFixed(2)} × {quantity}
                             </span>
                           </div>
                           <div className="flex items-center gap-3">
                             <span className="font-mono font-bold text-charcoal-800 dark:text-ivory-200">
-                              ${subtotal.toFixed(2)}
+                              ₹{subtotal.toFixed(2)}
                             </span>
                             <button
                               onClick={() => handleRemoveFromCart(item!.id)}
@@ -484,11 +484,11 @@ export default function CanteenPage() {
                     <div className="p-4 rounded-2xl bg-surface-soft dark:bg-charcoal-700/50 space-y-2 text-xs">
                       <div className="flex justify-between text-charcoal-500">
                         <span>Tray Subtotal</span>
-                        <span className="font-mono font-semibold">${totalRawAmount.toFixed(2)}</span>
+                        <span className="font-mono font-semibold">₹{totalRawAmount.toFixed(2)}</span>
                       </div>
                       <div className="flex justify-between text-emerald-600 font-semibold">
                         <span>Campus Welfare Subsidy (10%)</span>
-                        <span className="font-mono">-${studentDiscount.toFixed(2)}</span>
+                        <span className="font-mono">-₹{studentDiscount.toFixed(2)}</span>
                       </div>
                       <div className="flex justify-between text-amber-600 font-semibold">
                         <span>Estimated Energy</span>
@@ -496,7 +496,7 @@ export default function CanteenPage() {
                       </div>
                       <div className="pt-2 border-t border-border dark:border-charcoal-600 flex justify-between font-bold text-sm text-charcoal-900 dark:text-white">
                         <span>Net Payable</span>
-                        <span className="font-mono text-base text-amber-500">${netAmount.toFixed(2)}</span>
+                        <span className="font-mono text-base text-amber-500">₹{netAmount.toFixed(2)}</span>
                       </div>
                     </div>
 
@@ -507,7 +507,7 @@ export default function CanteenPage() {
                         disabled={isOrdering || (wallet ? wallet.currentBalance < netAmount : true)}
                         className="w-full py-3 rounded-xl bg-amber-400 hover:bg-amber-300 text-charcoal-950 font-bold text-xs shadow-md transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                       >
-                        <CreditCard className="w-4 h-4" /> Tap & Pay via Meal RFID Card (${wallet?.currentBalance.toFixed(2)})
+                        <CreditCard className="w-4 h-4" /> Tap & Pay via Meal RFID Card (₹{wallet?.currentBalance.toFixed(2)})
                       </button>
 
                       <button
@@ -564,7 +564,7 @@ export default function CanteenPage() {
                                 {o.orderToken}
                               </div>
                               <span className="text-[10px] text-charcoal-500 block">
-                                {o.items.length} items • ${o.totalAmount.toFixed(2)}
+                                {o.items.length} items • ₹{o.totalAmount.toFixed(2)}
                               </span>
                             </div>
 
@@ -620,7 +620,7 @@ export default function CanteenPage() {
                           {ord.items.map((i) => `${i.name} (x${i.quantity})`).join(", ")}
                         </td>
                         <td className="py-3 px-4 font-bold">Counter {ord.counterNo}</td>
-                        <td className="py-3 px-4 font-mono font-bold">${ord.totalAmount.toFixed(2)}</td>
+                        <td className="py-3 px-4 font-mono font-bold">₹{ord.totalAmount.toFixed(2)}</td>
                         <td className="py-3 px-4">
                           <span
                             className={`px-2 py-0.5 rounded text-[10px] font-bold ${
@@ -683,7 +683,7 @@ export default function CanteenPage() {
               <div className="py-4">
                 <span className="text-[10px] uppercase font-bold text-amber-950/70 block">Stored Card Value</span>
                 <span className="text-3xl font-mono font-black text-charcoal-950">
-                  ${wallet.currentBalance.toFixed(2)}
+                  ₹{wallet.currentBalance.toFixed(2)}
                 </span>
               </div>
 
@@ -713,11 +713,11 @@ export default function CanteenPage() {
                   </div>
                   <div className="flex justify-between py-2 border-b border-border/50">
                     <span className="text-charcoal-500">Daily Contactless Spending Limit</span>
-                    <span className="font-mono font-bold">${wallet.dailySpendingLimit.toFixed(2)}</span>
+                    <span className="font-mono font-bold">₹{wallet.dailySpendingLimit.toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between py-2 border-b border-border/50">
                     <span className="text-charcoal-500">Auto Low-Balance Alert Floor</span>
-                    <span className="font-mono font-bold">${wallet.autoRechargeThreshold.toFixed(2)}</span>
+                    <span className="font-mono font-bold">₹{wallet.autoRechargeThreshold.toFixed(2)}</span>
                   </div>
                 </div>
               </div>
@@ -763,7 +763,7 @@ export default function CanteenPage() {
                   Select Quick Recharge Amount
                 </label>
                 <div className="grid grid-cols-4 gap-2">
-                  {[10, 25, 50, 100].map((amt) => (
+                  {[100, 250, 500, 1000].map((amt) => (
                     <button
                       key={amt}
                       type="button"
@@ -774,14 +774,14 @@ export default function CanteenPage() {
                           : "border-border hover:bg-surface-soft"
                       }`}
                     >
-                      ${amt}
+                      ₹{amt}
                     </button>
                   ))}
                 </div>
 
                 <div>
                   <label className="block text-xs font-bold text-charcoal-700 dark:text-charcoal-300 mb-1">
-                    Or Enter Custom Amount ($)
+                    Or Enter Custom Amount (₹ INR)
                   </label>
                   <input
                     type="number"
@@ -806,7 +806,7 @@ export default function CanteenPage() {
                   disabled={isToppingUp || topUpAmount <= 0}
                   className="px-5 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-charcoal-950 font-bold text-xs shadow-md active:scale-95 disabled:opacity-50"
                 >
-                  {isToppingUp ? "Processing..." : `Confirm $${topUpAmount.toFixed(2)} Recharge`}
+                  {isToppingUp ? "Processing..." : `Confirm ₹${topUpAmount.toFixed(2)} Recharge`}
                 </button>
               </div>
             </div>

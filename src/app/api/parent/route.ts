@@ -707,8 +707,8 @@ export async function POST(req: NextRequest) {
         data: {
           studentId: fee.studentId,
           type: "FEE_CHALLAN_VERIFICATION",
-          title: `Parent Bank Challan: $${amount}`,
-          reason: `Bank: ${bankName || "State Bank"}, Branch: ${branchName || "City"}, Ref: ${refNo}, Amount: $${amount}`,
+          title: `Parent Bank Challan: ₹${amount.toLocaleString("en-IN")}`,
+          reason: `Bank: ${bankName || "State Bank"}, Branch: ${branchName || "City"}, Ref: ${refNo}, Amount: ₹${amount.toLocaleString("en-IN")}`,
           status: "UNDER_REVIEW",
         },
       }).catch(() => null);
@@ -743,8 +743,8 @@ export async function POST(req: NextRequest) {
           rollNumber: student.rollNumber,
           program: student.program?.name || "B.Tech Computer Science",
           academicYear: "2025-2026",
-          totalTuitionPaid: totalPaid > 0 ? totalPaid : 12500,
-          currency: "USD",
+          totalTuitionPaid: totalPaid > 0 ? totalPaid : 125000,
+          currency: "INR",
           taxSection: "Indian Income Tax Act Section 80E / University Statute Exemption",
           authorizedSignatory: "University Chief Accounts Bursar",
           issuedAt: new Date().toISOString().split("T")[0],

@@ -172,7 +172,7 @@ export function LateFinesView({ showToast }: LateFinesViewProps) {
                   onChange={(e: any) => setModel(e.target.value)}
                   className="w-full bg-ivory-100 dark:bg-charcoal-900 border border-border dark:border-charcoal-700 rounded-xl p-2.5 font-bold"
                 >
-                  <option value="DAILY">Daily Rate ($ / Day Overdue)</option>
+                  <option value="DAILY">Daily Rate (₹ / Day Overdue)</option>
                   <option value="FLAT">Flat Fixed Penalty Fee</option>
                   <option value="PERCENTAGE">Percentage of Overdue Balance</option>
                 </select>
@@ -183,7 +183,7 @@ export function LateFinesView({ showToast }: LateFinesViewProps) {
               {model === "DAILY" && (
                 <div>
                   <label className="font-bold text-charcoal-700 dark:text-charcoal-300 block mb-1">
-                    Daily Fine Rate ($ / Day)
+                    Daily Fine Rate (₹ / Day)
                   </label>
                   <input
                     type="number"
@@ -199,7 +199,7 @@ export function LateFinesView({ showToast }: LateFinesViewProps) {
               {model === "FLAT" && (
                 <div>
                   <label className="font-bold text-charcoal-700 dark:text-charcoal-300 block mb-1">
-                    Flat Penalty ($ Fixed)
+                    Flat Penalty (₹ Fixed)
                   </label>
                   <input
                     type="number"
@@ -231,7 +231,7 @@ export function LateFinesView({ showToast }: LateFinesViewProps) {
 
               <div>
                 <label className="font-bold text-charcoal-700 dark:text-charcoal-300 block mb-1">
-                  Maximum Penalty Cap ($ Ceiling)
+                  Maximum Penalty Cap (₹ Ceiling)
                 </label>
                 <input
                   type="number"
@@ -273,7 +273,7 @@ export function LateFinesView({ showToast }: LateFinesViewProps) {
               <div className="p-3 rounded-xl bg-ivory-100 dark:bg-charcoal-900/60 border border-border dark:border-charcoal-700">
                 <span className="text-[10px] uppercase font-bold text-charcoal-400 block">Current Formula</span>
                 <span className="font-medium text-charcoal-800 dark:text-ivory-100 block mt-0.5">
-                  Grace: {gracePeriodDays} Days • Rate: {model === "DAILY" ? `$${dailyRate}/day` : model === "FLAT" ? `$${flatAmount} flat` : `${percentageRate}%/mo`} • Cap: ${maxCap}
+                  Grace: {gracePeriodDays} Days • Rate: {model === "DAILY" ? `₹${dailyRate}/day` : model === "FLAT" ? `₹${flatAmount} flat` : `${percentageRate}%/mo`} • Cap: ₹${maxCap}
                 </span>
               </div>
             </div>
@@ -285,7 +285,7 @@ export function LateFinesView({ showToast }: LateFinesViewProps) {
                 Last Batch Result:
               </span>
               <div className="text-[11px] text-amber-800 dark:text-amber-300">
-                Scanned {lastAssessment.scannedAccounts} ledgers • Assessed ${lastAssessment.totalFinesAssessed} on {lastAssessment.finesAppliedCount} accounts.
+                Scanned {lastAssessment.scannedAccounts} ledgers • Assessed ₹{lastAssessment.totalFinesAssessed} on {lastAssessment.finesAppliedCount} accounts.
               </div>
             </div>
           )}

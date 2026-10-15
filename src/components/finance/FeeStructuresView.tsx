@@ -180,7 +180,7 @@ export function FeeStructuresView({ showToast }: FeeStructuresViewProps) {
                   {s.heads.slice(0, 3).map((h) => (
                     <div key={h.id} className="flex justify-between text-xs text-charcoal-600 dark:text-charcoal-300">
                       <span className="truncate pr-2">{h.name}</span>
-                      <span className="font-mono font-medium">${h.amount.toLocaleString()}</span>
+                      <span className="font-mono font-medium">₹{h.amount.toLocaleString("en-IN")}</span>
                     </div>
                   ))}
                   {s.heads.length > 3 && (
@@ -195,7 +195,7 @@ export function FeeStructuresView({ showToast }: FeeStructuresViewProps) {
                 <div>
                   <span className="text-[10px] text-charcoal-400 block uppercase font-bold">Total Annual Fee</span>
                   <span className="text-xl font-bold text-academic-success font-display">
-                    ${s.totalAmount.toLocaleString()}.00
+                    ₹{s.totalAmount.toLocaleString("en-IN")}.00
                   </span>
                 </div>
                 <button
@@ -239,7 +239,7 @@ export function FeeStructuresView({ showToast }: FeeStructuresViewProps) {
                       <span className="font-medium text-charcoal-900 dark:text-ivory-100 block">{h.name}</span>
                       <span className="text-[10px] text-charcoal-400 uppercase">{h.category} {h.isRefundable && "• Refundable"}</span>
                     </div>
-                    <span className="font-bold font-mono text-charcoal-900 dark:text-ivory-100">${h.amount.toLocaleString()}.00</span>
+                    <span className="font-bold font-mono text-charcoal-900 dark:text-ivory-100">₹{h.amount.toLocaleString("en-IN")}.00</span>
                   </div>
                 ))}
               </div>
@@ -247,7 +247,7 @@ export function FeeStructuresView({ showToast }: FeeStructuresViewProps) {
 
             <div className="p-3 rounded-xl bg-academic-success-subtle text-academic-success font-bold flex justify-between items-center text-sm">
               <span>Gross Total Assessment</span>
-              <span>${selectedStructure.totalAmount.toLocaleString()}.00 USD</span>
+              <span>₹{selectedStructure.totalAmount.toLocaleString("en-IN")}.00</span>
             </div>
           </div>
         )}
@@ -391,7 +391,7 @@ export function FeeStructuresView({ showToast }: FeeStructuresViewProps) {
 
           <div className="pt-2 border-t border-border dark:border-charcoal-700 flex justify-between items-center font-bold">
             <span className="text-charcoal-600 dark:text-charcoal-400">Total Calculated:</span>
-            <span className="text-base font-black text-rose-primary">${totalCalculated.toLocaleString()}.00</span>
+            <span className="text-base font-black text-rose-primary">₹{totalCalculated.toLocaleString("en-IN")}.00</span>
           </div>
 
           <div className="flex justify-end gap-2 pt-2">

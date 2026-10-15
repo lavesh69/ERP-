@@ -66,7 +66,7 @@ export default function AnalyticsPage() {
     csv += "Executive Key Performance Indicators\n";
     csv += `Gross Retention Rate,${data?.kpis?.retentionRate || "97.4%"}\n`;
     csv += `Average Campus GPA,${data?.kpis?.averageGpa || "3.52 / 4.0"}\n`;
-    csv += `Research Capital Influx,${data?.kpis?.researchFunding || "$5.62M"}\n`;
+    csv += `Research Capital Influx,${data?.kpis?.researchFunding || "₹56.2 Cr"}\n`;
     csv += `Placement Conversion,${data?.kpis?.placementConversion || "94.8%"}\n\n`;
     csv += "Department,Enrollment,Pass Rate (%),Biometric Attendance (%),Funded Research\n";
 
@@ -124,10 +124,10 @@ export default function AnalyticsPage() {
 
   // Department sorting & filtering
   const rawDepts = data?.deptMetrics || [
-    { name: "Computer Science & Engineering", code: "CSE", students: 620, passRate: 96.2, attendance: 95.4, grants: "$2.85M" },
-    { name: "Biomedical Engineering", code: "BME", students: 380, passRate: 93.8, attendance: 93.9, grants: "$2.40M" },
-    { name: "Mechanical & Robotics Systems", code: "MECH", students: 440, passRate: 94.7, attendance: 94.1, grants: "$1.45M" },
-    { name: "Electrical & Computer Eng", code: "ECE", students: 510, passRate: 95.1, attendance: 94.8, grants: "$1.90M" },
+    { name: "Computer Science & Engineering", code: "CSE", students: 620, passRate: 96.2, attendance: 95.4, grants: "₹28.5 Cr" },
+    { name: "Biomedical Engineering", code: "BME", students: 380, passRate: 93.8, attendance: 93.9, grants: "₹24.0 Cr" },
+    { name: "Mechanical & Robotics Systems", code: "MECH", students: 440, passRate: 94.7, attendance: 94.1, grants: "₹14.5 Cr" },
+    { name: "Electrical & Computer Eng", code: "ECE", students: 510, passRate: 95.1, attendance: 94.8, grants: "₹19.0 Cr" },
   ];
 
   const filteredDepts = rawDepts
@@ -297,7 +297,7 @@ export default function AnalyticsPage() {
                     Research Capital Influx
                   </span>
                   <div className="text-3xl font-display font-extrabold text-rose-primary dark:text-rose-light mt-1">
-                    {data?.kpis?.researchFunding || "$5.62M"}
+                    {data?.kpis?.researchFunding || "₹56.2 Cr"}
                   </div>
                 </div>
                 <div className="h-10 w-10 rounded-2xl bg-rose-primary/10 text-rose-primary flex items-center justify-center shadow-xs">
@@ -306,7 +306,7 @@ export default function AnalyticsPage() {
               </div>
 
               <div className="mt-4 pt-3 border-t border-border/60 dark:border-charcoal-800/80 flex items-center justify-between text-[11px]">
-                <span className="text-charcoal-500 dark:text-charcoal-400">NSF & Corporate Grants</span>
+                <span className="text-charcoal-500 dark:text-charcoal-400">SERB & Corporate Grants</span>
                 <span className="inline-flex items-center gap-0.5 text-rose-primary dark:text-rose-light font-bold">
                   <ArrowUpRight className="h-3.5 w-3.5" /> +14.2% Inflow
                 </span>
