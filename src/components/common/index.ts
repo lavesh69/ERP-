@@ -13,3 +13,4 @@ export * from "./ErrorState";
 export * from "./PermissionDenied";
 export * from "./ActivityTimeline";
 export * from "./DataTable";
+export * from "./RBACGuard";

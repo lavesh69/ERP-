@@ -3,6 +3,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useApp } from "@/context/AppContext";
+import { UserRole } from "@/types/auth";
+import { ROLE_CONFIGS } from "@/lib/auth/roles";
 import {
   Search,
   Bell,
@@ -24,6 +26,7 @@ export function TopNavBar() {
   const {
     currentUser,
     currentRole,
+    setCurrentRole,
     theme,
     toggleTheme,
     setIsCommandPaletteOpen,
@@ -278,6 +281,29 @@ export function TopNavBar() {
                   <Building className="h-4 w-4 text-rose-primary" />
                   <span>Institutional Dashboard</span>
                 </Link>
+              </div>
+
+              {/* RBAC Perspective Switcher */}
+              <div className="pt-2 border-t border-border dark:border-charcoal-800">
+                <div className="flex items-center justify-between pb-1">
+                  <span className="text-[10px] font-bold text-charcoal-500 uppercase tracking-wider">Role Perspective</span>
+                  <span className="text-[9px] font-bold px-1.5 py-0.2 rounded bg-rose-container text-rose-primary dark:text-rose-accent">RBAC</span>
+                </div>
+                <select
+                  aria-label="Switch active role perspective"
+                  value={currentRole}
+                  onChange={(e) => {
+                    setCurrentRole(e.target.value as UserRole);
+                    setShowUserMenu(false);
+                  }}
+                  className="w-full text-xs p-2 rounded-xl bg-ivory-100 dark:bg-charcoal-800 border border-border dark:border-charcoal-700 text-charcoal-900 dark:text-ivory-100 font-semibold focus:outline-hidden focus:ring-1 focus:ring-rose-primary cursor-pointer"
+                >
+                  {(Object.keys(ROLE_CONFIGS) as UserRole[]).map((rKey) => (
+                    <option key={rKey} value={rKey}>
+                      {ROLE_CONFIGS[rKey].displayName}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               <div className="pt-2 border-t border-border dark:border-charcoal-800">

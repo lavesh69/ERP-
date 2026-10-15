@@ -1,8 +1,10 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect } from "react";
-import { UserRole, SessionUser } from "@/types/auth";
+import { UserRole, SessionUser, RoleConfig } from "@/types/auth";
 import { MOCK_USERS, ROLE_CONFIGS } from "@/lib/auth/roles";
+import { PermissionCode, hasPermission as checkPermission } from "@/lib/auth/permissions";
+import { hasModuleAccess } from "@/lib/auth/rbac";
 
 import { getFirebaseAuth, firebaseSignOut } from "@/lib/firebase/config";
 
@@ -18,6 +20,9 @@ interface AppContextType {
   currentUser: SessionUser;
   currentRole: UserRole;
   setCurrentRole: (role: UserRole) => void;
+  hasPermission: (permission: PermissionCode) => boolean;
+  canAccessRoute: (route: string) => boolean;
+  roleConfig: RoleConfig;
   setAuthSession: (user: SessionUser) => void;
   logout: () => Promise<void>;
   isAuthenticated: boolean;
@@ -227,6 +232,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         currentUser,
         currentRole,
         setCurrentRole,
+        hasPermission: (permission: PermissionCode) => checkPermission(currentRole, permission),
+        canAccessRoute: (route: string) => hasModuleAccess(currentRole, route),
+        roleConfig: ROLE_CONFIGS[currentRole] || ROLE_CONFIGS.SUPER_ADMIN,
         setAuthSession,
         logout,
         isAuthenticated,

@@ -37,7 +37,39 @@ export type PermissionCode =
   | "research.manage"
   | "reports.view"
   | "settings.manage"
-  | "audit_logs.view";
+  | "audit_logs.view"
+  // Extended Operational Permissions
+  | "hostel.view"
+  | "hostel.manage"
+  | "transport.view"
+  | "transport.manage"
+  | "hr.view"
+  | "hr.manage"
+  | "payroll.manage"
+  | "inventory.view"
+  | "inventory.manage"
+  | "estate.view"
+  | "estate.manage"
+  | "accreditation.view"
+  | "accreditation.manage"
+  | "clinic.view"
+  | "clinic.manage"
+  | "security.view"
+  | "security.manage"
+  | "events.view"
+  | "events.manage"
+  | "clubs.view"
+  | "clubs.manage"
+  | "convocation.view"
+  | "convocation.manage"
+  | "international.view"
+  | "international.manage"
+  | "incubation.view"
+  | "incubation.manage"
+  | "grievances.view"
+  | "grievances.manage"
+  | "emergency.broadcast"
+  | "canteen.manage";
 
 export const ROLE_PERMISSIONS: Record<UserRole, readonly PermissionCode[]> = {
   SUPER_ADMIN: [
@@ -75,6 +107,37 @@ export const ROLE_PERMISSIONS: Record<UserRole, readonly PermissionCode[]> = {
     "reports.view",
     "settings.manage",
     "audit_logs.view",
+    "hostel.view",
+    "hostel.manage",
+    "transport.view",
+    "transport.manage",
+    "hr.view",
+    "hr.manage",
+    "payroll.manage",
+    "inventory.view",
+    "inventory.manage",
+    "estate.view",
+    "estate.manage",
+    "accreditation.view",
+    "accreditation.manage",
+    "clinic.view",
+    "clinic.manage",
+    "security.view",
+    "security.manage",
+    "events.view",
+    "events.manage",
+    "clubs.view",
+    "clubs.manage",
+    "convocation.view",
+    "convocation.manage",
+    "international.view",
+    "international.manage",
+    "incubation.view",
+    "incubation.manage",
+    "grievances.view",
+    "grievances.manage",
+    "emergency.broadcast",
+    "canteen.manage",
   ],
   INSTITUTION_ADMIN: [
     "users.view",
@@ -106,6 +169,37 @@ export const ROLE_PERMISSIONS: Record<UserRole, readonly PermissionCode[]> = {
     "reports.view",
     "settings.manage",
     "audit_logs.view",
+    "hostel.view",
+    "hostel.manage",
+    "transport.view",
+    "transport.manage",
+    "hr.view",
+    "hr.manage",
+    "payroll.manage",
+    "inventory.view",
+    "inventory.manage",
+    "estate.view",
+    "estate.manage",
+    "accreditation.view",
+    "accreditation.manage",
+    "clinic.view",
+    "clinic.manage",
+    "security.view",
+    "security.manage",
+    "events.view",
+    "events.manage",
+    "clubs.view",
+    "clubs.manage",
+    "convocation.view",
+    "convocation.manage",
+    "international.view",
+    "international.manage",
+    "incubation.view",
+    "incubation.manage",
+    "grievances.view",
+    "grievances.manage",
+    "emergency.broadcast",
+    "canteen.manage",
   ],
   PRINCIPAL: [
     "users.view",
@@ -118,6 +212,21 @@ export const ROLE_PERMISSIONS: Record<UserRole, readonly PermissionCode[]> = {
     "research.view",
     "reports.view",
     "audit_logs.view",
+    "hostel.view",
+    "transport.view",
+    "hr.view",
+    "accreditation.view",
+    "accreditation.manage",
+    "clinic.view",
+    "security.view",
+    "events.view",
+    "clubs.view",
+    "convocation.view",
+    "convocation.manage",
+    "international.view",
+    "incubation.view",
+    "grievances.view",
+    "emergency.broadcast",
   ],
   HOD: [
     "students.view",
@@ -128,6 +237,14 @@ export const ROLE_PERMISSIONS: Record<UserRole, readonly PermissionCode[]> = {
     "exams.view",
     "research.view",
     "reports.view",
+    "accreditation.view",
+    "events.view",
+    "clubs.view",
+    "convocation.view",
+    "international.view",
+    "incubation.view",
+    "grievances.view",
+    "emergency.broadcast",
   ],
   FACULTY: [
     "students.view",
@@ -140,6 +257,13 @@ export const ROLE_PERMISSIONS: Record<UserRole, readonly PermissionCode[]> = {
     "exams.view",
     "research.view",
     "research.manage",
+    "accreditation.view",
+    "events.view",
+    "clubs.view",
+    "convocation.view",
+    "international.view",
+    "incubation.view",
+    "grievances.view",
   ],
   CLASS_TEACHER: [
     "students.view",
@@ -148,6 +272,9 @@ export const ROLE_PERMISSIONS: Record<UserRole, readonly PermissionCode[]> = {
     "attendance.update",
     "assignments.view",
     "exams.view",
+    "events.view",
+    "clubs.view",
+    "grievances.view",
   ],
   STUDENT: [
     "assignments.view",
@@ -158,12 +285,26 @@ export const ROLE_PERMISSIONS: Record<UserRole, readonly PermissionCode[]> = {
     "library.view",
     "placement.view",
     "research.view",
+    "hostel.view",
+    "transport.view",
+    "events.view",
+    "clubs.view",
+    "convocation.view",
+    "international.view",
+    "incubation.view",
+    "grievances.view",
+    "clinic.view",
   ],
   PARENT: [
     "students.view",
     "attendance.view",
     "exams.view",
     "fees.view",
+    "hostel.view",
+    "transport.view",
+    "grievances.view",
+    "clinic.view",
+    "events.view",
   ],
   ACCOUNTANT: [
     "students.view",
@@ -171,11 +312,17 @@ export const ROLE_PERMISSIONS: Record<UserRole, readonly PermissionCode[]> = {
     "fees.create",
     "payments.verify",
     "reports.view",
+    "payroll.manage",
+    "inventory.view",
+    "convocation.view",
+    "canteen.manage",
   ],
   LIBRARIAN: [
     "library.view",
     "library.manage",
     "students.view",
+    "reports.view",
+    "convocation.view",
   ],
   EXAMINATION_CONTROLLER: [
     "exams.view",
@@ -183,31 +330,49 @@ export const ROLE_PERMISSIONS: Record<UserRole, readonly PermissionCode[]> = {
     "exams.manage",
     "results.publish",
     "reports.view",
+    "convocation.view",
+    "convocation.manage",
   ],
   PLACEMENT_OFFICER: [
     "placement.view",
     "placement.manage",
     "students.view",
     "reports.view",
+    "incubation.view",
+    "convocation.view",
   ],
   RESEARCH_COORDINATOR: [
     "research.view",
     "research.manage",
     "faculty.view",
     "reports.view",
+    "accreditation.view",
+    "international.view",
+    "incubation.view",
   ],
   HR_STAFF: [
     "faculty.view",
     "faculty.create",
     "faculty.update",
     "reports.view",
+    "hr.view",
+    "hr.manage",
+    "payroll.manage",
+    "security.view",
+    "clinic.view",
+    "grievances.view",
   ],
   ALUMNI: [
     "placement.view",
     "students.view",
+    "library.view",
+    "events.view",
+    "incubation.view",
+    "convocation.view",
   ],
   GUEST: [
     "library.view",
+    "security.view",
   ],
 };
 

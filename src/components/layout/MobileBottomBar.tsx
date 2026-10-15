@@ -10,41 +10,81 @@ import {
   CheckSquare,
   BookOpen,
   Sparkles,
+  CreditCard,
+  Library,
+  Award,
+  Briefcase,
+  Users,
 } from "lucide-react";
 
 export function MobileBottomBar() {
   const pathname = usePathname();
   const { setIsAIChatOpen, currentRole } = useApp();
 
-  const isStudent = currentRole === "STUDENT";
-  const isParent = currentRole === "PARENT";
+  // Role-adaptive mobile navigation items
+  const getNavItems = () => {
+    switch (currentRole) {
+      case "STUDENT":
+        return [
+          { name: "My 360", href: "/students/profile", icon: GraduationCap, isActive: pathname.startsWith("/students") },
+          { name: "LMS", href: "/lms", icon: BookOpen, isActive: pathname.startsWith("/lms") },
+          { name: "Attendance", href: "/attendance", icon: CheckSquare, isActive: pathname.startsWith("/attendance") },
+          { name: "Fees", href: "/finance", icon: CreditCard, isActive: pathname.startsWith("/finance") },
+        ];
+      case "PARENT":
+        return [
+          { name: "Ward Home", href: "/parent", icon: LayoutDashboard, isActive: pathname === "/parent" },
+          { name: "Attendance", href: "/attendance", icon: CheckSquare, isActive: pathname.startsWith("/attendance") },
+          { name: "Fees & Pay", href: "/finance", icon: CreditCard, isActive: pathname.startsWith("/finance") },
+          { name: "Hostel", href: "/hostel", icon: BookOpen, isActive: pathname.startsWith("/hostel") },
+        ];
+      case "ACCOUNTANT":
+        return [
+          { name: "Treasury", href: "/finance", icon: CreditCard, isActive: pathname.startsWith("/finance") },
+          { name: "Students", href: "/students", icon: GraduationCap, isActive: pathname.startsWith("/students") },
+          { name: "Scholarships", href: "/scholarships", icon: BookOpen, isActive: pathname.startsWith("/scholarships") },
+          { name: "Store", href: "/inventory", icon: LayoutDashboard, isActive: pathname.startsWith("/inventory") },
+        ];
+      case "LIBRARIAN":
+        return [
+          { name: "Library", href: "/library", icon: Library, isActive: pathname.startsWith("/library") },
+          { name: "Circulation", href: "/library?tab=circulation", icon: BookOpen, isActive: pathname.includes("circulation") },
+          { name: "Students", href: "/students", icon: GraduationCap, isActive: pathname.startsWith("/students") },
+          { name: "Fines", href: "/library?tab=fines", icon: CreditCard, isActive: pathname.includes("fines") },
+        ];
+      case "EXAMINATION_CONTROLLER":
+        return [
+          { name: "Exams", href: "/examinations", icon: Award, isActive: pathname.startsWith("/examinations") },
+          { name: "Timetable", href: "/timetable", icon: BookOpen, isActive: pathname.startsWith("/timetable") },
+          { name: "Students", href: "/students", icon: GraduationCap, isActive: pathname.startsWith("/students") },
+          { name: "Convocation", href: "/convocation", icon: LayoutDashboard, isActive: pathname.startsWith("/convocation") },
+        ];
+      case "HR_STAFF":
+        return [
+          { name: "HR & Pay", href: "/hr", icon: Briefcase, isActive: pathname.startsWith("/hr") },
+          { name: "Faculty", href: "/faculty", icon: Users, isActive: pathname.startsWith("/faculty") },
+          { name: "Attendance", href: "/attendance", icon: CheckSquare, isActive: pathname.startsWith("/attendance") },
+          { name: "Clinic", href: "/clinic", icon: LayoutDashboard, isActive: pathname.startsWith("/clinic") },
+        ];
+      case "FACULTY":
+      case "CLASS_TEACHER":
+        return [
+          { name: "Home", href: "/", icon: LayoutDashboard, isActive: pathname === "/" },
+          { name: "Attendance", href: "/attendance", icon: CheckSquare, isActive: pathname.startsWith("/attendance") },
+          { name: "LMS", href: "/lms", icon: BookOpen, isActive: pathname.startsWith("/lms") },
+          { name: "Exams", href: "/examinations", icon: Award, isActive: pathname.startsWith("/examinations") },
+        ];
+      default:
+        return [
+          { name: "Dashboard", href: "/", icon: LayoutDashboard, isActive: pathname === "/" },
+          { name: "Students", href: "/students", icon: GraduationCap, isActive: pathname.startsWith("/students") },
+          { name: "Faculty", href: "/faculty", icon: Users, isActive: pathname.startsWith("/faculty") },
+          { name: "Finance", href: "/finance", icon: CreditCard, isActive: pathname.startsWith("/finance") },
+        ];
+    }
+  };
 
-  const navItems = [
-    {
-      name: "Dashboard",
-      href: isParent ? "/parent" : "/",
-      icon: LayoutDashboard,
-      isActive: isParent ? pathname === "/parent" : pathname === "/",
-    },
-    {
-      name: isParent ? "Ward Portal" : "Students",
-      href: isParent ? "/parent" : isStudent ? "/students/profile" : "/students",
-      icon: GraduationCap,
-      isActive: isParent ? pathname.startsWith("/parent") : pathname.startsWith("/students"),
-    },
-    {
-      name: "Attendance",
-      href: "/attendance",
-      icon: CheckSquare,
-      isActive: pathname.startsWith("/attendance"),
-    },
-    {
-      name: isParent ? "Bursar Fees" : "LMS",
-      href: isParent ? "/parent" : "/lms",
-      icon: BookOpen,
-      isActive: isParent ? pathname.startsWith("/parent") : pathname.startsWith("/lms"),
-    },
-  ];
+  const navItems = getNavItems();
 
   return (
     <nav

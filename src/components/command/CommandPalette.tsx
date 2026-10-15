@@ -3,6 +3,8 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useApp } from "@/context/AppContext";
+import { UserRole } from "@/types/auth";
+import { hasModuleAccess } from "@/lib/auth/rbac";
 import {
   Search,
   Bot,
@@ -51,10 +53,11 @@ interface CommandOption {
   href?: string;
   action?: () => void;
   icon: React.ComponentType<{ className?: string }>;
+  roles?: readonly UserRole[] | UserRole[];
 }
 
 export function CommandPalette() {
-  const { isCommandPaletteOpen, setIsCommandPaletteOpen, setIsAIChatOpen, showToast } = useApp();
+  const { isCommandPaletteOpen, setIsCommandPaletteOpen, setIsAIChatOpen, showToast, currentRole } = useApp();
   const [query, setQuery] = useState("");
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [isSearching, setIsSearching] = useState(false);
@@ -357,6 +360,7 @@ export function CommandPalette() {
       description: "Execute JoSAA/Central counseling algorithm across General, OBC, SC, ST, EWS quotas",
       href: "/admissions?tab=counseling",
       icon: UserPlus,
+      roles: ["SUPER_ADMIN", "INSTITUTION_ADMIN", "PRINCIPAL", "HOD", "ACCOUNTANT"],
     },
     {
       id: "act-exam-gen",
@@ -365,6 +369,7 @@ export function CommandPalette() {
       description: "AI synthesized exam paper with Bloom taxonomy balance and cryptographic verification seal",
       href: "/faculty?tab=exam-generator",
       icon: FilePlus,
+      roles: ["SUPER_ADMIN", "INSTITUTION_ADMIN", "PRINCIPAL", "HOD", "FACULTY"],
     },
     {
       id: "act-roadworthy",
@@ -373,6 +378,7 @@ export function CommandPalette() {
       description: "Stamps APEX-BUS-FIT-SEAL- upon verifying RTO FC, PUC, and 40 km/h speed governor",
       href: "/transport?tab=compliance",
       icon: Bus,
+      roles: ["SUPER_ADMIN", "INSTITUTION_ADMIN", "PRINCIPAL", "HR_STAFF"],
     },
     {
       id: "act-medical",
@@ -381,6 +387,7 @@ export function CommandPalette() {
       description: "Validates HepB, MMR, MenACWY vaccines and issues APEX-MED-FIT-SEAL- health certificate",
       href: "/clinic?tab=clearance",
       icon: HeartPulse,
+      roles: ["SUPER_ADMIN", "INSTITUTION_ADMIN", "PRINCIPAL", "HR_STAFF", "FACULTY"],
     },
     {
       id: "act-hostel-audit",
@@ -389,6 +396,7 @@ export function CommandPalette() {
       description: "Compares room furniture condition, levies damage charge, and releases caution deposit",
       href: "/hostel?tab=asset-audit",
       icon: Bed,
+      roles: ["SUPER_ADMIN", "INSTITUTION_ADMIN", "PRINCIPAL", "FACULTY", "HR_STAFF"],
     },
     {
       id: "act-emergency",
@@ -397,6 +405,120 @@ export function CommandPalette() {
       description: "Initiates mass alert broadcast across SMS, WhatsApp, Email, and web portal banner",
       href: "/emergency",
       icon: Siren,
+      roles: ["SUPER_ADMIN", "INSTITUTION_ADMIN", "PRINCIPAL", "HOD", "HR_STAFF"],
+    },
+    // Student Actions
+    {
+      id: "act-stu-fees",
+      category: "Quick Action",
+      title: "Pay Semester Fees Online (UPI / NetBanking)",
+      description: "Instant fee payment with zero convenience charge and automatic fee receipt",
+      href: "/finance",
+      icon: CreditCard,
+      roles: ["STUDENT"],
+    },
+    {
+      id: "act-stu-outpass",
+      category: "Quick Action",
+      title: "Apply for Hostel Exit Gate Pass",
+      description: "Submit automated digital outpass request with warden approval workflow",
+      href: "/hostel",
+      icon: Bed,
+      roles: ["STUDENT"],
+    },
+    {
+      id: "act-stu-assignments",
+      category: "Quick Action",
+      title: "View & Submit Pending Course Assignments",
+      description: "Check deadlines, submission status, and rubric evaluations",
+      href: "/assignments",
+      icon: FileText,
+      roles: ["STUDENT"],
+    },
+    {
+      id: "act-stu-grades",
+      category: "Quick Action",
+      title: "Download Official Semester Grade Transcript",
+      description: "View SGPA/CGPA breakdown, credits earned, and grade card",
+      href: "/examinations",
+      icon: Award,
+      roles: ["STUDENT"],
+    },
+    // Parent Actions
+    {
+      id: "act-par-fees",
+      category: "Quick Action",
+      title: "Pay Ward Outstanding Tuition Fees",
+      description: "Settle semester installments and download tax-exempt fee receipts",
+      href: "/parent",
+      icon: CreditCard,
+      roles: ["PARENT"],
+    },
+    {
+      id: "act-par-attendance",
+      category: "Quick Action",
+      title: "Monitor Ward Daily Attendance Telemetry",
+      description: "View real-time lecture attendance and shortage threshold alerts",
+      href: "/parent",
+      icon: CheckSquare,
+      roles: ["PARENT"],
+    },
+    // Accountant Actions
+    {
+      id: "act-acc-collect",
+      category: "Quick Action",
+      title: "Generate Offline Fee Challan & Receipt",
+      description: "Record bank draft, RTGS, or cash receipt with counter-seal",
+      href: "/finance",
+      icon: CreditCard,
+      roles: ["ACCOUNTANT", "SUPER_ADMIN", "INSTITUTION_ADMIN"],
+    },
+    {
+      id: "act-acc-dayend",
+      category: "Quick Action",
+      title: "Execute Day-End Cash Register Reconciliation",
+      description: "Balance daily counters, match gateway settlements, and generate audit trail",
+      href: "/finance",
+      icon: Scale,
+      roles: ["ACCOUNTANT", "SUPER_ADMIN", "INSTITUTION_ADMIN"],
+    },
+    // Librarian Actions
+    {
+      id: "act-lib-issue",
+      category: "Quick Action",
+      title: "Issue / Return Book via RFID Barcode",
+      description: "Rapid student circulation desk lookup and loan tracking",
+      href: "/library",
+      icon: Library,
+      roles: ["LIBRARIAN", "SUPER_ADMIN", "INSTITUTION_ADMIN"],
+    },
+    {
+      id: "act-lib-fine",
+      category: "Quick Action",
+      title: "Synchronize Overdue Library Fines",
+      description: "Batch sync circulation overdue penalties with student finance ledger",
+      href: "/library",
+      icon: CreditCard,
+      roles: ["LIBRARIAN", "SUPER_ADMIN", "INSTITUTION_ADMIN"],
+    },
+    // HR Staff Actions
+    {
+      id: "act-hr-payroll",
+      category: "Quick Action",
+      title: "Process 7th CPC Monthly Faculty Payroll",
+      description: "Calculate DA, HRA, TA, NPS deductions and generate bank disbursement advice",
+      href: "/hr",
+      icon: Briefcase,
+      roles: ["HR_STAFF", "ACCOUNTANT", "SUPER_ADMIN", "INSTITUTION_ADMIN"],
+    },
+    {
+      id: "act-hr-leave",
+      category: "Quick Action",
+      title: "Audit & Approve Faculty Leave Applications",
+      description: "Review Earned Leave (EL), Casual Leave (CL), and Duty Leave requests",
+      href: "/hr",
+      icon: CheckSquare,
+      roles: ["HR_STAFF", "HOD", "PRINCIPAL", "SUPER_ADMIN", "INSTITUTION_ADMIN"],
     },
 
     // --- Autonomous Copilot ---
@@ -413,7 +535,21 @@ export function CommandPalette() {
     },
   ];
 
-  const filteredCommands = commands.filter(
+  // RBAC Filtering: Only allow commands matching user's current role and module clearance
+  const allowedCommands = commands.filter((cmd) => {
+    if (cmd.roles && !cmd.roles.includes(currentRole)) {
+      return false;
+    }
+    if (cmd.href) {
+      const basePath = cmd.href.split("?")[0];
+      if (!hasModuleAccess(currentRole, basePath)) {
+        return false;
+      }
+    }
+    return true;
+  });
+
+  const filteredCommands = allowedCommands.filter(
     (c) =>
       c.title.toLowerCase().includes(query.toLowerCase()) ||
       c.description.toLowerCase().includes(query.toLowerCase())

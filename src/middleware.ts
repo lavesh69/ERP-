@@ -81,6 +81,10 @@ export async function middleware(req: NextRequest) {
     "/incubation": ["SUPER_ADMIN", "INSTITUTION_ADMIN", "PRINCIPAL", "HOD", "FACULTY", "STUDENT", "ALUMNI", "PLACEMENT_OFFICER", "RESEARCH_COORDINATOR"],
     "/emergency": ["SUPER_ADMIN", "INSTITUTION_ADMIN", "PRINCIPAL", "HOD", "FACULTY", "CLASS_TEACHER", "STUDENT", "PARENT", "ACCOUNTANT", "LIBRARIAN", "EXAMINATION_CONTROLLER", "PLACEMENT_OFFICER", "RESEARCH_COORDINATOR", "HR_STAFF", "ALUMNI", "GUEST"],
     "/canteen": ["SUPER_ADMIN", "INSTITUTION_ADMIN", "PRINCIPAL", "HOD", "FACULTY", "CLASS_TEACHER", "STUDENT", "PARENT", "ACCOUNTANT", "LIBRARIAN", "EXAMINATION_CONTROLLER", "PLACEMENT_OFFICER", "RESEARCH_COORDINATOR", "HR_STAFF", "ALUMNI", "GUEST"],
+    "/store": ["SUPER_ADMIN", "INSTITUTION_ADMIN", "PRINCIPAL", "HOD", "FACULTY", "ACCOUNTANT", "EXAMINATION_CONTROLLER"],
+    "/cif": ["SUPER_ADMIN", "INSTITUTION_ADMIN", "PRINCIPAL", "HOD", "FACULTY", "STUDENT", "RESEARCH_COORDINATOR"],
+    "/estate": ["SUPER_ADMIN", "INSTITUTION_ADMIN", "PRINCIPAL", "HOD", "FACULTY", "ACCOUNTANT", "HR_STAFF"],
+    "/guesthouse": ["SUPER_ADMIN", "INSTITUTION_ADMIN", "PRINCIPAL", "HOD", "FACULTY", "ACCOUNTANT", "HR_STAFF", "GUEST"],
   };
 
   const getRoleDefaultHome = (role: string): string => {
@@ -103,6 +107,8 @@ export async function middleware(req: NextRequest) {
         return "/careers";
       case "RESEARCH_COORDINATOR":
         return "/research";
+      case "HR_STAFF":
+        return "/hr";
       default:
         return "/";
     }

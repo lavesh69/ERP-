@@ -1,11 +1,12 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useApp } from "@/context/AppContext";
 import { UserRole } from "@/types/auth";
 import { ROLE_CONFIGS } from "@/lib/auth/roles";
+import { hasModuleAccess } from "@/lib/auth/rbac";
 import {
   LayoutDashboard,
   Building2,
@@ -43,6 +44,7 @@ import {
   HeartPulse,
   CalendarDays,
   Compass,
+  Check,
   MessageSquareHeart,
   Globe2,
   Rocket,
@@ -403,6 +405,18 @@ const NAV_SECTIONS: NavSection[] = [
 export function SideNavBar() {
   const pathname = usePathname();
   const { currentRole, setCurrentRole, currentUser, setIsAIChatOpen, isMobileMenuOpen, setIsMobileMenuOpen } = useApp();
+  const [isRoleSwitcherOpen, setIsRoleSwitcherOpen] = useState(false);
+  const roleSwitcherRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (roleSwitcherRef.current && !roleSwitcherRef.current.contains(event.target as Node)) {
+        setIsRoleSwitcherOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   // Prevent background scrolling when mobile drawer is open
   useEffect(() => {
@@ -456,17 +470,23 @@ export function SideNavBar() {
           </button>
         </div>
 
-        {/* Verified Institutional Role & Persona Badge */}
-        <div className="px-3 pt-3 pb-2">
-          <div className="bg-rose-container/50 dark:bg-charcoal-900/60 border border-border dark:border-charcoal-800 p-2.5 rounded-xl flex flex-col gap-1.5">
+        {/* Verified Institutional Role & Persona Badge with RBAC Switcher */}
+        <div ref={roleSwitcherRef} className="px-3 pt-3 pb-2 relative">
+          <div className="bg-rose-container/50 dark:bg-charcoal-900/60 border border-border dark:border-charcoal-800 p-2.5 rounded-xl flex flex-col gap-1.5 shadow-xs">
             <div className="flex items-center justify-between">
               <span className="text-[10px] font-bold text-charcoal-600 dark:text-charcoal-400 uppercase tracking-wider flex items-center gap-1">
                 <ShieldCheck className="h-3 w-3 text-rose-primary dark:text-rose-accent" />
                 Verified Session
               </span>
-              <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-white dark:bg-charcoal-800 text-rose-primary dark:text-rose-accent border border-border dark:border-charcoal-700">
-                {ROLE_CONFIGS[currentRole]?.displayName || currentRole}
-              </span>
+              <button
+                type="button"
+                onClick={() => setIsRoleSwitcherOpen(!isRoleSwitcherOpen)}
+                className="flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-white dark:bg-charcoal-800 text-rose-primary dark:text-rose-accent border border-border dark:border-charcoal-700 hover:border-rose-primary/50 transition-colors cursor-pointer"
+                title="Click to switch role perspective"
+              >
+                <span>{ROLE_CONFIGS[currentRole]?.displayName || currentRole}</span>
+                <ChevronDown className={`h-3 w-3 transition-transform ${isRoleSwitcherOpen ? "rotate-180" : ""}`} />
+              </button>
             </div>
             <div className="flex items-center gap-2 pt-0.5">
               <div className="h-7 w-7 rounded-lg bg-rose-primary/10 dark:bg-rose-primary/20 text-rose-primary dark:text-rose-accent flex items-center justify-center font-bold text-xs shrink-0">
@@ -482,15 +502,56 @@ export function SideNavBar() {
               </div>
             </div>
           </div>
+
+          {/* Interactive Role Switcher Dropdown */}
+          {isRoleSwitcherOpen && (
+            <div className="absolute left-3 right-3 top-24 bg-white dark:bg-charcoal-900 border border-border dark:border-charcoal-700 rounded-2xl shadow-elevated z-50 p-2 max-h-80 overflow-y-auto animate-in fade-in zoom-in-95">
+              <div className="px-2 py-1 text-[10px] font-bold text-charcoal-400 uppercase tracking-wider border-b border-border/60 dark:border-charcoal-800 pb-1 mb-1">
+                Switch Role Perspective (RBAC)
+              </div>
+              <div className="flex flex-col gap-0.5">
+                {(Object.keys(ROLE_CONFIGS) as UserRole[]).map((rKey) => {
+                  const config = ROLE_CONFIGS[rKey];
+                  const isSelected = rKey === currentRole;
+                  return (
+                    <button
+                      key={rKey}
+                      type="button"
+                      onClick={() => {
+                        setCurrentRole(rKey);
+                        setIsRoleSwitcherOpen(false);
+                      }}
+                      className={`flex items-center justify-between p-2 rounded-xl text-left text-xs transition-colors cursor-pointer ${
+                        isSelected
+                          ? "bg-rose-primary text-white font-bold"
+                          : "hover:bg-ivory-100 dark:hover:bg-charcoal-800 text-charcoal-800 dark:text-ivory-200"
+                      }`}
+                    >
+                      <div className="flex flex-col min-w-0 pr-2">
+                        <span className="text-xs font-semibold truncate">{config.displayName}</span>
+                        <span className={`text-[10px] line-clamp-1 ${isSelected ? "text-white/80" : "text-charcoal-400"}`}>
+                          {config.description}
+                        </span>
+                      </div>
+                      {isSelected && <Check className="h-4 w-4 shrink-0" />}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </div>
 
 
         {/* Categorized 8-Section Navigation */}
         <nav className="flex flex-col gap-3 px-3 overflow-y-auto max-h-[calc(100vh-270px)] pt-1 pb-4">
           {NAV_SECTIONS.map((section) => {
-            const visibleItems = section.items.filter(
-              (item) => !item.roles || item.roles.includes(currentRole)
-            );
+            const visibleItems = section.items.filter((item) => {
+              if (item.roles && !item.roles.includes(currentRole)) return false;
+              const basePath = item.href.split("?")[0];
+              if (!hasModuleAccess(currentRole, basePath)) return false;
+              return true;
+            });
             if (visibleItems.length === 0) return null;
 
             return (
