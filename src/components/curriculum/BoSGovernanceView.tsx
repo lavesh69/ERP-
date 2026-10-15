@@ -93,6 +93,17 @@ export function BoSGovernanceView() {
     fetchRecords();
   }, []);
 
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setShowCreateModal(false);
+        setShowAddModModal(false);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
   const handleCreateProposal = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
@@ -509,7 +520,12 @@ export function BoSGovernanceView() {
 
       {/* MODAL 1: CONVENE BOARD OF STUDIES */}
       {showCreateModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
+        <div
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setShowCreateModal(false);
+          }}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4"
+        >
           <div className="bg-neutral-900 rounded-2xl border border-neutral-800 max-w-lg w-full p-6 space-y-4 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-bold text-white flex items-center gap-2">
@@ -624,7 +640,12 @@ export function BoSGovernanceView() {
 
       {/* MODAL 2: ADD COURSE MODIFICATION */}
       {showAddModModal && selectedProposal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
+        <div
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setShowAddModModal(false);
+          }}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4"
+        >
           <div className="bg-neutral-900 rounded-2xl border border-neutral-800 max-w-lg w-full p-6 space-y-4 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-bold text-white flex items-center gap-2">

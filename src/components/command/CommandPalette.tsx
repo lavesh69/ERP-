@@ -64,7 +64,25 @@ export function CommandPalette() {
       setQuery("");
       setSearchResults([]);
     }
-  }, [isCommandPaletteOpen]);
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setIsCommandPaletteOpen(false);
+      }
+    };
+
+    if (isCommandPaletteOpen) {
+      window.addEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "unset";
+    }
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = "unset";
+    };
+  }, [isCommandPaletteOpen, setIsCommandPaletteOpen]);
 
   // Dynamic live search against backend database
   useEffect(() => {

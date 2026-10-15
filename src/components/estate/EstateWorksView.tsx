@@ -90,6 +90,19 @@ export default function EstateWorksView() {
     fetchData();
   }, []);
 
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setShowOrderModal(false);
+        setShowAssignModal(false);
+        setShowCompleteModal(false);
+        setShowRatingModal(false);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
   const submitOrder = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
@@ -534,7 +547,12 @@ export default function EstateWorksView() {
 
       {/* Modal 1: Raise Work Order */}
       {showOrderModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+        <div
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setShowOrderModal(false);
+          }}
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
+        >
           <div className="w-full max-w-lg p-6 rounded-2xl bg-slate-900 border border-slate-700 text-white shadow-2xl space-y-4">
             <div className="flex items-center justify-between border-b border-slate-800 pb-3">
               <h3 className="text-base font-bold text-white">Raise Maintenance Work Order</h3>
@@ -628,7 +646,12 @@ export default function EstateWorksView() {
 
       {/* Modal 2: Assign Engineer */}
       {showAssignModal && selectedOrderForAssign && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+        <div
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setShowAssignModal(false);
+          }}
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
+        >
           <div className="w-full max-w-md p-6 rounded-2xl bg-slate-900 border border-slate-700 text-white shadow-2xl space-y-4">
             <div className="flex items-center justify-between border-b border-slate-800 pb-3">
               <h3 className="text-base font-bold text-white">Assign Junior Engineer (JE)</h3>
@@ -689,7 +712,12 @@ export default function EstateWorksView() {
 
       {/* Modal 3: Certify Completion */}
       {showCompleteModal && selectedOrderForComplete && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+        <div
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setShowCompleteModal(false);
+          }}
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
+        >
           <div className="w-full max-w-md p-6 rounded-2xl bg-slate-900 border border-slate-700 text-white shadow-2xl space-y-4">
             <div className="flex items-center justify-between border-b border-slate-800 pb-3">
               <h3 className="text-base font-bold text-white">Certify Work Completion</h3>
@@ -740,7 +768,12 @@ export default function EstateWorksView() {
 
       {/* Modal 4: Rate & Close */}
       {showRatingModal && selectedOrderForRating && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+        <div
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setShowRatingModal(false);
+          }}
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
+        >
           <div className="w-full max-w-md p-6 rounded-2xl bg-slate-900 border border-slate-700 text-white shadow-2xl space-y-4">
             <div className="flex items-center justify-between border-b border-slate-800 pb-3">
               <h3 className="text-base font-bold text-white">Requester Satisfaction Sign-Off</h3>

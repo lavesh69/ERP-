@@ -268,5 +268,15 @@
     "currentLocation": "Admin Building Auditorium Floor 2",
     "emergencyContactNotified": false,
     "timestamp": "2026-10-15T03:35:18.404Z"
+  },
+  {
+    "id": "BCN-1792036321532-WIX",
+    "incidentId": "EMRG-1792036321512-2V25",
+    "userId": "usr-admin-01",
+    "name": "Elena Evans",
+    "status": "SAFE",
+    "currentLocation": "Admin Building Auditorium Floor 2",
+    "emergencyContactNotified": false,
+    "timestamp": "2026-10-15T03:52:01.532Z"
   }
 ]

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useApp } from "@/context/AppContext";
 import {
@@ -40,6 +40,24 @@ export function TopNavBar() {
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [notificationsList, setNotificationsList] = useState<any[]>([]);
   const [isMac, setIsMac] = useState(false);
+
+  const notifRef = useRef<HTMLDivElement>(null);
+  const userMenuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (notifRef.current && !notifRef.current.contains(event.target as Node)) {
+        setShowNotifications(false);
+      }
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
+        setShowUserMenu(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -163,7 +181,7 @@ export function TopNavBar() {
         </button>
 
         {/* Notifications Popover Trigger */}
-        <div className="relative">
+        <div ref={notifRef} className="relative">
           <button
             onClick={() => setShowNotifications(!showNotifications)}
             className="min-h-[40px] min-w-[40px] flex items-center justify-center relative p-2 rounded-xl text-charcoal-600 dark:text-charcoal-300 hover:text-charcoal-900 dark:hover:text-ivory-100 hover:bg-ivory-100 dark:hover:bg-charcoal-800 border border-border dark:border-charcoal-700 transition-all"
@@ -213,7 +231,7 @@ export function TopNavBar() {
         </div>
 
         {/* User Avatar & Profile Dropdown */}
-        <div className="relative flex items-center gap-2 pl-1">
+        <div ref={userMenuRef} className="relative flex items-center gap-2 pl-1">
           <button
             onClick={() => setShowUserMenu(!showUserMenu)}
             title={`Signed in as ${currentUser.fullName || currentUser.firstName} (${currentRole})`}
@@ -253,7 +271,7 @@ export function TopNavBar() {
                 </Link>
 
                 <Link
-                  href="/dashboard"
+                  href="/"
                   onClick={() => setShowUserMenu(false)}
                   className="flex items-center gap-2 px-2.5 py-2 rounded-xl text-xs font-semibold text-charcoal-700 dark:text-charcoal-200 hover:bg-ivory-100 dark:hover:bg-charcoal-800 transition-colors cursor-pointer"
                 >

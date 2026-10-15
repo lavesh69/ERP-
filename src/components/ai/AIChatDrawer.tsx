@@ -42,17 +42,25 @@ export function AIChatDrawer() {
     },
   ]);
 
-  // Lock body scroll when drawer is open
+  // Lock body scroll and listen for Escape key when drawer is open
   React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setIsAIChatOpen(false);
+      }
+    };
+
     if (isAIChatOpen) {
       document.body.style.overflow = "hidden";
+      window.addEventListener("keydown", handleKeyDown);
     } else {
       document.body.style.overflow = "unset";
     }
     return () => {
       document.body.style.overflow = "unset";
+      window.removeEventListener("keydown", handleKeyDown);
     };
-  }, [isAIChatOpen]);
+  }, [isAIChatOpen, setIsAIChatOpen]);
 
   if (!isAIChatOpen) return null;
 

@@ -2207,11 +2207,32 @@
       "totalAmount": 7500,
       "dueDate": "2026-12-01",
       "createdAt": "2026-10-15T03:35:17.042Z"
+    },
+    {
+      "id": "mfs-mv905m9j",
+      "code": "TEST-STR-0246",
+      "title": "Automated Suite Test Fee Structure",
+      "programCode": "BTECH-CSE",
+      "academicYear": "2026-2027",
+      "quotaType": "MERIT_GENERAL",
+      "studentType": "DAY_SCHOLAR",
+      "currency": "USD",
+      "heads": [
+        {
+          "id": "h1",
+          "name": "Tuition",
+          "category": "TUITION",
+          "amount": 7500
+        }
+      ],
+      "totalAmount": 7500,
+      "dueDate": "2026-12-01",
+      "createdAt": "2026-10-15T03:52:00.247Z"
     }
   ],
   "installmentPlans": [
     {
-      "id": "plan-flexi-1792035318437",
+      "id": "plan-flexi-1792036321565",
       "studentFeeId": "sfee-mercer-01",
       "studentId": "stu-mercer-01",
       "studentName": "Alex Mercer",
@@ -2246,7 +2267,7 @@
           "paidAmount": 0
         }
       ],
-      "createdAt": "2026-10-15T03:35:18.437Z"
+      "createdAt": "2026-10-15T03:52:01.565Z"
     }
   ],
   "fineRule": {
@@ -2291,6 +2312,30 @@
     }
   ],
   "refundVouchers": [
+    {
+      "id": "rfnd-1792036320286",
+      "voucherNo": "RFND-2026-5041",
+      "studentId": "stu-general",
+      "studentName": "Alex Mercer",
+      "rollNo": "CS2026-001",
+      "program": "B.Tech Computer Science",
+      "type": "CAUTION_MONEY",
+      "amount": 500,
+      "bankDetails": {
+        "accountHolder": "Alex Mercer",
+        "accountNumber": "0000000000",
+        "ifscOrSwift": "INSTITUTION-SWIFT",
+        "bankName": "National Treasury Bank"
+      },
+      "clearanceStatus": {
+        "libraryCleared": true,
+        "hostelCleared": true,
+        "labCleared": true
+      },
+      "status": "PENDING_APPROVAL",
+      "requestedAt": "2026-10-15T03:52:00.286Z",
+      "remarks": "Refund application logged with Bursar Treasury"
+    },
     {
       "id": "rfnd-1792035317083",
       "voucherNo": "RFND-2026-6656",

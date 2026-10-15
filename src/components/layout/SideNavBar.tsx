@@ -504,7 +504,13 @@ export function SideNavBar() {
                     item.href === "/students" && currentRole === "STUDENT"
                       ? "/students/profile"
                       : item.href;
-                  const isActive = pathname === itemHref || pathname === item.href;
+                  const isRootHref = itemHref === "/" || item.href === "/";
+                  const isActive = isRootHref
+                    ? pathname === "/"
+                    : pathname === itemHref ||
+                      pathname === item.href ||
+                      pathname.startsWith(itemHref + "/") ||
+                      pathname.startsWith(item.href + "/");
 
                   return (
                     <Link
