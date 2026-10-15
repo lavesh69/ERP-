@@ -1,8 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
 import { guestHouseEngine } from "@/lib/campus/guesthouse-engine";
+import { getOptionalSession } from "@/lib/auth/admin-guard";
 
-export async function GET() {
+const GUESTHOUSE_ADMIN_ROLES = ["SUPER_ADMIN", "INSTITUTION_ADMIN", "PRINCIPAL", "HOD", "HR_STAFF", "ACCOUNTANT"];
+
+export async function GET(req: NextRequest) {
   try {
+    const session = await getOptionalSession(req);
+    if (!session) {
+      return NextResponse.json(
+        { success: false, error: "Authentication required to access guest house records" },
+        { status: 401 }
+      );
+    }
+
     const rooms = guestHouseEngine.getAllRooms();
     const bookings = guestHouseEngine.getAllBookings();
     const analytics = guestHouseEngine.getAnalytics();
@@ -25,11 +36,26 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   try {
+    const session = await getOptionalSession(req);
+    if (!session) {
+      return NextResponse.json(
+        { success: false, error: "Authentication required to process guest house operations" },
+        { status: 401 }
+      );
+    }
+
     const body = await req.json();
     const { action } = body;
 
     switch (action) {
       case "REQUEST_BOOKING": {
+        if (["STUDENT", "PARENT", "ALUMNI"].includes(session.role)) {
+          return NextResponse.json(
+            { success: false, error: "Forbidden: Students and parents cannot directly requisition campus guest house suites. Sponsoring faculty approval is required." },
+            { status: 403 }
+          );
+        }
+
         const {
           roomId,
           guestName,
@@ -79,6 +105,13 @@ export async function POST(req: NextRequest) {
       }
 
       case "APPROVE_BOOKING": {
+        if (!GUESTHOUSE_ADMIN_ROLES.includes(session.role)) {
+          return NextResponse.json(
+            { success: false, error: "Forbidden: Only Estate and Guest House officers can approve bookings" },
+            { status: 403 }
+          );
+        }
+
         const { bookingId, approvedBy } = body;
         if (!bookingId) {
           return NextResponse.json(
@@ -100,6 +133,13 @@ export async function POST(req: NextRequest) {
       }
 
       case "CHECK_IN": {
+        if (!GUESTHOUSE_ADMIN_ROLES.includes(session.role)) {
+          return NextResponse.json(
+            { success: false, error: "Forbidden: Only Estate and Guest House officers can check in guests" },
+            { status: 403 }
+          );
+        }
+
         const { bookingId } = body;
         if (!bookingId) {
           return NextResponse.json(
@@ -117,6 +157,13 @@ export async function POST(req: NextRequest) {
       }
 
       case "ADD_DINING": {
+        if (!GUESTHOUSE_ADMIN_ROLES.includes(session.role)) {
+          return NextResponse.json(
+            { success: false, error: "Forbidden: Only Estate and Guest House officers can post dining folios" },
+            { status: 403 }
+          );
+        }
+
         const { bookingId, mealType, amountInr, description } = body;
         if (!bookingId || !mealType || !amountInr) {
           return NextResponse.json(
@@ -139,6 +186,13 @@ export async function POST(req: NextRequest) {
       }
 
       case "CHECK_OUT_INVOICE": {
+        if (!GUESTHOUSE_ADMIN_ROLES.includes(session.role)) {
+          return NextResponse.json(
+            { success: false, error: "Forbidden: Only Estate and Guest House officers can check out guests and issue invoices" },
+            { status: 403 }
+          );
+        }
+
         const { bookingId } = body;
         if (!bookingId) {
           return NextResponse.json(

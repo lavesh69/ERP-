@@ -101,7 +101,7 @@ export function validateWalletBalance(
     return {
       canAfford: false,
       remainingBalance: wallet.currentBalance,
-      reason: `Insufficient wallet balance ($${wallet.currentBalance.toFixed(2)}). Please top up.`,
+      reason: `Insufficient wallet balance (₹${wallet.currentBalance.toFixed(2)}). Please top up.`,
     };
   }
 

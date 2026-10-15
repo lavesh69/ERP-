@@ -342,7 +342,7 @@ export default function FinancePage() {
       </div>
       <div class="amount-box">
         <div class="amount-label">TOTAL AMOUNT PAID</div>
-        <div class="amount-value">$${amount.toLocaleString()}.00</div>
+        <div class="amount-value">₹${amount.toLocaleString("en-IN")}.00</div>
       </div>
       <div class="footer">
         <div>

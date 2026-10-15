@@ -210,7 +210,7 @@ export async function GET(req: NextRequest) {
             {
               name: "Finance & Accounts Office",
               status: pendingFeeAmount <= 0 ? "CLEARED" : "DUES_PENDING",
-              details: pendingFeeAmount <= 0 ? "All tuition and institutional dues settled" : `$${pendingFeeAmount.toFixed(2)} balance pending`,
+              details: pendingFeeAmount <= 0 ? "All tuition and institutional dues settled" : `₹${pendingFeeAmount.toFixed(2)} balance pending`,
               authorizedBy: "Chief Financial Bursar",
             },
             {

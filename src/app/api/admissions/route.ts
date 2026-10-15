@@ -61,7 +61,7 @@ export async function POST(request: NextRequest) {
       if (!session) {
         return NextResponse.json({ error: "Administrative authentication required to update applicant stage" }, { status: 401 });
       }
-      const isStaffOrAdmin = ["SUPER_ADMIN", "INSTITUTION_ADMIN", "PRINCIPAL", "HOD", "ACCOUNTANT"].includes(session.role);
+      const isStaffOrAdmin = ["SUPER_ADMIN", "INSTITUTION_ADMIN", "PRINCIPAL", "HOD", "ADMISSION_OFFICER", "ACCOUNTANT"].includes(session.role);
       if (!isStaffOrAdmin) {
         return NextResponse.json({ error: "Forbidden: Only admissions administrators can update applicant stages" }, { status: 403 });
       }
@@ -79,7 +79,7 @@ export async function POST(request: NextRequest) {
       if (!session) {
         return NextResponse.json({ error: "Administrative authentication required to update quotas" }, { status: 401 });
       }
-      const isStaffOrAdmin = ["SUPER_ADMIN", "INSTITUTION_ADMIN", "PRINCIPAL", "HOD", "ACCOUNTANT"].includes(session.role);
+      const isStaffOrAdmin = ["SUPER_ADMIN", "INSTITUTION_ADMIN", "PRINCIPAL", "HOD", "ADMISSION_OFFICER", "ACCOUNTANT"].includes(session.role);
       if (!isStaffOrAdmin) {
         return NextResponse.json({ error: "Forbidden: Only admissions administrators can modify intake quotas" }, { status: 403 });
       }
@@ -95,7 +95,7 @@ export async function POST(request: NextRequest) {
       if (!session) {
         return NextResponse.json({ error: "Administrative authentication required to provision student" }, { status: 401 });
       }
-      const isStaffOrAdmin = ["SUPER_ADMIN", "INSTITUTION_ADMIN", "PRINCIPAL", "HOD", "FACULTY"].includes(session.role);
+      const isStaffOrAdmin = ["SUPER_ADMIN", "INSTITUTION_ADMIN", "PRINCIPAL", "HOD", "ADMISSION_OFFICER", "FACULTY"].includes(session.role);
       if (!isStaffOrAdmin) {
         return NextResponse.json({ error: "Forbidden: Only admissions administrators can provision students" }, { status: 403 });
       }

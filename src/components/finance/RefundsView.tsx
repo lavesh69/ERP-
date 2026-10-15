@@ -85,6 +85,14 @@ export function RefundsView({ showToast }: RefundsViewProps) {
       showToast("Please provide scholar name, roll number, and valid amount", "error");
       return;
     }
+    if (!accountNumber || accountNumber.trim().length < 8) {
+      showToast("Please provide a valid beneficiary bank account number (min 8 digits)", "error");
+      return;
+    }
+    if (!ifscOrSwift || ifscOrSwift.trim().length < 5) {
+      showToast("Please provide a valid bank IFSC or SWIFT routing code", "error");
+      return;
+    }
 
     setIsSubmitting(true);
     try {

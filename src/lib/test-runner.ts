@@ -68,7 +68,8 @@ import { verifyTurnstileToken } from "@/lib/security/captcha";
 import { checkOtpLimit, recordOtpDispatch, resetOtpLimit } from "@/lib/security/otp-rate-limiter";
 import { getReadClient, getWriteClient } from "@/lib/db/prisma";
 import { parseCsv } from "@/lib/bulk/csv-parser";
-import { enqueueOfflineMutation } from "@/lib/offline/sync-queue";
+import { enqueueOfflineMutation, flushOfflineQueue } from "@/lib/offline/sync-queue";
+import { POST as handleRefundsPost } from "@/app/api/finance/refunds/route";
 import { recordApiMetric, getTelemetrySummary } from "@/lib/observability/telemetry";
 import { getTestPhoneNumbers } from "@/lib/firebase/config";
 import { getSupabaseConfig, isSupabaseConfigured } from "@/lib/supabase/index";
@@ -10357,7 +10358,7 @@ By breaking down large monolithic systems into decoupled microservices, systems 
     method: "GET",
     headers: { Cookie: `classroom_session=${adminToken}` },
   });
-  const ghGetRes = await handleGuestHouseGet();
+  const ghGetRes = await handleGuestHouseGet(ghGetReq);
   assert(ghGetRes.status === 200, "GET /api/campus/guesthouse returns 200 OK");
   const ghGetData = await ghGetRes.json();
   assert(ghGetData.success === true, "Guest house GET returns success: true");
@@ -11661,6 +11662,115 @@ By breaking down large monolithic systems into decoupled microservices, systems 
   const certDate = new Date(clinicHoldData.passport.certifiedAt);
   const expiryDate = new Date(clinicHoldData.passport.validUntil);
   assert(expiryDate.getFullYear() - certDate.getFullYear() === 1, "Medical clearance certificate validity spans exactly 1 statutory academic year");
+
+  // -------------------------------------------------------------
+  // GROUP 85: Full-App Hardening, Guest House RBAC, Multi-Role Admissions & Currency Alignment
+  // -------------------------------------------------------------
+  console.log("\n--- GROUP 85: Full-App Hardening, Guest House RBAC, Multi-Role Admissions & Currency Alignment ---");
+
+  // 85.1 Unauthenticated Guest House Access Control
+  const unauthGhGetReq = new NextRequest("http://localhost:3000/api/campus/guesthouse", { method: "GET" });
+  const unauthGhGetRes = await handleGuestHouseGet(unauthGhGetReq);
+  assert(unauthGhGetRes.status === 401, "Unauthenticated request to GET /api/campus/guesthouse is rejected (401)");
+
+  const unauthGhPostReq = new NextRequest("http://localhost:3000/api/campus/guesthouse", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ action: "APPROVE_BOOKING", bookingId: "bk-test" }),
+  });
+  const unauthGhPostRes = await handleGuestHousePost(unauthGhPostReq);
+  assert(unauthGhPostRes.status === 401, "Unauthenticated request to POST /api/campus/guesthouse is rejected (401)");
+
+  // 85.2 Student RBAC Boundary on Guest House
+  const studentGhReq = new NextRequest("http://localhost:3000/api/campus/guesthouse", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${enterpriseStudentToken}` },
+    body: JSON.stringify({ action: "REQUEST_BOOKING", roomId: "RM-101", guestName: "Self" }),
+  });
+  const studentGhRes = await handleGuestHousePost(studentGhReq);
+  assert(studentGhRes.status === 403, "Student caller attempting direct REQUEST_BOOKING on guesthouse is barred (403)");
+
+  const studentGhApproveReq = new NextRequest("http://localhost:3000/api/campus/guesthouse", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${enterpriseStudentToken}` },
+    body: JSON.stringify({ action: "APPROVE_BOOKING", bookingId: "bk-test" }),
+  });
+  const studentGhApproveRes = await handleGuestHousePost(studentGhApproveReq);
+  assert(studentGhApproveRes.status === 403, "Student caller attempting APPROVE_BOOKING on guesthouse is barred (403)");
+
+  // 85.3 Incubation & International Stage Updates RBAC
+  const studentIncubReq = new NextRequest("http://localhost:3000/api/incubation", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${enterpriseStudentToken}` },
+    body: JSON.stringify({ action: "UPDATE_STAGE", id: "ven-01", stage: "SERIES_A" }),
+  });
+  const studentIncubRes = await handleIncubationPost(studentIncubReq);
+  assert(studentIncubRes.status === 403, "Student caller attempting UPDATE_STAGE on incubation is barred (403)");
+
+  const studentIntlReq = new NextRequest("http://localhost:3000/api/international", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${enterpriseStudentToken}` },
+    body: JSON.stringify({ action: "UPDATE_STATUS", id: "intl-app-01", status: "VISA_GRANTED" }),
+  });
+  const studentIntlRes = await handleInternationalPost(studentIntlReq);
+  assert(studentIntlRes.status === 403, "Student caller attempting UPDATE_STATUS on international study abroad is barred (403)");
+
+  // 85.4 Counseling Allotment Simulation & Provisioning RBAC
+  const studentCounsSimReq = new NextRequest("http://localhost:3000/api/admissions/counseling", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${enterpriseStudentToken}` },
+    body: JSON.stringify({ action: "SIMULATE_ALLOTMENT" }),
+  });
+  const studentCounsSimRes = await handleAdmissionsCounselingPost(studentCounsSimReq);
+  assert(studentCounsSimRes.status === 403, "Student caller attempting SIMULATE_ALLOTMENT on counseling is barred (403)");
+
+  // 85.5 ADMISSION_OFFICER Institutional Role Authorization
+  const admissionOfficerToken = await signJwt({ userId: "usr-adm-off-01", role: "ADMISSION_OFFICER", email: "admissions.officer@apex.edu" }, 3600);
+  const admOfficerQuotaReq = new NextRequest("http://localhost:3000/api/admissions", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${admissionOfficerToken}` },
+    body: JSON.stringify({
+      action: "UPDATE_QUOTA",
+      quota: { programCode: "AI_DS", programName: "AI & Data Science", totalSeats: 120, managementSeats: 15, meritSeats: 105 },
+    }),
+  });
+  const admOfficerQuotaRes = await handleAdmissionsPost(admOfficerQuotaReq);
+  assert(admOfficerQuotaRes.status === 200, "ADMISSION_OFFICER authorized to update program quotas (200 OK)");
+
+  // 85.6 Standardized INR (₹) Currency Feedback
+  const canteenTopUpReq = new NextRequest("http://localhost:3000/api/canteen", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({ action: "TOP_UP_WALLET", amount: 150, reference: "UPI-TEST-001" }),
+  });
+  const canteenTopUpRes = await handleCanteenPost(canteenTopUpReq);
+  assert(canteenTopUpRes.status === 200, "POST /api/canteen TOP_UP_WALLET returns 200 OK");
+  const canteenTopUpData = await canteenTopUpRes.json();
+  assert(canteenTopUpData.message.includes("₹150.00"), "Canteen wallet top-up feedback message confirms amount in INR (₹150.00)");
+
+  const refundReq = new NextRequest("http://localhost:3000/api/finance/refunds", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "REQUEST_REFUND",
+      studentName: "Devendra Joshi",
+      rollNo: "2026-CSE-099",
+      program: "B.Tech Computer Science",
+      type: "CAUTION_MONEY",
+      amount: 500,
+      bankDetails: {
+        accountHolder: "Devendra Joshi",
+        accountNumber: "987654321012",
+        ifscOrSwift: "HDFC0001234",
+        bankName: "HDFC Bank",
+      },
+      remarks: "Graduation caution money clearance",
+    }),
+  });
+  const refundRes = await handleRefundsPost(refundReq);
+  assert(refundRes.status === 200, "POST /api/finance/refunds REQUEST_REFUND returns 200 OK");
+  const refundData = await refundRes.json();
+  assert(refundData.message.includes("₹500"), "Refund voucher creation confirmation message confirms amount in INR (₹500)");
 
   console.log("\n=================================================");
   console.log(`🎉 ALL ${passedTests}/${totalTests} TESTS PASSED SUCCESSFULLY!`);

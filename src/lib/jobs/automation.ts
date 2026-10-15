@@ -195,7 +195,7 @@ export async function reconcileFeeDues(): Promise<JobExecutionResult> {
             data: {
               userId: fee.student.userId,
               title: "Overdue Fee Payment Notice",
-              message: `An outstanding balance of $${(fee.totalAmount - fee.paidAmount).toLocaleString()} for ${fee.feeStructure.title} is overdue. Please settle via the Bursar portal.`,
+              message: `An outstanding balance of ₹${(fee.totalAmount - fee.paidAmount).toLocaleString("en-IN")} for ${fee.feeStructure.title} is overdue. Please settle via the Bursar portal.`,
               type: "FEE",
               linkUrl: "/finance",
             },

@@ -87,7 +87,7 @@ export async function POST(request: NextRequest) {
       const updatedWallet = canteenStore.topUpWallet(userId, topUpAmount, reference || "UPI-WALLET-TOPUP");
       return NextResponse.json({
         success: true,
-        message: `Successfully added $${topUpAmount.toFixed(2)} to RFID Smart Card!`,
+        message: `Successfully added ₹${topUpAmount.toFixed(2)} to RFID Smart Card!`,
         wallet: updatedWallet,
       });
     }

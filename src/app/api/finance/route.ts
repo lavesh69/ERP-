@@ -303,8 +303,8 @@ export async function POST(req: NextRequest) {
         data: {
           studentId: fee.studentId,
           type: "FEE_CHALLAN_VERIFICATION",
-          title: `Bank Challan Deposit Verification: $${amount}`,
-          reason: `Bank: ${bankName || "National Bank"}, Branch: ${branchName || "Main"}, Ref: ${refNo}, Amount: $${amount}`,
+          title: `Bank Challan Deposit Verification: ₹${amount}`,
+          reason: `Bank: ${bankName || "National Bank"}, Branch: ${branchName || "Main"}, Ref: ${refNo}, Amount: ₹${amount}`,
           status: "UNDER_REVIEW",
         },
       }).catch(() => null);

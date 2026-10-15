@@ -104,6 +104,22 @@ export async function POST(request: NextRequest) {
     }
 
     if (action === "UPDATE_STATUS") {
+      const isStaffOrOfficer = [
+        "SUPER_ADMIN",
+        "INSTITUTION_ADMIN",
+        "REGISTRAR",
+        "PRINCIPAL",
+        "HOD",
+        "RESEARCH_COORDINATOR",
+        "FACULTY",
+      ].includes(session.role);
+      if (!isStaffOrOfficer) {
+        return NextResponse.json(
+          { error: "Forbidden: Only international office coordinators and administrators can update exchange student status" },
+          { status: 403 }
+        );
+      }
+
       const { id, status } = body;
       if (!id || !status) {
         return NextResponse.json({ error: "Application ID and new status are required" }, { status: 400 });

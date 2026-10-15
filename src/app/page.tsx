@@ -171,8 +171,8 @@ export default function DashboardPage() {
     csv += `Verified Faculty Members,${data?.metrics?.facultyCount || 6}\n`;
     csv += `Campus Attendance Aggregate,${data?.metrics?.attendancePercentage || 94.6}%\n`;
     csv += `Active Curriculum Courses,${data?.metrics?.courseCount || 4}\n`;
-    csv += `Bursar Fee Revenue Settled,$${(data?.metrics?.paidFees || 4850).toLocaleString()}\n`;
-    csv += `Outstanding Balance,$${(data?.metrics?.pendingFees || 0).toLocaleString()}\n`;
+    csv += `Bursar Fee Revenue Settled (INR),₹${(data?.metrics?.paidFees || 4850).toLocaleString("en-IN")}\n`;
+    csv += `Outstanding Balance (INR),₹${(data?.metrics?.pendingFees || 0).toLocaleString("en-IN")}\n`;
     csv += `Collection Clearance Rate,${data?.metrics?.feeCollectionRate || 100}%\n`;
 
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });

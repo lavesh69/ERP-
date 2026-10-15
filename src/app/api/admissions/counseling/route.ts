@@ -142,6 +142,14 @@ export async function POST(req: NextRequest) {
     }
 
     if (action === "SIMULATE_ALLOTMENT") {
+      const isCounselingAdmin = ["SUPER_ADMIN", "INSTITUTION_ADMIN", "PRINCIPAL", "DEAN", "HOD", "ADMISSION_OFFICER", "FACULTY"].includes(session.role);
+      if (!isCounselingAdmin) {
+        return NextResponse.json(
+          { error: "Forbidden: Only admissions administrators and officers can execute counseling allocations" },
+          { status: 403 }
+        );
+      }
+
       const { applicants, roundNumber = 1 } = body;
       const applicantList: ApplicantMeritRecord[] = Array.isArray(applicants) && applicants.length > 0
         ? applicants
@@ -200,6 +208,14 @@ export async function POST(req: NextRequest) {
     }
 
     if (action === "PROVISION_ALLOTTED_STUDENT") {
+      const isCounselingAdmin = ["SUPER_ADMIN", "INSTITUTION_ADMIN", "PRINCIPAL", "DEAN", "HOD", "ADMISSION_OFFICER", "FACULTY"].includes(session.role);
+      if (!isCounselingAdmin) {
+        return NextResponse.json(
+          { error: "Forbidden: Only admissions administrators and officers can provision students" },
+          { status: 403 }
+        );
+      }
+
       const { applicant, allottedProgram, roundNumber = 1 } = body;
       if (!applicant || !applicant.applicationNo || !applicant.fullName) {
         return NextResponse.json({ error: "Valid applicant record required for provisioning" }, { status: 400 });

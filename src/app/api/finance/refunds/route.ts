@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
       const voucher = createRefundVoucher(body);
       return NextResponse.json({
         success: true,
-        message: `Refund voucher ${voucher.voucherNo} created for $${voucher.amount}.`,
+        message: `Refund voucher ${voucher.voucherNo} created for ₹${voucher.amount}.`,
         voucher,
       });
     }

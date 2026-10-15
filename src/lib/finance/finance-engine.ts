@@ -253,7 +253,7 @@ export function matchBankTransactionsWithChallans(
         studentName: probableMatch.studentName,
         challanAmount: probableMatch.amount,
         confidenceScore: 0.85,
-        matchReason: `Amount parity ($${entry.amount}) and remitter name similarity (${probableMatch.studentName})`,
+        matchReason: `Amount parity (₹${entry.amount}) and remitter name similarity (${probableMatch.studentName})`,
         status: "PROBABLE_MATCH",
       });
       continue;

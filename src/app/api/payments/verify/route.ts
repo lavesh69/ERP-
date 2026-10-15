@@ -119,7 +119,7 @@ export async function POST(req: NextRequest) {
           <div style="font-family: sans-serif; padding: 20px; color: #231e21;">
             <h2 style="color: #8e5368;">Payment Authorized & Settled</h2>
             <p>Dear ${studentFullName},</p>
-            <p>Your institutional fee payment of <strong>$${amountPaid.toLocaleString()}.00</strong> for <strong>${feeTitle}</strong> has been confirmed.</p>
+            <p>Your institutional fee payment of <strong>₹${amountPaid.toLocaleString("en-IN")}.00</strong> for <strong>${feeTitle}</strong> has been confirmed.</p>
             <p><strong>Reference Number:</strong> ${refNumber}<br/><strong>Payment ID:</strong> ${paymentId}</p>
             <p>Office of the Bursar & Treasury</p>
           </div>

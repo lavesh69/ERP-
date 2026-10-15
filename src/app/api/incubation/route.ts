@@ -74,6 +74,14 @@ export async function POST(request: NextRequest) {
     }
 
     if (action === "UPDATE_STAGE") {
+      const INCUBATION_STAFF_ROLES = ["SUPER_ADMIN", "INSTITUTION_ADMIN", "PRINCIPAL", "DEAN", "HOD", "FACULTY", "RESEARCH_COORDINATOR"];
+      if (!INCUBATION_STAFF_ROLES.includes(session.role)) {
+        return NextResponse.json(
+          { error: "Forbidden: Only incubation coordinators and administrators can update venture stages and funding" },
+          { status: 403 }
+        );
+      }
+
       const { id, stage, seedGrantDisbursed, externalFundingRaised } = body;
       if (!id || !stage) {
         return NextResponse.json({ error: "Venture ID and stage are required" }, { status: 400 });
