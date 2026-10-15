@@ -208,6 +208,74 @@
   ],
   "gatePasses": [
     {
+      "id": "gp-1792032937758",
+      "passNumber": "GP-2026-9108",
+      "studentId": "stu-guest",
+      "studentName": "Alex Mercer",
+      "studentRoll": "CS2026-001",
+      "roomNumber": "A-101",
+      "blockName": "Nelson Mandela Hall",
+      "reason": "National Robotics Olympiad Finals",
+      "destination": "New York, NY",
+      "departureTime": "2026-11-01T08:00:00.000Z",
+      "expectedReturnTime": "2026-11-03T20:00:00.000Z",
+      "status": "PENDING_WARDEN",
+      "emergencyContact": "+1 (555) 881-2233",
+      "parentConsentVerified": true,
+      "createdAt": "2026-10-15T02:55:37.758Z"
+    },
+    {
+      "id": "gp-1792032893932",
+      "passNumber": "GP-2026-6350",
+      "studentId": "stu-guest",
+      "studentName": "Alex Mercer",
+      "studentRoll": "CS2026-001",
+      "roomNumber": "A-101",
+      "blockName": "Nelson Mandela Hall",
+      "reason": "National Robotics Olympiad Finals",
+      "destination": "New York, NY",
+      "departureTime": "2026-11-01T08:00:00.000Z",
+      "expectedReturnTime": "2026-11-03T20:00:00.000Z",
+      "status": "PENDING_WARDEN",
+      "emergencyContact": "+1 (555) 881-2233",
+      "parentConsentVerified": true,
+      "createdAt": "2026-10-15T02:54:53.932Z"
+    },
+    {
+      "id": "gp-1792032851041",
+      "passNumber": "GP-2026-4284",
+      "studentId": "stu-guest",
+      "studentName": "Alex Mercer",
+      "studentRoll": "CS2026-001",
+      "roomNumber": "A-101",
+      "blockName": "Nelson Mandela Hall",
+      "reason": "National Robotics Olympiad Finals",
+      "destination": "New York, NY",
+      "departureTime": "2026-11-01T08:00:00.000Z",
+      "expectedReturnTime": "2026-11-03T20:00:00.000Z",
+      "status": "PENDING_WARDEN",
+      "emergencyContact": "+1 (555) 881-2233",
+      "parentConsentVerified": true,
+      "createdAt": "2026-10-15T02:54:11.042Z"
+    },
+    {
+      "id": "gp-1792032802395",
+      "passNumber": "GP-2026-8284",
+      "studentId": "stu-guest",
+      "studentName": "Alex Mercer",
+      "studentRoll": "CS2026-001",
+      "roomNumber": "A-101",
+      "blockName": "Nelson Mandela Hall",
+      "reason": "National Robotics Olympiad Finals",
+      "destination": "New York, NY",
+      "departureTime": "2026-11-01T08:00:00.000Z",
+      "expectedReturnTime": "2026-11-03T20:00:00.000Z",
+      "status": "PENDING_WARDEN",
+      "emergencyContact": "+1 (555) 881-2233",
+      "parentConsentVerified": true,
+      "createdAt": "2026-10-15T02:53:22.395Z"
+    },
+    {
       "id": "gp-1791994768048",
       "passNumber": "GP-2026-3745",
       "studentId": "stu-guest",
@@ -1723,6 +1791,38 @@
     }
   ],
   "nightRollCalls": [
+    {
+      "id": "nrc-1792032802782",
+      "date": "2026-10-15",
+      "curfewTime": "21:30",
+      "blockId": "blk-a",
+      "blockName": "Mandela Block (Boys)",
+      "wardenOnDuty": "Chief Warden Dr. Sharma",
+      "status": "COMPLETED",
+      "totalResidents": 2,
+      "inRoomCount": 1,
+      "permittedOutpassCount": 0,
+      "unauthorizedAbsentCount": 1,
+      "roster": [
+        {
+          "studentRoll": "CS2026-001",
+          "studentName": "Alex Rivera",
+          "roomNumber": "101",
+          "bedId": "101-A",
+          "status": "IN_ROOM",
+          "updatedAt": "2026-10-15T02:55:38.138Z"
+        },
+        {
+          "studentRoll": "EE2024-019",
+          "studentName": "Marcus Vance",
+          "roomNumber": "102",
+          "bedId": "102-A",
+          "status": "UNAUTHORIZED_ABSENT",
+          "updatedAt": "2026-10-15T02:55:38.138Z",
+          "remarks": "Curfew violated - Parents alerted via automated SMS"
+        }
+      ]
+    },
     {
       "id": "nrc-1791945171642",
       "date": "2026-10-14",

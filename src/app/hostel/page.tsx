@@ -26,9 +26,11 @@ import {
   Scale,
   Moon,
   Wrench,
+  Receipt,
 } from "lucide-react";
 import { NightRollCallView } from "@/components/hostel/NightRollCallView";
 import HostelAssetAuditTab from "@/components/hostel/HostelAssetAuditTab";
+import MessRebateTab from "@/components/hostel/MessRebateTab";
 
 interface HostelSummary {
   totalBlocks: number;
@@ -44,7 +46,7 @@ interface HostelSummary {
 
 export default function HostelPage() {
   const { currentUser, currentRole } = useApp();
-  const [activeTab, setActiveTab] = useState<"matrix" | "allocations" | "gatepass" | "mess" | "night-rollcall" | "asset-audit">("matrix");
+  const [activeTab, setActiveTab] = useState<"matrix" | "allocations" | "gatepass" | "mess" | "night-rollcall" | "asset-audit" | "mess-rebate">("matrix");
   const [loading, setLoading] = useState(true);
   const [summary, setSummary] = useState<HostelSummary | null>(null);
   const [rooms, setRooms] = useState<any[]>([]);
@@ -455,6 +457,7 @@ export default function HostelPage() {
           { id: "allocations", label: "Bed Allocation Registry", icon: Bed },
           { id: "gatepass", label: "Gate Pass & Night Outpass", icon: Clock, count: summary?.pendingGatePasses },
           { id: "mess", label: "Dining & Mess Management", icon: Utensils },
+          { id: "mess-rebate", label: "Mess Diet Rebates & Meal Tokens", icon: Receipt },
           { id: "night-rollcall", label: "Night Curfew Roll-Call (21:30)", icon: Moon },
           { id: "asset-audit", label: "Room Inventory & Deposit Clearance", icon: Wrench },
         ].map((tab) => {
@@ -1174,6 +1177,9 @@ export default function HostelPage() {
 
       {/* TAB 6: ROOM INVENTORY & DEPOSIT CLEARANCE */}
       {activeTab === "asset-audit" && <HostelAssetAuditTab />}
+
+      {/* TAB 7: MESS DIET REBATE & DINING TOKENS */}
+      {activeTab === "mess-rebate" && <MessRebateTab />}
 
       {/* MODAL: Request Outpass */}
       {showPassModal && (

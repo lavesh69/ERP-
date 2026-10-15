@@ -35,6 +35,7 @@ import {
   Compass,
   Gift,
   HeartHandshake,
+  ShieldAlert,
 } from "lucide-react";
 
 interface CommandOption {
@@ -243,6 +244,14 @@ export function CommandPalette() {
       description: "Confidential ICC harassment reporting, statutory SLA timers, and ombudsperson escalation",
       href: "/grievances",
       icon: Scale,
+    },
+    {
+      id: "nav-compliance",
+      category: "Navigation",
+      title: "Statutory Anti-Ragging & Proctorial Disciplinary Governance",
+      description: "UGC 2009 oath affidavits, formal Show-Cause Notices (72h), and Chief Proctor sanction orders",
+      href: "/compliance",
+      icon: ShieldAlert,
     },
     {
       id: "nav-careers",

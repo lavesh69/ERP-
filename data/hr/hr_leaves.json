@@ -11,7 +11,7 @@
     "approvedBy": "hr.manager@apex.edu"
   },
   {
-    "id": "lv-768199",
+    "id": "lv-937861",
     "staffEmail": "provost.evans@classroom.edu",
     "leaveType": "DUTY_LEAVE",
     "days": 3,
@@ -21,11 +21,11 @@
     "status": "APPROVED",
     "substituteFacultyEmail": "sunita.deshmukh@classroom.edu",
     "substituteRemarks": "Lectures for AI-401 delegated to Prof. Sunita",
-    "appliedAt": "2026-10-14",
+    "appliedAt": "2026-10-15",
     "approvedBy": "provost.evans@classroom.edu"
   },
   {
-    "id": "lv-768357",
+    "id": "lv-937946",
     "staffEmail": "provost.evans@classroom.edu",
     "leaveType": "CASUAL_LEAVE",
     "days": 1,
@@ -35,6 +35,6 @@
     "status": "PENDING",
     "substituteFacultyEmail": "sunita.deshmukh@classroom.edu",
     "substituteRemarks": "Covering CS301 Algorithms lecture",
-    "appliedAt": "2026-10-14"
+    "appliedAt": "2026-10-15"
   }
 ]

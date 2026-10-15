@@ -182,6 +182,13 @@ const NAV_SECTIONS: NavSection[] = [
         roles: ["SUPER_ADMIN", "INSTITUTION_ADMIN", "PRINCIPAL", "HOD", "FACULTY", "STUDENT", "PARENT", "HR_STAFF"],
       },
       {
+        name: "Proctorial & Anti-Ragging",
+        href: "/compliance",
+        icon: ShieldAlert,
+        badge: "Statutory",
+        roles: ["SUPER_ADMIN", "INSTITUTION_ADMIN", "PRINCIPAL", "HOD", "FACULTY", "STUDENT", "PARENT", "HR_STAFF"],
+      },
+      {
         name: "Campus Assets",
         href: "/inventory",
         icon: Boxes,

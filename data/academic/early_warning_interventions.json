@@ -202,5 +202,53 @@
     "status": "IN_INTERVENTION",
     "createdAt": "2026-10-14T16:19:29.882Z",
     "updatedAt": "2026-10-14T16:19:29.900Z"
+  },
+  {
+    "id": "INTV-1792032803537-OUGC",
+    "studentId": "stu-mercer-01",
+    "institutionId": "inst-apex-01",
+    "assignedCounselorId": "usr-admin-01",
+    "counselorName": "Elena Evans",
+    "interventionType": "ACADEMIC_TUTORING",
+    "notes": "Assigned mentor for remedial coaching in Applied Mathematics.\n[2026-10-15T02:53:23.555Z] Scholar attended initial peer tutoring workshop.",
+    "status": "IN_INTERVENTION",
+    "createdAt": "2026-10-15T02:53:23.537Z",
+    "updatedAt": "2026-10-15T02:53:23.555Z"
+  },
+  {
+    "id": "INTV-1792032852124-1V36",
+    "studentId": "stu-mercer-01",
+    "institutionId": "inst-apex-01",
+    "assignedCounselorId": "usr-admin-01",
+    "counselorName": "Elena Evans",
+    "interventionType": "ACADEMIC_TUTORING",
+    "notes": "Assigned mentor for remedial coaching in Applied Mathematics.\n[2026-10-15T02:54:12.137Z] Scholar attended initial peer tutoring workshop.",
+    "status": "IN_INTERVENTION",
+    "createdAt": "2026-10-15T02:54:12.124Z",
+    "updatedAt": "2026-10-15T02:54:12.137Z"
+  },
+  {
+    "id": "INTV-1792032895006-4G9I",
+    "studentId": "stu-mercer-01",
+    "institutionId": "inst-apex-01",
+    "assignedCounselorId": "usr-admin-01",
+    "counselorName": "Elena Evans",
+    "interventionType": "ACADEMIC_TUTORING",
+    "notes": "Assigned mentor for remedial coaching in Applied Mathematics.\n[2026-10-15T02:54:55.020Z] Scholar attended initial peer tutoring workshop.",
+    "status": "IN_INTERVENTION",
+    "createdAt": "2026-10-15T02:54:55.006Z",
+    "updatedAt": "2026-10-15T02:54:55.020Z"
+  },
+  {
+    "id": "INTV-1792032938696-QH2I",
+    "studentId": "stu-mercer-01",
+    "institutionId": "inst-apex-01",
+    "assignedCounselorId": "usr-admin-01",
+    "counselorName": "Elena Evans",
+    "interventionType": "ACADEMIC_TUTORING",
+    "notes": "Assigned mentor for remedial coaching in Applied Mathematics.\n[2026-10-15T02:55:38.707Z] Scholar attended initial peer tutoring workshop.",
+    "status": "IN_INTERVENTION",
+    "createdAt": "2026-10-15T02:55:38.696Z",
+    "updatedAt": "2026-10-15T02:55:38.707Z"
   }
 ]

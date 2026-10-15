@@ -39,8 +39,9 @@ import {
 import { COPOMappingView } from "@/components/examinations/COPOMappingView";
 import { BacklogPortalView } from "@/components/examinations/BacklogPortalView";
 import { InvigilationRosterView } from "@/components/examinations/InvigilationRosterView";
+import { RevaluationPortalView } from "@/components/examinations/RevaluationPortalView";
 
-type ExamTab = "schedules" | "evaluations" | "seating" | "transcript" | "scanner" | "obe-mapping" | "backlog-portal" | "invigilation";
+type ExamTab = "schedules" | "evaluations" | "seating" | "transcript" | "scanner" | "obe-mapping" | "backlog-portal" | "invigilation" | "revaluation";
 
 export default function ExaminationsPage() {
   const { currentUser, showToast, setIsAIChatOpen, refreshTrigger, triggerRefresh, currentRole } = useApp();
@@ -552,6 +553,18 @@ export default function ExaminationsPage() {
           >
             <Users className="h-4 w-4 text-blue-500" />
             Invigilation Duty Matrix
+          </button>
+
+          <button
+            onClick={() => setActiveTab("revaluation")}
+            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all whitespace-nowrap ${
+              activeTab === "revaluation"
+                ? "bg-white dark:bg-charcoal-800 text-charcoal-900 dark:text-ivory-100 shadow-sm"
+                : "text-charcoal-600 dark:text-charcoal-400 hover:text-charcoal-900 dark:hover:text-ivory-100"
+            }`}
+          >
+            <RotateCcw className="h-4 w-4 text-amber-500" />
+            Revaluation &amp; Photocopy
           </button>
         </div>
 
@@ -1348,6 +1361,13 @@ export default function ExaminationsPage() {
         {/* ======================================================== */}
         {activeTab === "invigilation" && (
           <InvigilationRosterView showToast={showToast} canEdit={canEditExams} />
+        )}
+
+        {/* ======================================================== */}
+        {/* TAB 9: POST-RESULT REVALUATION & PHOTOCOPY PORTAL        */}
+        {/* ======================================================== */}
+        {activeTab === "revaluation" && (
+          <RevaluationPortalView />
         )}
 
         {/* ======================================================== */}

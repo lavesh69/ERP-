@@ -1,0 +1,54 @@
+[
+  {
+    "id": "TOK-MV8Y55IJ",
+    "tokenNumber": "TKN-DIN-2026-805",
+    "date": "2026-11-10",
+    "mealType": "DINNER",
+    "studentId": "STD-2025-001",
+    "studentRollNumber": "2025-CS-101",
+    "studentName": "Aarav Sharma",
+    "hostelName": "Aryabhatta Hall of Residence",
+    "status": "CONSUMED",
+    "qrDigest": "APEX-MESS-AUTH-07970CD2DB55",
+    "scannedAt": "2026-10-15T02:55:39.314Z",
+    "scannedByMessManager": "Mess Supervisor Ramesh Chandra"
+  },
+  {
+    "id": "TOK-001",
+    "tokenNumber": "TKN-DIN-2026-901",
+    "date": "2026-10-15",
+    "mealType": "DINNER",
+    "studentId": "STD-2025-001",
+    "studentRollNumber": "2025-CS-101",
+    "studentName": "Aarav Sharma",
+    "hostelName": "Aryabhatta Hall of Residence",
+    "status": "ACTIVE",
+    "qrDigest": "APEX-MESS-001-DIN-901-SHA256"
+  },
+  {
+    "id": "TOK-002",
+    "tokenNumber": "TKN-LUN-2026-902",
+    "date": "2026-10-15",
+    "mealType": "LUNCH",
+    "studentId": "STD-2025-002",
+    "studentRollNumber": "2025-EC-104",
+    "studentName": "Diya Nair",
+    "hostelName": "Gargi Hall of Residence",
+    "status": "CONSUMED",
+    "qrDigest": "APEX-MESS-002-LUN-902-SHA256",
+    "scannedAt": "2026-10-15T02:55:35.130Z",
+    "scannedByMessManager": "Mess Supervisor Ramesh Chandra"
+  },
+  {
+    "id": "TOK-003",
+    "tokenNumber": "TKN-DIN-2026-903",
+    "date": "2026-10-20",
+    "mealType": "DINNER",
+    "studentId": "STD-2025-002",
+    "studentRollNumber": "2025-EC-104",
+    "studentName": "Diya Nair",
+    "hostelName": "Gargi Hall of Residence",
+    "status": "SUSPENDED_ON_REBATE",
+    "qrDigest": "APEX-MESS-002-SUSP-REB"
+  }
+]

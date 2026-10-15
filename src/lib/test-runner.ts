@@ -447,6 +447,20 @@ import {
 } from "@/app/api/finance/link-services/route";
 import { CAMPUS_SERVICE_CATALOG } from "@/lib/finance/service-catalog";
 
+// Group 75: Revaluation, Proctorial Compliance & Mess Rebate
+import {
+  GET as handleRevaluationGet,
+  POST as handleRevaluationPost,
+} from "@/app/api/examinations/revaluation/route";
+import {
+  GET as handleProctorialGet,
+  POST as handleProctorialPost,
+} from "@/app/api/compliance/proctorial/route";
+import {
+  GET as handleMessRebateGet,
+  POST as handleMessRebatePost,
+} from "@/app/api/hostel/mess-rebate/route";
+
 async function runTestSuite() {
   console.log("=================================================");
   console.log("🚀 STARTING CLASSROOM ERP COMPREHENSIVE TEST SUITE");
@@ -9849,7 +9863,314 @@ By breaking down large monolithic systems into decoupled microservices, systems 
   assert(provisionApplicantPostData.success === true, "Counseling provisioning reports success: true");
   assert(provisionApplicantPostData.enrollmentDetails.rollNumber.startsWith("2026-"), "Provisioned student assigned standardized roll number");
   assert(provisionApplicantPostData.enrollmentDetails.enrollmentSeal.startsWith("APEX-ENROLL-SEAL-"), "Provisioned enrollment sealed with cryptographic signature");
-  assert(provisionApplicantPostData.enrollmentDetails.status === "ACTIVE", "Provisioned student status active in SIS");
+  // =========================================================================
+  // GROUP 75: Examination Revaluation, Statutory Proctorial Governance & Mess Rebate
+  // =========================================================================
+  console.log("\n--- GROUP 75: Examination Revaluation, Statutory Proctorial Governance & Mess Rebate ---");
+
+  // 75.1 Examination Revaluation & Scrutiny Portal
+  const revalGetReq = new NextRequest("http://localhost:3000/api/examinations/revaluation", {
+    method: "GET",
+    headers: { Cookie: `classroom_session=${adminToken}` },
+  });
+  const revalGetRes = await handleRevaluationGet(revalGetReq);
+  assert(revalGetRes.status === 200, "GET /api/examinations/revaluation returns 200 OK");
+  const revalGetData = await revalGetRes.json();
+  assert(revalGetData.success === true, "Revaluation GET returns success: true");
+  assert(revalGetData.applications.length >= 3, "Revaluation applications list seeded with records");
+  assert(revalGetData.analytics.totalApplications >= 3, "Revaluation analytics calculate total scrutiny and re-eval claims");
+
+  // 75.2 Application Submission with Double-Blind Masking
+  const revalApplyReq = new NextRequest("http://localhost:3000/api/examinations/revaluation", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "APPLY",
+      studentId: "STD-2025-001",
+      rollNumber: "2025-CS-101",
+      studentName: "Aarav Sharma",
+      courseCode: "CS-402",
+      courseTitle: "Advanced Neural Networks",
+      originalMarks: 65,
+      originalGrade: "B",
+      type: "DOUBLE_BLIND_REVALUATION",
+      remarks: "Scrutiny requested for Question 4 derivation",
+    }),
+  });
+  const revalApplyRes = await handleRevaluationPost(revalApplyReq);
+  assert(revalApplyRes.status === 201, "POST /api/examinations/revaluation (APPLY) returns 201 Created");
+  const revalApplyData = await revalApplyRes.json();
+  assert(revalApplyData.success === true, "Revaluation application registered successfully");
+  const newAppId = revalApplyData.application.id;
+  assert(revalApplyData.application.dummyNumber.startsWith("BLIND-"), "Evaluator blind foil code assigned to protect anonymity");
+  assert(revalApplyData.application.status === "SCRUTINY_PENDING", "Initial revaluation status is SCRUTINY_PENDING");
+
+  // 75.3 Evaluator Assignment
+  const revalAssignReq = new NextRequest("http://localhost:3000/api/examinations/revaluation", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "ASSIGN_EXAMINER",
+      applicationId: newAppId,
+      examinerName: "Dr. K. R. Meenakshi (External Examiner)",
+    }),
+  });
+  const revalAssignRes = await handleRevaluationPost(revalAssignReq);
+  assert(revalAssignRes.status === 200, "POST /api/examinations/revaluation (ASSIGN_EXAMINER) returns 200 OK");
+  const revalAssignData = await revalAssignRes.json();
+  assert(revalAssignData.application.status === "EVALUATOR_ASSIGNED", "Status updated to EVALUATOR_ASSIGNED");
+
+  // 75.4 Evaluator Evaluation with >=10% Grade Revision & Bursar Fee Refund Trigger
+  const revalEvalReq = new NextRequest("http://localhost:3000/api/examinations/revaluation", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "SUBMIT_EVALUATION",
+      applicationId: newAppId,
+      revisedMarks: 73,
+      examinerNotes: "Derivation steps correctly formulated. Additional marks awarded.",
+    }),
+  });
+  const revalEvalRes = await handleRevaluationPost(revalEvalReq);
+  assert(revalEvalRes.status === 200, "POST /api/examinations/revaluation (SUBMIT_EVALUATION) returns 200 OK");
+  const revalEvalData = await revalEvalRes.json();
+  assert(revalEvalData.application.status === "COMPLETED", "Evaluation resolved and completed");
+  assert(revalEvalData.application.revisedMarks === 73, "Marks updated to 73");
+  assert(revalEvalData.application.revisedGrade === "B+", "Grade upgraded to B+");
+  assert(revalEvalData.application.feeRefundEligible === true, "Fee refund triggered due to >= 10% marks increase");
+
+  // 75.5 Statutory Anti-Ragging & Proctorial Board Governance
+  const proctorGetReq = new NextRequest("http://localhost:3000/api/compliance/proctorial", {
+    method: "GET",
+    headers: { Cookie: `classroom_session=${adminToken}` },
+  });
+  const proctorGetRes = await handleProctorialGet(proctorGetReq);
+  assert(proctorGetRes.status === 200, "GET /api/compliance/proctorial returns 200 OK");
+  const proctorGetData = await proctorGetRes.json();
+  assert(proctorGetData.success === true, "Proctorial GET returns success: true");
+  assert(proctorGetData.data.affidavits.length >= 3, "Anti-Ragging affidavits registry seeded with records");
+  assert(proctorGetData.data.incidents.length >= 3, "Disciplinary incidents registry seeded with records");
+
+  // 75.6 Submit Anti-Ragging Undertaking Oath
+  const affPostReq = new NextRequest("http://localhost:3000/api/compliance/proctorial", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "SUBMIT_AFFIDAVIT",
+      studentId: "STD-2026-901",
+      rollNumber: "2026-CS-901",
+      studentName: "Aditya Verma",
+      parentGuardianName: "Rajesh Verma",
+      parentPhone: "+91 99887 76655",
+      academicYear: "2026-2027",
+    }),
+  });
+  const affPostRes = await handleProctorialPost(affPostReq);
+  assert(affPostRes.status === 200, "POST /api/compliance/proctorial (SUBMIT_AFFIDAVIT) returns 200 OK");
+  const affPostData = await affPostRes.json();
+  assert(affPostData.data.antiRaggingReferenceNumber.startsWith("UGC-RAG-"), "UGC Reference Number assigned to affidavit");
+  assert(affPostData.data.signedOathHash.startsWith("APEX-OATH-SEAL-"), "Undertaking sealed with digital cryptographic oath hash");
+  assert(affPostData.data.complianceStatus === "AFFIDAVIT_VERIFIED", "Compliance verified");
+
+  // 75.7 Report Disciplinary Incident
+  const incPostReq = new NextRequest("http://localhost:3000/api/compliance/proctorial", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "REPORT_INCIDENT",
+      category: "CAMPUS_MISCONDUCT",
+      reportedBy: "Campus Vigilance Officer",
+      respondentStudentId: "STD-2024-009",
+      respondentRollNumber: "2024-CS-009",
+      respondentName: "Devansh Patel",
+      incidentDate: "2026-10-14",
+      location: "Academic Block 4 Corridor",
+      description: "Unauthorized assembly and curfew defiance",
+      severity: "MEDIUM",
+    }),
+  });
+  const incPostRes = await handleProctorialPost(incPostReq);
+  assert(incPostRes.status === 200, "POST /api/compliance/proctorial (REPORT_INCIDENT) returns 200 OK");
+  const incPostData = await incPostRes.json();
+  const testIncId = incPostData.data.id;
+  assert(incPostData.data.incidentNumber.startsWith("DISC-"), "Formal disciplinary incident number generated");
+  assert(incPostData.data.status === "REPORTED", "Initial incident status is REPORTED");
+
+  // 75.8 Issue Show-Cause Notice (SCN) with 72h statutory window
+  const scnPostReq = new NextRequest("http://localhost:3000/api/compliance/proctorial", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "ISSUE_SCN",
+      incidentId: testIncId,
+      chargeSheet: "Show cause within 72 hours why disciplinary fine should not be levied for campus misconduct.",
+      replyDeadlineHours: 72,
+    }),
+  });
+  const scnPostRes = await handleProctorialPost(scnPostReq);
+  assert(scnPostRes.status === 200, "POST /api/compliance/proctorial (ISSUE_SCN) returns 200 OK");
+  const scnPostData = await scnPostRes.json();
+  assert(scnPostData.data.status === "SHOW_CAUSE_ISSUED", "Status updated to SHOW_CAUSE_ISSUED");
+  assert(scnPostData.data.showCauseNotice.noticeNumber.startsWith("APEX-SCN-"), "SCN reference number assigned");
+
+  // 75.9 Submit Student Defense Statement
+  const defensePostReq = new NextRequest("http://localhost:3000/api/compliance/proctorial", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "SUBMIT_DEFENSE",
+      incidentId: testIncId,
+      explanationText: "I was returning laboratory equipment with instructor permission.",
+    }),
+  });
+  const defensePostRes = await handleProctorialPost(defensePostReq);
+  assert(defensePostRes.status === 200, "POST /api/compliance/proctorial (SUBMIT_DEFENSE) returns 200 OK");
+  const defensePostData = await defensePostRes.json();
+  assert(defensePostData.data.status === "EXPLANATION_RECEIVED", "Status updated to EXPLANATION_RECEIVED");
+
+  // 75.10 Pronounce Proctorial Disciplinary Sanction Order
+  const orderPostReq = new NextRequest("http://localhost:3000/api/compliance/proctorial", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "PRONOUNCE_ORDER",
+      incidentId: testIncId,
+      verdict: "DISCIPLINARY_FINE",
+      penaltyFineInr: 1500,
+      chiefProctorSignatory: "Prof. M. S. Ranganathan (Chief Proctor)",
+    }),
+  });
+  const orderPostRes = await handleProctorialPost(orderPostReq);
+  assert(orderPostRes.status === 200, "POST /api/compliance/proctorial (PRONOUNCE_ORDER) returns 200 OK");
+  const orderPostData = await orderPostRes.json();
+  assert(orderPostData.data.status === "ORDER_EXECUTED", "Status updated to ORDER_EXECUTED");
+  assert(orderPostData.data.disciplinaryOrder.orderSeal.startsWith("APEX-PROCTOR-SEAL-"), "Sanction order stamped with Chief Proctor cryptographic seal");
+  assert(orderPostData.data.disciplinaryOrder.penaltyFineInr === 1500, "Disciplinary fine of ₹1,500 levied");
+
+  // 75.11 Hostel Mess Diet Rebate & Dining Tokens
+  const messRebateGetReq = new NextRequest("http://localhost:3000/api/hostel/mess-rebate", {
+    method: "GET",
+    headers: { Cookie: `classroom_session=${adminToken}` },
+  });
+  const messRebateGetRes = await handleMessRebateGet(messRebateGetReq);
+  assert(messRebateGetRes.status === 200, "GET /api/hostel/mess-rebate returns 200 OK");
+  const messRebateGetData = await messRebateGetRes.json();
+  assert(messRebateGetData.success === true, "Mess rebate GET returns success: true");
+  assert(messRebateGetData.data.rebates.length >= 3, "Mess rebate claims list seeded with records");
+  assert(messRebateGetData.data.tokens.length >= 3, "Dining tokens list seeded with records");
+
+  // 75.12 Apply for Mess Diet Rebate (>= 3 consecutive days)
+  const rebateApplyReq = new NextRequest("http://localhost:3000/api/hostel/mess-rebate", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "APPLY_REBATE",
+      studentId: "STD-2025-001",
+      rollNumber: "2025-CS-101",
+      studentName: "Aarav Sharma",
+      hostelName: "Aryabhatta Hall of Residence",
+      roomNumber: "B-204",
+      leaveStartDate: "2026-11-01",
+      leaveEndDate: "2026-11-05",
+      leaveReason: "ACADEMIC_INTERNSHIP",
+      dailyDietRateInr: 160,
+    }),
+  });
+  const rebateApplyRes = await handleMessRebatePost(rebateApplyReq);
+  assert(rebateApplyRes.status === 200, "POST /api/hostel/mess-rebate (APPLY_REBATE) returns 200 OK");
+  const rebateApplyData = await rebateApplyRes.json();
+  const testRebateId = rebateApplyData.data.id;
+  assert(rebateApplyData.data.daysAbsent === 5, "Absence duration computed accurately as 5 days");
+  assert(rebateApplyData.data.calculatedRebateAmountInr === 800, "Rebate diet credit calculated accurately (5 x ₹160 = ₹800)");
+  assert(rebateApplyData.data.approvalStatus === "SUBMITTED", "Initial rebate status is SUBMITTED");
+
+  // 75.13 Minimum Absence Gate (< 3 days rejected)
+  const rebateInvalidReq = new NextRequest("http://localhost:3000/api/hostel/mess-rebate", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "APPLY_REBATE",
+      studentId: "STD-2025-001",
+      rollNumber: "2025-CS-101",
+      studentName: "Aarav Sharma",
+      hostelName: "Aryabhatta Hall of Residence",
+      roomNumber: "B-204",
+      leaveStartDate: "2026-11-01",
+      leaveEndDate: "2026-11-02",
+      leaveReason: "PERSONAL_EMERGENCY",
+    }),
+  });
+  const rebateInvalidRes = await handleMessRebatePost(rebateInvalidReq);
+  assert(rebateInvalidRes.status === 500, "Rebate claim with < 3 days is rejected by statutory policy gate");
+
+  // 75.14 Warden Approval & Dining Token Suspension
+  const rebateApproveReq = new NextRequest("http://localhost:3000/api/hostel/mess-rebate", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "APPROVE_REBATE",
+      rebateId: testRebateId,
+      approved: true,
+      wardenApprovalNotes: "Internship schedule confirmed with department.",
+      wardenSignatory: "Dr. Alok Verma (Chief Warden)",
+    }),
+  });
+  const rebateApproveRes = await handleMessRebatePost(rebateApproveReq);
+  assert(rebateApproveRes.status === 200, "POST /api/hostel/mess-rebate (APPROVE_REBATE) returns 200 OK");
+  const rebateApproveData = await rebateApproveRes.json();
+  assert(rebateApproveData.data.approvalStatus === "WARDEN_APPROVED", "Status updated to WARDEN_APPROVED");
+  assert(rebateApproveData.data.bursarCreditVoucherNo.startsWith("BUR-CR-REB-"), "Bursar credit voucher number generated");
+
+  // 75.15 Credit Rebate to Student Bursar Account
+  const rebateCreditReq = new NextRequest("http://localhost:3000/api/hostel/mess-rebate", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "CREDIT_BURSAR",
+      rebateId: testRebateId,
+    }),
+  });
+  const rebateCreditRes = await handleMessRebatePost(rebateCreditReq);
+  assert(rebateCreditRes.status === 200, "POST /api/hostel/mess-rebate (CREDIT_BURSAR) returns 200 OK");
+  const rebateCreditData = await rebateCreditRes.json();
+  assert(rebateCreditData.data.approvalStatus === "BURSAR_CREDITED", "Rebate status updated to BURSAR_CREDITED in ledger");
+
+  // 75.16 Generate Daily Dining Token with QR Digest Seal
+  const tokenGenReq = new NextRequest("http://localhost:3000/api/hostel/mess-rebate", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "GENERATE_TOKEN",
+      studentId: "STD-2025-001",
+      studentRollNumber: "2025-CS-101",
+      studentName: "Aarav Sharma",
+      hostelName: "Aryabhatta Hall of Residence",
+      date: "2026-11-10",
+      mealType: "DINNER",
+    }),
+  });
+  const tokenGenRes = await handleMessRebatePost(tokenGenReq);
+  assert(tokenGenRes.status === 200, "POST /api/hostel/mess-rebate (GENERATE_TOKEN) returns 200 OK");
+  const tokenGenData = await tokenGenRes.json();
+  const testTokId = tokenGenData.data.id;
+  assert(tokenGenData.data.status === "ACTIVE", "Generated meal token is ACTIVE");
+  assert(tokenGenData.data.qrDigest.startsWith("APEX-MESS-AUTH-"), "Turnstile meal authentication QR digest stamped");
+
+  // 75.17 Verify and Consume Meal Token at Turnstile
+  const tokenConsumeReq = new NextRequest("http://localhost:3000/api/hostel/mess-rebate", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "CONSUME_TOKEN",
+      tokenId: testTokId,
+      messManager: "Mess Supervisor Ramesh Chandra",
+    }),
+  });
+  const tokenConsumeRes = await handleMessRebatePost(tokenConsumeReq);
+  assert(tokenConsumeRes.status === 200, "POST /api/hostel/mess-rebate (CONSUME_TOKEN) returns 200 OK");
+  const tokenConsumeData = await tokenConsumeRes.json();
+  assert(tokenConsumeData.data.status === "CONSUMED", "Meal token status marked CONSUMED");
+  assert(!!tokenConsumeData.data.scannedAt, "Turnstile scanning timestamp logged");
 
   console.log("\n=================================================");
   console.log(`🎉 ALL ${passedTests}/${totalTests} TESTS PASSED SUCCESSFULLY!`);

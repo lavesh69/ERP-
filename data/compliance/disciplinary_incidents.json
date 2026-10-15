@@ -1,0 +1,131 @@
+[
+  {
+    "id": "INC-MV8Y55F4",
+    "incidentNumber": "DISC-2026-8004",
+    "category": "CAMPUS_MISCONDUCT",
+    "reportedBy": "Campus Vigilance Officer",
+    "respondentStudentId": "STD-2024-009",
+    "respondentRollNumber": "2024-CS-009",
+    "respondentName": "Devansh Patel",
+    "incidentDate": "2026-10-14",
+    "location": "Academic Block 4 Corridor",
+    "description": "Unauthorized assembly and curfew defiance",
+    "evidenceFiles": [],
+    "severity": "MEDIUM",
+    "status": "ORDER_EXECUTED",
+    "showCauseNotice": {
+      "noticeNumber": "APEX-SCN-2026-256A75",
+      "issuedAt": "2026-10-15T02:55:39.195Z",
+      "replyDeadlineHours": 72,
+      "chargeSheet": "Show cause within 72 hours why disciplinary fine should not be levied for campus misconduct."
+    },
+    "studentDefense": {
+      "submittedAt": "2026-10-15T02:55:39.208Z",
+      "explanationText": "I was returning laboratory equipment with instructor permission."
+    },
+    "disciplinaryOrder": {
+      "orderNumber": "APEX-PROCTOR-ORDER-0BC59ABB",
+      "verdict": "DISCIPLINARY_FINE",
+      "penaltyFineInr": 1500,
+      "orderSeal": "APEX-PROCTOR-SEAL-D7E3C67B11A02E89",
+      "chiefProctorSignatory": "Prof. M. S. Ranganathan (Chief Proctor)",
+      "issuedAt": "2026-10-15T02:55:39.219Z"
+    }
+  },
+  {
+    "id": "INC-2026-001",
+    "incidentNumber": "DISC-2026-8001",
+    "category": "HOSTEL_PROPERTY_DAMAGE",
+    "reportedBy": "Chief Warden Dr. H. C. Verma",
+    "respondentStudentId": "STU-2026-003",
+    "respondentRollNumber": "2026-ECE-015",
+    "respondentName": "Devansh Nambiar",
+    "incidentDate": "2026-03-10T22:30:00.000Z",
+    "location": "Aryabhata Hostel Block B Common Room",
+    "description": "Vandalism of common room smart television and table tennis equipment after curfew hours.",
+    "evidenceFiles": [
+      "cctv_footage_blockB_2230.mp4",
+      "damage_photo_01.jpg"
+    ],
+    "severity": "MEDIUM",
+    "status": "ORDER_EXECUTED",
+    "showCauseNotice": {
+      "noticeNumber": "APEX-SCN-2026-019",
+      "issuedAt": "2026-03-11T10:00:00.000Z",
+      "replyDeadlineHours": 72,
+      "chargeSheet": "Violation of Hostel Rule 14 (Property Preservation) and Rule 8 (Night Curfew Adherence)."
+    },
+    "studentDefense": {
+      "submittedAt": "2026-03-12T14:00:00.000Z",
+      "explanationText": "Admitted accidental damage while playing table tennis; offered to pay full repair compensation.",
+      "witnessStatement": "Roommate Samar Khan confirmed it was accidental during recreational game."
+    },
+    "disciplinaryOrder": {
+      "orderNumber": "APEX-PROCTOR-ORDER-812C",
+      "verdict": "DISCIPLINARY_FINE",
+      "penaltyFineInr": 4500,
+      "orderSeal": "APEX-PROCTOR-SEAL-891FA0029B81C432",
+      "chiefProctorSignatory": "Prof. M. S. Ranganathan (Chief Proctor)",
+      "issuedAt": "2026-03-14T16:00:00.000Z"
+    }
+  },
+  {
+    "id": "INC-2026-002",
+    "incidentNumber": "DISC-2026-8002",
+    "category": "ACADEMIC_DISHONESTY",
+    "reportedBy": "Dr. Arvind Swaminathan (Invigilator)",
+    "respondentStudentId": "STU-2026-004",
+    "respondentRollNumber": "2026-ME-042",
+    "respondentName": "Rohan Kulkarni",
+    "incidentDate": "2026-03-18T11:15:00.000Z",
+    "location": "Examination Hall 3, Desk 42",
+    "description": "Possession of unauthorized electronic smartwatch displaying solved formula sheet during CS-402 examination.",
+    "evidenceFiles": [
+      "confiscated_watch_log.pdf",
+      "invigilator_report_desk42.pdf"
+    ],
+    "severity": "SEVERE",
+    "status": "SHOW_CAUSE_ISSUED",
+    "showCauseNotice": {
+      "noticeNumber": "APEX-SCN-2026-022",
+      "issuedAt": "2026-03-19T09:00:00.000Z",
+      "replyDeadlineHours": 72,
+      "chargeSheet": "Violation of Examination Regulation Clause 9.2 (Unfair Means & Unauthorized Digital Devices in Examination Centre)."
+    }
+  },
+  {
+    "id": "INC-2026-003",
+    "incidentNumber": "DISC-2026-8003",
+    "category": "RAGGING_ZERO_TOLERANCE",
+    "reportedBy": "Anti-Ragging Squad Leader Prof. P. K. Saxena",
+    "respondentStudentId": "STU-2026-005",
+    "respondentRollNumber": "2026-CS-088",
+    "respondentName": "Kunal Mehra",
+    "incidentDate": "2026-03-25T20:00:00.000Z",
+    "location": "Senior Residence Wing C Courtyard",
+    "description": "Intimidation and unauthorized physical drill demands imposed upon junior freshers in dining hall queue.",
+    "evidenceFiles": [
+      "anti_ragging_squad_report_25mar.pdf"
+    ],
+    "severity": "SEVERE",
+    "status": "EXONERATED",
+    "showCauseNotice": {
+      "noticeNumber": "APEX-SCN-2026-025",
+      "issuedAt": "2026-03-26T08:00:00.000Z",
+      "replyDeadlineHours": 72,
+      "chargeSheet": "Violation of Supreme Court Guidelines on Prevention of Ragging in Technical Institutions."
+    },
+    "studentDefense": {
+      "submittedAt": "2026-03-26T14:30:00.000Z",
+      "explanationText": "Respondent was assisting event stage volunteers and was not present in Wing C courtyard at the alleged time.",
+      "witnessStatement": "Faculty event coordinator confirmed respondent presence at auditorium rehearsal."
+    },
+    "disciplinaryOrder": {
+      "orderNumber": "APEX-PROCTOR-ORDER-813E",
+      "verdict": "EXONERATED",
+      "orderSeal": "APEX-PROCTOR-SEAL-CLEAR-009A",
+      "chiefProctorSignatory": "Prof. M. S. Ranganathan (Chief Proctor)",
+      "issuedAt": "2026-03-28T11:00:00.000Z"
+    }
+  }
+]

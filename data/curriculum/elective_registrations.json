@@ -72,6 +72,74 @@
   ],
   "studentRegistrations": [
     {
+      "id": "reg-cbcs-1792032938122",
+      "studentRoll": "CS2026-001",
+      "studentName": "Alex Mercer",
+      "registeredTerm": "Fall 2026 - CBCS Phase II",
+      "priorityChoices": [
+        {
+          "preference": 1,
+          "courseCode": "CS-EL-501",
+          "status": "PENDING_SCRUTINY"
+        }
+      ],
+      "totalCreditsRegistered": 20,
+      "status": "CONFIRMED_SEALED",
+      "enrolledAt": "2026-10-15T02:55:38.122Z",
+      "sealHash": "0xaa6a3dbe...9124"
+    },
+    {
+      "id": "reg-cbcs-1792032894396",
+      "studentRoll": "CS2026-001",
+      "studentName": "Alex Mercer",
+      "registeredTerm": "Fall 2026 - CBCS Phase II",
+      "priorityChoices": [
+        {
+          "preference": 1,
+          "courseCode": "CS-EL-501",
+          "status": "PENDING_SCRUTINY"
+        }
+      ],
+      "totalCreditsRegistered": 20,
+      "status": "CONFIRMED_SEALED",
+      "enrolledAt": "2026-10-15T02:54:54.396Z",
+      "sealHash": "0x0705a2f4...9f14"
+    },
+    {
+      "id": "reg-cbcs-1792032851418",
+      "studentRoll": "CS2026-001",
+      "studentName": "Alex Mercer",
+      "registeredTerm": "Fall 2026 - CBCS Phase II",
+      "priorityChoices": [
+        {
+          "preference": 1,
+          "courseCode": "CS-EL-501",
+          "status": "PENDING_SCRUTINY"
+        }
+      ],
+      "totalCreditsRegistered": 20,
+      "status": "CONFIRMED_SEALED",
+      "enrolledAt": "2026-10-15T02:54:11.418Z",
+      "sealHash": "0x9ee12696...e759"
+    },
+    {
+      "id": "reg-cbcs-1792032802765",
+      "studentRoll": "CS2026-001",
+      "studentName": "Alex Mercer",
+      "registeredTerm": "Fall 2026 - CBCS Phase II",
+      "priorityChoices": [
+        {
+          "preference": 1,
+          "courseCode": "CS-EL-501",
+          "status": "PENDING_SCRUTINY"
+        }
+      ],
+      "totalCreditsRegistered": 20,
+      "status": "CONFIRMED_SEALED",
+      "enrolledAt": "2026-10-15T02:53:22.765Z",
+      "sealHash": "0x73b00b83...f9fd"
+    },
+    {
       "id": "reg-cbcs-1791994768615",
       "studentRoll": "CS2026-001",
       "studentName": "Alex Mercer",

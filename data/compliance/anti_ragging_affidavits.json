@@ -1,0 +1,58 @@
+[
+  {
+    "id": "RAG-MV8Y55EN",
+    "affidavitId": "APEX-RAG-AFF-2026-2026CS901",
+    "studentId": "STD-2026-901",
+    "rollNumber": "2026-CS-901",
+    "studentName": "Aditya Verma",
+    "academicYear": "2026-2027",
+    "parentGuardianName": "Rajesh Verma",
+    "parentPhone": "+91 99887 76655",
+    "undertakingSignedDate": "2026-10-15T02:55:39.167Z",
+    "antiRaggingReferenceNumber": "UGC-RAG-2026-104",
+    "complianceStatus": "AFFIDAVIT_VERIFIED",
+    "signedOathHash": "APEX-OATH-SEAL-8622ED469646308F"
+  },
+  {
+    "id": "RAG-001",
+    "affidavitId": "APEX-RAG-AFF-2026-CSE001",
+    "studentId": "STU-2026-001",
+    "rollNumber": "2026-CSE-001",
+    "studentName": "Alex Rivera",
+    "academicYear": "2026-2027",
+    "parentGuardianName": "Elena Rivera",
+    "parentPhone": "+91 98110 23456",
+    "undertakingSignedDate": "2026-08-01T09:00:00.000Z",
+    "antiRaggingReferenceNumber": "UGC-RAG-2026-89102",
+    "complianceStatus": "AFFIDAVIT_VERIFIED",
+    "signedOathHash": "APEX-OATH-SEAL-9B1C283F0198DA22"
+  },
+  {
+    "id": "RAG-002",
+    "affidavitId": "APEX-RAG-AFF-2026-CSE002",
+    "studentId": "STU-2026-002",
+    "rollNumber": "2026-CSE-002",
+    "studentName": "Priya Sharma",
+    "academicYear": "2026-2027",
+    "parentGuardianName": "Sunil Sharma",
+    "parentPhone": "+91 98220 34567",
+    "undertakingSignedDate": "2026-08-02T10:30:00.000Z",
+    "antiRaggingReferenceNumber": "UGC-RAG-2026-89103",
+    "complianceStatus": "AFFIDAVIT_VERIFIED",
+    "signedOathHash": "APEX-OATH-SEAL-88C1B74390F21AA4"
+  },
+  {
+    "id": "RAG-003",
+    "affidavitId": "APEX-RAG-AFF-2026-ECE015",
+    "studentId": "STU-2026-003",
+    "rollNumber": "2026-ECE-015",
+    "studentName": "Devansh Nambiar",
+    "academicYear": "2026-2027",
+    "parentGuardianName": "Ramesh Nambiar",
+    "parentPhone": "+91 98440 45678",
+    "undertakingSignedDate": "2026-08-03T11:15:00.000Z",
+    "antiRaggingReferenceNumber": "UGC-RAG-2026-89104",
+    "complianceStatus": "AFFIDAVIT_VERIFIED",
+    "signedOathHash": "APEX-OATH-SEAL-77D9A01358F421CB"
+  }
+]

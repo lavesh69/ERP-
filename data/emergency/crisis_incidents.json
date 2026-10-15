@@ -371,5 +371,105 @@
     "status": "ALL_CLEAR",
     "incidentSeal": "CLERY-SEAL-20921FBA82FAD74B0FDBDA82",
     "resolvedAt": "2026-10-14T16:19:30.079Z"
+  },
+  {
+    "id": "EMRG-1792032803595-XJPZ",
+    "institutionId": "inst-apex-01",
+    "category": "WEATHER",
+    "severity": "CRITICAL",
+    "headline": "FLASH FLOOD ALERT: Campus Evacuation Protocol",
+    "instructions": "Move to designated assembly points on higher ground immediately.",
+    "affectedLocations": [
+      "North Campus",
+      "Sports Complex",
+      "Block B"
+    ],
+    "activatedByUserId": "usr-admin-01",
+    "activatorName": "Elena Evans (SUPER_ADMIN)",
+    "channelsDispatched": [
+      "SMS",
+      "WHATSAPP",
+      "EMAIL",
+      "IN_APP_BANNER"
+    ],
+    "dispatchTimestamp": "2026-10-15T02:53:23.595Z",
+    "status": "ALL_CLEAR",
+    "incidentSeal": "CLERY-SEAL-6063847E0926601DFA0E45D0",
+    "resolvedAt": "2026-10-15T02:53:23.718Z"
+  },
+  {
+    "id": "EMRG-1792032852175-53KS",
+    "institutionId": "inst-apex-01",
+    "category": "WEATHER",
+    "severity": "CRITICAL",
+    "headline": "FLASH FLOOD ALERT: Campus Evacuation Protocol",
+    "instructions": "Move to designated assembly points on higher ground immediately.",
+    "affectedLocations": [
+      "North Campus",
+      "Sports Complex",
+      "Block B"
+    ],
+    "activatedByUserId": "usr-admin-01",
+    "activatorName": "Elena Evans (SUPER_ADMIN)",
+    "channelsDispatched": [
+      "SMS",
+      "WHATSAPP",
+      "EMAIL",
+      "IN_APP_BANNER"
+    ],
+    "dispatchTimestamp": "2026-10-15T02:54:12.175Z",
+    "status": "ALL_CLEAR",
+    "incidentSeal": "CLERY-SEAL-46CFEA5FA0DBC2467898A334",
+    "resolvedAt": "2026-10-15T02:54:12.206Z"
+  },
+  {
+    "id": "EMRG-1792032895074-GC2L",
+    "institutionId": "inst-apex-01",
+    "category": "WEATHER",
+    "severity": "CRITICAL",
+    "headline": "FLASH FLOOD ALERT: Campus Evacuation Protocol",
+    "instructions": "Move to designated assembly points on higher ground immediately.",
+    "affectedLocations": [
+      "North Campus",
+      "Sports Complex",
+      "Block B"
+    ],
+    "activatedByUserId": "usr-admin-01",
+    "activatorName": "Elena Evans (SUPER_ADMIN)",
+    "channelsDispatched": [
+      "SMS",
+      "WHATSAPP",
+      "EMAIL",
+      "IN_APP_BANNER"
+    ],
+    "dispatchTimestamp": "2026-10-15T02:54:55.074Z",
+    "status": "ALL_CLEAR",
+    "incidentSeal": "CLERY-SEAL-516A41EDD76D3B7F7BA6BDD7",
+    "resolvedAt": "2026-10-15T02:54:55.118Z"
+  },
+  {
+    "id": "EMRG-1792032938748-8NWS",
+    "institutionId": "inst-apex-01",
+    "category": "WEATHER",
+    "severity": "CRITICAL",
+    "headline": "FLASH FLOOD ALERT: Campus Evacuation Protocol",
+    "instructions": "Move to designated assembly points on higher ground immediately.",
+    "affectedLocations": [
+      "North Campus",
+      "Sports Complex",
+      "Block B"
+    ],
+    "activatedByUserId": "usr-admin-01",
+    "activatorName": "Elena Evans (SUPER_ADMIN)",
+    "channelsDispatched": [
+      "SMS",
+      "WHATSAPP",
+      "EMAIL",
+      "IN_APP_BANNER"
+    ],
+    "dispatchTimestamp": "2026-10-15T02:55:38.748Z",
+    "status": "ALL_CLEAR",
+    "incidentSeal": "CLERY-SEAL-5BABA25CC8BA6856F87AD50A",
+    "resolvedAt": "2026-10-15T02:55:38.774Z"
   }
 ]
