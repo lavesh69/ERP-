@@ -32,6 +32,8 @@ import {
   Download,
   X,
 } from "lucide-react";
+import { SkeletonCard } from "@/components/common/SkeletonLoader";
+import { EmptyState } from "@/components/common/EmptyState";
 
 interface GrievanceSummary {
   totalGrievances: number;
@@ -44,13 +46,12 @@ interface GrievanceSummary {
 }
 
 export default function GrievancesPage() {
-  const { currentUser } = useApp();
+  const { currentUser, showToast } = useApp();
   const [activeTab, setActiveTab] = useState<"board" | "file" | "committees" | "compliance">("board");
   const [loading, setLoading] = useState(true);
   const [summary, setSummary] = useState<GrievanceSummary | null>(null);
   const [grievances, setGrievances] = useState<any[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>("ALL");
-  const [statusMessage, setStatusMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
   // Audio Voice Note Whistleblower State
   const [isRecording, setIsRecording] = useState(false);
@@ -212,7 +213,7 @@ export default function GrievancesPage() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed to submit grievance");
-      setStatusMessage({ type: "success", text: data.message });
+      showToast(data.message, "success");
       setShowFileModal(false);
       setFileForm({
         title: "",
@@ -226,7 +227,7 @@ export default function GrievancesPage() {
       });
       fetchData();
     } catch (err: any) {
-      setStatusMessage({ type: "error", text: err.message });
+      showToast(err.message, "error");
     }
   };
 
@@ -243,11 +244,11 @@ export default function GrievancesPage() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed to resolve grievance");
-      setStatusMessage({ type: "success", text: data.message });
+      showToast(data.message, "success");
       setShowResolveModal(false);
       fetchData();
     } catch (err: any) {
-      setStatusMessage({ type: "error", text: err.message });
+      showToast(err.message, "error");
     }
   };
 
@@ -286,7 +287,14 @@ export default function GrievancesPage() {
         </div>
 
         {/* Live Metrics */}
-        {summary && (
+        {loading ? (
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-6 pt-6 border-t border-rose-900/50">
+            <SkeletonCard />
+            <SkeletonCard />
+            <SkeletonCard />
+            <SkeletonCard />
+          </div>
+        ) : summary && (
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-6 pt-6 border-t border-rose-900/50">
             <div>
               <p className="text-xs text-rose-200 uppercase tracking-wider font-semibold">Total Cases Filed</p>
@@ -313,32 +321,6 @@ export default function GrievancesPage() {
           </div>
         )}
       </div>
-
-      {/* Alert Banner */}
-      {statusMessage && (
-        <div
-          className={`p-4 rounded-xl flex items-center justify-between text-sm ${
-            statusMessage.type === "success"
-              ? "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-200 border border-emerald-200 dark:border-emerald-800"
-              : "bg-rose-50 dark:bg-rose-950/40 text-rose-800 dark:text-rose-200 border border-rose-200 dark:border-rose-800"
-          }`}
-        >
-          <div className="flex items-center gap-2">
-            {statusMessage.type === "success" ? (
-              <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
-            ) : (
-              <AlertCircle className="w-5 h-5 text-rose-600 dark:text-rose-400" />
-            )}
-            <span>{statusMessage.text}</span>
-          </div>
-          <button
-            onClick={() => setStatusMessage(null)}
-            className="text-xs font-semibold underline hover:opacity-80 ml-4"
-          >
-            Dismiss
-          </button>
-        </div>
-      )}
 
       {/* Tabs */}
       <div className="flex border-b border-border dark:border-charcoal-800 space-x-2 overflow-x-auto no-scrollbar flex-nowrap pb-px">
@@ -398,8 +380,17 @@ export default function GrievancesPage() {
             </span>
           </div>
 
-          <div className="grid grid-cols-1 gap-4">
-            {grievances.map((item) => {
+          {grievances.length === 0 ? (
+            <EmptyState
+              icon={Scale}
+              title="No Grievance Cases Found"
+              description={`No petitions found under statutory category "${selectedCategory}".`}
+              actionLabel="Lodge New Grievance"
+              onAction={() => setActiveTab("file")}
+            />
+          ) : (
+            <div className="grid grid-cols-1 gap-4">
+              {grievances.map((item) => {
               const isResolved = item.status === "RESOLVED";
               return (
                 <div
@@ -486,6 +477,7 @@ export default function GrievancesPage() {
               );
             })}
           </div>
+          )}
         </div>
       )}
 

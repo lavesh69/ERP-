@@ -32,6 +32,8 @@ import {
   X,
 } from "lucide-react";
 import AdmissionsCounselingTab from "@/components/admissions/AdmissionsCounselingTab";
+import { SkeletonCard } from "@/components/common/SkeletonLoader";
+import { EmptyState } from "@/components/common/EmptyState";
 
 interface AdmissionsSummary {
   totalApplicants: number;
@@ -43,14 +45,13 @@ interface AdmissionsSummary {
 }
 
 export default function AdmissionsPage() {
-  const { currentUser } = useApp();
+  const { currentUser, showToast } = useApp();
   const [activeTab, setActiveTab] = useState<"pipeline" | "register" | "quotas" | "analytics" | "counseling">("pipeline");
   const [loading, setLoading] = useState(true);
   const [summary, setSummary] = useState<AdmissionsSummary | null>(null);
   const [applicants, setApplicants] = useState<any[]>([]);
   const [selectedStage, setSelectedStage] = useState<string>("ALL");
   const [searchQuery, setSearchQuery] = useState("");
-  const [statusMessage, setStatusMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
   const [selectedApplicantDossier, setSelectedApplicantDossier] = useState<any | null>(null);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [showOfferDispatchModal, setShowOfferDispatchModal] = useState(false);
@@ -73,10 +74,10 @@ export default function AdmissionsPage() {
       quotas: updatedQuotas,
       totalSeatCapacity: updatedQuotas.reduce((acc, q) => acc + q.totalSeats, 0),
     });
-    setStatusMessage({
-      type: "success",
-      text: `Updated institutional intake quota for ${editingQuota.programName} (${editingQuota.programCode})!`,
-    });
+    showToast(
+      `Updated institutional intake quota for ${editingQuota.programName} (${editingQuota.programCode})!`,
+      "success"
+    );
     setShowQuotaModal(false);
     setEditingQuota(null);
   };
@@ -187,7 +188,7 @@ export default function AdmissionsPage() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed to submit application");
-      setStatusMessage({ type: "success", text: data.message });
+      showToast(data.message, "success");
       setShowAppModal(false);
       setAppForm({
         fullName: "",
@@ -200,7 +201,7 @@ export default function AdmissionsPage() {
       });
       fetchData();
     } catch (err: any) {
-      setStatusMessage({ type: "error", text: err.message });
+      showToast(err.message, "error");
     }
   };
 
@@ -218,10 +219,10 @@ export default function AdmissionsPage() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Stage update failed");
-      setStatusMessage({ type: "success", text: data.message });
+      showToast(data.message, "success");
       fetchData();
     } catch (err: any) {
-      setStatusMessage({ type: "error", text: err.message });
+      showToast(err.message, "error");
     }
   };
 
@@ -238,10 +239,10 @@ export default function AdmissionsPage() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed to provision student");
-      setStatusMessage({ type: "success", text: data.message });
+      showToast(data.message, "success");
       fetchData();
     } catch (err: any) {
-      setStatusMessage({ type: "error", text: err.message });
+      showToast(err.message, "error");
     } finally {
       setLoading(false);
     }
@@ -277,14 +278,14 @@ export default function AdmissionsPage() {
           })
         )
       );
-      setStatusMessage({
-        type: "success",
-        text: `Successfully updated ${selectedIds.length} applicants to ${stage.replace(/_/g, " ")}`,
-      });
+      showToast(
+        `Successfully updated ${selectedIds.length} applicants to ${stage.replace(/_/g, " ")}`,
+        "success"
+      );
       setSelectedIds([]);
       fetchData();
     } catch (err: any) {
-      setStatusMessage({ type: "error", text: err.message || "Bulk stage update failed" });
+      showToast(err.message || "Bulk stage update failed", "error");
     } finally {
       setLoading(false);
     }
@@ -367,7 +368,14 @@ export default function AdmissionsPage() {
         </div>
 
         {/* Live Metrics */}
-        {summary && (
+        {loading && !summary ? (
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-6 pt-6 border-t border-rose-900/50">
+            <SkeletonCard />
+            <SkeletonCard />
+            <SkeletonCard />
+            <SkeletonCard />
+          </div>
+        ) : summary ? (
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-6 pt-6 border-t border-rose-900/50">
             <div>
               <p className="text-xs text-rose-200 uppercase tracking-wider font-semibold">Total Applicants</p>
@@ -390,34 +398,8 @@ export default function AdmissionsPage() {
               <p className="text-xs text-rose-300 mt-0.5">Awaiting Deposit Settlement</p>
             </div>
           </div>
-        )}
+        ) : null}
       </div>
-
-      {/* Alert Banner */}
-      {statusMessage && (
-        <div
-          className={`p-4 rounded-xl flex items-center justify-between text-sm ${
-            statusMessage.type === "success"
-              ? "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-200 border border-emerald-200 dark:border-emerald-800"
-              : "bg-rose-50 dark:bg-rose-950/40 text-rose-800 dark:text-rose-200 border border-rose-200 dark:border-rose-800"
-          }`}
-        >
-          <div className="flex items-center gap-2">
-            {statusMessage.type === "success" ? (
-              <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
-            ) : (
-              <AlertCircle className="w-5 h-5 text-rose-600 dark:text-rose-400" />
-            )}
-            <span>{statusMessage.text}</span>
-          </div>
-          <button
-            onClick={() => setStatusMessage(null)}
-            className="text-xs font-semibold underline hover:opacity-80 ml-4"
-          >
-            Dismiss
-          </button>
-        </div>
-      )}
 
       {/* Navigation Tabs */}
       <div className="flex border-b border-border dark:border-charcoal-800 space-x-2 overflow-x-auto no-scrollbar flex-nowrap pb-px">
@@ -547,197 +529,187 @@ export default function AdmissionsPage() {
           )}
 
           <div className="grid grid-cols-1 gap-4">
-            {filteredApplicants.map((lead) => {
-              const isEnrolled = lead.stage === "SEAT_CONFIRMED";
-              const isSelected = selectedIds.includes(lead.id);
-              return (
-                <div
-                  key={lead.id}
-                  className={`bg-white dark:bg-charcoal-900 rounded-xl p-5 border transition-all ${
-                    isSelected
-                      ? "border-rose-500 ring-2 ring-rose-500/20 shadow-md"
-                      : "border-border dark:border-charcoal-800 shadow-sm"
-                  } flex flex-col md:flex-row justify-between items-start md:items-center gap-4`}
-                >
-                  <div className="flex items-start gap-3 max-w-2xl">
-                    <button
-                      onClick={() => handleToggleSelect(lead.id)}
-                      className="mt-1 text-charcoal-400 hover:text-rose-primary transition-colors focus:outline-none"
-                      title={isSelected ? "Deselect applicant" : "Select applicant"}
-                    >
-                      {isSelected ? (
-                        <CheckSquare className="w-5 h-5 text-rose-primary" />
-                      ) : (
-                        <Square className="w-5 h-5" />
-                      )}
-                    </button>
-
-                    <div className="space-y-1.5">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className="font-mono text-xs font-bold text-rose-primary dark:text-rose-light">
-                          {lead.applicationNo}
-                        </span>
-                        <span className="text-xs px-2.5 py-0.5 rounded-full font-bold bg-rose-100 dark:bg-rose-950/60 text-rose-800 dark:text-rose-200">
-                          Rank #{lead.meritRank}
-                        </span>
-                        <span
-                          className={`text-xs px-2.5 py-0.5 rounded-full font-semibold ${
-                            isEnrolled
-                              ? "bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-200 border border-emerald-300"
-                              : "bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-200 border border-amber-300"
-                          }`}
-                        >
-                          {lead.stage.replace(/_/g, " ")}
-                        </span>
-                        {lead.seatDepositPaid && (
-                          <span className="text-[10px] px-2 py-0.5 rounded bg-emerald-50 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 font-medium">
-                            Deposit Cleared (${lead.depositAmount})
-                          </span>
+            {filteredApplicants.length === 0 ? (
+              <EmptyState
+                icon={Search}
+                title="No Applicant Dossiers Found"
+                description="No applicant records match your current stage filter or search keyword. Try clearing filters or searching with a different term."
+                actionLabel="Reset Filters"
+                onAction={() => {
+                  setSelectedStage("ALL");
+                  setSearchQuery("");
+                }}
+              />
+            ) : (
+              filteredApplicants.map((lead) => {
+                const isEnrolled = lead.stage === "SEAT_CONFIRMED";
+                const isSelected = selectedIds.includes(lead.id);
+                return (
+                  <div
+                    key={lead.id}
+                    className={`bg-white dark:bg-charcoal-900 rounded-xl p-5 border transition-all ${
+                      isSelected
+                        ? "border-rose-500 ring-2 ring-rose-500/20 shadow-md"
+                        : "border-border dark:border-charcoal-800 shadow-sm"
+                    } flex flex-col md:flex-row justify-between items-start md:items-center gap-4`}
+                  >
+                    <div className="flex items-start gap-3 max-w-2xl">
+                      <button
+                        onClick={() => handleToggleSelect(lead.id)}
+                        className="mt-1 text-charcoal-400 hover:text-rose-primary transition-colors focus:outline-none"
+                        title={isSelected ? "Deselect applicant" : "Select applicant"}
+                      >
+                        {isSelected ? (
+                          <CheckSquare className="w-5 h-5 text-rose-primary" />
+                        ) : (
+                          <Square className="w-5 h-5" />
                         )}
-                      </div>
+                      </button>
 
-                      <h3 className="font-bold text-base text-charcoal-900 dark:text-ivory-100 mt-1">
-                        {lead.fullName} — {lead.programName}
-                      </h3>
-                      <div className="text-xs text-charcoal-600 dark:text-ivory-300 flex flex-wrap gap-4 pt-0.5">
-                        <span>High School GPA: <b>{lead.highSchoolGpa}</b></span>
-                        <span>SAT / Entrance Score: <b>{lead.entranceExamScore}</b></span>
-                        <span>Contact: {lead.email} • {lead.phone}</span>
-                      </div>
+                      <div className="space-y-1.5">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="font-mono text-xs font-bold text-rose-primary dark:text-rose-light">
+                            {lead.applicationNo}
+                          </span>
+                          <span className="text-xs px-2.5 py-0.5 rounded-full font-bold bg-rose-100 dark:bg-rose-950/60 text-rose-800 dark:text-rose-200">
+                            Rank #{lead.meritRank}
+                          </span>
+                          <span
+                            className={`text-xs px-2.5 py-0.5 rounded-full font-semibold ${
+                              isEnrolled
+                                ? "bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-200 border border-emerald-300"
+                                : "bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-200 border border-amber-300"
+                            }`}
+                          >
+                            {lead.stage.replace(/_/g, " ")}
+                          </span>
+                          {lead.seatDepositPaid && (
+                            <span className="text-[10px] px-2 py-0.5 rounded bg-emerald-50 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 font-medium">
+                              Deposit Cleared (₹{lead.depositAmount?.toLocaleString("en-IN")})
+                            </span>
+                          )}
+                        </div>
 
-                      {/* Document Verification Checks */}
-                      <div className="text-[11px] text-charcoal-500 pt-1 flex flex-wrap gap-3">
-                        <span className="flex items-center gap-1">
-                          <FileCheck className="w-3.5 h-3.5 text-emerald-500" /> Transcripts: {lead.documentsStatus.transcriptsVerified ? "Verified" : "Pending"}
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <FileCheck className="w-3.5 h-3.5 text-emerald-500" /> Identity: {lead.documentsStatus.identityProofVerified ? "Verified" : "Pending"}
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <FileCheck className="w-3.5 h-3.5 text-emerald-500" /> Recommendations: {lead.documentsStatus.recommendationLettersVerified ? "Verified" : "Pending"}
-                        </span>
+                        <h3 className="font-bold text-base text-charcoal-900 dark:text-ivory-100 mt-1">
+                          {lead.fullName} — {lead.programName}
+                        </h3>
+                        <div className="text-xs text-charcoal-600 dark:text-ivory-300 flex flex-wrap gap-4 pt-0.5">
+                          <span>High School GPA: <b>{lead.highSchoolGpa}</b></span>
+                          <span>SAT / Entrance Score: <b>{lead.entranceExamScore}</b></span>
+                          <span>Contact: {lead.email} • {lead.phone}</span>
+                        </div>
+
+                        {/* Document Verification Checks */}
+                        <div className="text-[11px] text-charcoal-500 pt-1 flex flex-wrap gap-3">
+                          <span className="flex items-center gap-1">
+                            <FileCheck className="w-3.5 h-3.5 text-emerald-500" /> Transcripts: {lead.documentsStatus.transcriptsVerified ? "Verified" : "Pending"}
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <FileCheck className="w-3.5 h-3.5 text-emerald-500" /> Identity: {lead.documentsStatus.identityProofVerified ? "Verified" : "Pending"}
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <FileCheck className="w-3.5 h-3.5 text-emerald-500" /> Recommendations: {lead.documentsStatus.recommendationLettersVerified ? "Verified" : "Pending"}
+                          </span>
+                        </div>
                       </div>
                     </div>
-                  </div>
 
-                  {/* Stage Transition Actions */}
-                  <div className="flex flex-wrap items-center gap-2">
-                    {lead.stage === "APPLICATION_SUBMITTED" && (
-                      <>
+                    {/* Stage Transition Actions */}
+                    <div className="flex flex-wrap items-center gap-2">
+                      {lead.stage === "APPLICATION_SUBMITTED" && (
+                        <>
+                          <button
+                            onClick={() => handleUpdateStage(lead.id, "MERIT_SHORTLISTED")}
+                            className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-rose-primary text-white hover:bg-rose-accent transition-colors"
+                          >
+                            Shortlist for Merit
+                          </button>
+                          <button
+                            onClick={() => handleUpdateStage(lead.id, "REJECTED")}
+                            className="px-2.5 py-1.5 rounded-lg text-xs font-medium text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors"
+                          >
+                            Decline
+                          </button>
+                        </>
+                      )}
+                      {lead.stage === "MERIT_SHORTLISTED" && (
+                        <>
+                          <button
+                            onClick={() => handleUpdateStage(lead.id, "OFFER_EXTENDED")}
+                            className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600 text-white hover:bg-emerald-700 transition-colors"
+                          >
+                            Release Offer Letter
+                          </button>
+                          <button
+                            onClick={() => handleSimulateOfferDispatch(lead)}
+                            className="px-2.5 py-1.5 rounded-lg text-xs font-medium text-purple-700 bg-purple-50 hover:bg-purple-100 dark:bg-purple-950/60 dark:text-purple-300 transition-colors flex items-center gap-1"
+                          >
+                            <Mail className="w-3.5 h-3.5" />
+                            Email Offer
+                          </button>
+                          <button
+                            onClick={() => handleUpdateStage(lead.id, "REJECTED")}
+                            className="px-2.5 py-1.5 rounded-lg text-xs font-medium text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors"
+                          >
+                            Decline
+                          </button>
+                        </>
+                      )}
+                      {lead.stage === "OFFER_EXTENDED" && (
+                        <>
+                          <button
+                            onClick={() => handleUpdateStage(lead.id, "SEAT_CONFIRMED", true)}
+                            className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-blue-600 text-white hover:bg-blue-700 transition-colors"
+                          >
+                            Confirm Seat Deposit
+                          </button>
+                          <button
+                            onClick={() => handleSimulateOfferDispatch(lead)}
+                            className="px-2.5 py-1.5 rounded-lg text-xs font-medium text-purple-700 bg-purple-50 hover:bg-purple-100 dark:bg-purple-950/60 dark:text-purple-300 transition-colors flex items-center gap-1"
+                          >
+                            <Mail className="w-3.5 h-3.5" />
+                            Resend Offer
+                          </button>
+                          <button
+                            onClick={() => handleUpdateStage(lead.id, "REJECTED")}
+                            className="px-2.5 py-1.5 rounded-lg text-xs font-medium text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors"
+                          >
+                            Decline Offer
+                          </button>
+                        </>
+                      )}
+                      {lead.stage === "SEAT_CONFIRMED" && (
                         <button
-                          onClick={() => handleUpdateStage(lead.id, "MERIT_SHORTLISTED")}
-                          className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-rose-primary text-white hover:bg-rose-accent transition-colors"
+                          onClick={() => handleProvisionStudent(lead.id)}
+                          className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600 text-white hover:bg-emerald-700 transition-colors flex items-center gap-1 shadow-sm"
                         >
-                          Shortlist for Merit
+                          <UserCheck className="w-3.5 h-3.5" />
+                          Enroll in SIS
                         </button>
-                        <button
-                          onClick={() => handleUpdateStage(lead.id, "REJECTED")}
-                          className="px-2.5 py-1.5 rounded-lg text-xs font-medium text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors"
-                        >
-                          Decline
-                        </button>
-                      </>
-                    )}
-                    {lead.stage === "MERIT_SHORTLISTED" && (
-                      <>
-                        <button
-                          onClick={() => handleUpdateStage(lead.id, "OFFER_EXTENDED")}
-                          className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600 text-white hover:bg-emerald-700 transition-colors"
-                        >
-                          Release Offer Letter
-                        </button>
-                        <button
-                          onClick={() => handleSimulateOfferDispatch(lead)}
-                          className="px-2.5 py-1.5 rounded-lg text-xs font-medium text-purple-700 bg-purple-50 hover:bg-purple-100 dark:bg-purple-950/60 dark:text-purple-300 transition-colors flex items-center gap-1"
-                        >
-                          <Mail className="w-3.5 h-3.5" />
-                          Email Offer
-                        </button>
-                        <button
-                          onClick={() => handleUpdateStage(lead.id, "REJECTED")}
-                          className="px-2.5 py-1.5 rounded-lg text-xs font-medium text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors"
-                        >
-                          Decline
-                        </button>
-                      </>
-                    )}
-                    {lead.stage === "OFFER_EXTENDED" && (
-                      <>
-                        <button
-                          onClick={() => handleUpdateStage(lead.id, "SEAT_CONFIRMED", true)}
-                          className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-blue-600 text-white hover:bg-blue-700 transition-colors"
-                        >
-                          Confirm Seat Deposit
-                        </button>
-                        <button
-                          onClick={() => handleSimulateOfferDispatch(lead)}
-                          className="px-2.5 py-1.5 rounded-lg text-xs font-medium text-purple-700 bg-purple-50 hover:bg-purple-100 dark:bg-purple-950/60 dark:text-purple-300 transition-colors flex items-center gap-1"
-                        >
-                          <Mail className="w-3.5 h-3.5" />
-                          Resend Offer
-                        </button>
-                        <button
-                          onClick={() => handleUpdateStage(lead.id, "REJECTED")}
-                          className="px-2.5 py-1.5 rounded-lg text-xs font-medium text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors"
-                        >
-                          Decline Offer
-                        </button>
-                      </>
-                    )}
-                    {lead.stage === "SEAT_CONFIRMED" && (
+                      )}
+                      {lead.stage === "ENROLLED" && (
+                        <span className="text-xs text-emerald-700 dark:text-emerald-300 font-bold px-2.5 py-1 bg-emerald-50 dark:bg-emerald-950/60 rounded-lg border border-emerald-300 dark:border-emerald-800 flex items-center gap-1">
+                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                          Enrolled in SIS
+                        </span>
+                      )}
+                      {lead.stage === "REJECTED" && (
+                        <span className="text-xs text-rose-500 font-medium px-2 py-1 bg-rose-50 dark:bg-rose-950/40 rounded-lg">
+                          Application Closed
+                        </span>
+                      )}
+
                       <button
-                        onClick={() => handleProvisionStudent(lead.id)}
-                        className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600 text-white hover:bg-emerald-700 transition-colors flex items-center gap-1 shadow-sm"
+                        onClick={() => setSelectedApplicantDossier(lead)}
+                        className="px-2.5 py-1.5 rounded-lg text-xs font-semibold text-charcoal-700 dark:text-ivory-200 bg-ivory-100 dark:bg-charcoal-800 hover:bg-ivory-200 dark:hover:bg-charcoal-700 transition-colors border border-border dark:border-charcoal-700 flex items-center gap-1"
                       >
-                        <UserCheck className="w-3.5 h-3.5" />
-                        Enroll in SIS
+                        <Eye className="w-3.5 h-3.5 text-rose-primary dark:text-rose-light" />
+                        View Dossier
                       </button>
-                    )}
-                    {lead.stage === "ENROLLED" && (
-                      <span className="text-xs text-emerald-700 dark:text-emerald-300 font-bold px-2.5 py-1 bg-emerald-50 dark:bg-emerald-950/60 rounded-lg border border-emerald-300 dark:border-emerald-800 flex items-center gap-1">
-                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-                        Enrolled in SIS
-                      </span>
-                    )}
-                    {lead.stage === "REJECTED" && (
-                      <span className="text-xs text-rose-500 font-medium px-2 py-1 bg-rose-50 dark:bg-rose-950/40 rounded-lg">
-                        Application Closed
-                      </span>
-                    )}
-
-                    <button
-                      onClick={() => setSelectedApplicantDossier(lead)}
-                      className="px-2.5 py-1.5 rounded-lg text-xs font-semibold text-charcoal-700 dark:text-ivory-200 bg-ivory-100 dark:bg-charcoal-800 hover:bg-ivory-200 dark:hover:bg-charcoal-700 transition-colors border border-border dark:border-charcoal-700 flex items-center gap-1"
-                    >
-                      <Eye className="w-3.5 h-3.5 text-rose-primary dark:text-rose-light" />
-                      View Dossier
-                    </button>
+                    </div>
                   </div>
-                </div>
-              );
-            })}
-
-            {filteredApplicants.length === 0 && (
-              <div className="bg-white dark:bg-charcoal-900 rounded-xl p-12 border border-border dark:border-charcoal-800 text-center space-y-3">
-                <div className="w-12 h-12 rounded-full bg-rose-50 dark:bg-rose-950/50 flex items-center justify-center mx-auto text-rose-primary dark:text-rose-light">
-                  <Search className="w-6 h-6" />
-                </div>
-                <h3 className="font-bold text-base text-charcoal-900 dark:text-ivory-100">
-                  No Applicant Dossiers Found
-                </h3>
-                <p className="text-xs text-charcoal-500 max-w-sm mx-auto">
-                  No applicant records match your current stage filter or search keyword. Try clearing filters or searching with a different term.
-                </p>
-                <button
-                  onClick={() => {
-                    setSelectedStage("ALL");
-                    setSearchQuery("");
-                  }}
-                  className="px-4 py-2 text-xs font-semibold bg-rose-primary text-white rounded-lg hover:bg-rose-accent transition-colors shadow-sm"
-                >
-                  Reset Filters
-                </button>
-              </div>
+                );
+              })
             )}
           </div>
         </div>
@@ -783,70 +755,95 @@ export default function AdmissionsPage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            {summary?.quotas
-              .filter((q) =>
-                q.programName.toLowerCase().includes(quotaSearchQuery.toLowerCase()) ||
-                q.programCode.toLowerCase().includes(quotaSearchQuery.toLowerCase())
-              )
-              .map((q) => {
-                const fillRate = Math.round((q.confirmedSeats / q.totalSeats) * 100);
-                return (
-                  <div
-                    key={q.programCode}
-                    className="bg-white dark:bg-charcoal-900 rounded-xl p-5 border border-border dark:border-charcoal-800 shadow-sm flex flex-col justify-between space-y-4"
-                  >
-                    <div>
-                      <div className="flex items-start justify-between">
-                        <div>
-                          <span className="font-mono text-xs font-bold text-rose-primary dark:text-rose-light">
-                            {q.programCode}
+            {summary?.quotas.filter((q) =>
+              q.programName.toLowerCase().includes(quotaSearchQuery.toLowerCase()) ||
+              q.programCode.toLowerCase().includes(quotaSearchQuery.toLowerCase())
+            ).length === 0 ? (
+              <div className="col-span-full">
+                <EmptyState
+                  icon={GraduationCap}
+                  title="No Quota Programs Found"
+                  description="No academic degree quota matches your search criteria."
+                  actionLabel="Add Quota Program"
+                  onAction={() => {
+                    setEditingQuota({
+                      programCode: `NEW-${Math.random().toString(36).substring(2, 5).toUpperCase()}`,
+                      programName: "New Academic Degree Program",
+                      totalSeats: 60,
+                      confirmedSeats: 0,
+                      cutoffScore: 1300,
+                      applicationFee: 75,
+                    });
+                    setShowQuotaModal(true);
+                  }}
+                />
+              </div>
+            ) : (
+              summary?.quotas
+                .filter((q) =>
+                  q.programName.toLowerCase().includes(quotaSearchQuery.toLowerCase()) ||
+                  q.programCode.toLowerCase().includes(quotaSearchQuery.toLowerCase())
+                )
+                .map((q) => {
+                  const fillRate = Math.round((q.confirmedSeats / q.totalSeats) * 100);
+                  return (
+                    <div
+                      key={q.programCode}
+                      className="bg-white dark:bg-charcoal-900 rounded-xl p-5 border border-border dark:border-charcoal-800 shadow-sm flex flex-col justify-between space-y-4"
+                    >
+                      <div>
+                        <div className="flex items-start justify-between">
+                          <div>
+                            <span className="font-mono text-xs font-bold text-rose-primary dark:text-rose-light">
+                              {q.programCode}
+                            </span>
+                            <h3 className="font-bold text-base text-charcoal-900 dark:text-ivory-100 mt-1">
+                              {q.programName}
+                            </h3>
+                          </div>
+                          <span className="text-sm font-bold text-emerald-600 dark:text-emerald-400">
+                            Cutoff: {q.cutoffScore}
                           </span>
-                          <h3 className="font-bold text-base text-charcoal-900 dark:text-ivory-100 mt-1">
-                            {q.programName}
-                          </h3>
                         </div>
-                        <span className="text-sm font-bold text-emerald-600 dark:text-emerald-400">
-                          Cutoff: {q.cutoffScore}
-                        </span>
+
+                        <div className="mt-4 p-3 bg-ivory-50 dark:bg-charcoal-800/60 rounded-lg space-y-2 text-xs">
+                          <div className="flex justify-between items-center">
+                            <span className="text-charcoal-500">Seat Capacity:</span>
+                            <span className="font-bold text-charcoal-900 dark:text-ivory-100">
+                              {q.confirmedSeats} / {q.totalSeats} Enrolled ({fillRate}%)
+                            </span>
+                          </div>
+                          <div className="w-full bg-border dark:bg-charcoal-700 h-2 rounded-full overflow-hidden">
+                            <div
+                              className={`h-full ${fillRate >= 90 ? "bg-emerald-500" : "bg-rose-500"}`}
+                              style={{ width: `${Math.min(100, fillRate)}%` }}
+                            />
+                          </div>
+                        </div>
                       </div>
 
-                      <div className="mt-4 p-3 bg-ivory-50 dark:bg-charcoal-800/60 rounded-lg space-y-2 text-xs">
-                        <div className="flex justify-between items-center">
-                          <span className="text-charcoal-500">Seat Capacity:</span>
-                          <span className="font-bold text-charcoal-900 dark:text-ivory-100">
-                            {q.confirmedSeats} / {q.totalSeats} Enrolled ({fillRate}%)
+                      <div className="pt-3 border-t border-border dark:border-charcoal-800 flex justify-between items-center text-xs">
+                        <span className="text-charcoal-500">App Fee: ₹{q.applicationFee}</span>
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setEditingQuota({ ...q });
+                              setShowQuotaModal(true);
+                            }}
+                            className="px-2.5 py-1 rounded-lg text-xs font-semibold bg-ivory-100 dark:bg-charcoal-800 hover:bg-ivory-200 dark:hover:bg-charcoal-700 text-charcoal-800 dark:text-ivory-200 border border-border dark:border-charcoal-700 transition-colors"
+                          >
+                            Adjust Quota
+                          </button>
+                          <span className="text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1">
+                            <CheckCircle2 className="w-3.5 h-3.5" /> Active
                           </span>
-                        </div>
-                        <div className="w-full bg-border dark:bg-charcoal-700 h-2 rounded-full overflow-hidden">
-                          <div
-                            className={`h-full ${fillRate >= 90 ? "bg-emerald-500" : "bg-rose-500"}`}
-                            style={{ width: `${Math.min(100, fillRate)}%` }}
-                          />
                         </div>
                       </div>
                     </div>
-
-                    <div className="pt-3 border-t border-border dark:border-charcoal-800 flex justify-between items-center text-xs">
-                      <span className="text-charcoal-500">App Fee: ${q.applicationFee}</span>
-                      <div className="flex items-center gap-2">
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setEditingQuota({ ...q });
-                            setShowQuotaModal(true);
-                          }}
-                          className="px-2.5 py-1 rounded-lg text-xs font-semibold bg-ivory-100 dark:bg-charcoal-800 hover:bg-ivory-200 dark:hover:bg-charcoal-700 text-charcoal-800 dark:text-ivory-200 border border-border dark:border-charcoal-700 transition-colors"
-                        >
-                          Adjust Quota
-                        </button>
-                        <span className="text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1">
-                          <CheckCircle2 className="w-3.5 h-3.5" /> Active
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
+                  );
+                })
+            )}
           </div>
         </div>
       )}
@@ -888,7 +885,7 @@ export default function AdmissionsPage() {
             <div className="p-4 rounded-xl bg-ivory-50 dark:bg-charcoal-800/60 border border-border dark:border-charcoal-700">
               <p className="text-xs text-charcoal-500 uppercase font-semibold">Revenue Generated</p>
               <p className="text-2xl font-bold mt-1 text-rose-primary dark:text-rose-light">
-                ${((summary?.confirmedSeats || 0) * 1500).toLocaleString()}
+                ₹{((summary?.confirmedSeats || 0) * 1500).toLocaleString("en-IN")}
               </p>
               <p className="text-xs text-charcoal-500 mt-0.5">Confirmation seat reserves</p>
             </div>
@@ -1176,7 +1173,7 @@ export default function AdmissionsPage() {
                 <span className="text-[11px] text-charcoal-500">Required to confirm enrolment and assign institutional student roll number</span>
               </div>
               <span className={`px-3 py-1 rounded-full font-bold text-xs ${selectedApplicantDossier.seatDepositPaid ? 'bg-emerald-600 text-white' : 'bg-amber-500 text-white'}`}>
-                {selectedApplicantDossier.seatDepositPaid ? `Paid ($${selectedApplicantDossier.depositAmount})` : 'Awaiting Payment'}
+                {selectedApplicantDossier.seatDepositPaid ? `Paid (₹${selectedApplicantDossier.depositAmount?.toLocaleString("en-IN")})` : 'Awaiting Payment'}
               </span>
             </div>
 
@@ -1456,7 +1453,7 @@ export default function AdmissionsPage() {
                 </div>
                 <div>
                   <label className="block font-medium text-charcoal-700 dark:text-ivory-300 mb-1">
-                    Application Fee ($)
+                    Application Fee (₹)
                   </label>
                   <input
                     type="number"

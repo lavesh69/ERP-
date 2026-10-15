@@ -3,6 +3,9 @@
 import React, { useState, useEffect } from "react";
 import { AppShell } from "@/components/layout/AppShell";
 import { Breadcrumbs } from "@/components/common/Breadcrumbs";
+import { useApp } from "@/context/AppContext";
+import { SkeletonCard, SkeletonTable } from "@/components/common/SkeletonLoader";
+import { EmptyState } from "@/components/common/EmptyState";
 import {
   MessageSquareHeart,
   Star,
@@ -143,6 +146,7 @@ function analyzeSentiment(remarks?: string, score?: number) {
 }
 
 export default function FeedbackPage() {
+  const { showToast, currentRole } = useApp();
   const [activeTab, setActiveTab] = useState<"faculty" | "responses">("faculty");
   const [loading, setLoading] = useState(true);
   const [summary, setSummary] = useState<any>(null);
@@ -150,7 +154,6 @@ export default function FeedbackPage() {
   const [responses, setResponses] = useState<SurveyRecord[]>([]);
   const [showSurveyModal, setShowSurveyModal] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [message, setMessage] = useState<{ text: string; type: "success" | "error" } | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedDept, setSelectedDept] = useState("ALL");
   const [facultySortBy, setFacultySortBy] = useState<"FPI_DESC" | "FPI_ASC" | "SUBMISSIONS_DESC" | "NAME_ASC">("FPI_DESC");
@@ -253,7 +256,6 @@ export default function FeedbackPage() {
   const handleSubmitSurvey = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
-    setMessage(null);
 
     try {
       const res = await fetch("/api/feedback", {
@@ -267,14 +269,14 @@ export default function FeedbackPage() {
 
       const data = await res.json();
       if (res.ok) {
-        setMessage({ text: data.message || "Feedback submitted anonymously!", type: "success" });
+        showToast(data.message || "Feedback submitted anonymously!", "success");
         setShowSurveyModal(false);
         fetchData();
       } else {
-        setMessage({ text: data.error || "Failed to submit survey", type: "error" });
+        showToast(data.error || "Failed to submit survey", "error");
       }
     } catch (err: any) {
-      setMessage({ text: err.message || "Network error", type: "error" });
+      showToast(err.message || "Network error", "error");
     } finally {
       setSubmitting(false);
     }
@@ -290,14 +292,14 @@ export default function FeedbackPage() {
             <div>
               <div className="flex items-center gap-2 mb-2">
                 <span className="px-3 py-1 rounded-full text-xs font-semibold bg-rose-500/20 text-rose-200 border border-rose-400/30">
-                  Academic Quality Assurance & NAAC Criterion 1.4
+                  Academic Quality Assurance &amp; NAAC Criterion 1.4
                 </span>
                 <span className="px-3 py-1 rounded-full text-xs font-medium bg-emerald-500/20 text-emerald-200 border border-emerald-400/30">
                   Continuous SET Active
                 </span>
               </div>
-              <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-white">
-                Course Evaluation & 360 Faculty Feedback
+              <h1 className="text-2xl md:text-3xl font-display font-bold tracking-tight text-white">
+                Course Evaluation &amp; 360 Faculty Feedback
               </h1>
               <p className="text-sm md:text-base text-rose-100/80 mt-1 max-w-2xl">
                 Continuous Student Evaluation of Teaching (SET), 360-degree pedagogical analytics, anonymous sentiment tracking, and NAAC accreditation metrics.
@@ -314,7 +316,7 @@ export default function FeedbackPage() {
               </button>
               <button
                 onClick={() => setShowSurveyModal(true)}
-                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium text-sm bg-rose-primary hover:bg-rose-primary text-white shadow-md transition-all active:scale-95"
+                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium text-sm bg-rose-primary hover:bg-rose-primary/90 text-white shadow-md btn-primary-glow transition-all active:scale-95"
               >
                 <PlusCircle className="w-4 h-4" />
                 Submit Course Evaluation
@@ -323,65 +325,69 @@ export default function FeedbackPage() {
           </div>
         </div>
 
-      {message && (
-        <div
-          className={`p-4 rounded-xl text-sm flex items-center gap-2 ${
-            message.type === "success"
-              ? "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800"
-              : "bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-800"
-          }`}
-        >
-          <CheckCircle2 className="w-4 h-4 shrink-0" />
-          {message.text}
+      {/* KPI Cards */}
+      {loading ? (
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <SkeletonCard />
+          <SkeletonCard />
+          <SkeletonCard />
+          <SkeletonCard />
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="glass-panel p-5 rounded-2xl border border-border/80 dark:border-charcoal-800 shadow-soft hover:shadow-elevated transition-all group">
+            <div className="flex items-center justify-between text-charcoal-500 dark:text-charcoal-400 mb-2">
+              <span className="text-xs font-semibold uppercase tracking-wider">Total Submissions</span>
+              <div className="p-2 rounded-xl bg-rose-container/50 dark:bg-rose-dark/30 text-rose-primary dark:text-rose-accent">
+                <Users className="w-4 h-4" />
+              </div>
+            </div>
+            <div className="text-2xl font-bold font-display text-charcoal-900 dark:text-ivory-100">
+              {summary?.totalResponses || 0}
+            </div>
+            <p className="text-xs text-charcoal-400 mt-1">100% Anonymized &amp; Tamper-proof</p>
+          </div>
+
+          <div className="glass-panel p-5 rounded-2xl border border-border/80 dark:border-charcoal-800 shadow-soft hover:shadow-elevated transition-all group">
+            <div className="flex items-center justify-between text-charcoal-500 dark:text-charcoal-400 mb-2">
+              <span className="text-xs font-semibold uppercase tracking-wider">Institutional Satisfaction</span>
+              <div className="p-2 rounded-xl bg-amber-500/10 text-amber-500">
+                <Star className="w-4 h-4" />
+              </div>
+            </div>
+            <div className="text-2xl font-bold font-display text-charcoal-900 dark:text-ivory-100">
+              {summary?.averageSatisfactionRating || 0} / 5.0
+            </div>
+            <p className="text-xs text-emerald-600 dark:text-emerald-400 mt-1 font-medium">92% Positive Rating</p>
+          </div>
+
+          <div className="glass-panel p-5 rounded-2xl border border-border/80 dark:border-charcoal-800 shadow-soft hover:shadow-elevated transition-all group">
+            <div className="flex items-center justify-between text-charcoal-500 dark:text-charcoal-400 mb-2">
+              <span className="text-xs font-semibold uppercase tracking-wider">Faculty Evaluated</span>
+              <div className="p-2 rounded-xl bg-indigo-500/10 text-indigo-500">
+                <Award className="w-4 h-4" />
+              </div>
+            </div>
+            <div className="text-2xl font-bold font-display text-charcoal-900 dark:text-ivory-100">
+              {summary?.facultyEvaluatedCount || 0}
+            </div>
+            <p className="text-xs text-charcoal-400 mt-1">Across all academic departments</p>
+          </div>
+
+          <div className="glass-panel p-5 rounded-2xl border border-border/80 dark:border-charcoal-800 shadow-soft hover:shadow-elevated transition-all group">
+            <div className="flex items-center justify-between text-charcoal-500 dark:text-charcoal-400 mb-2">
+              <span className="text-xs font-semibold uppercase tracking-wider">High Distinction Index</span>
+              <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-500">
+                <TrendingUp className="w-4 h-4" />
+              </div>
+            </div>
+            <div className="text-2xl font-bold font-display text-charcoal-900 dark:text-ivory-100">
+              {summary?.topRatedFacultyCount || 0}
+            </div>
+            <p className="text-xs text-charcoal-400 mt-1">FPI Score &ge; 4.0 / 5.0</p>
+          </div>
         </div>
       )}
-
-      {/* KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="bg-white dark:bg-charcoal-900 p-5 rounded-2xl border border-border dark:border-charcoal-800 shadow-sm">
-          <div className="flex items-center justify-between text-charcoal-500 dark:text-charcoal-400 mb-2">
-            <span className="text-xs font-semibold uppercase tracking-wider">Total Submissions</span>
-            <Users className="w-4 h-4 text-rose-500" />
-          </div>
-          <div className="text-2xl font-bold text-charcoal-900 dark:text-ivory-100">
-            {loading ? "..." : summary?.totalResponses || 0}
-          </div>
-          <p className="text-xs text-charcoal-400 mt-1">100% Anonymized & Tamper-proof</p>
-        </div>
-
-        <div className="bg-white dark:bg-charcoal-900 p-5 rounded-2xl border border-border dark:border-charcoal-800 shadow-sm">
-          <div className="flex items-center justify-between text-charcoal-500 dark:text-charcoal-400 mb-2">
-            <span className="text-xs font-semibold uppercase tracking-wider">Institutional Satisfaction</span>
-            <Star className="w-4 h-4 text-amber-500" />
-          </div>
-          <div className="text-2xl font-bold text-charcoal-900 dark:text-ivory-100">
-            {loading ? "..." : `${summary?.averageSatisfactionRating || 0} / 5.0`}
-          </div>
-          <p className="text-xs text-emerald-600 dark:text-emerald-400 mt-1 font-medium">92% Positive Rating</p>
-        </div>
-
-        <div className="bg-white dark:bg-charcoal-900 p-5 rounded-2xl border border-border dark:border-charcoal-800 shadow-sm">
-          <div className="flex items-center justify-between text-charcoal-500 dark:text-charcoal-400 mb-2">
-            <span className="text-xs font-semibold uppercase tracking-wider">Faculty Evaluated</span>
-            <Award className="w-4 h-4 text-indigo-500" />
-          </div>
-          <div className="text-2xl font-bold text-charcoal-900 dark:text-ivory-100">
-            {loading ? "..." : summary?.facultyEvaluatedCount || 0}
-          </div>
-          <p className="text-xs text-charcoal-400 mt-1">Across all departments</p>
-        </div>
-
-        <div className="bg-white dark:bg-charcoal-900 p-5 rounded-2xl border border-border dark:border-charcoal-800 shadow-sm">
-          <div className="flex items-center justify-between text-charcoal-500 dark:text-charcoal-400 mb-2">
-            <span className="text-xs font-semibold uppercase tracking-wider">High Distinction Index</span>
-            <TrendingUp className="w-4 h-4 text-emerald-500" />
-          </div>
-          <div className="text-2xl font-bold text-charcoal-900 dark:text-ivory-100">
-            {loading ? "..." : summary?.topRatedFacultyCount || 0}
-          </div>
-          <p className="text-xs text-charcoal-400 mt-1">FPI Score &ge; 4.0 / 5.0</p>
-        </div>
-      </div>
 
       {/* Search and Department Filter Toolbar */}
       <div className="flex flex-col sm:flex-row gap-3 items-center justify-between bg-white dark:bg-charcoal-900 p-4 rounded-xl border border-border dark:border-charcoal-800">
@@ -559,22 +565,17 @@ export default function FeedbackPage() {
             const matchesDept = selectedDept === "ALL" || fac.departmentCode === selectedDept;
             return matchesSearch && matchesDept;
           }).length === 0 && (
-            <div className="col-span-1 md:col-span-2 py-16 text-center bg-white dark:bg-charcoal-900 rounded-2xl border border-border dark:border-charcoal-800 p-8 shadow-sm">
-              <Search className="w-12 h-12 text-charcoal-300 dark:text-charcoal-600 mx-auto mb-3" />
-              <h4 className="font-semibold text-charcoal-900 dark:text-ivory-100 text-base">No Faculty Feedback Records</h4>
-              <p className="text-xs text-charcoal-400 mt-1 max-w-sm mx-auto">
-                No faculty index matches query &ldquo;{searchQuery}&rdquo; and department &ldquo;{selectedDept}&rdquo;.
-              </p>
-              <button
-                onClick={() => {
+            <div className="col-span-1 md:col-span-2">
+              <EmptyState
+                icon={Search}
+                title="No Faculty Feedback Records"
+                description={`No faculty index matches query "${searchQuery}" and department "${selectedDept}".`}
+                actionLabel="Reset Filters"
+                onAction={() => {
                   setSearchQuery("");
                   setSelectedDept("ALL");
                 }}
-                className="mt-4 px-4 py-2 bg-rose-50 dark:bg-rose-950/60 text-rose-primary dark:text-rose-400 border border-rose-200 dark:border-rose-800 rounded-xl text-xs font-semibold inline-flex items-center gap-1.5 hover:bg-rose-100 transition-all"
-              >
-                <RotateCcw className="w-3.5 h-3.5" />
-                Reset Filters
-              </button>
+              />
             </div>
           )}
         </div>
@@ -786,19 +787,14 @@ export default function FeedbackPage() {
               r.surveyRef.toLowerCase().includes(q)
             );
           }).length === 0 && (
-            <div className="py-16 text-center border-t border-border/60 dark:border-charcoal-800">
-              <Search className="w-12 h-12 text-charcoal-300 dark:text-charcoal-600 mx-auto mb-3" />
-              <h4 className="font-semibold text-charcoal-900 dark:text-ivory-100 text-base">No Survey Responses Found</h4>
-              <p className="text-xs text-charcoal-400 mt-1 max-w-sm mx-auto">
-                No anonymous evaluations match your search query &ldquo;{searchQuery}&rdquo;.
-              </p>
-              <button
-                onClick={() => setSearchQuery("")}
-                className="mt-4 px-4 py-2 bg-rose-50 dark:bg-rose-950/60 text-rose-primary dark:text-rose-400 border border-rose-200 dark:border-rose-800 rounded-xl text-xs font-semibold inline-flex items-center gap-1.5 hover:bg-rose-100 transition-all"
-              >
-                <RotateCcw className="w-3.5 h-3.5" />
-                Reset Search
-              </button>
+            <div className="py-4">
+              <EmptyState
+                icon={Search}
+                title="No Survey Responses Found"
+                description={`No anonymous evaluations match your search query "${searchQuery}".`}
+                actionLabel="Reset Search"
+                onAction={() => setSearchQuery("")}
+              />
             </div>
           )}
         </div>

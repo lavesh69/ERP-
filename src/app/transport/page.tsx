@@ -37,6 +37,8 @@ import {
   ExternalLink,
 } from "lucide-react";
 import FleetComplianceTab from "@/components/transport/FleetComplianceTab";
+import { SkeletonCard } from "@/components/common/SkeletonLoader";
+import { EmptyState } from "@/components/common/EmptyState";
 
 interface FleetSummary {
   totalVehicles: number;
@@ -51,14 +53,13 @@ interface FleetSummary {
 }
 
 export default function TransportPage() {
-  const { currentUser } = useApp();
+  const { currentUser, showToast } = useApp();
   const [activeTab, setActiveTab] = useState<"fleet" | "map" | "routes" | "passes" | "maintenance" | "compliance">("fleet");
   const [loading, setLoading] = useState(true);
   const [summary, setSummary] = useState<FleetSummary | null>(null);
   const [routes, setRoutes] = useState<any[]>([]);
   const [passes, setPasses] = useState<any[]>([]);
   const [maintenance, setMaintenance] = useState<any[]>([]);
-  const [statusMessage, setStatusMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
   const [selectedTelematicsVehicle, setSelectedTelematicsVehicle] = useState<any | null>(null);
   const [panicBeaconActive, setPanicBeaconActive] = useState(false);
   const [pingSent, setPingSent] = useState(false);
@@ -180,11 +181,11 @@ export default function TransportPage() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed to issue bus pass");
-      setStatusMessage({ type: "success", text: "Digital transit pass issued with cryptographic QR fingerprint!" });
+      showToast("Digital transit pass issued with cryptographic QR fingerprint!", "success");
       setShowPassModal(false);
       fetchData();
     } catch (err: any) {
-      setStatusMessage({ type: "error", text: err.message });
+      showToast(err.message, "error");
     }
   };
 
@@ -201,11 +202,11 @@ export default function TransportPage() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed to log maintenance");
-      setStatusMessage({ type: "success", text: "Vehicle service record added successfully." });
+      showToast("Vehicle service record added successfully.", "success");
       setShowMaintModal(false);
       fetchData();
     } catch (err: any) {
-      setStatusMessage({ type: "error", text: err.message });
+      showToast(err.message, "error");
     }
   };
 
@@ -273,7 +274,14 @@ export default function TransportPage() {
         </div>
 
         {/* Live Metrics Ribbon */}
-        {summary && (
+        {loading ? (
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-6 pt-6 border-t border-rose-900/50">
+            <SkeletonCard />
+            <SkeletonCard />
+            <SkeletonCard />
+            <SkeletonCard />
+          </div>
+        ) : summary && (
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-6 pt-6 border-t border-rose-900/50">
             <div>
               <p className="text-xs text-rose-200 uppercase tracking-wider font-semibold">Active Fleet</p>
@@ -298,32 +306,6 @@ export default function TransportPage() {
           </div>
         )}
       </div>
-
-      {/* Alert Banner */}
-      {statusMessage && (
-        <div
-          className={`p-4 rounded-xl flex items-center justify-between text-sm ${
-            statusMessage.type === "success"
-              ? "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-200 border border-emerald-200 dark:border-emerald-800"
-              : "bg-rose-50 dark:bg-rose-950/40 text-rose-800 dark:text-rose-200 border border-rose-200 dark:border-rose-800"
-          }`}
-        >
-          <div className="flex items-center gap-2">
-            {statusMessage.type === "success" ? (
-              <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
-            ) : (
-              <AlertCircle className="w-5 h-5 text-rose-600 dark:text-rose-400" />
-            )}
-            <span>{statusMessage.text}</span>
-          </div>
-          <button
-            onClick={() => setStatusMessage(null)}
-            className="text-xs font-semibold underline hover:opacity-80 ml-4"
-          >
-            Dismiss
-          </button>
-        </div>
-      )}
 
       {/* Navigation Tabs */}
       <div className="flex border-b border-border dark:border-charcoal-800 space-x-2 overflow-x-auto no-scrollbar flex-nowrap pb-px">
@@ -361,8 +343,17 @@ export default function TransportPage() {
 
       {/* TAB 1: FLEET & TELEMETRY */}
       {activeTab === "fleet" && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {summary?.vehicles.map((veh) => {
+        !summary?.vehicles?.length ? (
+          <EmptyState
+            icon={Bus}
+            title="No Fleet Vehicles Configured"
+            description="There are currently no shuttle buses or transit vans registered in the university fleet."
+            actionLabel="Issue Bus Pass"
+            onAction={() => setShowPassModal(true)}
+          />
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            {summary.vehicles.map((veh) => {
             const isEnRoute = veh.status === "ACTIVE_EN_ROUTE";
             return (
               <div
@@ -469,6 +460,7 @@ export default function TransportPage() {
             );
           })}
         </div>
+        )
       )}
 
       {/* TAB: INTERACTIVE CAMPUS TRANSIT ROUTE MAP */}
@@ -567,6 +559,14 @@ export default function TransportPage() {
                   <div className="hidden sm:flex items-center gap-1.5 px-3 py-1 bg-black/60 backdrop-blur-md rounded-xl border border-charcoal-700 font-mono text-[11px] text-emerald-400">
                     <Radio className="w-3.5 h-3.5 animate-pulse" />
                     <span>D-GPS ACCURACY ±1.5m</span>
+                  </div>
+                  <div className={`flex items-center gap-1.5 px-3 py-1 backdrop-blur-md rounded-xl border font-mono text-[11px] font-bold ${
+                    isSimulating 
+                      ? "bg-amber-950/60 border-amber-600/50 text-amber-300" 
+                      : "bg-blue-950/60 border-blue-600/50 text-blue-300"
+                  }`}>
+                    <Activity className="w-3.5 h-3.5" />
+                    <span>{isSimulating ? "SIMULATION PLAYBACK" : "LIVE TELEMETRY SYNC"}</span>
                   </div>
                 </div>
 
@@ -1014,10 +1014,7 @@ export default function TransportPage() {
                   <button
                     type="button"
                     onClick={() => {
-                      setStatusMessage({
-                        type: "success",
-                        text: `Telemetry ping broadcast sent to ${assignedVeh?.vehicleCode || "BUS-01"} transponder.`,
-                      });
+                      showToast(`Telemetry ping broadcast sent to ${assignedVeh?.vehicleCode || "BUS-01"} transponder.`, "success");
                     }}
                     className="flex-1 py-2 bg-ivory-100 hover:bg-ivory-200 dark:bg-charcoal-800 dark:hover:bg-charcoal-700 text-charcoal-800 dark:text-ivory-200 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors border border-border dark:border-charcoal-700"
                   >
@@ -1064,62 +1061,70 @@ export default function TransportPage() {
               <ArrowRight className="w-3.5 h-3.5" />
             </button>
           </div>
-          {routes.map((rt) => (
-            <div
-              key={rt.id}
-              className="bg-white dark:bg-charcoal-900 rounded-xl p-5 border border-border dark:border-charcoal-800 shadow-sm"
-            >
-              <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-2 pb-3 border-b border-border dark:border-charcoal-800">
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span className="px-2.5 py-1 rounded bg-rose-100 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 font-bold text-xs">
-                      {rt.routeNumber}
-                    </span>
-                    <h3 className="font-bold text-base text-charcoal-900 dark:text-ivory-100">
-                      {rt.routeName}
-                    </h3>
-                  </div>
-                  <p className="text-xs text-charcoal-500 mt-1">
-                    {rt.startingPoint} <ArrowRight className="inline w-3 h-3 mx-1 text-charcoal-400" /> {rt.destination} • {rt.totalDistanceKm} km
-                  </p>
-                </div>
-
-                <div className="flex items-center gap-4 text-xs">
-                  <div className="text-right">
-                    <p className="text-charcoal-500">Morning Pickup / Evening Drop</p>
-                    <p className="font-bold text-charcoal-900 dark:text-ivory-100">
-                      {rt.morningStartTime} / {rt.eveningDepartureTime}
+          {routes.length === 0 ? (
+            <EmptyState
+              icon={Navigation}
+              title="No Transit Corridors"
+              description="There are currently no active bus routes configured in the transit registry."
+            />
+          ) : (
+            routes.map((rt) => (
+              <div
+                key={rt.id}
+                className="bg-white dark:bg-charcoal-900 rounded-xl p-5 border border-border dark:border-charcoal-800 shadow-sm"
+              >
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-2 pb-3 border-b border-border dark:border-charcoal-800">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="px-2.5 py-1 rounded bg-rose-100 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 font-bold text-xs">
+                        {rt.routeNumber}
+                      </span>
+                      <h3 className="font-bold text-base text-charcoal-900 dark:text-ivory-100">
+                        {rt.routeName}
+                      </h3>
+                    </div>
+                    <p className="text-xs text-charcoal-500 mt-1">
+                      {rt.startingPoint} <ArrowRight className="inline w-3 h-3 mx-1 text-charcoal-400" /> {rt.destination} • {rt.totalDistanceKm} km
                     </p>
                   </div>
-                  <span className="px-3 py-1.5 rounded-lg bg-ivory-100 dark:bg-charcoal-800 font-semibold text-charcoal-800 dark:text-ivory-200">
-                    Bus: {rt.assignedVehicleCode} ({rt.assignedDriverName})
-                  </span>
-                </div>
-              </div>
 
-              {/* Stop Sequence */}
-              <div className="mt-4">
-                <p className="text-xs font-semibold text-charcoal-500 uppercase tracking-wider mb-2">
-                  Stops & Timetable Sequence ({rt.stops.length} Boarding Points)
-                </p>
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
-                  {rt.stops.map((stop: any) => (
-                    <div
-                      key={stop.sequenceOrder}
-                      className="p-3 rounded-lg border border-border dark:border-charcoal-800 bg-ivory-50/50 dark:bg-charcoal-800/40 text-xs"
-                    >
-                      <div className="flex items-center justify-between font-bold text-charcoal-900 dark:text-ivory-100">
-                        <span>Stop #{stop.sequenceOrder}</span>
-                        <span className="text-rose-primary text-[11px]">{stop.morningPickupTime}</span>
-                      </div>
-                      <p className="font-medium mt-1 truncate">{stop.stopName}</p>
-                      <p className="text-[10px] text-charcoal-500 truncate mt-0.5">{stop.landmark}</p>
+                  <div className="flex items-center gap-4 text-xs">
+                    <div className="text-right">
+                      <p className="text-charcoal-500">Morning Pickup / Evening Drop</p>
+                      <p className="font-bold text-charcoal-900 dark:text-ivory-100">
+                        {rt.morningStartTime} / {rt.eveningDepartureTime}
+                      </p>
                     </div>
-                  ))}
+                    <span className="px-3 py-1.5 rounded-lg bg-ivory-100 dark:bg-charcoal-800 font-semibold text-charcoal-800 dark:text-ivory-200">
+                      Bus: {rt.assignedVehicleCode} ({rt.assignedDriverName})
+                    </span>
+                  </div>
+                </div>
+
+                {/* Stop Sequence */}
+                <div className="mt-4">
+                  <p className="text-xs font-semibold text-charcoal-500 uppercase tracking-wider mb-2">
+                    Stops & Timetable Sequence ({rt.stops.length} Boarding Points)
+                  </p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+                    {rt.stops.map((stop: any) => (
+                      <div
+                        key={stop.sequenceOrder}
+                        className="p-3 rounded-lg border border-border dark:border-charcoal-800 bg-ivory-50/50 dark:bg-charcoal-800/40 text-xs"
+                      >
+                        <div className="flex items-center justify-between font-bold text-charcoal-900 dark:text-ivory-100">
+                          <span>Stop #{stop.sequenceOrder}</span>
+                          <span className="text-rose-primary text-[11px]">{stop.morningPickupTime}</span>
+                        </div>
+                        <p className="font-medium mt-1 truncate">{stop.stopName}</p>
+                        <p className="text-[10px] text-charcoal-500 truncate mt-0.5">{stop.landmark}</p>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            ))
+          )}
         </div>
       )}
 
@@ -1144,8 +1149,17 @@ export default function TransportPage() {
             </button>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {passes.map((pass) => (
+          {passes.length === 0 ? (
+            <EmptyState
+              icon={CreditCard}
+              title="No Active Transit Passes"
+              description="No student or staff transit passes have been issued yet."
+              actionLabel="Apply New Transit Pass"
+              onAction={() => setShowPassModal(true)}
+            />
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {passes.map((pass) => (
               <div
                 key={pass.id}
                 className="bg-white dark:bg-charcoal-900 rounded-xl p-5 border border-border dark:border-charcoal-800 shadow-sm flex flex-col justify-between"
@@ -1199,6 +1213,7 @@ export default function TransportPage() {
               </div>
             ))}
           </div>
+          )}
         </div>
       )}
 
@@ -1237,29 +1252,43 @@ export default function TransportPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-border dark:divide-charcoal-800">
-                {maintenance.map((m) => (
-                  <tr key={m.id} className="hover:bg-ivory-50/50 dark:hover:bg-charcoal-800/40 transition-colors">
-                    <td className="p-3.5 font-bold text-charcoal-900 dark:text-ivory-100">
-                      {m.vehicleCode}
-                    </td>
-                    <td className="p-3.5 font-medium text-charcoal-800 dark:text-ivory-200">
-                      {m.serviceType}
-                    </td>
-                    <td className="p-3.5 text-charcoal-500">{m.date}</td>
-                    <td className="p-3.5 font-mono text-charcoal-700 dark:text-ivory-300">
-                      {m.odometerKm.toLocaleString()} km
-                    </td>
-                    <td className="p-3.5 text-charcoal-600 dark:text-ivory-400">
-                      {m.workshopName}
-                    </td>
-                    <td className="p-3.5 font-semibold text-rose-primary dark:text-rose-light">
-                      ${m.cost}
-                    </td>
-                    <td className="p-3.5 text-charcoal-500 italic max-w-xs truncate">
-                      {m.notes}
+                {maintenance.length === 0 ? (
+                  <tr>
+                    <td colSpan={7} className="p-8">
+                      <EmptyState
+                        icon={Wrench}
+                        title="No Maintenance Records"
+                        description="There are currently no maintenance or inspection logs recorded."
+                        actionLabel="Add Service Entry"
+                        onAction={() => setShowMaintModal(true)}
+                      />
                     </td>
                   </tr>
-                ))}
+                ) : (
+                  maintenance.map((m) => (
+                    <tr key={m.id} className="hover:bg-ivory-50/50 dark:hover:bg-charcoal-800/40 transition-colors">
+                      <td className="p-3.5 font-bold text-charcoal-900 dark:text-ivory-100">
+                        {m.vehicleCode}
+                      </td>
+                      <td className="p-3.5 font-medium text-charcoal-800 dark:text-ivory-200">
+                        {m.serviceType}
+                      </td>
+                      <td className="p-3.5 text-charcoal-500">{m.date}</td>
+                      <td className="p-3.5 font-mono text-charcoal-700 dark:text-ivory-300">
+                        {m.odometerKm.toLocaleString()} km
+                      </td>
+                      <td className="p-3.5 text-charcoal-600 dark:text-ivory-400">
+                        {m.workshopName}
+                      </td>
+                      <td className="p-3.5 font-semibold text-rose-primary dark:text-rose-light">
+                        ${m.cost}
+                      </td>
+                      <td className="p-3.5 text-charcoal-500 italic max-w-xs truncate">
+                        {m.notes}
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>

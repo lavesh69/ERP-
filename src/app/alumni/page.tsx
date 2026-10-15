@@ -30,21 +30,22 @@ import {
   Receipt,
   X,
 } from "lucide-react";
+import { SkeletonCard } from "@/components/common/SkeletonLoader";
+import { EmptyState } from "@/components/common/EmptyState";
 
 export default function AlumniPage() {
-  const { currentUser } = useApp();
+  const { currentUser, showToast } = useApp();
   const [activeTab, setActiveTab] = useState<"directory" | "mentorship" | "verification" | "giving">("directory");
   const [loading, setLoading] = useState(true);
   const [alumni, setAlumni] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const [statusMessage, setStatusMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
   const [selectedAlumniDossier, setSelectedAlumniDossier] = useState<any | null>(null);
 
   // Giving & Endowment Gateway State
   const [givingModalCampaign, setGivingModalCampaign] = useState<any | null>(null);
-  const [donationAmount, setDonationAmount] = useState<number>(250);
+  const [donationAmount, setDonationAmount] = useState<number>(2500);
   const [customDonationAmount, setCustomDonationAmount] = useState<string>("");
-  const [donorPan, setDonorPan] = useState("ABCDE1234F");
+  const [donorPan, setDonorPan] = useState("");
   const [donorName, setDonorName] = useState(currentUser?.fullName || "Distinguished Alumnus");
   const [isAnonymousDonor, setIsAnonymousDonor] = useState(false);
   const [donationSuccessReceipt, setDonationSuccessReceipt] = useState<any | null>(null);
@@ -168,10 +169,10 @@ export default function AlumniPage() {
   const handleSendMentorRequest = (e: React.FormEvent) => {
     e.preventDefault();
     const meetLink = `https://meet.apex.edu/alumni-${Math.random().toString(36).substring(2, 7)}`;
-    setStatusMessage({
-      type: "success",
-      text: `1:1 Mentorship session confirmed with ${selectedMentor?.fullName} on ${mentorDate} at ${mentorSlot}! Meeting Link: ${meetLink}`,
-    });
+    showToast(
+      `1:1 Mentorship session confirmed with ${selectedMentor?.fullName} on ${mentorDate} at ${mentorSlot}! Meeting Link: ${meetLink}`,
+      "success"
+    );
     setShowMentorModal(false);
     setMentorTopic("");
   };
@@ -188,13 +189,14 @@ export default function AlumniPage() {
       location: registerForm.location,
       isAvailableForMentorship: registerForm.isAvailableForMentorship,
       mentorshipDomains: registerForm.mentorshipDomains.split(",").map((s) => s.trim()),
+      mentorTopics: registerForm.mentorshipDomains.split(",").map((s) => s.trim()),
       linkedinUrl: registerForm.linkedinUrl,
     };
     setAlumni([newAlumnus, ...alumni]);
-    setStatusMessage({
-      type: "success",
-      text: `Congratulations! ${registerForm.fullName} has been officially registered in the Institutional Alumni Directory.`,
-    });
+    showToast(
+      `Congratulations! ${registerForm.fullName} has been officially registered in the Institutional Alumni Directory.`,
+      "success"
+    );
     setShowRegisterModal(false);
     setRegisterForm({
       fullName: "",
@@ -211,7 +213,7 @@ export default function AlumniPage() {
 
   const handlePledgeDonation = (campaign: any) => {
     setGivingModalCampaign(campaign);
-    setDonationAmount(250);
+    setDonationAmount(2500);
     setCustomDonationAmount("");
     setDonationSuccessReceipt(null);
   };
@@ -235,17 +237,17 @@ export default function AlumniPage() {
       date: new Date().toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" }),
       campaignTitle: givingModalCampaign?.title,
       donorName: isAnonymousDonor ? "Anonymous Benefactor" : donorName,
-      pan: donorPan,
+      pan: donorPan ? donorPan.toUpperCase() : "INSTITUTIONAL_TRUST",
       amount: finalAmount,
-      taxDeductibleEligible: "100% Tax Deductible under Sec 80G(5)(vi) / US 501(c)(3)",
-      exemptionNumber: "CIT(E)/BLR/80G/2026-27/AAATE1234F",
+      taxDeductibleEligible: "Official Donation Receipt Issued by Apex Institutional Trust (Reg No. TRUST/BLR/2026/80G)",
+      exemptionNumber: "APEX-TRUST-80G-VERIFIED",
     };
 
     setDonationSuccessReceipt(receipt);
-    setStatusMessage({
-      type: "success",
-      text: `Endowment gift of $${finalAmount.toLocaleString()} successfully processed for "${givingModalCampaign?.title}"!`,
-    });
+    showToast(
+      `Endowment gift of ₹${finalAmount.toLocaleString("en-IN")} successfully processed for "${givingModalCampaign?.title}"!`,
+      "success"
+    );
   };
 
   const handleExportAlumniCsv = () => {
@@ -320,57 +322,40 @@ export default function AlumniPage() {
         </div>
 
         {/* Live Metrics */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-6 pt-6 border-t border-rose-900/50">
-          <div>
-            <p className="text-xs text-rose-200 uppercase tracking-wider font-semibold">Graduates in Directory</p>
-            <p className="text-xl md:text-2xl font-bold mt-1">1,420+ Alumni</p>
-            <p className="text-xs text-rose-300 mt-0.5">Spanning 34 Countries</p>
+        {loading ? (
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-6 pt-6 border-t border-rose-900/50">
+            <SkeletonCard />
+            <SkeletonCard />
+            <SkeletonCard />
+            <SkeletonCard />
           </div>
-          <div>
-            <p className="text-xs text-rose-200 uppercase tracking-wider font-semibold">Active Industry Mentors</p>
-            <p className="text-xl md:text-2xl font-bold mt-1 text-emerald-300">285 Mentors</p>
-            <p className="text-xs text-rose-300 mt-0.5">FAANG, Research & Startups</p>
+        ) : (
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-6 pt-6 border-t border-rose-900/50">
+            <div>
+              <p className="text-xs text-rose-200 uppercase tracking-wider font-semibold">Graduates in Directory</p>
+              <p className="text-xl md:text-2xl font-bold mt-1">1,420+ Alumni</p>
+              <p className="text-xs text-rose-300 mt-0.5">Spanning 34 Countries</p>
+            </div>
+            <div>
+              <p className="text-xs text-rose-200 uppercase tracking-wider font-semibold">Active Industry Mentors</p>
+              <p className="text-xl md:text-2xl font-bold mt-1 text-emerald-300">285 Mentors</p>
+              <p className="text-xs text-rose-300 mt-0.5">FAANG, Research & Startups</p>
+            </div>
+            <div>
+              <p className="text-xs text-rose-200 uppercase tracking-wider font-semibold">Endowment Raised</p>
+              <p className="text-xl md:text-2xl font-bold mt-1 text-amber-300">
+                ₹{campaigns.reduce((acc, c) => acc + c.raised, 0).toLocaleString("en-IN")}
+              </p>
+              <p className="text-xs text-rose-300 mt-0.5">Campaigns 2026-27</p>
+            </div>
+            <div>
+              <p className="text-xs text-rose-200 uppercase tracking-wider font-semibold">Degree Verification</p>
+              <p className="text-xl md:text-2xl font-bold mt-1 text-cyan-300">Instant Online</p>
+              <p className="text-xs text-rose-300 mt-0.5">Cryptographic SHA-256 Proof</p>
+            </div>
           </div>
-          <div>
-            <p className="text-xs text-rose-200 uppercase tracking-wider font-semibold">Endowment Raised</p>
-            <p className="text-xl md:text-2xl font-bold mt-1 text-amber-300">
-              ${campaigns.reduce((acc, c) => acc + c.raised, 0).toLocaleString()}
-            </p>
-            <p className="text-xs text-rose-300 mt-0.5">Campaigns 2026-27</p>
-          </div>
-          <div>
-            <p className="text-xs text-rose-200 uppercase tracking-wider font-semibold">Degree Verification</p>
-            <p className="text-xl md:text-2xl font-bold mt-1 text-cyan-300">Instant Online</p>
-            <p className="text-xs text-rose-300 mt-0.5">Cryptographic SHA-256 Proof</p>
-          </div>
-        </div>
+        )}
       </div>
-
-      {/* Alert Banner */}
-      {statusMessage && (
-        <div
-          className={`p-4 rounded-xl flex items-center justify-between text-sm ${
-            statusMessage.type === "success"
-              ? "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-200 border border-emerald-200 dark:border-emerald-800"
-              : "bg-rose-50 dark:bg-rose-950/40 text-rose-800 dark:text-rose-200 border border-rose-200 dark:border-rose-800"
-          }`}
-        >
-          <div className="flex items-center gap-2">
-            {statusMessage.type === "success" ? (
-              <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
-            ) : (
-              <AlertCircle className="w-5 h-5 text-rose-600 dark:text-rose-400" />
-            )}
-            <span>{statusMessage.text}</span>
-          </div>
-          <button
-            onClick={() => setStatusMessage(null)}
-            className="text-xs font-semibold underline hover:opacity-80 ml-4"
-          >
-            Dismiss
-          </button>
-        </div>
-      )}
 
       {/* Navigation Tabs */}
       <div className="flex border-b border-border dark:border-charcoal-800 space-x-2 overflow-x-auto no-scrollbar flex-nowrap pb-px">
@@ -500,23 +485,13 @@ export default function AlumniPage() {
           </div>
 
           {filteredAlumni.length === 0 && (
-            <div className="bg-white dark:bg-charcoal-900 rounded-xl p-12 border border-border dark:border-charcoal-800 text-center space-y-3">
-              <div className="w-12 h-12 rounded-full bg-rose-50 dark:bg-rose-950/50 flex items-center justify-center mx-auto text-rose-primary dark:text-rose-light">
-                <Search className="w-6 h-6" />
-              </div>
-              <h3 className="font-bold text-base text-charcoal-900 dark:text-ivory-100">
-                No Alumni Records Found
-              </h3>
-              <p className="text-xs text-charcoal-500 max-w-sm mx-auto">
-                No alumni match your search keyword. Try searching by full name, company, or job title.
-              </p>
-              <button
-                onClick={() => setSearchQuery("")}
-                className="px-4 py-2 text-xs font-semibold bg-rose-primary text-white rounded-lg hover:bg-rose-accent transition-colors shadow-sm"
-              >
-                Clear Search
-              </button>
-            </div>
+            <EmptyState
+              icon={Search}
+              title="No Alumni Records Found"
+              description="No alumni match your search keyword. Try searching by full name, company, or job title."
+              actionLabel="Clear Search"
+              onAction={() => setSearchQuery("")}
+            />
           )}
         </div>
       )}
@@ -535,65 +510,73 @@ export default function AlumniPage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {alumni
-              .filter((a) => a.isAvailableForMentorship)
-              .map((mentor) => (
-                <div
-                  key={mentor.id}
-                  className="bg-white dark:bg-charcoal-900 rounded-xl p-5 border border-border dark:border-charcoal-800 shadow-sm flex flex-col justify-between"
-                >
-                  <div>
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <h3 className="font-bold text-base text-charcoal-900 dark:text-ivory-100">
-                          {mentor.fullName}
-                        </h3>
-                        <p className="text-xs text-rose-primary font-semibold">
-                          {mentor.jobTitle} • {mentor.currentCompany}
-                        </p>
+          {alumni.filter((a) => a.isAvailableForMentorship).length === 0 ? (
+            <EmptyState
+              icon={GraduationCap}
+              title="No Active Mentors Available"
+              description="No alumni are currently listed as available for 1:1 mentorship sessions. Check back soon or register as a mentor."
+            />
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {alumni
+                .filter((a) => a.isAvailableForMentorship)
+                .map((mentor) => (
+                  <div
+                    key={mentor.id}
+                    className="bg-white dark:bg-charcoal-900 rounded-xl p-5 border border-border dark:border-charcoal-800 shadow-sm flex flex-col justify-between"
+                  >
+                    <div>
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <h3 className="font-bold text-base text-charcoal-900 dark:text-ivory-100">
+                            {mentor.fullName}
+                          </h3>
+                          <p className="text-xs text-rose-primary font-semibold">
+                            {mentor.jobTitle} • {mentor.currentCompany}
+                          </p>
+                        </div>
+                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-200 font-bold">
+                          Available for Sessions
+                        </span>
                       </div>
-                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-200 font-bold">
-                        Available for Sessions
-                      </span>
-                    </div>
 
-                    <p className="text-xs text-charcoal-500 mt-2">
-                      Location: {mentor.location} • Batch: {mentor.graduationBatch}
-                    </p>
-
-                    <div className="mt-3 space-y-1">
-                      <p className="text-xs font-semibold text-charcoal-700 dark:text-ivory-300">
-                        Mentorship Focus Areas:
+                      <p className="text-xs text-charcoal-500 mt-2">
+                        Location: {mentor.location} • Batch: {mentor.graduationBatch}
                       </p>
-                      <div className="flex flex-wrap gap-1.5">
-                        {mentor.mentorTopics.map((top: string, i: number) => (
-                          <span
-                            key={i}
-                            className="text-xs px-2 py-0.5 bg-ivory-50 dark:bg-charcoal-800 rounded-md border text-charcoal-700 dark:text-ivory-300 font-medium"
-                          >
-                            {top}
-                          </span>
-                        ))}
+
+                      <div className="mt-3 space-y-1">
+                        <p className="text-xs font-semibold text-charcoal-700 dark:text-ivory-300">
+                          Mentorship Focus Areas:
+                        </p>
+                        <div className="flex flex-wrap gap-1.5">
+                          {mentor.mentorTopics.map((top: string, i: number) => (
+                            <span
+                              key={i}
+                              className="text-xs px-2 py-0.5 bg-ivory-50 dark:bg-charcoal-800 rounded-md border text-charcoal-700 dark:text-ivory-300 font-medium"
+                            >
+                              {top}
+                            </span>
+                          ))}
+                        </div>
                       </div>
                     </div>
-                  </div>
 
-                  <div className="mt-5 pt-3 border-t border-border dark:border-charcoal-800 flex justify-end">
-                    <button
-                      onClick={() => {
-                        setSelectedMentor(mentor);
-                        setShowMentorModal(true);
-                      }}
-                      className="px-4 py-2 rounded-lg text-xs font-semibold bg-rose-primary text-white hover:bg-rose-accent transition-colors flex items-center gap-1.5"
-                    >
-                      <Send className="w-3.5 h-3.5" />
-                      Request Mentorship Session
-                    </button>
+                    <div className="mt-5 pt-3 border-t border-border dark:border-charcoal-800 flex justify-end">
+                      <button
+                        onClick={() => {
+                          setSelectedMentor(mentor);
+                          setShowMentorModal(true);
+                        }}
+                        className="px-4 py-2 rounded-lg text-xs font-semibold bg-rose-primary text-white hover:bg-rose-accent transition-colors flex items-center gap-1.5"
+                      >
+                        <Send className="w-3.5 h-3.5" />
+                        Request Mentorship Session
+                      </button>
+                    </div>
                   </div>
-                </div>
-              ))}
-          </div>
+                ))}
+            </div>
+          )}
         </div>
       )}
 
@@ -710,54 +693,62 @@ export default function AlumniPage() {
       {/* TAB 4: GIVING & ENDOWMENTS */}
       {activeTab === "giving" && (
         <div className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-            {campaigns.map((camp) => {
-              const pct = Math.round((camp.raised / camp.target) * 100);
-              return (
-                <div
-                  key={camp.id}
-                  className="bg-white dark:bg-charcoal-900 rounded-xl p-5 border border-border dark:border-charcoal-800 shadow-sm flex flex-col justify-between"
-                >
-                  <div>
-                    <span className="text-[10px] px-2 py-0.5 rounded font-bold bg-rose-100 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300">
-                      {camp.category}
-                    </span>
-                    <h3 className="font-bold text-base text-charcoal-900 dark:text-ivory-100 mt-2">
-                      {camp.title}
-                    </h3>
+          {campaigns.length === 0 ? (
+            <EmptyState
+              icon={Heart}
+              title="No Active Giving Campaigns"
+              description="There are currently no active university endowment or alumni giving campaigns open for contribution."
+            />
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+              {campaigns.map((camp) => {
+                const pct = Math.round((camp.raised / camp.target) * 100);
+                return (
+                  <div
+                    key={camp.id}
+                    className="bg-white dark:bg-charcoal-900 rounded-xl p-5 border border-border dark:border-charcoal-800 shadow-sm flex flex-col justify-between"
+                  >
+                    <div>
+                      <span className="text-[10px] px-2 py-0.5 rounded font-bold bg-rose-100 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300">
+                        {camp.category}
+                      </span>
+                      <h3 className="font-bold text-base text-charcoal-900 dark:text-ivory-100 mt-2">
+                        {camp.title}
+                      </h3>
 
-                    <div className="mt-4 p-3 bg-ivory-50 dark:bg-charcoal-800/60 rounded-lg space-y-2 text-xs">
-                      <div className="flex justify-between items-center">
-                        <span className="text-charcoal-500">Raised so far:</span>
-                        <span className="font-bold text-charcoal-900 dark:text-ivory-100">
-                          ${camp.raised.toLocaleString()} / ${camp.target.toLocaleString()} ({pct}%)
-                        </span>
+                      <div className="mt-4 p-3 bg-ivory-50 dark:bg-charcoal-800/60 rounded-lg space-y-2 text-xs">
+                        <div className="flex justify-between items-center">
+                          <span className="text-charcoal-500">Raised so far:</span>
+                          <span className="font-bold text-charcoal-900 dark:text-ivory-100">
+                            ₹{camp.raised.toLocaleString("en-IN")} / ₹{camp.target.toLocaleString("en-IN")} ({pct}%)
+                          </span>
+                        </div>
+                        <div className="w-full bg-border dark:bg-charcoal-700 h-2 rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-rose-primary"
+                            style={{ width: `${Math.min(100, pct)}%` }}
+                          />
+                        </div>
+                        <p className="text-[11px] text-charcoal-500">
+                          Supported by {camp.donorsCount} Alumni Donors
+                        </p>
                       </div>
-                      <div className="w-full bg-border dark:bg-charcoal-700 h-2 rounded-full overflow-hidden">
-                        <div
-                          className="h-full bg-rose-primary"
-                          style={{ width: `${Math.min(100, pct)}%` }}
-                        />
-                      </div>
-                      <p className="text-[11px] text-charcoal-500">
-                        Supported by {camp.donorsCount} Alumni Donors
-                      </p>
+                    </div>
+
+                    <div className="mt-5 pt-3 border-t border-border dark:border-charcoal-800 flex justify-between items-center">
+                      <span className="text-xs text-charcoal-500">Goal: ₹{camp.target.toLocaleString("en-IN")}</span>
+                      <button
+                        onClick={() => handlePledgeDonation(camp)}
+                        className="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-rose-primary text-white hover:bg-rose-accent transition-colors shadow-sm"
+                      >
+                        Pledge Contribution
+                      </button>
                     </div>
                   </div>
-
-                  <div className="mt-5 pt-3 border-t border-border dark:border-charcoal-800 flex justify-between items-center">
-                    <span className="text-xs text-charcoal-500">Goal: ${camp.target.toLocaleString()}</span>
-                    <button
-                      onClick={() => handlePledgeDonation(camp)}
-                      className="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-rose-primary text-white hover:bg-rose-accent transition-colors shadow-sm"
-                    >
-                      Pledge Contribution
-                    </button>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+                );
+              })}
+            </div>
+          )}
         </div>
       )}
 
@@ -994,7 +985,7 @@ export default function AlumniPage() {
                       const updated = { ...selectedAlumniDossier, isAvailableForMentorship: true };
                       setSelectedAlumniDossier(updated);
                       setAlumni((prev: any[]) => prev.map((a) => a.id === updated.id ? updated : a));
-                      setStatusMessage({ type: "success", text: `${updated.fullName} is now available for mentorship!` });
+                      showToast(`${updated.fullName} is now available for mentorship!`, "success");
                     }}
                     className="text-[10px] font-bold text-rose-primary hover:underline"
                   >
@@ -1270,7 +1261,7 @@ export default function AlumniPage() {
                     <div>
                       <span className="text-charcoal-500">Amount Contributed:</span>
                       <p className="text-base font-bold text-emerald-700 dark:text-emerald-300">
-                        ${donationSuccessReceipt.amount.toLocaleString()} USD
+                        ₹{donationSuccessReceipt.amount.toLocaleString("en-IN")} INR
                       </p>
                     </div>
                     <div>
@@ -1312,7 +1303,7 @@ export default function AlumniPage() {
                     Select Contribution Tier
                   </label>
                   <div className="grid grid-cols-3 gap-2">
-                    {[50, 100, 250, 500, 1000, 2500].map((tier) => (
+                    {[500, 1000, 2500, 5000, 10000, 25000].map((tier) => (
                       <button
                         key={tier}
                         type="button"
@@ -1326,7 +1317,7 @@ export default function AlumniPage() {
                             : "bg-ivory-50 dark:bg-charcoal-800 border-border dark:border-charcoal-700 text-charcoal-700 dark:text-ivory-200 hover:border-charcoal-400"
                         }`}
                       >
-                        ${tier.toLocaleString()}
+                        ₹{tier.toLocaleString("en-IN")}
                       </button>
                     ))}
                   </div>
@@ -1335,11 +1326,11 @@ export default function AlumniPage() {
                 {/* Custom Amount */}
                 <div>
                   <label className="block font-medium text-charcoal-700 dark:text-ivory-300 mb-1">
-                    Or Custom Amount ($ USD)
+                    Or Custom Amount (₹ INR)
                   </label>
                   <input
                     type="number"
-                    min="10"
+                    min="100"
                     placeholder="e.g. 5000"
                     value={customDonationAmount}
                     onChange={(e) => setCustomDonationAmount(e.target.value)}
@@ -1414,7 +1405,7 @@ export default function AlumniPage() {
                     className="px-5 py-2 rounded-lg font-bold bg-rose-primary text-white hover:bg-rose-accent shadow-sm flex items-center gap-1.5"
                   >
                     <Heart className="w-3.5 h-3.5" />
-                    Authorize Contribution (${customDonationAmount || donationAmount})
+                    Authorize Contribution (₹{(customDonationAmount ? Number(customDonationAmount) : donationAmount).toLocaleString("en-IN")})
                   </button>
                 </div>
               </form>

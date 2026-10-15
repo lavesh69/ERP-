@@ -26,6 +26,8 @@ import {
 } from "lucide-react";
 
 import StoreIndentView from "@/components/inventory/StoreIndentView";
+import { SkeletonCard } from "@/components/common/SkeletonLoader";
+import { EmptyState } from "@/components/common/EmptyState";
 
 interface InventorySummary {
   totalAssets: number;
@@ -38,7 +40,7 @@ interface InventorySummary {
 }
 
 export default function InventoryPage() {
-  const { currentUser } = useApp();
+  const { currentUser, showToast } = useApp();
   const [activeTab, setActiveTab] = useState<"assets" | "consumables" | "workorders" | "audit" | "store">("assets");
   const [loading, setLoading] = useState(true);
   const [summary, setSummary] = useState<InventorySummary | null>(null);
@@ -46,7 +48,6 @@ export default function InventoryPage() {
   const [consumables, setConsumables] = useState<any[]>([]);
   const [workOrders, setWorkOrders] = useState<any[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>("ALL");
-  const [statusMessage, setStatusMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
   // New Asset Modal
   const [showAssetModal, setShowAssetModal] = useState(false);
@@ -140,11 +141,11 @@ export default function InventoryPage() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed to register asset");
-      setStatusMessage({ type: "success", text: "Physical asset registered with straight-line depreciation tracking!" });
+      showToast("Physical asset registered with straight-line depreciation tracking!", "success");
       setShowAssetModal(false);
       fetchData();
     } catch (err: any) {
-      setStatusMessage({ type: "error", text: err.message });
+      showToast(err.message, "error");
     }
   };
 
@@ -161,11 +162,11 @@ export default function InventoryPage() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed to create work order");
-      setStatusMessage({ type: "success", text: "Maintenance work order initiated." });
+      showToast("Maintenance work order initiated.", "success");
       setShowWorkOrderModal(false);
       fetchData();
     } catch (err: any) {
-      setStatusMessage({ type: "error", text: err.message });
+      showToast(err.message, "error");
     }
   };
 
@@ -183,10 +184,10 @@ export default function InventoryPage() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed to complete work order");
-      setStatusMessage({ type: "success", text: data.message });
+      showToast(data.message, "success");
       fetchData();
     } catch (err: any) {
-      setStatusMessage({ type: "error", text: err.message });
+      showToast(err.message, "error");
     }
   };
 
@@ -262,12 +263,19 @@ export default function InventoryPage() {
         </div>
 
         {/* Live Metrics Ribbon */}
-        {summary && (
+        {loading ? (
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-6 pt-6 border-t border-rose-900/50">
+            <SkeletonCard />
+            <SkeletonCard />
+            <SkeletonCard />
+            <SkeletonCard />
+          </div>
+        ) : summary && (
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-6 pt-6 border-t border-rose-900/50">
             <div>
               <p className="text-xs text-rose-200 uppercase tracking-wider font-semibold">Asset Valuation</p>
               <p className="text-xl md:text-2xl font-bold mt-1 text-emerald-300">
-                ${summary.totalAssetValuation.toLocaleString()}
+                ₹{summary.totalAssetValuation.toLocaleString("en-IN")}
               </p>
               <p className="text-xs text-rose-300 mt-0.5">Current Net Book Value</p>
             </div>
@@ -289,32 +297,6 @@ export default function InventoryPage() {
           </div>
         )}
       </div>
-
-      {/* Alert Banner */}
-      {statusMessage && (
-        <div
-          className={`p-4 rounded-xl flex items-center justify-between text-sm ${
-            statusMessage.type === "success"
-              ? "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-200 border border-emerald-200 dark:border-emerald-800"
-              : "bg-rose-50 dark:bg-rose-950/40 text-rose-800 dark:text-rose-200 border border-rose-200 dark:border-rose-800"
-          }`}
-        >
-          <div className="flex items-center gap-2">
-            {statusMessage.type === "success" ? (
-              <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
-            ) : (
-              <AlertCircle className="w-5 h-5 text-rose-600 dark:text-rose-400" />
-            )}
-            <span>{statusMessage.text}</span>
-          </div>
-          <button
-            onClick={() => setStatusMessage(null)}
-            className="text-xs font-semibold underline hover:opacity-80 ml-4"
-          >
-            Dismiss
-          </button>
-        </div>
-      )}
 
       {/* Navigation Tabs */}
       <div className="flex border-b border-border dark:border-charcoal-800 space-x-2 overflow-x-auto no-scrollbar flex-nowrap pb-px">
@@ -373,75 +355,85 @@ export default function InventoryPage() {
             </span>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-            {assets.map((asset) => {
-              const isOperational = asset.status === "OPERATIONAL";
-              return (
-                <div
-                  key={asset.id}
-                  className="bg-white dark:bg-charcoal-900 rounded-xl p-5 border border-border dark:border-charcoal-800 shadow-sm flex flex-col justify-between"
-                >
-                  <div>
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <span className="font-mono text-xs font-bold text-rose-primary dark:text-rose-light">
-                          {asset.assetTag}
+          {assets.length === 0 ? (
+            <EmptyState
+              icon={Boxes}
+              title="No Capital Assets Found"
+              description={`No institutional assets registered under category "${selectedCategory}".`}
+              actionLabel="Register New Asset"
+              onAction={() => setShowAssetModal(true)}
+            />
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+              {assets.map((asset) => {
+                const isOperational = asset.status === "OPERATIONAL";
+                return (
+                  <div
+                    key={asset.id}
+                    className="bg-white dark:bg-charcoal-900 rounded-xl p-5 border border-border dark:border-charcoal-800 shadow-sm flex flex-col justify-between"
+                  >
+                    <div>
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <span className="font-mono text-xs font-bold text-rose-primary dark:text-rose-light">
+                            {asset.assetTag}
+                          </span>
+                          <h3 className="font-bold text-base text-charcoal-900 dark:text-ivory-100 mt-1">
+                            {asset.name}
+                          </h3>
+                          <p className="text-xs text-charcoal-500 mt-0.5">{asset.department}</p>
+                        </div>
+                        <span
+                          className={`text-xs px-2.5 py-0.5 rounded-full font-semibold border ${
+                            isOperational
+                              ? "bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-200 border-emerald-300"
+                              : "bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-200 border-amber-300"
+                          }`}
+                        >
+                          {asset.status.replace("_", " ")}
                         </span>
-                        <h3 className="font-bold text-base text-charcoal-900 dark:text-ivory-100 mt-1">
-                          {asset.name}
-                        </h3>
-                        <p className="text-xs text-charcoal-500 mt-0.5">{asset.department}</p>
                       </div>
-                      <span
-                        className={`text-xs px-2.5 py-0.5 rounded-full font-semibold border ${
-                          isOperational
-                            ? "bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-200 border-emerald-300"
-                            : "bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-200 border-amber-300"
-                        }`}
+
+                      <div className="mt-4 p-3 bg-ivory-50 dark:bg-charcoal-800/60 rounded-lg space-y-1.5 text-xs">
+                        <div className="flex justify-between">
+                          <span className="text-charcoal-500">Location:</span>
+                          <span className="font-medium text-charcoal-900 dark:text-ivory-100">{asset.locationRoom}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-charcoal-500">Custodian:</span>
+                          <span className="font-medium text-charcoal-900 dark:text-ivory-100">{asset.custodianFaculty}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-charcoal-500">Purchase Cost:</span>
+                          <span className="text-charcoal-700 dark:text-ivory-300 font-semibold">₹{asset.purchaseCost.toLocaleString("en-IN")}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-charcoal-500">Book Value (Net):</span>
+                          <span className="text-emerald-600 dark:text-emerald-400 font-bold">₹{asset.currentDepreciatedValue.toLocaleString("en-IN")}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="mt-4 pt-3 border-t border-border dark:border-charcoal-800 flex items-center justify-between text-xs">
+                      <span className="text-charcoal-500">Warranty: Until {asset.warrantyExpiry}</span>
+                      <button
+                        onClick={() => {
+                          setWorkOrderForm({
+                            ...workOrderForm,
+                            assetId: asset.id,
+                          });
+                          setShowWorkOrderModal(true);
+                        }}
+                        className="text-xs text-rose-primary hover:underline font-semibold"
                       >
-                        {asset.status.replace("_", " ")}
-                      </span>
-                    </div>
-
-                    <div className="mt-4 p-3 bg-ivory-50 dark:bg-charcoal-800/60 rounded-lg space-y-1.5 text-xs">
-                      <div className="flex justify-between">
-                        <span className="text-charcoal-500">Location:</span>
-                        <span className="font-medium text-charcoal-900 dark:text-ivory-100">{asset.locationRoom}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-charcoal-500">Custodian:</span>
-                        <span className="font-medium text-charcoal-900 dark:text-ivory-100">{asset.custodianFaculty}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-charcoal-500">Purchase Cost:</span>
-                        <span className="text-charcoal-700 dark:text-ivory-300 font-semibold">${asset.purchaseCost.toLocaleString()}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-charcoal-500">Book Value (Net):</span>
-                        <span className="text-emerald-600 dark:text-emerald-400 font-bold">${asset.currentDepreciatedValue.toLocaleString()}</span>
-                      </div>
+                        Report Issue
+                      </button>
                     </div>
                   </div>
-
-                  <div className="mt-4 pt-3 border-t border-border dark:border-charcoal-800 flex items-center justify-between text-xs">
-                    <span className="text-charcoal-500">Warranty: Until {asset.warrantyExpiry}</span>
-                    <button
-                      onClick={() => {
-                        setWorkOrderForm({
-                          ...workOrderForm,
-                          assetId: asset.id,
-                        });
-                        setShowWorkOrderModal(true);
-                      }}
-                      className="text-xs text-rose-primary hover:underline font-semibold"
-                    >
-                      Report Issue
-                    </button>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+                );
+              })}
+            </div>
+          )}
         </div>
       )}
 
@@ -474,37 +466,49 @@ export default function InventoryPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-border dark:divide-charcoal-800">
-                {consumables.map((c) => (
-                  <tr key={c.id} className="hover:bg-ivory-50/50 dark:hover:bg-charcoal-800/40 transition-colors">
-                    <td className="p-3.5">
-                      <p className="font-bold text-charcoal-900 dark:text-ivory-100">{c.name}</p>
-                      <p className="font-mono text-[11px] text-charcoal-500">{c.itemCode}</p>
-                    </td>
-                    <td className="p-3.5 text-charcoal-600 dark:text-ivory-300">{c.category}</td>
-                    <td className="p-3.5 text-charcoal-500">{c.unit}</td>
-                    <td className="p-3.5 font-bold text-charcoal-900 dark:text-ivory-100 text-sm">
-                      {c.quantityOnHand}
-                    </td>
-                    <td className="p-3.5 font-medium text-charcoal-600 dark:text-ivory-400">
-                      ≤ {c.minReorderThreshold}
-                    </td>
-                    <td className="p-3.5 font-semibold text-charcoal-800 dark:text-ivory-200">
-                      ${c.unitCost}
-                    </td>
-                    <td className="p-3.5 text-charcoal-500">{c.supplierName}</td>
-                    <td className="p-3.5 text-right">
-                      {c.needsReorder ? (
-                        <span className="px-2.5 py-1 rounded-full font-bold text-[10px] bg-rose-100 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 border border-rose-300">
-                          Reorder Required
-                        </span>
-                      ) : (
-                        <span className="px-2.5 py-1 rounded-full font-bold text-[10px] bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-300">
-                          Adequate
-                        </span>
-                      )}
+                {consumables.length === 0 ? (
+                  <tr>
+                    <td colSpan={8} className="p-8">
+                      <EmptyState
+                        icon={Package}
+                        title="No Consumables Recorded"
+                        description="There are currently no laboratory supplies or stationery stock items in the ledger."
+                      />
                     </td>
                   </tr>
-                ))}
+                ) : (
+                  consumables.map((c) => (
+                    <tr key={c.id} className="hover:bg-ivory-50/50 dark:hover:bg-charcoal-800/40 transition-colors">
+                      <td className="p-3.5">
+                        <p className="font-bold text-charcoal-900 dark:text-ivory-100">{c.name}</p>
+                        <p className="font-mono text-[11px] text-charcoal-500">{c.itemCode}</p>
+                      </td>
+                      <td className="p-3.5 text-charcoal-600 dark:text-ivory-300">{c.category}</td>
+                      <td className="p-3.5 text-charcoal-500">{c.unit}</td>
+                      <td className="p-3.5 font-bold text-charcoal-900 dark:text-ivory-100 text-sm">
+                        {c.quantityOnHand}
+                      </td>
+                      <td className="p-3.5 font-medium text-charcoal-600 dark:text-ivory-400">
+                        ≤ {c.minReorderThreshold}
+                      </td>
+                      <td className="p-3.5 font-semibold text-charcoal-800 dark:text-ivory-200">
+                        ₹{c.unitCost}
+                      </td>
+                      <td className="p-3.5 text-charcoal-500">{c.supplierName}</td>
+                      <td className="p-3.5 text-right">
+                        {c.needsReorder ? (
+                          <span className="px-2.5 py-1 rounded-full font-bold text-[10px] bg-rose-100 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 border border-rose-300">
+                            Reorder Required
+                          </span>
+                        ) : (
+                          <span className="px-2.5 py-1 rounded-full font-bold text-[10px] bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-300">
+                            Adequate
+                          </span>
+                        )}
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>
@@ -541,64 +545,82 @@ export default function InventoryPage() {
           </div>
 
           <div className="grid grid-cols-1 gap-4">
-            {workOrders.map((wo) => {
-              const isDone = wo.status === "COMPLETED";
-              return (
-                <div
-                  key={wo.id}
-                  className="bg-white dark:bg-charcoal-900 rounded-xl p-5 border border-border dark:border-charcoal-800 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4"
-                >
-                  <div className="space-y-1.5 max-w-2xl">
-                    <div className="flex items-center gap-2">
-                      <span className="font-mono text-xs font-bold text-rose-primary dark:text-rose-light">
-                        {wo.workOrderNo}
-                      </span>
-                      <span className="text-xs px-2.5 py-0.5 rounded-full font-bold bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-200">
-                        {wo.priority} Priority
-                      </span>
-                      <span
-                        className={`text-xs px-2.5 py-0.5 rounded-full font-semibold ${
-                          isDone
-                            ? "bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-200"
-                            : "bg-blue-100 dark:bg-blue-950/60 text-blue-800 dark:text-blue-200"
-                        }`}
-                      >
-                        {wo.status.replace("_", " ")}
-                      </span>
-                    </div>
+            {workOrders.length === 0 ? (
+              <EmptyState
+                icon={Wrench}
+                title="No Active Work Orders"
+                description="There are currently no maintenance work orders logged for campus facilities or equipment."
+                actionLabel="New Work Order"
+                onAction={() => {
+                  if (assets.length > 0) {
+                    setWorkOrderForm({
+                      ...workOrderForm,
+                      assetId: assets[0].id,
+                    });
+                  }
+                  setShowWorkOrderModal(true);
+                }}
+              />
+            ) : (
+              workOrders.map((wo) => {
+                const isDone = wo.status === "COMPLETED";
+                return (
+                  <div
+                    key={wo.id}
+                    className="bg-white dark:bg-charcoal-900 rounded-xl p-5 border border-border dark:border-charcoal-800 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4"
+                  >
+                    <div className="space-y-1.5 max-w-2xl">
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono text-xs font-bold text-rose-primary dark:text-rose-light">
+                          {wo.workOrderNo}
+                        </span>
+                        <span className="text-xs px-2.5 py-0.5 rounded-full font-bold bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-200">
+                          {wo.priority} Priority
+                        </span>
+                        <span
+                          className={`text-xs px-2.5 py-0.5 rounded-full font-semibold ${
+                            isDone
+                              ? "bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-200"
+                              : "bg-blue-100 dark:bg-blue-950/60 text-blue-800 dark:text-blue-200"
+                          }`}
+                        >
+                          {wo.status.replace("_", " ")}
+                        </span>
+                      </div>
 
-                    <h3 className="font-bold text-base text-charcoal-900 dark:text-ivory-100 mt-1">
-                      {wo.assetName} ({wo.assetTag})
-                    </h3>
-                    <p className="text-xs text-charcoal-600 dark:text-ivory-300">
-                      <span className="font-semibold text-charcoal-700 dark:text-ivory-200">Issue:</span> {wo.reportedIssue}
-                    </p>
-
-                    <div className="text-[11px] text-charcoal-500 pt-1 flex flex-wrap gap-4">
-                      <span>Assigned: {wo.assignedTechnician}</span>
-                      <span>Estimated Cost: ${wo.estimatedCost}</span>
-                      <span>Reported: {new Date(wo.reportedDate).toLocaleDateString()}</span>
-                    </div>
-
-                    {wo.notes && (
-                      <p className="text-[11px] text-rose-600 dark:text-rose-400 italic">
-                        Technician Notes: {wo.notes}
+                      <h3 className="font-bold text-base text-charcoal-900 dark:text-ivory-100 mt-1">
+                        {wo.assetName} ({wo.assetTag})
+                      </h3>
+                      <p className="text-xs text-charcoal-600 dark:text-ivory-300">
+                        <span className="font-semibold text-charcoal-700 dark:text-ivory-200">Issue:</span> {wo.reportedIssue}
                       </p>
+
+                      <div className="text-[11px] text-charcoal-500 pt-1 flex flex-wrap gap-4">
+                        <span>Assigned: {wo.assignedTechnician}</span>
+                        <span>Estimated Cost: ₹{wo.estimatedCost?.toLocaleString("en-IN")}</span>
+                        <span>Reported: {new Date(wo.reportedDate).toLocaleDateString()}</span>
+                      </div>
+
+                      {wo.notes && (
+                        <p className="text-[11px] text-rose-600 dark:text-rose-400 italic">
+                          Technician Notes: {wo.notes}
+                        </p>
+                      )}
+                    </div>
+
+                    {!isDone && (
+                      <button
+                        onClick={() => handleCompleteWorkOrder(wo.id)}
+                        className="px-4 py-2 rounded-lg text-xs font-semibold bg-emerald-600 text-white hover:bg-emerald-700 transition-colors flex items-center gap-1.5 shadow-sm whitespace-nowrap"
+                      >
+                        <CheckCircle2 className="w-4 h-4" />
+                        Sign Off Complete
+                      </button>
                     )}
                   </div>
-
-                  {!isDone && (
-                    <button
-                      onClick={() => handleCompleteWorkOrder(wo.id)}
-                      className="px-4 py-2 rounded-lg text-xs font-semibold bg-emerald-600 text-white hover:bg-emerald-700 transition-colors flex items-center gap-1.5 shadow-sm whitespace-nowrap"
-                    >
-                      <CheckCircle2 className="w-4 h-4" />
-                      Sign Off Complete
-                    </button>
-                  )}
-                </div>
-              );
-            })}
+                );
+              })
+            )}
           </div>
         </div>
       )}
@@ -619,14 +641,14 @@ export default function InventoryPage() {
             <div className="p-4 rounded-xl bg-ivory-50 dark:bg-charcoal-800/60 border border-border dark:border-charcoal-700">
               <p className="text-xs text-charcoal-500 uppercase font-semibold">Total Gross Book Cost</p>
               <p className="text-2xl font-bold mt-1 text-charcoal-900 dark:text-ivory-100">
-                ${assets.reduce((acc, a) => acc + a.purchaseCost, 0).toLocaleString()}
+                ₹{assets.reduce((acc, a) => acc + a.purchaseCost, 0).toLocaleString("en-IN")}
               </p>
               <p className="text-xs text-charcoal-500 mt-0.5">Historical acquisition cost</p>
             </div>
             <div className="p-4 rounded-xl bg-ivory-50 dark:bg-charcoal-800/60 border border-border dark:border-charcoal-700">
               <p className="text-xs text-charcoal-500 uppercase font-semibold">Net Depreciated Value</p>
               <p className="text-2xl font-bold mt-1 text-emerald-600 dark:text-emerald-400">
-                ${summary?.totalAssetValuation.toLocaleString()}
+                ₹{(summary?.totalAssetValuation ?? 0).toLocaleString("en-IN")}
               </p>
               <p className="text-xs text-charcoal-500 mt-0.5">Straight-line over 5 years</p>
             </div>
@@ -731,7 +753,7 @@ export default function InventoryPage() {
                 </div>
                 <div>
                   <label className="block font-medium text-charcoal-700 dark:text-ivory-300 mb-1">
-                    Purchase Cost ($)
+                    Purchase Cost (₹)
                   </label>
                   <input
                     type="number"
@@ -839,7 +861,7 @@ export default function InventoryPage() {
                 </div>
                 <div>
                   <label className="block font-medium text-charcoal-700 dark:text-ivory-300 mb-1">
-                    Est. Cost ($)
+                    Est. Cost (₹)
                   </label>
                   <input
                     type="number"

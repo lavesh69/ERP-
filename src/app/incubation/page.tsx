@@ -3,6 +3,9 @@
 import React, { useState, useEffect } from "react";
 import { AppShell } from "@/components/layout/AppShell";
 import { Breadcrumbs } from "@/components/common/Breadcrumbs";
+import { useApp } from "@/context/AppContext";
+import { SkeletonCard } from "@/components/common/SkeletonLoader";
+import { EmptyState } from "@/components/common/EmptyState";
 import {
   Rocket,
   TrendingUp,
@@ -52,6 +55,7 @@ interface Startup {
 }
 
 export default function IncubationPage() {
+  const { showToast } = useApp();
   const [activeTab, setActiveTab] = useState<"ventures" | "portfolio" | "investor">("ventures");
   const [loading, setLoading] = useState(true);
   const [summary, setSummary] = useState<any>(null);
@@ -59,7 +63,6 @@ export default function IncubationPage() {
   const [selectedStartupDossier, setSelectedStartupDossier] = useState<Startup | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [message, setMessage] = useState<{ text: string; type: "success" | "error" } | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [filterSector, setFilterSector] = useState("ALL");
   const [filterStage, setFilterStage] = useState("ALL");
@@ -71,8 +74,8 @@ export default function IncubationPage() {
   const [evalMoat, setEvalMoat] = useState<number>(75);
   const [evalTraction, setEvalTraction] = useState<number>(70);
   const [evalUnitEcon, setEvalUnitEcon] = useState<number>(80);
-  const [evalValuationCap, setEvalValuationCap] = useState<number>(3000000);
-  const [evalSeedTicket, setEvalSeedTicket] = useState<number>(50000);
+  const [evalValuationCap, setEvalValuationCap] = useState<number>(25000000);
+  const [evalSeedTicket, setEvalSeedTicket] = useState<number>(2500000);
   const [evalCommitteeNotes, setEvalCommitteeNotes] = useState<string>(
     "Defensible deep-tech solution with strong faculty-student founding team. Lab trials completed with high efficiency."
   );
@@ -81,8 +84,8 @@ export default function IncubationPage() {
   const [capFounderShare, setCapFounderShare] = useState<number>(85);
   const [capUnivStake, setCapUnivStake] = useState<number>(5);
   const [capEsopShare, setCapEsopShare] = useState<number>(10);
-  const [capPreMoneyVal, setCapPreMoneyVal] = useState<number>(4000000);
-  const [capInvestmentAmt, setCapInvestmentAmt] = useState<number>(1000000);
+  const [capPreMoneyVal, setCapPreMoneyVal] = useState<number>(40000000);
+  const [capInvestmentAmt, setCapInvestmentAmt] = useState<number>(10000000);
   const [capEsopExpansion, setCapEsopExpansion] = useState<number>(5);
 
   const handleUpdateStartupStage = async (id: string, stage: string) => {
@@ -99,13 +102,13 @@ export default function IncubationPage() {
 
       const data = await res.json();
       if (res.ok) {
-        setMessage({ text: data.message || `Startup stage transitioned to ${stage}`, type: "success" });
+        showToast(data.message || `Startup stage transitioned to ${stage}`, "success");
         fetchData();
       } else {
-        setMessage({ text: data.error || "Failed to update stage", type: "error" });
+        showToast(data.error || "Failed to update stage", "error");
       }
     } catch (err: any) {
-      setMessage({ text: err.message || "Network error", type: "error" });
+      showToast(err.message || "Network error", "error");
     }
   };
 
@@ -122,7 +125,7 @@ export default function IncubationPage() {
       const matchesStage = filterStage === "ALL" || s.stage === filterStage;
       return matchesSearch && matchesSector && matchesStage;
     });
-    const headers = "Company Ref,Startup Name,Founder,Role,Staff/Roll ID,Sector,Stage,Seed Disbursed,Univ Equity %,External Funding,Patents,Lab Desks,Mentor,Status\n";
+    const headers = "Company Ref,Startup Name,Founder,Role,Staff/Roll ID,Sector,Stage,Seed Disbursed (INR),Univ Equity %,External Funding (INR),Patents,Lab Desks,Mentor,Status\n";
     const rows = filtered
       .map((s) => `"${s.companyRef}","${s.startupName}","${s.founderName}","${s.founderRole}","${s.founderRollOrStaffId}","${s.sector}","${s.stage}",${s.seedGrantDisbursed},${s.universityEquityPercentage},${s.externalFundingRaised},${s.patentsFiled},${s.labDesksAllocated},"${s.mentorName}","${s.status}"`)
       .join("\n");
@@ -144,7 +147,7 @@ export default function IncubationPage() {
     sector: "AI_ML",
     stage: "INCUBATED_PROTOTYPE",
     pitchDeckSummary: "",
-    seedGrantDisbursed: 15000,
+    seedGrantDisbursed: 1000000,
     universityEquityPercentage: 2.0,
     labDesksAllocated: 2,
     mentorName: "Dr. Arvind Gupta (Angel Investor)",
@@ -195,7 +198,6 @@ export default function IncubationPage() {
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
-    setMessage(null);
 
     try {
       const res = await fetch("/api/incubation", {
@@ -209,14 +211,14 @@ export default function IncubationPage() {
 
       const data = await res.json();
       if (res.ok) {
-        setMessage({ text: data.message || "Startup registered into incubator!", type: "success" });
+        showToast(data.message || "Startup registered into incubator!", "success");
         setShowModal(false);
         fetchData();
       } else {
-        setMessage({ text: data.error || "Failed to register startup", type: "error" });
+        showToast(data.error || "Failed to register startup", "error");
       }
     } catch (err: any) {
-      setMessage({ text: err.message || "Network error", type: "error" });
+      showToast(err.message || "Network error", "error");
     } finally {
       setSubmitting(false);
     }
@@ -265,65 +267,61 @@ export default function IncubationPage() {
           </div>
         </div>
 
-      {message && (
-        <div
-          className={`p-4 rounded-xl text-sm flex items-center gap-2 ${
-            message.type === "success"
-              ? "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800"
-              : "bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-800"
-          }`}
-        >
-          <CheckCircle2 className="w-4 h-4 shrink-0" />
-          {message.text}
-        </div>
-      )}
+        {/* KPI Cards */}
+        {loading ? (
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <SkeletonCard />
+            <SkeletonCard />
+            <SkeletonCard />
+            <SkeletonCard />
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="bg-white dark:bg-charcoal-900 p-5 rounded-2xl border border-border dark:border-charcoal-800 shadow-sm">
+              <div className="flex items-center justify-between text-charcoal-500 dark:text-charcoal-400 mb-2">
+                <span className="text-xs font-semibold uppercase tracking-wider">Incubated Startups</span>
+                <Rocket className="w-4 h-4 text-violet-500" />
+              </div>
+              <div className="text-2xl font-bold text-charcoal-900 dark:text-ivory-100">
+                {summary?.totalVentures || 0}
+              </div>
+              <p className="text-xs text-charcoal-400 mt-1">{summary?.activeVentures || 0} Currently Active in Cohort</p>
+            </div>
 
-      {/* KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="bg-white dark:bg-charcoal-900 p-5 rounded-2xl border border-border dark:border-charcoal-800 shadow-sm">
-          <div className="flex items-center justify-between text-charcoal-500 dark:text-charcoal-400 mb-2">
-            <span className="text-xs font-semibold uppercase tracking-wider">Incubated Startups</span>
-            <Rocket className="w-4 h-4 text-violet-500" />
-          </div>
-          <div className="text-2xl font-bold text-charcoal-900 dark:text-ivory-100">
-            {loading ? "..." : summary?.totalVentures || 0}
-          </div>
-          <p className="text-xs text-charcoal-400 mt-1">{summary?.activeVentures || 0} Currently Active in Cohort</p>
-        </div>
+            <div className="bg-white dark:bg-charcoal-900 p-5 rounded-2xl border border-border dark:border-charcoal-800 shadow-sm">
+              <div className="flex items-center justify-between text-charcoal-500 dark:text-charcoal-400 mb-2">
+                <span className="text-xs font-semibold uppercase tracking-wider">Seed Grants Disbursed</span>
+                <DollarSign className="w-4 h-4 text-emerald-500" />
+              </div>
+              <div className="text-2xl font-bold text-charcoal-900 dark:text-ivory-100">
+                ₹{(summary?.totalSeedCapitalDisbursed || 0).toLocaleString("en-IN")}
+              </div>
+              <p className="text-xs text-emerald-600 dark:text-emerald-400 mt-1 font-medium">University Venture Fund</p>
+            </div>
 
-        <div className="bg-white dark:bg-charcoal-900 p-5 rounded-2xl border border-border dark:border-charcoal-800 shadow-sm">
-          <div className="flex items-center justify-between text-charcoal-500 dark:text-charcoal-400 mb-2">
-            <span className="text-xs font-semibold uppercase tracking-wider">Seed Grants Disbursed</span>
-            <DollarSign className="w-4 h-4 text-emerald-500" />
-          </div>
-          <div className="text-2xl font-bold text-charcoal-900 dark:text-ivory-100">
-            ${loading ? "..." : (summary?.totalSeedCapitalDisbursed || 0).toLocaleString()}
-          </div>
-          <p className="text-xs text-emerald-600 dark:text-emerald-400 mt-1 font-medium">University Venture Fund</p>
-        </div>
+            <div className="bg-white dark:bg-charcoal-900 p-5 rounded-2xl border border-border dark:border-charcoal-800 shadow-sm">
+              <div className="flex items-center justify-between text-charcoal-500 dark:text-charcoal-400 mb-2">
+                <span className="text-xs font-semibold uppercase tracking-wider">External Capital Raised</span>
+                <TrendingUp className="w-4 h-4 text-indigo-500" />
+              </div>
+              <div className="text-2xl font-bold text-charcoal-900 dark:text-ivory-100">
+                ₹{(summary?.totalExternalFundingRaised || 0).toLocaleString("en-IN")}
+              </div>
+              <p className="text-xs text-charcoal-400 mt-1">VC & Angel Syndicates</p>
+            </div>
 
-        <div className="bg-white dark:bg-charcoal-900 p-5 rounded-2xl border border-border dark:border-charcoal-800 shadow-sm">
-          <div className="flex items-center justify-between text-charcoal-500 dark:text-charcoal-400 mb-2">
-            <span className="text-xs font-semibold uppercase tracking-wider">External Capital Raised</span>
-            <TrendingUp className="w-4 h-4 text-indigo-500" />
+            <div className="bg-white dark:bg-charcoal-900 p-5 rounded-2xl border border-border dark:border-charcoal-800 shadow-sm">
+              <div className="flex items-center justify-between text-charcoal-500 dark:text-charcoal-400 mb-2">
+                <span className="text-xs font-semibold uppercase tracking-wider">Patents & IP Filed</span>
+                <Lightbulb className="w-4 h-4 text-amber-500" />
+              </div>
+              <div className="text-2xl font-bold text-charcoal-900 dark:text-ivory-100">
+                {summary?.totalPatentsFiled || 0}
+              </div>
+              <p className="text-xs text-charcoal-400 mt-1">Tech Transfer Office (TTO)</p>
+            </div>
           </div>
-          <div className="text-2xl font-bold text-charcoal-900 dark:text-ivory-100">
-            ${loading ? "..." : (summary?.totalExternalFundingRaised || 0).toLocaleString()}
-          </div>
-          <p className="text-xs text-charcoal-400 mt-1">VC & Angel Syndicates</p>
-        </div>
-
-        <div className="bg-white dark:bg-charcoal-900 p-5 rounded-2xl border border-border dark:border-charcoal-800 shadow-sm">
-          <div className="flex items-center justify-between text-charcoal-500 dark:text-charcoal-400 mb-2">
-            <span className="text-xs font-semibold uppercase tracking-wider">Patents & IP Filed</span>
-            <Lightbulb className="w-4 h-4 text-amber-500" />
-          </div>
-          <div className="text-2xl font-bold text-charcoal-900 dark:text-ivory-100">
-            {loading ? "..." : summary?.totalPatentsFiled || 0}
-          </div>
-          <p className="text-xs text-charcoal-400 mt-1">Tech Transfer Office (TTO)</p>
-        </div>
-      </div>
+        )}
 
       {/* Search & Sector Filter Toolbar */}
       <div className="flex flex-col sm:flex-row gap-3 items-center justify-between bg-white dark:bg-charcoal-900 p-4 rounded-xl border border-border dark:border-charcoal-800">
@@ -455,13 +453,13 @@ export default function IncubationPage() {
                 <div className="flex justify-between">
                   <span>Seed Disbursed:</span>
                   <span className="font-semibold text-charcoal-900 dark:text-ivory-100">
-                    ${s.seedGrantDisbursed.toLocaleString()} ({s.universityEquityPercentage}% Equity)
+                    ₹{s.seedGrantDisbursed.toLocaleString("en-IN")} ({s.universityEquityPercentage}% Equity)
                   </span>
                 </div>
                 <div className="flex justify-between">
                   <span>External Raised:</span>
                   <span className="font-semibold text-emerald-600 dark:text-emerald-400">
-                    ${s.externalFundingRaised.toLocaleString()}
+                    ₹{s.externalFundingRaised.toLocaleString("en-IN")}
                   </span>
                 </div>
                 <div className="flex justify-between">
@@ -516,23 +514,18 @@ export default function IncubationPage() {
             const matchesStage = filterStage === "ALL" || s.stage === filterStage;
             return matchesSearch && matchesSector && matchesStage;
           }).length === 0 && (
-            <div className="col-span-1 md:col-span-3 py-16 text-center bg-white dark:bg-charcoal-900 rounded-2xl border border-border dark:border-charcoal-800 p-8 shadow-sm">
-              <Rocket className="w-12 h-12 text-charcoal-300 dark:text-charcoal-600 mx-auto mb-3" />
-              <h4 className="font-semibold text-charcoal-900 dark:text-ivory-100 text-base">No Ventures Found</h4>
-              <p className="text-xs text-charcoal-400 mt-1 max-w-sm mx-auto">
-                No startup ventures match your search &ldquo;{searchQuery}&rdquo; and active filters.
-              </p>
-              <button
-                onClick={() => {
+            <div className="col-span-1 md:col-span-3">
+              <EmptyState
+                icon={Rocket}
+                title="No Startup Ventures Found"
+                description={`No startup ventures match your search "${searchQuery}" and active filters.`}
+                actionLabel="Reset Filters"
+                onAction={() => {
                   setSearchQuery("");
                   setFilterSector("ALL");
                   setFilterStage("ALL");
                 }}
-                className="mt-4 px-4 py-2 bg-violet-50 dark:bg-violet-950/60 text-violet-600 dark:text-violet-400 border border-violet-200 dark:border-violet-800 rounded-xl text-xs font-semibold inline-flex items-center gap-1.5 hover:bg-violet-100 transition-all"
-              >
-                <RotateCcw className="w-3.5 h-3.5" />
-                Reset Filters
-              </button>
+              />
             </div>
           )}
         </div>
@@ -557,7 +550,7 @@ export default function IncubationPage() {
                   Estimated Portfolio Valuation
                 </span>
                 <div className="text-3xl font-extrabold text-violet-600 dark:text-violet-400">
-                  ${(summary?.estimatedPortfolioValuation || 0).toLocaleString()}
+                  ₹{(summary?.estimatedPortfolioValuation || 0).toLocaleString("en-IN")}
                 </div>
                 <p className="text-xs text-charcoal-400">Across active incubated companies</p>
               </div>
@@ -579,7 +572,7 @@ export default function IncubationPage() {
                 <div className="text-3xl font-extrabold text-emerald-600 dark:text-emerald-400">
                   11.7x
                 </div>
-                <p className="text-xs text-charcoal-400">External VC dollars raised per $1 seed grant</p>
+                <p className="text-xs text-charcoal-400">External VC capital raised per ₹1 seed grant</p>
               </div>
             </div>
           </div>
@@ -627,11 +620,11 @@ export default function IncubationPage() {
                       onClick={() => {
                         const csv = [
                           "Stakeholder,Pre-Round %,Post-Round %,Dilution Delta,Post-Round Valuation",
-                          `Founders & Core Team,${capFounderShare}%,${postFounderPct}%,${(postFounderPct - capFounderShare).toFixed(2)}%,$${founderVal.toLocaleString()}`,
-                          `University Incubator Stake,${capUnivStake}%,${postUnivPct}%,${(postUnivPct - capUnivStake).toFixed(2)}%,$${univVal.toLocaleString()}`,
-                          `Employee ESOP Pool,${capEsopShare}%,${postEsopPct}%,+${(postEsopPct - capEsopShare).toFixed(2)}%,$${esopVal.toLocaleString()}`,
-                          `New Seed/SAFE Investors,0%,${postInvestorPct}%,+${postInvestorPct}%,$${investorVal.toLocaleString()}`,
-                          `Total Aggregate,100%,100%,0%,$${postMoneyValuation.toLocaleString()}`,
+                          `Founders & Core Team,${capFounderShare}%,${postFounderPct}%,${(postFounderPct - capFounderShare).toFixed(2)}%,₹${founderVal.toLocaleString("en-IN")}`,
+                          `University Incubator Stake,${capUnivStake}%,${postUnivPct}%,${(postUnivPct - capUnivStake).toFixed(2)}%,₹${univVal.toLocaleString("en-IN")}`,
+                          `Employee ESOP Pool,${capEsopShare}%,${postEsopPct}%,+${(postEsopPct - capEsopShare).toFixed(2)}%,₹${esopVal.toLocaleString("en-IN")}`,
+                          `New Seed/SAFE Investors,0%,${postInvestorPct}%,+${postInvestorPct}%,₹${investorVal.toLocaleString("en-IN")}`,
+                          `Total Aggregate,100%,100%,0%,₹${postMoneyValuation.toLocaleString("en-IN")}`,
                         ].join("\n");
                         const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
                         const url = URL.createObjectURL(blob);
@@ -654,30 +647,30 @@ export default function IncubationPage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 bg-ivory-50 dark:bg-charcoal-900/60 p-4 rounded-xl border border-border dark:border-charcoal-800 text-xs">
                   <div>
                     <label className="block text-charcoal-600 dark:text-ivory-300 font-semibold mb-1">
-                      Pre-Money Valuation Cap ($)
+                      Pre-Money Valuation Cap (₹)
                     </label>
                     <input
                       type="number"
                       value={capPreMoneyVal}
-                      onChange={(e) => setCapPreMoneyVal(Number(e.target.value) || 100000)}
-                      step={500000}
+                      onChange={(e) => setCapPreMoneyVal(Number(e.target.value) || 1000000)}
+                      step={1000000}
                       className="w-full p-2 bg-white dark:bg-charcoal-800 border border-border dark:border-charcoal-700 rounded-lg font-mono font-bold"
                     />
-                    <span className="text-[10px] text-charcoal-400 mt-0.5 block">${(capPreMoneyVal / 1000000).toFixed(2)}M Cap</span>
+                    <span className="text-[10px] text-charcoal-400 mt-0.5 block">₹{(capPreMoneyVal / 10000000).toFixed(2)} Cr Valuation Cap</span>
                   </div>
 
                   <div>
                     <label className="block text-charcoal-600 dark:text-ivory-300 font-semibold mb-1">
-                      New Investment Amount ($)
+                      New Investment Amount (₹)
                     </label>
                     <input
                       type="number"
                       value={capInvestmentAmt}
-                      onChange={(e) => setCapInvestmentAmt(Number(e.target.value) || 50000)}
-                      step={100000}
+                      onChange={(e) => setCapInvestmentAmt(Number(e.target.value) || 500000)}
+                      step={500000}
                       className="w-full p-2 bg-white dark:bg-charcoal-800 border border-border dark:border-charcoal-700 rounded-lg font-mono font-bold"
                     />
-                    <span className="text-[10px] text-emerald-500 mt-0.5 block">${(capInvestmentAmt / 1000).toFixed(0)}k Seed Check</span>
+                    <span className="text-[10px] text-emerald-500 mt-0.5 block">₹{(capInvestmentAmt / 100000).toFixed(1)} Lakh Seed Check</span>
                   </div>
 
                   <div>
@@ -755,7 +748,7 @@ export default function IncubationPage() {
                   {/* Pre-Round Stacked Bar */}
                   <div className="space-y-1">
                     <div className="flex justify-between text-xs font-semibold">
-                      <span>Pre-Round Cap Table ($4.00M Valuation)</span>
+                      <span>Pre-Round Cap Table (₹{(capPreMoneyVal / 10000000).toFixed(2)} Cr Valuation)</span>
                       <span>100% Fully Diluted</span>
                     </div>
                     <div className="h-6 w-full rounded-xl overflow-hidden flex text-[10px] font-bold text-white shadow-inner">
@@ -775,9 +768,9 @@ export default function IncubationPage() {
                   <div className="space-y-1">
                     <div className="flex justify-between text-xs font-semibold">
                       <span className="text-violet-600 dark:text-violet-400 font-bold">
-                        Post-Round Cap Table (${(postMoneyValuation / 1000000).toFixed(2)}M Post-Money)
+                        Post-Round Cap Table (₹{(postMoneyValuation / 10000000).toFixed(2)} Cr Post-Money)
                       </span>
-                      <span className="text-emerald-600 font-bold">New Capital: +${(capInvestmentAmt / 1000).toFixed(0)}k</span>
+                      <span className="text-emerald-600 font-bold">New Capital: +₹{(capInvestmentAmt / 100000).toFixed(1)} Lakh</span>
                     </div>
                     <div className="h-6 w-full rounded-xl overflow-hidden flex text-[10px] font-bold text-white shadow-inner">
                       <div style={{ width: `${postFounderPct}%` }} className="bg-violet-600 flex items-center justify-center">
@@ -818,7 +811,7 @@ export default function IncubationPage() {
                         <td className="p-3 font-mono font-bold text-violet-600 dark:text-violet-400">{postFounderPct}%</td>
                         <td className="p-3 font-mono text-rose-500">{(postFounderPct - capFounderShare).toFixed(2)}%</td>
                         <td className="p-3 font-mono font-bold text-right text-charcoal-900 dark:text-ivory-100">
-                          ${founderVal.toLocaleString()}
+                          ₹{founderVal.toLocaleString("en-IN")}
                         </td>
                       </tr>
                       <tr className="hover:bg-ivory-50/50 dark:hover:bg-charcoal-800/40">
@@ -830,7 +823,7 @@ export default function IncubationPage() {
                         <td className="p-3 font-mono font-bold text-indigo-600 dark:text-indigo-400">{postUnivPct}%</td>
                         <td className="p-3 font-mono text-rose-500">{(postUnivPct - capUnivStake).toFixed(2)}%</td>
                         <td className="p-3 font-mono font-bold text-right text-charcoal-900 dark:text-ivory-100">
-                          ${univVal.toLocaleString()}
+                          ₹{univVal.toLocaleString("en-IN")}
                         </td>
                       </tr>
                       <tr className="hover:bg-ivory-50/50 dark:hover:bg-charcoal-800/40">
@@ -842,7 +835,7 @@ export default function IncubationPage() {
                         <td className="p-3 font-mono font-bold text-emerald-600 dark:text-emerald-400">{postEsopPct}%</td>
                         <td className="p-3 font-mono text-emerald-600">+{capEsopExpansion}% Top-Up</td>
                         <td className="p-3 font-mono font-bold text-right text-charcoal-900 dark:text-ivory-100">
-                          ${esopVal.toLocaleString()}
+                          ₹{esopVal.toLocaleString("en-IN")}
                         </td>
                       </tr>
                       <tr className="hover:bg-ivory-50/50 dark:hover:bg-charcoal-800/40 bg-amber-50/40 dark:bg-amber-950/20">
@@ -854,7 +847,7 @@ export default function IncubationPage() {
                         <td className="p-3 font-mono font-bold text-amber-600 dark:text-amber-400">{postInvestorPct}%</td>
                         <td className="p-3 font-mono text-amber-600 font-bold">+{postInvestorPct}% New Issue</td>
                         <td className="p-3 font-mono font-bold text-right text-amber-600 dark:text-amber-400">
-                          ${investorVal.toLocaleString()}
+                          ₹{investorVal.toLocaleString("en-IN")}
                         </td>
                       </tr>
                     </tbody>
@@ -941,8 +934,8 @@ COMMITTEE VERDICT: ${isTier1 ? "TIER 1: HIGH CONVICTION SEED ALLOCATION" : isTie
 ==================================================
 TERM SHEET RECOMMENDATION
 ==================================================
-- SAFE Valuation Cap: $${evalValuationCap.toLocaleString()}
-- Seed Grant Ticket: $${evalSeedTicket.toLocaleString()}
+- SAFE Valuation Cap: ₹${evalValuationCap.toLocaleString("en-IN")}
+- Seed Grant Ticket: ₹${evalSeedTicket.toLocaleString("en-IN")}
 - University Equity Stake: ${currentVenture.universityEquityPercentage}%
 - Hardware Desks Assigned: ${currentVenture.labDesksAllocated} Desks
 - Assigned Advisory Mentor: ${currentVenture.mentorName}
@@ -981,13 +974,13 @@ ${evalCommitteeNotes}
                       <div>
                         <span className="text-[10px] text-charcoal-400 uppercase block font-semibold">Seed Disbursed</span>
                         <span className="font-extrabold text-charcoal-900 dark:text-ivory-100">
-                          ${currentVenture.seedGrantDisbursed.toLocaleString()}
+                          ₹{currentVenture.seedGrantDisbursed.toLocaleString("en-IN")}
                         </span>
                       </div>
                       <div>
                         <span className="text-[10px] text-charcoal-400 uppercase block font-semibold">External Funding</span>
                         <span className="font-extrabold text-emerald-600 dark:text-emerald-400">
-                          ${currentVenture.externalFundingRaised.toLocaleString()}
+                          ₹{currentVenture.externalFundingRaised.toLocaleString("en-IN")}
                         </span>
                       </div>
                       <div>
@@ -1036,7 +1029,7 @@ ${evalCommitteeNotes}
                       </div>
                       <h3 className="text-base font-bold text-charcoal-900 dark:text-ivory-100">
                         {isTier1
-                          ? "Approved for Fast-Track Institutional Seed Allocation ($50,000 - $100,000)"
+                          ? "Approved for Fast-Track Institutional Seed Allocation (₹25,00,000 - ₹50,00,000)"
                           : isTier2
                           ? "Conditionally Approved Pending Customer Pilot Verification & Patent Filing"
                           : "Incubation Lab Mentorship Required Before Seed Committee Review"}
@@ -1054,10 +1047,10 @@ ${evalCommitteeNotes}
                   <div className="flex flex-wrap md:flex-col gap-2 shrink-0 w-full md:w-auto">
                     <button
                       onClick={() => {
-                        setMessage({
-                          text: `Investment Committee Verdict recorded for ${currentVenture?.startupName}: Score ${compositeScore}% (${isTier1 ? 'TIER 1 APPROVED' : isTier2 ? 'TIER 2 CONDITIONAL' : 'TIER 3 LAB ITERATION'})`,
-                          type: "success",
-                        });
+                        showToast(
+                          `Investment Committee Verdict recorded for ${currentVenture?.startupName}: Score ${compositeScore}% (${isTier1 ? 'TIER 1 APPROVED' : isTier2 ? 'TIER 2 CONDITIONAL' : 'TIER 3 LAB ITERATION'})`,
+                          "success"
+                        );
                       }}
                       className="flex-1 md:flex-initial px-4 py-2.5 bg-violet-600 hover:bg-violet-700 text-white rounded-xl text-xs font-semibold shadow-sm transition-all text-center"
                     >
@@ -1226,11 +1219,11 @@ ${evalCommitteeNotes}
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="space-y-1.5">
                       <label className="text-xs font-semibold text-charcoal-500 uppercase tracking-wider">
-                        SAFE Valuation Cap ($)
+                        SAFE Valuation Cap (₹)
                       </label>
                       <input
                         type="number"
-                        step="250000"
+                        step="5000000"
                         value={evalValuationCap}
                         onChange={(e) => setEvalValuationCap(Number(e.target.value))}
                         className="w-full px-3.5 py-2.5 bg-ivory-50 dark:bg-charcoal-800 border border-border dark:border-charcoal-700 rounded-xl text-sm font-bold text-charcoal-800 dark:text-ivory-200"
@@ -1238,11 +1231,11 @@ ${evalCommitteeNotes}
                     </div>
                     <div className="space-y-1.5">
                       <label className="text-xs font-semibold text-charcoal-500 uppercase tracking-wider">
-                        Seed Check Allocation ($)
+                        Seed Check Allocation (₹)
                       </label>
                       <input
                         type="number"
-                        step="10000"
+                        step="500000"
                         value={evalSeedTicket}
                         onChange={(e) => setEvalSeedTicket(Number(e.target.value))}
                         className="w-full px-3.5 py-2.5 bg-ivory-50 dark:bg-charcoal-800 border border-border dark:border-charcoal-700 rounded-xl text-sm font-bold text-charcoal-800 dark:text-ivory-200"
@@ -1281,10 +1274,10 @@ ${evalCommitteeNotes}
                     </button>
                     <button
                       onClick={() => {
-                        setMessage({
-                          text: `Term Sheet of $${evalSeedTicket.toLocaleString()} at $${(evalValuationCap / 1000000).toFixed(1)}M Valuation Cap sanctioned for ${currentVenture?.startupName}!`,
-                          type: "success",
-                        });
+                        showToast(
+                          `Term Sheet of ₹${evalSeedTicket.toLocaleString("en-IN")} at ₹${(evalValuationCap / 10000000).toFixed(2)} Cr Valuation Cap sanctioned for ${currentVenture?.startupName}!`,
+                          "success"
+                        );
                       }}
                       className="px-5 py-2 bg-violet-600 hover:bg-violet-700 text-white rounded-xl text-xs font-semibold shadow-sm transition-all"
                     >
@@ -1400,7 +1393,7 @@ ${evalCommitteeNotes}
               <div className="grid grid-cols-3 gap-3">
                 <div>
                   <label className="block text-xs font-medium text-charcoal-600 dark:text-charcoal-400 mb-1">
-                    Seed Grant ($)
+                    Seed Grant (₹)
                   </label>
                   <input
                     type="number"
@@ -1533,7 +1526,7 @@ ${evalCommitteeNotes}
                 <div className="p-3 bg-violet-50/50 dark:bg-violet-950/30 rounded-xl border border-violet-100 dark:border-violet-900/50">
                   <span className="text-[10px] text-charcoal-400 uppercase font-medium block">Seed Grant</span>
                   <span className="font-extrabold text-charcoal-900 dark:text-ivory-100 text-sm block mt-0.5">
-                    ${selectedStartupDossier.seedGrantDisbursed.toLocaleString()}
+                    ₹{selectedStartupDossier.seedGrantDisbursed.toLocaleString("en-IN")}
                   </span>
                   <span className="text-violet-600 dark:text-violet-400 font-semibold text-[10px] block">Non-Dilutive</span>
                 </div>
@@ -1547,7 +1540,7 @@ ${evalCommitteeNotes}
                 <div className="p-3 bg-emerald-50/50 dark:bg-emerald-950/30 rounded-xl border border-emerald-100 dark:border-emerald-900/50">
                   <span className="text-[10px] text-charcoal-400 uppercase font-medium block">External Funding</span>
                   <span className="font-extrabold text-emerald-600 dark:text-emerald-400 text-sm block mt-0.5">
-                    ${selectedStartupDossier.externalFundingRaised.toLocaleString()}
+                    ₹{selectedStartupDossier.externalFundingRaised.toLocaleString("en-IN")}
                   </span>
                   <span className="text-emerald-700 dark:text-emerald-300 font-semibold text-[10px] block">Angel & VC Rounds</span>
                 </div>

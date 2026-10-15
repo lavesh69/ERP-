@@ -34,6 +34,8 @@ import {
 import { NightRollCallView } from "@/components/hostel/NightRollCallView";
 import HostelAssetAuditTab from "@/components/hostel/HostelAssetAuditTab";
 import MessRebateTab from "@/components/hostel/MessRebateTab";
+import { SkeletonCard } from "@/components/common/SkeletonLoader";
+import { EmptyState } from "@/components/common/EmptyState";
 
 interface HostelSummary {
   totalBlocks: number;
@@ -48,7 +50,7 @@ interface HostelSummary {
 }
 
 export default function HostelPage() {
-  const { currentUser, currentRole } = useApp();
+  const { currentUser, currentRole, showToast } = useApp();
   const [activeTab, setActiveTab] = useState<"matrix" | "allocations" | "gatepass" | "mess" | "night-rollcall" | "asset-audit" | "mess-rebate">("matrix");
   const [loading, setLoading] = useState(true);
   const [summary, setSummary] = useState<HostelSummary | null>(null);
@@ -57,7 +59,6 @@ export default function HostelPage() {
   const [messPlans, setMessPlans] = useState<any[]>([]);
   const [subscriptions, setSubscriptions] = useState<any[]>([]);
   const [selectedBlockId, setSelectedBlockId] = useState<string>("all");
-  const [statusMessage, setStatusMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
   // Mess Biometric State
   const [punchedMeals, setPunchedMeals] = useState<any[]>([
@@ -135,17 +136,13 @@ export default function HostelPage() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed to persist waste log");
-      setStatusMessage({
-        type: "success",
-        text: `Logged ${wasted} kg kitchen surplus for ${wasteInput.session}. 100% diverted to campus anaerobic digester.`,
-      });
+      showToast(`Logged ${wasted} kg kitchen surplus for ${wasteInput.session}. 100% diverted to campus anaerobic digester.`, "success");
       if (data.log) {
         setWasteLogs((prev) => [data.log, ...prev.filter((w) => w.id !== optimisticEntry.id)]);
       }
     } catch (err: any) {
-      setStatusMessage({ type: "error", text: err.message || "Failed to log food waste" });
+      showToast(err.message || "Failed to log food waste", "error");
     }
-    setTimeout(() => setStatusMessage(null), 4000);
   };
 
   // New Gate Pass Form
@@ -248,11 +245,11 @@ export default function HostelPage() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed to submit gate pass");
-      setStatusMessage({ type: "success", text: "Outpass submitted successfully! Warden notified." });
+      showToast("Outpass submitted successfully! Warden notified.", "success");
       setShowPassModal(false);
       fetchData();
     } catch (err: any) {
-      setStatusMessage({ type: "error", text: err.message });
+      showToast(err.message, "error");
     }
   };
 
@@ -270,10 +267,10 @@ export default function HostelPage() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Action failed");
-      setStatusMessage({ type: "success", text: data.message });
+      showToast(data.message, "success");
       fetchData();
     } catch (err: any) {
-      setStatusMessage({ type: "error", text: err.message });
+      showToast(err.message, "error");
     }
   };
 
@@ -290,11 +287,11 @@ export default function HostelPage() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Bed allocation failed");
-      setStatusMessage({ type: "success", text: data.message });
+      showToast(data.message, "success");
       setShowAllocateModal(false);
       fetchData();
     } catch (err: any) {
-      setStatusMessage({ type: "error", text: err.message });
+      showToast(err.message, "error");
     }
   };
 
@@ -313,19 +310,16 @@ export default function HostelPage() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Mess subscription failed");
-      setStatusMessage({ type: "success", text: "Mess plan subscription updated!" });
+      showToast("Mess plan subscription updated!", "success");
       fetchData();
     } catch (err: any) {
-      setStatusMessage({ type: "error", text: err.message });
+      showToast(err.message, "error");
     }
   };
 
   const handleBiometricPunch = async () => {
     if (hasPunchedThisSession) {
-      setStatusMessage({
-        type: "error",
-        text: "Double-Punch Lockout Active: You have already punched your meal token for this dining session.",
-      });
+      showToast("Double-Punch Lockout Active: You have already punched your meal token for this dining session.", "error");
       return;
     }
     const resolvedRoll =
@@ -365,15 +359,12 @@ export default function HostelPage() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Biometric validation failed");
-      setStatusMessage({
-        type: "success",
-        text: "Biometric Turnstile Token Validated! Meal voucher deducted & barrier opened.",
-      });
+      showToast("Biometric Turnstile Token Validated! Meal voucher deducted & barrier opened.", "success");
       if (data.punch) {
         setPunchedMeals((prev) => [data.punch, ...prev.filter((p) => p.id !== optimisticPunch.id)]);
       }
     } catch (err: any) {
-      setStatusMessage({ type: "error", text: err.message || "Failed to validate meal punch" });
+      showToast(err.message || "Failed to validate meal punch", "error");
     }
   };
 
@@ -421,7 +412,14 @@ export default function HostelPage() {
         </div>
 
         {/* Live Metrics Ribbons */}
-        {summary && (
+        {loading ? (
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-6 pt-6 border-t border-rose-700/50">
+            <SkeletonCard />
+            <SkeletonCard />
+            <SkeletonCard />
+            <SkeletonCard />
+          </div>
+        ) : summary && (
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-6 pt-6 border-t border-rose-700/50">
             <div>
               <p className="text-xs text-rose-200 uppercase tracking-wider font-semibold">Total Capacity</p>
@@ -446,32 +444,6 @@ export default function HostelPage() {
           </div>
         )}
       </div>
-
-      {/* Status Alert Banner */}
-      {statusMessage && (
-        <div
-          className={`p-4 rounded-xl flex items-center justify-between text-sm ${
-            statusMessage.type === "success"
-              ? "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-200 border border-emerald-200 dark:border-emerald-800"
-              : "bg-rose-50 dark:bg-rose-950/40 text-rose-800 dark:text-rose-200 border border-rose-200 dark:border-rose-800"
-          }`}
-        >
-          <div className="flex items-center gap-2">
-            {statusMessage.type === "success" ? (
-              <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
-            ) : (
-              <AlertCircle className="w-5 h-5 text-rose-600 dark:text-rose-400" />
-            )}
-            <span>{statusMessage.text}</span>
-          </div>
-          <button
-            onClick={() => setStatusMessage(null)}
-            className="text-xs font-semibold underline hover:opacity-80 ml-4"
-          >
-            Dismiss
-          </button>
-        </div>
-      )}
 
       {/* Navigation Tabs */}
       <div className="flex border-b border-border dark:border-charcoal-800 space-x-2 overflow-x-auto no-scrollbar flex-nowrap pb-px">
@@ -543,8 +515,17 @@ export default function HostelPage() {
           </div>
 
           {/* Rooms Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {filteredRooms.map((room) => {
+          {filteredRooms.length === 0 ? (
+            <EmptyState
+              icon={Building}
+              title="No Rooms Found"
+              description="No residence rooms match your selected block filter."
+              actionLabel="Show All Blocks"
+              onAction={() => setSelectedBlockId("all")}
+            />
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {filteredRooms.map((room) => {
               const statusBadgeColor =
                 room.status === "VACANT"
                   ? "bg-emerald-100 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border-emerald-200"
@@ -637,6 +618,7 @@ export default function HostelPage() {
               );
             })}
           </div>
+          )}
         </div>
       )}
 
@@ -675,45 +657,59 @@ export default function HostelPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-border dark:divide-charcoal-800">
-                {rooms.flatMap((r) =>
-                  r.beds
-                    .filter((b: any) => b.isOccupied)
-                    .map((bed: any) => (
-                      <tr key={bed.id} className="hover:bg-ivory-50/50 dark:hover:bg-charcoal-800/40 transition-colors">
-                        <td className="p-3.5">
-                          <p className="font-semibold text-charcoal-900 dark:text-ivory-100">{bed.studentName}</p>
-                          <p className="text-[11px] text-charcoal-500">{bed.studentRoll}</p>
-                        </td>
-                        <td className="p-3.5">
-                          <p className="font-medium text-charcoal-900 dark:text-ivory-200">{r.roomNumber}</p>
-                          <p className="text-[11px] text-charcoal-500">{r.blockName}</p>
-                        </td>
-                        <td className="p-3.5 font-bold text-rose-primary dark:text-rose-light">
-                          Bed {bed.bedNumber}
-                        </td>
-                        <td className="p-3.5 text-charcoal-600 dark:text-ivory-300">
-                          {bed.branch || "General Program"}
-                        </td>
-                        <td className="p-3.5 text-charcoal-500">
-                          {bed.allocatedDate || "2026-08-01"}
-                        </td>
-                        <td className="p-3.5">
-                          <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200">
-                            {bed.feeStatus || "PAID"}
-                          </span>
-                        </td>
-                        <td className="p-3.5 text-right">
-                          <button
-                            onClick={() => {
-                              setStatusMessage({ type: "success", text: `Room clearance pass printed for ${bed.studentName}` });
-                            }}
-                            className="px-2 py-1 rounded text-[11px] font-medium text-rose-primary hover:bg-rose-50 dark:hover:bg-rose-950/50 border border-rose-200 dark:border-rose-900"
-                          >
-                            No Dues Clearance
-                          </button>
-                        </td>
-                      </tr>
-                    ))
+                {rooms.flatMap((r) => r.beds.filter((b: any) => b.isOccupied)).length === 0 ? (
+                  <tr>
+                    <td colSpan={7} className="p-8">
+                      <EmptyState
+                        icon={Bed}
+                        title="No Bed Allocations Found"
+                        description="There are currently no active room allocations recorded in the registry."
+                        actionLabel="Allocate Bed"
+                        onAction={() => setShowAllocateModal(true)}
+                      />
+                    </td>
+                  </tr>
+                ) : (
+                  rooms.flatMap((r) =>
+                    r.beds
+                      .filter((b: any) => b.isOccupied)
+                      .map((bed: any) => (
+                        <tr key={bed.id} className="hover:bg-ivory-50/50 dark:hover:bg-charcoal-800/40 transition-colors">
+                          <td className="p-3.5">
+                            <p className="font-semibold text-charcoal-900 dark:text-ivory-100">{bed.studentName}</p>
+                            <p className="text-[11px] text-charcoal-500">{bed.studentRoll}</p>
+                          </td>
+                          <td className="p-3.5">
+                            <p className="font-medium text-charcoal-900 dark:text-ivory-200">{r.roomNumber}</p>
+                            <p className="text-[11px] text-charcoal-500">{r.blockName}</p>
+                          </td>
+                          <td className="p-3.5 font-bold text-rose-primary dark:text-rose-light">
+                            Bed {bed.bedNumber}
+                          </td>
+                          <td className="p-3.5 text-charcoal-600 dark:text-ivory-300">
+                            {bed.branch || "General Program"}
+                          </td>
+                          <td className="p-3.5 text-charcoal-500">
+                            {bed.allocatedDate || "2026-08-01"}
+                          </td>
+                          <td className="p-3.5">
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200">
+                              {bed.feeStatus || "PAID"}
+                            </span>
+                          </td>
+                          <td className="p-3.5 text-right">
+                            <button
+                              onClick={() => {
+                                showToast(`Room clearance pass printed for ${bed.studentName}`, "success");
+                              }}
+                              className="px-2 py-1 rounded text-[11px] font-medium text-rose-primary hover:bg-rose-50 dark:hover:bg-rose-950/50 border border-rose-200 dark:border-rose-900"
+                            >
+                              No Dues Clearance
+                            </button>
+                          </td>
+                        </tr>
+                      ))
+                  )
                 )}
               </tbody>
             </table>
@@ -742,8 +738,17 @@ export default function HostelPage() {
             </button>
           </div>
 
-          <div className="grid grid-cols-1 gap-3">
-            {gatePasses.map((pass) => {
+          {gatePasses.length === 0 ? (
+            <EmptyState
+              icon={Clock}
+              title="No Outpass Records"
+              description="There are no gate passes or leave outpass requests currently in the queue."
+              actionLabel="Submit Outpass Request"
+              onAction={() => setShowPassModal(true)}
+            />
+          ) : (
+            <div className="grid grid-cols-1 gap-3">
+              {gatePasses.map((pass) => {
               const statusPill =
                 pass.status === "APPROVED"
                   ? "bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-200 border-emerald-300"
@@ -832,6 +837,7 @@ export default function HostelPage() {
               );
             })}
           </div>
+          )}
         </div>
       )}
 
@@ -1194,7 +1200,7 @@ export default function HostelPage() {
         <NightRollCallView
           blocks={summary?.blocks || []}
           currentUser={currentUser}
-          showToast={(msg, type) => setStatusMessage({ type: type === "error" ? "error" : "success", text: msg })}
+          showToast={(msg, type) => showToast(msg, type === "error" ? "error" : "success")}
         />
       )}
 

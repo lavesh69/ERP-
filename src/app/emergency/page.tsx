@@ -33,6 +33,9 @@ import {
   BellRing,
   Sliders,
 } from "lucide-react";
+import { useApp } from "@/context/AppContext";
+import { SkeletonCard } from "@/components/common/SkeletonLoader";
+import { EmptyState } from "@/components/common/EmptyState";
 
 interface Alert {
   id: string;
@@ -62,6 +65,7 @@ interface MusterPoint {
 }
 
 export default function EmergencyPage() {
+  const { showToast } = useApp();
   const [activeTab, setActiveTab] = useState<"alerts" | "muster" | "siren">("alerts");
   const [loading, setLoading] = useState(true);
   const [summary, setSummary] = useState<any>(null);
@@ -71,7 +75,8 @@ export default function EmergencyPage() {
   const [selectedMusterDossier, setSelectedMusterDossier] = useState<MusterPoint | null>(null);
   const [showBroadcastModal, setShowBroadcastModal] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [message, setMessage] = useState<{ text: string; type: "success" | "error" } | null>(null);
+  const [operationalMode, setOperationalMode] = useState<"DRILL" | "LIVE_CRISIS">("DRILL");
+  const [safetyAcknowledged, setSafetyAcknowledged] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [filterCategory, setFilterCategory] = useState("ALL");
 
@@ -319,7 +324,6 @@ export default function EmergencyPage() {
   const handleBroadcast = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
-    setMessage(null);
 
     try {
       const res = await fetch("/api/emergency", {
@@ -333,14 +337,15 @@ export default function EmergencyPage() {
 
       const data = await res.json();
       if (res.ok) {
-        setMessage({ text: data.message || "Emergency broadcast dispatched!", type: "success" });
+        showToast(data.message || "Emergency broadcast dispatched!", "success");
         setShowBroadcastModal(false);
+        setSafetyAcknowledged(false);
         fetchData();
       } else {
-        setMessage({ text: data.error || "Failed to dispatch alert", type: "error" });
+        showToast(data.error || "Failed to dispatch alert", "error");
       }
     } catch (err: any) {
-      setMessage({ text: err.message || "Network error", type: "error" });
+      showToast(err.message || "Network error", "error");
     } finally {
       setSubmitting(false);
     }
@@ -360,13 +365,13 @@ export default function EmergencyPage() {
 
       const data = await res.json();
       if (res.ok) {
-        setMessage({ text: "Alert resolved with ALL CLEAR broadcast.", type: "success" });
+        showToast("Alert resolved with ALL CLEAR broadcast.", "success");
         fetchData();
       } else {
-        setMessage({ text: data.error || "Failed to resolve alert", type: "error" });
+        showToast(data.error || "Failed to resolve alert", "error");
       }
     } catch (err: any) {
-      setMessage({ text: err.message || "Network error", type: "error" });
+      showToast(err.message || "Network error", "error");
     }
   };
 
@@ -382,14 +387,14 @@ export default function EmergencyPage() {
       });
       const data = await res.json();
       if (res.ok) {
-        setMessage({ text: `Muster headcount updated (${newCount} assembled)`, type: "success" });
+        showToast(`Muster headcount updated (${newCount} assembled)`, "success");
         fetchData();
         setSelectedMusterDossier((prev: any) => prev ? { ...prev, currentEvacueesCount: newCount } : null);
       } else {
-        setMessage({ text: data.error || "Failed to update muster point", type: "error" });
+        showToast(data.error || "Failed to update muster point", "error");
       }
     } catch (err: any) {
-      setMessage({ text: err.message || "Network error", type: "error" });
+      showToast(err.message || "Network error", "error");
     }
   };
 
@@ -426,13 +431,33 @@ export default function EmergencyPage() {
         <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-charcoal-900 via-rose-950 to-charcoal-900 text-white p-6 md:p-8 shadow-xl">
           <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div>
-              <div className="flex items-center gap-2 mb-2">
+              <div className="flex items-center gap-2 mb-2 flex-wrap">
                 <span className="px-3 py-1 rounded-full text-xs font-semibold bg-red-500/20 text-red-200 border border-red-400/30">
                   Campus Crisis & Clery Act Safety Network
                 </span>
-                <span className="px-3 py-1 rounded-full text-xs font-medium bg-emerald-500/20 text-emerald-200 border border-emerald-400/30">
-                  EOC Operations Live
-                </span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const nextMode = operationalMode === "DRILL" ? "LIVE_CRISIS" : "DRILL";
+                    setOperationalMode(nextMode);
+                    showToast(
+                      nextMode === "LIVE_CRISIS"
+                        ? "Switched to OPERATIONAL CRISIS MODE. Emergency dispatches will trigger live alerts."
+                        : "Switched to DRILL & EXERCISE MODE. Dispatches are simulations for training.",
+                      nextMode === "LIVE_CRISIS" ? "error" : "info"
+                    );
+                  }}
+                  className={`px-3 py-1 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 border ${
+                    operationalMode === "LIVE_CRISIS"
+                      ? "bg-red-600 text-white border-red-400 shadow-md animate-pulse"
+                      : "bg-amber-500/20 text-amber-200 border-amber-400/40 hover:bg-amber-500/30"
+                  }`}
+                >
+                  <ShieldAlert className="w-3.5 h-3.5" />
+                  {operationalMode === "LIVE_CRISIS"
+                    ? "OPERATIONAL CRISIS MODE (LIVE)"
+                    : "DRILL SIMULATION MODE"}
+                </button>
               </div>
               <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-white">
                 Campus Emergency Operations Center (EOC)
@@ -475,65 +500,61 @@ export default function EmergencyPage() {
           </div>
         </div>
 
-      {message && (
-        <div
-          className={`p-4 rounded-xl text-sm flex items-center gap-2 ${
-            message.type === "success"
-              ? "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800"
-              : "bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-800"
-          }`}
-        >
-          <CheckCircle2 className="w-4 h-4 shrink-0" />
-          {message.text}
+      {/* KPI Cards */}
+      {loading && !summary ? (
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <SkeletonCard />
+          <SkeletonCard />
+          <SkeletonCard />
+          <SkeletonCard />
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="bg-white dark:bg-charcoal-900 p-5 rounded-2xl border border-border dark:border-charcoal-800 shadow-sm">
+            <div className="flex items-center justify-between text-charcoal-500 dark:text-charcoal-400 mb-2">
+              <span className="text-xs font-semibold uppercase tracking-wider">Active Threat Level</span>
+              <ShieldAlert className="w-4 h-4 text-emerald-500" />
+            </div>
+            <div className="text-2xl font-bold text-charcoal-900 dark:text-ivory-100">
+              {activeAlert ? "CRITICAL ALERT" : "NORMAL (GREEN)"}
+            </div>
+            <p className="text-xs text-charcoal-400 mt-1">24/7 Perimeter Surveillance</p>
+          </div>
+
+          <div className="bg-white dark:bg-charcoal-900 p-5 rounded-2xl border border-border dark:border-charcoal-800 shadow-sm">
+            <div className="flex items-center justify-between text-charcoal-500 dark:text-charcoal-400 mb-2">
+              <span className="text-xs font-semibold uppercase tracking-wider">Muster Accountability</span>
+              <Users className="w-4 h-4 text-indigo-500" />
+            </div>
+            <div className="text-2xl font-bold text-charcoal-900 dark:text-ivory-100">
+              {`${summary?.totalAccountedPercentage || 100}%`}
+            </div>
+            <p className="text-xs text-emerald-600 dark:text-emerald-400 mt-1 font-medium">
+              {summary?.totalEvacuatedCount || 1770} Persons Accounted For
+            </p>
+          </div>
+
+          <div className="bg-white dark:bg-charcoal-900 p-5 rounded-2xl border border-border dark:border-charcoal-800 shadow-sm">
+            <div className="flex items-center justify-between text-charcoal-500 dark:text-charcoal-400 mb-2">
+              <span className="text-xs font-semibold uppercase tracking-wider">Muster Points</span>
+              <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+            </div>
+            <div className="text-2xl font-bold text-charcoal-900 dark:text-ivory-100">
+              {`${summary?.safePointsCount || 3} / ${summary?.totalMusterPoints || 3}`}
+            </div>
+            <p className="text-xs text-charcoal-400 mt-1">Wardens On Active Duty</p>
+          </div>
+
+          <div className="bg-white dark:bg-charcoal-900 p-5 rounded-2xl border border-border dark:border-charcoal-800 shadow-sm">
+            <div className="flex items-center justify-between text-charcoal-500 dark:text-charcoal-400 mb-2">
+              <span className="text-xs font-semibold uppercase tracking-wider">Multi-Channel Gateways</span>
+              <Volume2 className="w-4 h-4 text-amber-500" />
+            </div>
+            <div className="text-2xl font-bold text-charcoal-900 dark:text-ivory-100">5 Gateways Active</div>
+            <p className="text-xs text-charcoal-400 mt-1">Sirens, SMS, Push, PA, Email</p>
+          </div>
         </div>
       )}
-
-      {/* KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="bg-white dark:bg-charcoal-900 p-5 rounded-2xl border border-border dark:border-charcoal-800 shadow-sm">
-          <div className="flex items-center justify-between text-charcoal-500 dark:text-charcoal-400 mb-2">
-            <span className="text-xs font-semibold uppercase tracking-wider">Active Threat Level</span>
-            <ShieldAlert className="w-4 h-4 text-emerald-500" />
-          </div>
-          <div className="text-2xl font-bold text-charcoal-900 dark:text-ivory-100">
-            {activeAlert ? "CRITICAL ALERT" : "NORMAL (GREEN)"}
-          </div>
-          <p className="text-xs text-charcoal-400 mt-1">24/7 Perimeter Surveillance</p>
-        </div>
-
-        <div className="bg-white dark:bg-charcoal-900 p-5 rounded-2xl border border-border dark:border-charcoal-800 shadow-sm">
-          <div className="flex items-center justify-between text-charcoal-500 dark:text-charcoal-400 mb-2">
-            <span className="text-xs font-semibold uppercase tracking-wider">Muster Accountability</span>
-            <Users className="w-4 h-4 text-indigo-500" />
-          </div>
-          <div className="text-2xl font-bold text-charcoal-900 dark:text-ivory-100">
-            {loading ? "..." : `${summary?.totalAccountedPercentage || 100}%`}
-          </div>
-          <p className="text-xs text-emerald-600 dark:text-emerald-400 mt-1 font-medium">
-            {summary?.totalEvacuatedCount || 1770} Persons Accounted For
-          </p>
-        </div>
-
-        <div className="bg-white dark:bg-charcoal-900 p-5 rounded-2xl border border-border dark:border-charcoal-800 shadow-sm">
-          <div className="flex items-center justify-between text-charcoal-500 dark:text-charcoal-400 mb-2">
-            <span className="text-xs font-semibold uppercase tracking-wider">Muster Points</span>
-            <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-          </div>
-          <div className="text-2xl font-bold text-charcoal-900 dark:text-ivory-100">
-            {loading ? "..." : `${summary?.safePointsCount || 3} / ${summary?.totalMusterPoints || 3}`}
-          </div>
-          <p className="text-xs text-charcoal-400 mt-1">Wardens On Active Duty</p>
-        </div>
-
-        <div className="bg-white dark:bg-charcoal-900 p-5 rounded-2xl border border-border dark:border-charcoal-800 shadow-sm">
-          <div className="flex items-center justify-between text-charcoal-500 dark:text-charcoal-400 mb-2">
-            <span className="text-xs font-semibold uppercase tracking-wider">Multi-Channel Gateways</span>
-            <Volume2 className="w-4 h-4 text-amber-500" />
-          </div>
-          <div className="text-2xl font-bold text-charcoal-900 dark:text-ivory-100">5 Gateways Active</div>
-          <p className="text-xs text-charcoal-400 mt-1">Sirens, SMS, Push, PA, Email</p>
-        </div>
-      </div>
 
       {/* Search & Category Filter Toolbar */}
       <div className="flex flex-col sm:flex-row gap-3 items-center justify-between bg-white dark:bg-charcoal-900 p-4 rounded-xl border border-border dark:border-charcoal-800">
@@ -693,30 +714,30 @@ export default function EmergencyPage() {
             const matchesCategory = filterCategory === "ALL" || al.category === filterCategory;
             return matchesSearch && matchesCategory;
           }).length === 0 && (
-            <div className="py-16 text-center bg-white dark:bg-charcoal-900 rounded-2xl border border-border dark:border-charcoal-800 p-8 shadow-sm">
-              <ShieldCheck className="w-12 h-12 text-charcoal-300 dark:text-charcoal-600 mx-auto mb-3" />
-              <h4 className="font-semibold text-charcoal-900 dark:text-ivory-100 text-base">No Incidents Found</h4>
-              <p className="text-xs text-charcoal-400 mt-1 max-w-sm mx-auto">
-                No active or historical emergency alerts match your query &ldquo;{searchQuery}&rdquo;.
-              </p>
-              <button
-                onClick={() => {
-                  setSearchQuery("");
-                  setFilterCategory("ALL");
-                }}
-                className="mt-4 px-4 py-2 bg-red-50 dark:bg-red-950/60 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800 rounded-xl text-xs font-semibold inline-flex items-center gap-1.5 hover:bg-red-100 transition-all"
-              >
-                <RotateCcw className="w-3.5 h-3.5" />
-                Reset Filters
-              </button>
-            </div>
+            <EmptyState
+              icon={ShieldCheck}
+              title="No Incidents Found"
+              description={`No active or historical emergency alerts match your query "${searchQuery}".`}
+              actionLabel="Reset Filters"
+              onAction={() => {
+                setSearchQuery("");
+                setFilterCategory("ALL");
+              }}
+            />
           )}
         </div>
       )}
 
       {/* Tab 2: Muster Points */}
       {activeTab === "muster" && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        musterPoints.length === 0 ? (
+          <EmptyState
+            icon={Users}
+            title="No Muster Points Configured"
+            description="No evacuation assembly areas or safety warden posts have been designated."
+          />
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {musterPoints.map((mp) => (
             <div
               key={mp.id}
@@ -770,7 +791,8 @@ export default function EmergencyPage() {
               </div>
             </div>
           ))}
-        </div>
+          </div>
+        )
       )}
 
       {/* Tab 3: Campus Siren & PA Synthesizer */}
@@ -814,10 +836,10 @@ export default function EmergencyPage() {
                   onClick={() => {
                     if (isSirenActive) {
                       stopSiren();
-                      setMessage({ text: "Campus Siren silenced. Audio output muted.", type: "success" });
+                      showToast("Campus Siren silenced. Audio output muted.", "success");
                     } else {
                       startSiren();
-                      setMessage({ text: `Campus Siren sounding in ${sirenMode} mode!`, type: "success" });
+                      showToast(`Campus Siren sounding in ${sirenMode} mode!`, "success");
                     }
                   }}
                   className={`flex-1 md:flex-initial flex items-center justify-center gap-2.5 px-6 py-3 rounded-2xl font-bold text-sm shadow-lg transition-all ${
@@ -1006,7 +1028,7 @@ export default function EmergencyPage() {
                 onClick={() => {
                   startSiren("ALL_CLEAR_CHIME");
                   setTimeout(() => stopSiren(), 3000);
-                  setMessage({ text: "3-Second Acoustic Pulse Chime dispatched to all horns.", type: "success" });
+                  showToast("3-Second Acoustic Pulse Chime dispatched to all horns.", "success");
                 }}
                 className="px-3.5 py-1.5 bg-ivory-100 hover:bg-ivory-200 dark:bg-charcoal-800 dark:hover:bg-charcoal-700 text-charcoal-700 dark:text-ivory-300 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all"
               >
@@ -1052,7 +1074,7 @@ export default function EmergencyPage() {
                       onClick={() => {
                         startSiren(sirenMode);
                         setTimeout(() => stopSiren(), 2000);
-                        setMessage({ text: `2-second chirp dispatched to ${horn.name} (${horn.id})`, type: "success" });
+                        showToast(`2-second chirp dispatched to ${horn.name} (${horn.id})`, "success");
                       }}
                       className="px-2.5 py-1 bg-ivory-200 hover:bg-ivory-300 dark:bg-charcoal-700 dark:hover:bg-charcoal-600 text-charcoal-800 dark:text-ivory-200 rounded font-semibold transition"
                     >
@@ -1169,22 +1191,44 @@ export default function EmergencyPage() {
                 />
               </div>
 
-              <div className="p-3 bg-red-50 dark:bg-red-950/40 rounded-xl border border-red-200 dark:border-red-900/50 text-xs text-red-700 dark:text-red-300">
-                ⚠️ This alert will immediately trigger SMS dispatches, sound campus sirens, and broadcast push notifications to all enrolled students and staff.
+              <div className="p-3.5 bg-red-50 dark:bg-red-950/40 rounded-xl border border-red-200 dark:border-red-900/50 text-xs text-red-700 dark:text-red-300 space-y-2">
+                <div className="flex items-center gap-2 font-bold">
+                  <AlertTriangle className="w-4 h-4 shrink-0 text-red-600" />
+                  <span>Two-Step Authorization Safety Gate</span>
+                </div>
+                <p className="text-[11px] leading-relaxed">
+                  {operationalMode === "LIVE_CRISIS"
+                    ? "CRISIS BROADCAST: This will trigger live acoustic sirens, emergency SMS to all registered personnel, and send push notifications immediately."
+                    : "DRILL SIMULATION: This broadcast will be clearly watermarked as an institutional safety exercise and logged for Clery Act compliance."}
+                </p>
+                <label className="flex items-start gap-2 pt-1 font-medium cursor-pointer text-[11px]">
+                  <input
+                    type="checkbox"
+                    checked={safetyAcknowledged}
+                    onChange={(e) => setSafetyAcknowledged(e.target.checked)}
+                    className="mt-0.5 rounded text-red-600 focus:ring-red-500"
+                  />
+                  <span>
+                    I confirm that I am an authorized Safety Officer and intend to dispatch this {operationalMode === "LIVE_CRISIS" ? "LIVE CRISIS" : "SIMULATED DRILL"} broadcast.
+                  </span>
+                </label>
               </div>
 
               <div className="flex justify-end gap-3 pt-2">
                 <button
                   type="button"
-                  onClick={() => setShowBroadcastModal(false)}
+                  onClick={() => {
+                    setShowBroadcastModal(false);
+                    setSafetyAcknowledged(false);
+                  }}
                   className="px-4 py-2 border border-border dark:border-charcoal-700 rounded-xl text-charcoal-600 dark:text-ivory-300"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  disabled={submitting}
-                  className="px-5 py-2 bg-red-600 hover:bg-red-700 text-white rounded-xl font-bold disabled:opacity-50"
+                  disabled={submitting || !safetyAcknowledged}
+                  className="px-5 py-2 bg-red-600 hover:bg-red-700 text-white rounded-xl font-bold disabled:opacity-50 transition-opacity"
                 >
                   {submitting ? "Transmitting..." : "DISPATCH MASS BROADCAST"}
                 </button>
