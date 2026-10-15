@@ -33,9 +33,11 @@ import {
   VolumeX,
   Maximize2,
   Zap,
+  GraduationCap,
 } from "lucide-react";
 
 import { CBCSElectiveChoiceView } from "@/components/lms/CBCSElectiveChoiceView";
+import { BoSGovernanceView } from "@/components/curriculum/BoSGovernanceView";
 
 interface Chapter {
   id: string;
@@ -60,7 +62,7 @@ interface Module {
 
 export default function LMSPage() {
   const { showToast, setIsAIChatOpen, refreshTrigger, triggerRefresh, currentRole, currentUser } = useApp();
-  const [lmsViewMode, setLmsViewMode] = useState<"courseware" | "cbcs-electives">("courseware");
+  const [lmsViewMode, setLmsViewMode] = useState<"courseware" | "cbcs-electives" | "bos-curriculum">("courseware");
   const [selectedCourse, setSelectedCourse] = useState("CS-402");
   const [availableCourses, setAvailableCourses] = useState<{ id: string; code: string; title: string }[]>([]);
   const [activeChapterId, setActiveChapterId] = useState<string>("");
@@ -495,10 +497,24 @@ Verification Code: APX-LMS-2026-${Date.now()}
             <Sparkles className="h-4 w-4 text-emerald-500" />
             CBCS Elective Choice Filling (Semester Enrollment)
           </button>
+
+          <button
+            onClick={() => setLmsViewMode("bos-curriculum")}
+            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all whitespace-nowrap cursor-pointer ${
+              lmsViewMode === "bos-curriculum"
+                ? "bg-white dark:bg-charcoal-800 text-charcoal-900 dark:text-ivory-100 shadow-sm"
+                : "text-charcoal-600 dark:text-charcoal-400 hover:text-charcoal-900 dark:hover:text-ivory-100"
+            }`}
+          >
+            <GraduationCap className="h-4 w-4 text-teal-500" />
+            Board of Studies (BoS) &amp; Academic Council
+          </button>
         </div>
 
         {lmsViewMode === "cbcs-electives" ? (
           <CBCSElectiveChoiceView showToast={showToast} currentUser={currentUser} />
+        ) : lmsViewMode === "bos-curriculum" ? (
+          <BoSGovernanceView />
         ) : (
           <>
             {/* Course Banner & Progress */}

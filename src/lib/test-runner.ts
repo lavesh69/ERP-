@@ -461,6 +461,20 @@ import {
   POST as handleMessRebatePost,
 } from "@/app/api/hostel/mess-rebate/route";
 
+// Group 76: NEP 2020 Internships, University Guest House & BoS Curriculum Governance
+import {
+  GET as handleInternshipsGet,
+  POST as handleInternshipsPost,
+} from "@/app/api/careers/internships/route";
+import {
+  GET as handleGuestHouseGet,
+  POST as handleGuestHousePost,
+} from "@/app/api/campus/guesthouse/route";
+import {
+  GET as handleBoSGet,
+  POST as handleBoSPost,
+} from "@/app/api/curriculum/bos/route";
+
 async function runTestSuite() {
   console.log("=================================================");
   console.log("🚀 STARTING CLASSROOM ERP COMPREHENSIVE TEST SUITE");
@@ -10136,16 +10150,17 @@ By breaking down large monolithic systems into decoupled microservices, systems 
   assert(rebateCreditData.data.approvalStatus === "BURSAR_CREDITED", "Rebate status updated to BURSAR_CREDITED in ledger");
 
   // 75.16 Generate Daily Dining Token with QR Digest Seal
+  const uniqueTokenStudent = `STD-MESS-${Date.now()}`;
   const tokenGenReq = new NextRequest("http://localhost:3000/api/hostel/mess-rebate", {
     method: "POST",
     headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
     body: JSON.stringify({
       action: "GENERATE_TOKEN",
-      studentId: "STD-2025-001",
-      studentRollNumber: "2025-CS-101",
+      studentId: uniqueTokenStudent,
+      studentRollNumber: "2025-CS-999",
       studentName: "Aarav Sharma",
       hostelName: "Aryabhatta Hall of Residence",
-      date: "2026-11-10",
+      date: "2026-11-25",
       mealType: "DINNER",
     }),
   });
@@ -10171,6 +10186,328 @@ By breaking down large monolithic systems into decoupled microservices, systems 
   const tokenConsumeData = await tokenConsumeRes.json();
   assert(tokenConsumeData.data.status === "CONSUMED", "Meal token status marked CONSUMED");
   assert(!!tokenConsumeData.data.scannedAt, "Turnstile scanning timestamp logged");
+
+  // =========================================================================
+  // GROUP 76: NEP 2020 Internships, University Guest House & BoS Curriculum Governance
+  // =========================================================================
+  console.log("\n--- GROUP 76: NEP 2020 Internships, University Guest House & BoS Curriculum Governance ---");
+
+  // 76.1 Internship Registry & Analytics GET
+  const internGetReq = new NextRequest("http://localhost:3000/api/careers/internships", {
+    method: "GET",
+    headers: { Cookie: `classroom_session=${adminToken}` },
+  });
+  const internGetRes = await handleInternshipsGet(internGetReq);
+  assert(internGetRes.status === 200, "GET /api/careers/internships returns 200 OK");
+  const internGetData = await internGetRes.json();
+  assert(internGetData.success === true, "Internships GET returns success: true");
+  assert(internGetData.data.internships.length >= 2, "Internship registry seeded with active student stings");
+  assert(internGetData.data.analytics.totalApplications >= 2, "Internship analytics records computed");
+
+  // 76.2 Student Applies for Mandatory Industrial Internship
+  const internApplyReq = new NextRequest("http://localhost:3000/api/careers/internships", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "APPLY",
+      studentId: "STD-2025-001",
+      rollNumber: "2025-CS-101",
+      studentName: "Aarav Sharma",
+      department: "Computer Science & Engineering",
+      currentSemester: 6,
+      academicYear: "2026-2027",
+      companyName: "Google Cloud India",
+      companyAddress: "RMZ Infinity, Bengaluru, Karnataka",
+      companyWebsite: "https://cloud.google.com",
+      industrySupervisorName: "K. Narayanan (Staff SRE)",
+      industrySupervisorEmail: "knarayanan@google.com",
+      internshipRole: "Cloud Infrastructure Engineering Intern",
+      stipendInrPerMonth: 75000,
+      startDate: "2026-06-01",
+      endDate: "2026-08-15",
+      durationWeeks: 10,
+      mode: "HYBRID",
+      facultyMentorName: "Dr. Arvind Swaminathan",
+    }),
+  });
+  const internApplyRes = await handleInternshipsPost(internApplyReq);
+  assert(internApplyRes.status === 201, "POST /api/careers/internships (APPLY) returns 201 Created");
+  const internApplyData = await internApplyRes.json();
+  const testInternId = internApplyData.data.id;
+  assert(internApplyData.data.applicationNo.startsWith("APEX-INT-2026-"), "Internship application number assigned");
+  assert(internApplyData.data.nocStatus === "APPLIED", "Initial application status is APPLIED (awaiting NOC)");
+
+  // 76.3 Issue Statutory University No-Objection Certificate (NOC)
+  const nocPostReq = new NextRequest("http://localhost:3000/api/careers/internships", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "ISSUE_NOC",
+      applicationId: testInternId,
+      authorizedSignatory: "Prof. S. K. Bose (Dean, Corporate Relations & Placements)",
+    }),
+  });
+  const nocPostRes = await handleInternshipsPost(nocPostReq);
+  assert(nocPostRes.status === 200, "POST /api/careers/internships (ISSUE_NOC) returns 200 OK");
+  const nocPostData = await nocPostRes.json();
+  assert(nocPostData.data.nocStatus === "NOC_ISSUED", "Application status updated to NOC_ISSUED");
+  assert(nocPostData.data.nocCertificateNumber.startsWith("APEX-NOC-"), "Statutory NOC certificate number stamped");
+
+  // 76.4 Student Submits Weekly Progress Logbook
+  const logWeekReq = new NextRequest("http://localhost:3000/api/careers/internships", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "LOG_WEEK",
+      applicationId: testInternId,
+      weekNumber: 1,
+      startDate: "2026-06-01",
+      endDate: "2026-06-07",
+      tasksCompleted: "Configured Terraform IaC clusters and authored automated gRPC load tests.",
+      hoursWorked: 40,
+    }),
+  });
+  const logWeekRes = await handleInternshipsPost(logWeekReq);
+  assert(logWeekRes.status === 200, "POST /api/careers/internships (LOG_WEEK) returns 200 OK");
+  const logWeekData = await logWeekRes.json();
+  assert(logWeekData.data.nocStatus === "IN_PROGRESS", "Application transitioned to IN_PROGRESS");
+  assert(logWeekData.data.logbookEntries.length === 1, "Logbook entry appended");
+
+  // 76.5 Industry Mentor Verifies Logbook Entry
+  const verifyWeekReq = new NextRequest("http://localhost:3000/api/careers/internships", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "VERIFY_WEEK",
+      applicationId: testInternId,
+      weekNumber: 1,
+      supervisorFeedback: "Excellent grasp of distributed telemetry and robust IaC configurations.",
+    }),
+  });
+  const verifyWeekRes = await handleInternshipsPost(verifyWeekReq);
+  assert(verifyWeekRes.status === 200, "POST /api/careers/internships (VERIFY_WEEK) returns 200 OK");
+  const verifyWeekData = await verifyWeekRes.json();
+  assert(verifyWeekData.data.logbookEntries[0].verifiedByMentor === true, "Weekly logbook entry verified by supervisor");
+
+  // 76.6 Finalize Viva Voce & Award 4 NEP Academic Credits
+  const finalizeEvalReq = new NextRequest("http://localhost:3000/api/careers/internships", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "FINALIZE_EVALUATION",
+      applicationId: testInternId,
+      industryMentorScore: 48,
+      facultyVivaScore: 47,
+      evaluatorSignatory: "Prof. S. K. Bose & Department Viva Evaluation Committee",
+    }),
+  });
+  const finalizeEvalRes = await handleInternshipsPost(finalizeEvalReq);
+  assert(finalizeEvalRes.status === 200, "POST /api/careers/internships (FINALIZE_EVALUATION) returns 200 OK");
+  const finalizeEvalData = await finalizeEvalRes.json();
+  assert(finalizeEvalData.data.nocStatus === "CREDITS_AWARDED", "Status updated to CREDITS_AWARDED");
+  assert(finalizeEvalData.data.evaluation.grade === "O", "Outstanding grade (95/100) awarded");
+  assert(finalizeEvalData.data.evaluation.academicCreditsAwarded === 4, "4 NEP 2020 Academic Credits awarded for degree");
+  assert(finalizeEvalData.data.completionSeal.startsWith("APEX-INTERN-SEAL-"), "Tamper-evident evaluation seal stamped");
+
+  // 76.7 University Guest House GET
+  const ghGetReq = new NextRequest("http://localhost:3000/api/campus/guesthouse", {
+    method: "GET",
+    headers: { Cookie: `classroom_session=${adminToken}` },
+  });
+  const ghGetRes = await handleGuestHouseGet();
+  assert(ghGetRes.status === 200, "GET /api/campus/guesthouse returns 200 OK");
+  const ghGetData = await ghGetRes.json();
+  assert(ghGetData.success === true, "Guest house GET returns success: true");
+  assert(ghGetData.data.rooms.length >= 6, "Guest house rooms inventory seeded across wings");
+  assert(ghGetData.data.bookings.length >= 2, "Guest house active bookings seeded");
+
+  // 76.8 Requisition VIP Presidential Suite for External Examiner
+  const ghReq = new NextRequest("http://localhost:3000/api/campus/guesthouse", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "REQUEST_BOOKING",
+      roomId: "RM-102",
+      guestName: "Prof. K. Subramanian",
+      guestAffiliation: "IIT Madras / Center for AI",
+      guestDesignation: "Professor & Head of Data Science",
+      guestPhone: "+91 94440 12345",
+      guestEmail: "ksubra@iitm.ac.in",
+      purpose: "EXTERNAL_EXAMINER",
+      sponsoringDepartment: "Department of Computer Science & Engineering",
+      sponsorFacultyName: "Dr. Arvind Swaminathan",
+      checkInDate: "2026-11-15",
+      checkOutDate: "2026-11-18",
+      billingMode: "DEPT_BUDGET",
+      departmentBudgetCode: "EXAM-VIVA-2026-CS",
+      remarks: "Requires airport escort and high-speed workstation.",
+    }),
+  });
+  const ghReqRes = await handleGuestHousePost(ghReq);
+  assert(ghReqRes.status === 200, "POST /api/campus/guesthouse (REQUEST_BOOKING) returns 200 OK");
+  const ghReqData = await ghReqRes.json();
+  const testBookingId = ghReqData.data.id;
+  assert(ghReqData.data.requisitionNumber.startsWith("APEX-UGH-REQ-2026-"), "Guest house requisition number assigned");
+  assert(ghReqData.data.status === "PENDING_ESTATE_APPROVAL", "Status is PENDING_ESTATE_APPROVAL");
+  assert(ghReqData.data.numberOfNights === 3, "3 nights calculated accurately");
+  assert(ghReqData.data.roomChargesTotal === 7500, "Tariff calculated accurately (3 x ₹2,500 = ₹7,500)");
+
+  // 76.9 Estate Officer Approves Requisition
+  const ghApproveReq = new NextRequest("http://localhost:3000/api/campus/guesthouse", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "APPROVE_BOOKING",
+      bookingId: testBookingId,
+      approvedBy: "Col. Sanjeev Nair (Estate Officer & Registrar)",
+    }),
+  });
+  const ghApproveRes = await handleGuestHousePost(ghApproveReq);
+  assert(ghApproveRes.status === 200, "POST /api/campus/guesthouse (APPROVE_BOOKING) returns 200 OK");
+  const ghApproveData = await ghApproveRes.json();
+  assert(ghApproveData.data.status === "CONFIRMED", "Booking status confirmed");
+  assert(ghApproveData.data.allotmentNumber.startsWith("APEX-UGH-ALLOC-"), "Estate allotment number stamped");
+
+  // 76.10 Check-In Guest & Issue Physical Key
+  const ghCheckInReq = new NextRequest("http://localhost:3000/api/campus/guesthouse", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "CHECK_IN",
+      bookingId: testBookingId,
+    }),
+  });
+  const ghCheckInRes = await handleGuestHousePost(ghCheckInReq);
+  assert(ghCheckInRes.status === 200, "POST /api/campus/guesthouse (CHECK_IN) returns 200 OK");
+  const ghCheckInData = await ghCheckInRes.json();
+  assert(ghCheckInData.data.status === "CHECKED_IN", "Guest status updated to CHECKED_IN");
+  assert(!!ghCheckInData.data.checkInTimestamp, "Check-in timestamp recorded");
+
+  // 76.11 Add Dining Meal Charge to Room Folio
+  const ghDiningReq = new NextRequest("http://localhost:3000/api/campus/guesthouse", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "ADD_DINING",
+      bookingId: testBookingId,
+      mealType: "DINNER",
+      amountInr: 450,
+      description: "Executive Thali Dinner & Herbal Tea",
+    }),
+  });
+  const ghDiningRes = await handleGuestHousePost(ghDiningReq);
+  assert(ghDiningRes.status === 200, "POST /api/campus/guesthouse (ADD_DINING) returns 200 OK");
+  const ghDiningData = await ghDiningRes.json();
+  assert(ghDiningData.data.diningChargesTotal === 450, "Dining total updated to ₹450");
+  assert(ghDiningData.data.grandTotalInr === 7950, "Grand total updated (₹7,500 + ₹450 = ₹7,950)");
+
+  // 76.12 Check-Out Guest & Release Final Bursar Invoice
+  const ghCheckOutReq = new NextRequest("http://localhost:3000/api/campus/guesthouse", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "CHECK_OUT_INVOICE",
+      bookingId: testBookingId,
+    }),
+  });
+  const ghCheckOutRes = await handleGuestHousePost(ghCheckOutReq);
+  assert(ghCheckOutRes.status === 200, "POST /api/campus/guesthouse (CHECK_OUT_INVOICE) returns 200 OK");
+  const ghCheckOutData = await ghCheckOutRes.json();
+  assert(ghCheckOutData.data.status === "CHECKED_OUT", "Guest status updated to CHECKED_OUT");
+  assert(ghCheckOutData.data.invoiceNumber.startsWith("APEX-UGH-INV-"), "Final guest house invoice generated");
+
+  // 76.13 Curriculum Governance & BoS GET
+  const bosGetReq = new NextRequest("http://localhost:3000/api/curriculum/bos", {
+    method: "GET",
+    headers: { Cookie: `classroom_session=${adminToken}` },
+  });
+  const bosGetRes = await handleBoSGet();
+  assert(bosGetRes.status === 200, "GET /api/curriculum/bos returns 200 OK");
+  const bosGetData = await bosGetRes.json();
+  assert(bosGetData.success === true, "BoS GET returns success: true");
+  assert(bosGetData.data.proposals.length >= 2, "BoS proposals seeded");
+  assert(bosGetData.data.analytics.totalProposals >= 2, "BoS analytics computed");
+
+  // 76.14 Convene New Department Board of Studies (BoS)
+  const bosCreateReq = new NextRequest("http://localhost:3000/api/curriculum/bos", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "CREATE_PROPOSAL",
+      department: "School of Computing & Artificial Intelligence",
+      regulation: "Regulation R2026 - NEP 2020 AICTE CBCS Scheme",
+      chairpersonName: "Dr. Arvind Swaminathan (HOD)",
+      externalAcademicNominees: [
+        "Prof. Dr. N. K. Sharma (IIT Bombay)",
+        "Prof. Sunita Sundaram (IISc Bangalore)",
+      ],
+      industryExpertNominee: "Rajeshwar Rao (Chief Technology Architect, Infosys Labs)",
+      alumniNominee: "Meera Krishnan (Principal Systems Engineer, Google Cloud)",
+      meetingDate: "2026-10-15",
+    }),
+  });
+  const bosCreateRes = await handleBoSPost(bosCreateReq);
+  assert(bosCreateRes.status === 200, "POST /api/curriculum/bos (CREATE_PROPOSAL) returns 200 OK");
+  const bosCreateData = await bosCreateRes.json();
+  const testBosId = bosCreateData.data.id;
+  assert(bosCreateData.data.resolutionNumber.startsWith("APEX-BOS-CSE-2026-"), "BoS resolution number assigned");
+  assert(bosCreateData.data.status === "DRAFT", "Initial BoS proposal status is DRAFT");
+
+  // 76.15 Add Curricular Course Modification to BoS Dossier
+  const bosAddModReq = new NextRequest("http://localhost:3000/api/curriculum/bos", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "ADD_MODIFICATION",
+      proposalId: testBosId,
+      type: "NEW_COURSE",
+      courseCode: "CSE-425",
+      courseTitle: "Autonomous Agentic AI & Swarm Systems",
+      credits: 4,
+      ltpPattern: "3-0-2",
+      justification: "Critical industry requirement for LLM agent workflows, tool protocols, and persistent memory.",
+      stakeholderFeedbackRef: "National AI Mission Curricular Framework 2026",
+      prerequisites: "CSE-301 Data Structures, CSE-418 Generative AI",
+      syllabusUnitsSummary: "Unit I: Agent Foundations; Unit II: Tool Use & MCP; Unit III: Memory Systems; Unit IV: Swarm Coordination.",
+    }),
+  });
+  const bosAddModRes = await handleBoSPost(bosAddModReq);
+  assert(bosAddModRes.status === 200, "POST /api/curriculum/bos (ADD_MODIFICATION) returns 200 OK");
+  const bosAddModData = await bosAddModRes.json();
+  assert(bosAddModData.data.courseModifications.length === 1, "Course modification registered in proposal");
+  assert(bosAddModData.data.courseModifications[0].courseCode === "CSE-425", "Course code matches CSE-425");
+
+  // 76.16 Endorse & Approve Proposal in Departmental BoS
+  const bosApproveReq = new NextRequest("http://localhost:3000/api/curriculum/bos", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "APPROVE_BOS",
+      proposalId: testBosId,
+    }),
+  });
+  const bosApproveRes = await handleBoSPost(bosApproveReq);
+  assert(bosApproveRes.status === 200, "POST /api/curriculum/bos (APPROVE_BOS) returns 200 OK");
+  const bosApproveData = await bosApproveRes.json();
+  assert(bosApproveData.data.status === "BOS_APPROVED", "Proposal status updated to BOS_APPROVED");
+
+  // 76.17 Statutory Academic Council Ratification & Gazette Notification
+  const councilRatifyReq = new NextRequest("http://localhost:3000/api/curriculum/bos", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "RATIFY_COUNCIL",
+      proposalId: testBosId,
+      ratifiedBy: "Academic Council (Chaired by Vice-Chancellor & Director)",
+      councilMeetingDate: "2026-10-15",
+    }),
+  });
+  const councilRatifyRes = await handleBoSPost(councilRatifyReq);
+  assert(councilRatifyRes.status === 200, "POST /api/curriculum/bos (RATIFY_COUNCIL) returns 200 OK");
+  const councilRatifyData = await councilRatifyRes.json();
+  assert(councilRatifyData.data.status === "ACADEMIC_COUNCIL_RATIFIED", "Proposal status updated to ACADEMIC_COUNCIL_RATIFIED");
+  assert(councilRatifyData.data.ratificationGazetteNumber.startsWith("APEX-AC-GAZETTE-2026-"), "Official Academic Council Gazette notification code stamped");
+  assert(!!councilRatifyData.data.ratifiedAt, "Ratification timestamp logged");
 
   console.log("\n=================================================");
   console.log(`🎉 ALL ${passedTests}/${totalTests} TESTS PASSED SUCCESSFULLY!`);

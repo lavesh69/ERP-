@@ -23,10 +23,13 @@ import {
   Video,
   Award,
   Zap,
+  GraduationCap,
 } from "lucide-react";
+import { InternshipPortalView } from "@/components/careers/InternshipPortalView";
 
 export default function CareersPage() {
   const { showToast, setIsAIChatOpen, currentRole, refreshTrigger, triggerRefresh } = useApp();
+  const [activeTab, setActiveTab] = useState<"drives" | "internships">("drives");
   const [jobs, setJobs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedJob, setSelectedJob] = useState<any>(null);
@@ -250,7 +253,37 @@ export default function CareersPage() {
           </div>
         </div>
 
-        {/* 4 Career Highlights */}
+        {/* Sub-Navigation Tabs */}
+        <div className="flex items-center gap-2 border-b border-border dark:border-charcoal-700 pb-2">
+          <button
+            onClick={() => setActiveTab("drives")}
+            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${
+              activeTab === "drives"
+                ? "bg-rose-primary text-white shadow-sm"
+                : "bg-surface-soft dark:bg-charcoal-800 text-charcoal-700 dark:text-charcoal-300 hover:bg-rose-container"
+            }`}
+          >
+            <Briefcase className="h-4 w-4" />
+            <span>Placement Drives & ATS</span>
+          </button>
+          <button
+            onClick={() => setActiveTab("internships")}
+            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${
+              activeTab === "internships"
+                ? "bg-rose-primary text-white shadow-sm"
+                : "bg-surface-soft dark:bg-charcoal-800 text-charcoal-700 dark:text-charcoal-300 hover:bg-rose-container"
+            }`}
+          >
+            <GraduationCap className="h-4 w-4" />
+            <span>NEP 2020 Internships & NOC</span>
+          </button>
+        </div>
+
+        {activeTab === "internships" ? (
+          <InternshipPortalView />
+        ) : (
+          <>
+            {/* 4 Career Highlights */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="glass-panel glass-card-hover p-5 rounded-2xl shadow-soft">
             <span className="text-[10px] font-bold text-charcoal-500 dark:text-charcoal-400 uppercase tracking-wider">
@@ -494,6 +527,8 @@ export default function CareersPage() {
               ))}
             </div>
           </div>
+        )}
+          </>
         )}
       </div>
 

@@ -3,7 +3,7 @@
 **Execution Timestamp:** Academic Session 2026–2027  
 **Platform:** Next.js 15.5.25, React 19, Prisma 6.19.3, Node.js 22.x/24.x  
 **Test Harness:** `tsx src/lib/test-runner.ts`  
-**Overall Result:** **1,650 / 1,650 Passed (100.0% Pass Rate)**  
+**Overall Result:** **1,707 / 1,707 Passed (100.0% Pass Rate)**  
 **Regressions:** 0 Failures  
 **Blocked Tests:** 0 Blocked  
 
@@ -22,8 +22,8 @@ Output: [Clean compilation - 0 Errors across entire codebase]
 ```bash
 $ npm test  # tsx src/lib/test-runner.ts
 Exit Code: 0
-Total Executed: 1,650 Assertions across 75 Test Suites
-Passed: 1,650
+Total Executed: 1,707 Assertions across 76 Test Suites
+Passed: 1,707
 Failed: 0
 Duration: ~10.2 seconds
 ```
@@ -122,4 +122,5 @@ Middleware Size: 36.5 kB
 | **73** | Core Institutional Enterprise Modules: Admissions, Library, Research, Clinic, Hostel, Transport | 47 | ✅ PASS | Admissions Composite Merit Ranking & Statutory Quotas (40% Board + 60% Entrance, UR/OBC/SC/ST/EWS/PwD allotment, APEX-SEAT-ALLOT- SHA-256 seal), Digital E-Library & Institutional Repository (IR) (ISO 26324 DOI assignment, BibTeX & APA 7th citations, secured APEX-IR-SEAL- tokens), Research Ethics & Institutional Review Board (IRB) (3-tier triage, committee quorum deliberation voting, APEX-IRB-SEAL- certificates), Student Health Clinic Medical Clearance & Immunizations (Health Passports, HepB/MMR/Tdap/MenACWY tracking, APEX-MED-FIT-SEAL- fitness certificates), Hostel Move-In/Move-Out Inventory & Caution Deposit Clearance (furniture/keys checklist, damage levies, APEX-HOSTEL-CLEAR- vouchers), Transport Fleet & Driver Regulatory Safety (RTO Fitness Certificates, PUC, commercial insurance, speed governor 40 km/h calibration, APEX-BUS-FIT-SEAL- roadworthiness seals). |
 | **74** | Auxiliary Service Fee Invoicing & Admissions Counseling SIS Provisioning | 16 | ✅ PASS | Auxiliary Campus Service Billing (Hostel caution deposits, transit bus passes, meal plans, lab breakage fee linkage with APEX-SRV-INV- cryptographic invoice seals), Admissions Counseling One-Click SIS Provisioning (Direct creation of official Student & User records, standardized roll number formatting, @apex.edu student email provisioning, APEX-ENROLL-SEAL- cryptographic enrollment seals). |
 | **75** | Examination Revaluation, Statutory Proctorial Governance & Mess Rebate | 54 | ✅ PASS | Post-Result Revaluation & Scrutiny Portal (Double-Blind Foil Masking BLIND-XXXX, >=15% score disparity referee adjudication rule, >=10% grade revision fee refund trigger, APEX-REVAL-SEAL- cryptographic seals), Statutory Anti-Ragging & Proctorial Board Disciplinary Governance (UGC 2009 affidavit registry with UGC-RAG- reference numbers and digital oath seals, formal Show-Cause Notice issuance with 72h statutory window, student defense submission, and Chief Proctor sanction orders with APEX-PROCTOR-SEAL-), Hostel Mess Diet Rebate & Daily Meal Dining Tokens (Absence >= 3 days statutory threshold validation, automated diet credit calculation, warden review and bursar credit vouchers, turnstile QR dining token issuance and consumption). |
-| **TOTAL** | **ALL 75 ENTERPRISE TEST GROUPS** | **1,650** | **100% PASS** | **Zero Failures Across Entire System (1,650/1,650 Passed)** |
+| **76** | NEP 2020 Internships, University Guest House & BoS Curriculum Governance | 57 | ✅ PASS | NEP 2020 Industrial Training & Internships (University NOC issuance APEX-NOC-, weekly engineering logbook tracking, industry supervisor verification, viva-voce grading, 4-credit academic SIS transfer), University Guest House & Transit Accommodation (VIP Suites, Faculty Transit Flats, departmental billing DEPT_BUDGET, dining folio tracking, checkout Bursar invoices APEX-UGH-INV-), Curriculum Governance & Board of Studies (BoS R2026 scheme proposals, external IIT/IISc nominee consensus, syllabus changes, Vice-Chancellor Academic Council Gazette notifications APEX-AC-GAZETTE-). |
+| **TOTAL** | **ALL 76 ENTERPRISE TEST GROUPS** | **1,707** | **100% PASS** | **Zero Failures Across Entire System (1,707/1,707 Passed)** |

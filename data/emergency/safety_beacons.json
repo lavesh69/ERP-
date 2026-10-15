@@ -168,5 +168,95 @@
     "currentLocation": "Admin Building Auditorium Floor 2",
     "emergencyContactNotified": false,
     "timestamp": "2026-10-15T02:55:38.763Z"
+  },
+  {
+    "id": "BCN-1792033876997-XM7",
+    "incidentId": "EMRG-1792033876935-EUTF",
+    "userId": "usr-admin-01",
+    "name": "Elena Evans",
+    "status": "SAFE",
+    "currentLocation": "Admin Building Auditorium Floor 2",
+    "emergencyContactNotified": false,
+    "timestamp": "2026-10-15T03:11:16.997Z"
+  },
+  {
+    "id": "BCN-1792033949052-ACT",
+    "incidentId": "EMRG-1792033949036-BHLO",
+    "userId": "usr-admin-01",
+    "name": "Elena Evans",
+    "status": "SAFE",
+    "currentLocation": "Admin Building Auditorium Floor 2",
+    "emergencyContactNotified": false,
+    "timestamp": "2026-10-15T03:12:29.052Z"
+  },
+  {
+    "id": "BCN-1792033981492-YRK",
+    "incidentId": "EMRG-1792033981475-NP5Q",
+    "userId": "usr-admin-01",
+    "name": "Elena Evans",
+    "status": "SAFE",
+    "currentLocation": "Admin Building Auditorium Floor 2",
+    "emergencyContactNotified": false,
+    "timestamp": "2026-10-15T03:13:01.492Z"
+  },
+  {
+    "id": "BCN-1792034009078-6SI",
+    "incidentId": "EMRG-1792034009061-VU32",
+    "userId": "usr-admin-01",
+    "name": "Elena Evans",
+    "status": "SAFE",
+    "currentLocation": "Admin Building Auditorium Floor 2",
+    "emergencyContactNotified": false,
+    "timestamp": "2026-10-15T03:13:29.078Z"
+  },
+  {
+    "id": "BCN-1792034057784-ATQ",
+    "incidentId": "EMRG-1792034057766-H8AV",
+    "userId": "usr-admin-01",
+    "name": "Elena Evans",
+    "status": "SAFE",
+    "currentLocation": "Admin Building Auditorium Floor 2",
+    "emergencyContactNotified": false,
+    "timestamp": "2026-10-15T03:14:17.784Z"
+  },
+  {
+    "id": "BCN-1792034090795-MP4",
+    "incidentId": "EMRG-1792034090778-4V9P",
+    "userId": "usr-admin-01",
+    "name": "Elena Evans",
+    "status": "SAFE",
+    "currentLocation": "Admin Building Auditorium Floor 2",
+    "emergencyContactNotified": false,
+    "timestamp": "2026-10-15T03:14:50.795Z"
+  },
+  {
+    "id": "BCN-1792034119441-JLX",
+    "incidentId": "EMRG-1792034119423-AUCT",
+    "userId": "usr-admin-01",
+    "name": "Elena Evans",
+    "status": "SAFE",
+    "currentLocation": "Admin Building Auditorium Floor 2",
+    "emergencyContactNotified": false,
+    "timestamp": "2026-10-15T03:15:19.441Z"
+  },
+  {
+    "id": "BCN-1792034151489-DUF",
+    "incidentId": "EMRG-1792034151470-NU5P",
+    "userId": "usr-admin-01",
+    "name": "Elena Evans",
+    "status": "SAFE",
+    "currentLocation": "Admin Building Auditorium Floor 2",
+    "emergencyContactNotified": false,
+    "timestamp": "2026-10-15T03:15:51.489Z"
+  },
+  {
+    "id": "BCN-1792034441764-KK2",
+    "incidentId": "EMRG-1792034441743-RYWC",
+    "userId": "usr-admin-01",
+    "name": "Elena Evans",
+    "status": "SAFE",
+    "currentLocation": "Admin Building Auditorium Floor 2",
+    "emergencyContactNotified": false,
+    "timestamp": "2026-10-15T03:20:41.764Z"
   }
 ]

@@ -1,5 +1,869 @@
 [
   {
+    "id": "WF-REQ-2026-6023",
+    "workflowType": "GRADE_CORRECTION",
+    "institutionId": "inst-apex-01",
+    "requesterId": "usr-admin-01",
+    "requesterName": "provost.evans@classroom.edu",
+    "requesterRole": "SUPER_ADMIN",
+    "entityId": "exam-cs402-grade-corr",
+    "title": "Mid-Term Question 4 Revaluation Discrepancy",
+    "description": "Answer script question 4 re-totaling adds 3 marks following evaluator re-check.",
+    "metadata": {
+      "originalMarks": 72,
+      "revisedMarks": 75,
+      "courseCode": "CS-402"
+    },
+    "currentLevel": 2,
+    "requiredLevels": 2,
+    "authorizedRolesPerLevel": {
+      "1": [
+        "HOD",
+        "EXAMINATION_CONTROLLER"
+      ],
+      "2": [
+        "PRINCIPAL",
+        "SUPER_ADMIN"
+      ]
+    },
+    "status": "PENDING",
+    "auditTrail": [
+      {
+        "level": 1,
+        "approverUserId": "usr-admin-01",
+        "approverRole": "SUPER_ADMIN",
+        "approverName": "provost.evans@classroom.edu",
+        "action": "APPROVED",
+        "remarks": "CoE reviewed original answer key; verified revised total.",
+        "timestamp": "2026-10-15T03:20:41.493Z",
+        "signatureHash": "89785ede47274551aab8e896"
+      }
+    ],
+    "createdAt": "2026-10-15T03:20:41.390Z",
+    "updatedAt": "2026-10-15T03:20:41.493Z"
+  },
+  {
+    "id": "WF-REQ-2026-4082",
+    "workflowType": "PURCHASE_REQUISITION",
+    "institutionId": "inst-apex-01",
+    "requesterId": "fac-chen-01",
+    "requesterName": "Dr. Wei Chen",
+    "requesterRole": "HOD",
+    "entityId": "po-quantum-lab-01",
+    "title": "Liquid Helium Cryostat Purchase for Quantum Computing Lab",
+    "description": "Requisitioning 50L Cryostat dewars for Qubit coherence experiments.",
+    "metadata": {
+      "estimatedCost": 15000,
+      "vendor": "CryoTech Systems Ltd"
+    },
+    "currentLevel": 2,
+    "requiredLevels": 2,
+    "authorizedRolesPerLevel": {
+      "1": [
+        "HOD",
+        "ACCOUNTANT"
+      ],
+      "2": [
+        "PRINCIPAL",
+        "SUPER_ADMIN"
+      ]
+    },
+    "status": "APPROVED",
+    "auditTrail": [
+      {
+        "level": 1,
+        "approverUserId": "usr-acct-01",
+        "approverRole": "ACCOUNTANT",
+        "approverName": "Chief Financial Accountant",
+        "action": "APPROVED",
+        "remarks": "Budget line item cleared under Sponsored Research Equipment Grant.",
+        "timestamp": "2026-10-15T03:20:41.264Z",
+        "signatureHash": "a157e29786d308451fe29466"
+      },
+      {
+        "level": 2,
+        "approverUserId": "usr-prin-01",
+        "approverRole": "PRINCIPAL",
+        "approverName": "Dr. Arthur Pendelton",
+        "action": "APPROVED",
+        "remarks": "Sanctioned and approved under Institute Research Capex 2026.",
+        "timestamp": "2026-10-15T03:20:41.326Z",
+        "signatureHash": "be0f9625eb0222bb3814c60d"
+      }
+    ],
+    "createdAt": "2026-10-15T03:20:41.210Z",
+    "updatedAt": "2026-10-15T03:20:41.326Z",
+    "completionSeal": "APPROVED-SEAL-8887EBCD163D70F994068B6B433837CF"
+  },
+  {
+    "id": "WF-REQ-2026-8209",
+    "workflowType": "GRADE_CORRECTION",
+    "institutionId": "inst-apex-01",
+    "requesterId": "usr-admin-01",
+    "requesterName": "provost.evans@classroom.edu",
+    "requesterRole": "SUPER_ADMIN",
+    "entityId": "exam-cs402-grade-corr",
+    "title": "Mid-Term Question 4 Revaluation Discrepancy",
+    "description": "Answer script question 4 re-totaling adds 3 marks following evaluator re-check.",
+    "metadata": {
+      "originalMarks": 72,
+      "revisedMarks": 75,
+      "courseCode": "CS-402"
+    },
+    "currentLevel": 2,
+    "requiredLevels": 2,
+    "authorizedRolesPerLevel": {
+      "1": [
+        "HOD",
+        "EXAMINATION_CONTROLLER"
+      ],
+      "2": [
+        "PRINCIPAL",
+        "SUPER_ADMIN"
+      ]
+    },
+    "status": "PENDING",
+    "auditTrail": [
+      {
+        "level": 1,
+        "approverUserId": "usr-admin-01",
+        "approverRole": "SUPER_ADMIN",
+        "approverName": "provost.evans@classroom.edu",
+        "action": "APPROVED",
+        "remarks": "CoE reviewed original answer key; verified revised total.",
+        "timestamp": "2026-10-15T03:15:51.229Z",
+        "signatureHash": "e9211e80e0e1d17a9815aa4b"
+      }
+    ],
+    "createdAt": "2026-10-15T03:15:51.172Z",
+    "updatedAt": "2026-10-15T03:15:51.229Z"
+  },
+  {
+    "id": "WF-REQ-2026-1958",
+    "workflowType": "PURCHASE_REQUISITION",
+    "institutionId": "inst-apex-01",
+    "requesterId": "fac-chen-01",
+    "requesterName": "Dr. Wei Chen",
+    "requesterRole": "HOD",
+    "entityId": "po-quantum-lab-01",
+    "title": "Liquid Helium Cryostat Purchase for Quantum Computing Lab",
+    "description": "Requisitioning 50L Cryostat dewars for Qubit coherence experiments.",
+    "metadata": {
+      "estimatedCost": 15000,
+      "vendor": "CryoTech Systems Ltd"
+    },
+    "currentLevel": 2,
+    "requiredLevels": 2,
+    "authorizedRolesPerLevel": {
+      "1": [
+        "HOD",
+        "ACCOUNTANT"
+      ],
+      "2": [
+        "PRINCIPAL",
+        "SUPER_ADMIN"
+      ]
+    },
+    "status": "APPROVED",
+    "auditTrail": [
+      {
+        "level": 1,
+        "approverUserId": "usr-acct-01",
+        "approverRole": "ACCOUNTANT",
+        "approverName": "Chief Financial Accountant",
+        "action": "APPROVED",
+        "remarks": "Budget line item cleared under Sponsored Research Equipment Grant.",
+        "timestamp": "2026-10-15T03:15:51.056Z",
+        "signatureHash": "4e417d1799b19ba2cdcfdd81"
+      },
+      {
+        "level": 2,
+        "approverUserId": "usr-prin-01",
+        "approverRole": "PRINCIPAL",
+        "approverName": "Dr. Arthur Pendelton",
+        "action": "APPROVED",
+        "remarks": "Sanctioned and approved under Institute Research Capex 2026.",
+        "timestamp": "2026-10-15T03:15:51.115Z",
+        "signatureHash": "b50c96226d2314fac790638c"
+      }
+    ],
+    "createdAt": "2026-10-15T03:15:50.996Z",
+    "updatedAt": "2026-10-15T03:15:51.115Z",
+    "completionSeal": "APPROVED-SEAL-EE2380DBADECCA1A4CA4A82CA04DF6EB"
+  },
+  {
+    "id": "WF-REQ-2026-1787",
+    "workflowType": "GRADE_CORRECTION",
+    "institutionId": "inst-apex-01",
+    "requesterId": "usr-admin-01",
+    "requesterName": "provost.evans@classroom.edu",
+    "requesterRole": "SUPER_ADMIN",
+    "entityId": "exam-cs402-grade-corr",
+    "title": "Mid-Term Question 4 Revaluation Discrepancy",
+    "description": "Answer script question 4 re-totaling adds 3 marks following evaluator re-check.",
+    "metadata": {
+      "originalMarks": 72,
+      "revisedMarks": 75,
+      "courseCode": "CS-402"
+    },
+    "currentLevel": 2,
+    "requiredLevels": 2,
+    "authorizedRolesPerLevel": {
+      "1": [
+        "HOD",
+        "EXAMINATION_CONTROLLER"
+      ],
+      "2": [
+        "PRINCIPAL",
+        "SUPER_ADMIN"
+      ]
+    },
+    "status": "PENDING",
+    "auditTrail": [
+      {
+        "level": 1,
+        "approverUserId": "usr-admin-01",
+        "approverRole": "SUPER_ADMIN",
+        "approverName": "provost.evans@classroom.edu",
+        "action": "APPROVED",
+        "remarks": "CoE reviewed original answer key; verified revised total.",
+        "timestamp": "2026-10-15T03:15:19.182Z",
+        "signatureHash": "f2425543591378135f0f1470"
+      }
+    ],
+    "createdAt": "2026-10-15T03:15:19.124Z",
+    "updatedAt": "2026-10-15T03:15:19.182Z"
+  },
+  {
+    "id": "WF-REQ-2026-9104",
+    "workflowType": "PURCHASE_REQUISITION",
+    "institutionId": "inst-apex-01",
+    "requesterId": "fac-chen-01",
+    "requesterName": "Dr. Wei Chen",
+    "requesterRole": "HOD",
+    "entityId": "po-quantum-lab-01",
+    "title": "Liquid Helium Cryostat Purchase for Quantum Computing Lab",
+    "description": "Requisitioning 50L Cryostat dewars for Qubit coherence experiments.",
+    "metadata": {
+      "estimatedCost": 15000,
+      "vendor": "CryoTech Systems Ltd"
+    },
+    "currentLevel": 2,
+    "requiredLevels": 2,
+    "authorizedRolesPerLevel": {
+      "1": [
+        "HOD",
+        "ACCOUNTANT"
+      ],
+      "2": [
+        "PRINCIPAL",
+        "SUPER_ADMIN"
+      ]
+    },
+    "status": "APPROVED",
+    "auditTrail": [
+      {
+        "level": 1,
+        "approverUserId": "usr-acct-01",
+        "approverRole": "ACCOUNTANT",
+        "approverName": "Chief Financial Accountant",
+        "action": "APPROVED",
+        "remarks": "Budget line item cleared under Sponsored Research Equipment Grant.",
+        "timestamp": "2026-10-15T03:15:19.014Z",
+        "signatureHash": "6f4011486b405d505507fdb7"
+      },
+      {
+        "level": 2,
+        "approverUserId": "usr-prin-01",
+        "approverRole": "PRINCIPAL",
+        "approverName": "Dr. Arthur Pendelton",
+        "action": "APPROVED",
+        "remarks": "Sanctioned and approved under Institute Research Capex 2026.",
+        "timestamp": "2026-10-15T03:15:19.068Z",
+        "signatureHash": "c41c6f057745c0eac69343f8"
+      }
+    ],
+    "createdAt": "2026-10-15T03:15:18.963Z",
+    "updatedAt": "2026-10-15T03:15:19.068Z",
+    "completionSeal": "APPROVED-SEAL-9FEBBF7EE9FCB88B647765F3B43B1946"
+  },
+  {
+    "id": "WF-REQ-2026-2662",
+    "workflowType": "GRADE_CORRECTION",
+    "institutionId": "inst-apex-01",
+    "requesterId": "usr-admin-01",
+    "requesterName": "provost.evans@classroom.edu",
+    "requesterRole": "SUPER_ADMIN",
+    "entityId": "exam-cs402-grade-corr",
+    "title": "Mid-Term Question 4 Revaluation Discrepancy",
+    "description": "Answer script question 4 re-totaling adds 3 marks following evaluator re-check.",
+    "metadata": {
+      "originalMarks": 72,
+      "revisedMarks": 75,
+      "courseCode": "CS-402"
+    },
+    "currentLevel": 2,
+    "requiredLevels": 2,
+    "authorizedRolesPerLevel": {
+      "1": [
+        "HOD",
+        "EXAMINATION_CONTROLLER"
+      ],
+      "2": [
+        "PRINCIPAL",
+        "SUPER_ADMIN"
+      ]
+    },
+    "status": "PENDING",
+    "auditTrail": [
+      {
+        "level": 1,
+        "approverUserId": "usr-admin-01",
+        "approverRole": "SUPER_ADMIN",
+        "approverName": "provost.evans@classroom.edu",
+        "action": "APPROVED",
+        "remarks": "CoE reviewed original answer key; verified revised total.",
+        "timestamp": "2026-10-15T03:14:50.546Z",
+        "signatureHash": "97a77e897ce8321fedd8d8d8"
+      }
+    ],
+    "createdAt": "2026-10-15T03:14:50.488Z",
+    "updatedAt": "2026-10-15T03:14:50.546Z"
+  },
+  {
+    "id": "WF-REQ-2026-9139",
+    "workflowType": "PURCHASE_REQUISITION",
+    "institutionId": "inst-apex-01",
+    "requesterId": "fac-chen-01",
+    "requesterName": "Dr. Wei Chen",
+    "requesterRole": "HOD",
+    "entityId": "po-quantum-lab-01",
+    "title": "Liquid Helium Cryostat Purchase for Quantum Computing Lab",
+    "description": "Requisitioning 50L Cryostat dewars for Qubit coherence experiments.",
+    "metadata": {
+      "estimatedCost": 15000,
+      "vendor": "CryoTech Systems Ltd"
+    },
+    "currentLevel": 2,
+    "requiredLevels": 2,
+    "authorizedRolesPerLevel": {
+      "1": [
+        "HOD",
+        "ACCOUNTANT"
+      ],
+      "2": [
+        "PRINCIPAL",
+        "SUPER_ADMIN"
+      ]
+    },
+    "status": "APPROVED",
+    "auditTrail": [
+      {
+        "level": 1,
+        "approverUserId": "usr-acct-01",
+        "approverRole": "ACCOUNTANT",
+        "approverName": "Chief Financial Accountant",
+        "action": "APPROVED",
+        "remarks": "Budget line item cleared under Sponsored Research Equipment Grant.",
+        "timestamp": "2026-10-15T03:14:50.380Z",
+        "signatureHash": "e8f8ab8c8a752aa09bdbec21"
+      },
+      {
+        "level": 2,
+        "approverUserId": "usr-prin-01",
+        "approverRole": "PRINCIPAL",
+        "approverName": "Dr. Arthur Pendelton",
+        "action": "APPROVED",
+        "remarks": "Sanctioned and approved under Institute Research Capex 2026.",
+        "timestamp": "2026-10-15T03:14:50.435Z",
+        "signatureHash": "e44f4cd680445fb31f92dedd"
+      }
+    ],
+    "createdAt": "2026-10-15T03:14:50.326Z",
+    "updatedAt": "2026-10-15T03:14:50.435Z",
+    "completionSeal": "APPROVED-SEAL-97E5F63AB43F1C8BE6138F93B6BD154A"
+  },
+  {
+    "id": "WF-REQ-2026-7519",
+    "workflowType": "GRADE_CORRECTION",
+    "institutionId": "inst-apex-01",
+    "requesterId": "usr-admin-01",
+    "requesterName": "provost.evans@classroom.edu",
+    "requesterRole": "SUPER_ADMIN",
+    "entityId": "exam-cs402-grade-corr",
+    "title": "Mid-Term Question 4 Revaluation Discrepancy",
+    "description": "Answer script question 4 re-totaling adds 3 marks following evaluator re-check.",
+    "metadata": {
+      "originalMarks": 72,
+      "revisedMarks": 75,
+      "courseCode": "CS-402"
+    },
+    "currentLevel": 2,
+    "requiredLevels": 2,
+    "authorizedRolesPerLevel": {
+      "1": [
+        "HOD",
+        "EXAMINATION_CONTROLLER"
+      ],
+      "2": [
+        "PRINCIPAL",
+        "SUPER_ADMIN"
+      ]
+    },
+    "status": "PENDING",
+    "auditTrail": [
+      {
+        "level": 1,
+        "approverUserId": "usr-admin-01",
+        "approverRole": "SUPER_ADMIN",
+        "approverName": "provost.evans@classroom.edu",
+        "action": "APPROVED",
+        "remarks": "CoE reviewed original answer key; verified revised total.",
+        "timestamp": "2026-10-15T03:14:17.444Z",
+        "signatureHash": "0ccff6b43c3aa95818d8156a"
+      }
+    ],
+    "createdAt": "2026-10-15T03:14:17.386Z",
+    "updatedAt": "2026-10-15T03:14:17.444Z"
+  },
+  {
+    "id": "WF-REQ-2026-7660",
+    "workflowType": "PURCHASE_REQUISITION",
+    "institutionId": "inst-apex-01",
+    "requesterId": "fac-chen-01",
+    "requesterName": "Dr. Wei Chen",
+    "requesterRole": "HOD",
+    "entityId": "po-quantum-lab-01",
+    "title": "Liquid Helium Cryostat Purchase for Quantum Computing Lab",
+    "description": "Requisitioning 50L Cryostat dewars for Qubit coherence experiments.",
+    "metadata": {
+      "estimatedCost": 15000,
+      "vendor": "CryoTech Systems Ltd"
+    },
+    "currentLevel": 2,
+    "requiredLevels": 2,
+    "authorizedRolesPerLevel": {
+      "1": [
+        "HOD",
+        "ACCOUNTANT"
+      ],
+      "2": [
+        "PRINCIPAL",
+        "SUPER_ADMIN"
+      ]
+    },
+    "status": "APPROVED",
+    "auditTrail": [
+      {
+        "level": 1,
+        "approverUserId": "usr-acct-01",
+        "approverRole": "ACCOUNTANT",
+        "approverName": "Chief Financial Accountant",
+        "action": "APPROVED",
+        "remarks": "Budget line item cleared under Sponsored Research Equipment Grant.",
+        "timestamp": "2026-10-15T03:14:17.256Z",
+        "signatureHash": "0fad52a5162c7deac13a9402"
+      },
+      {
+        "level": 2,
+        "approverUserId": "usr-prin-01",
+        "approverRole": "PRINCIPAL",
+        "approverName": "Dr. Arthur Pendelton",
+        "action": "APPROVED",
+        "remarks": "Sanctioned and approved under Institute Research Capex 2026.",
+        "timestamp": "2026-10-15T03:14:17.310Z",
+        "signatureHash": "3b38ccbe1c0ea68b049869c2"
+      }
+    ],
+    "createdAt": "2026-10-15T03:14:17.204Z",
+    "updatedAt": "2026-10-15T03:14:17.310Z",
+    "completionSeal": "APPROVED-SEAL-9471CB981A1DCB834A6162226128D149"
+  },
+  {
+    "id": "WF-REQ-2026-3250",
+    "workflowType": "GRADE_CORRECTION",
+    "institutionId": "inst-apex-01",
+    "requesterId": "usr-admin-01",
+    "requesterName": "provost.evans@classroom.edu",
+    "requesterRole": "SUPER_ADMIN",
+    "entityId": "exam-cs402-grade-corr",
+    "title": "Mid-Term Question 4 Revaluation Discrepancy",
+    "description": "Answer script question 4 re-totaling adds 3 marks following evaluator re-check.",
+    "metadata": {
+      "originalMarks": 72,
+      "revisedMarks": 75,
+      "courseCode": "CS-402"
+    },
+    "currentLevel": 2,
+    "requiredLevels": 2,
+    "authorizedRolesPerLevel": {
+      "1": [
+        "HOD",
+        "EXAMINATION_CONTROLLER"
+      ],
+      "2": [
+        "PRINCIPAL",
+        "SUPER_ADMIN"
+      ]
+    },
+    "status": "PENDING",
+    "auditTrail": [
+      {
+        "level": 1,
+        "approverUserId": "usr-admin-01",
+        "approverRole": "SUPER_ADMIN",
+        "approverName": "provost.evans@classroom.edu",
+        "action": "APPROVED",
+        "remarks": "CoE reviewed original answer key; verified revised total.",
+        "timestamp": "2026-10-15T03:13:28.835Z",
+        "signatureHash": "d150d223801fea9c89a437cf"
+      }
+    ],
+    "createdAt": "2026-10-15T03:13:28.782Z",
+    "updatedAt": "2026-10-15T03:13:28.835Z"
+  },
+  {
+    "id": "WF-REQ-2026-6430",
+    "workflowType": "PURCHASE_REQUISITION",
+    "institutionId": "inst-apex-01",
+    "requesterId": "fac-chen-01",
+    "requesterName": "Dr. Wei Chen",
+    "requesterRole": "HOD",
+    "entityId": "po-quantum-lab-01",
+    "title": "Liquid Helium Cryostat Purchase for Quantum Computing Lab",
+    "description": "Requisitioning 50L Cryostat dewars for Qubit coherence experiments.",
+    "metadata": {
+      "estimatedCost": 15000,
+      "vendor": "CryoTech Systems Ltd"
+    },
+    "currentLevel": 2,
+    "requiredLevels": 2,
+    "authorizedRolesPerLevel": {
+      "1": [
+        "HOD",
+        "ACCOUNTANT"
+      ],
+      "2": [
+        "PRINCIPAL",
+        "SUPER_ADMIN"
+      ]
+    },
+    "status": "APPROVED",
+    "auditTrail": [
+      {
+        "level": 1,
+        "approverUserId": "usr-acct-01",
+        "approverRole": "ACCOUNTANT",
+        "approverName": "Chief Financial Accountant",
+        "action": "APPROVED",
+        "remarks": "Budget line item cleared under Sponsored Research Equipment Grant.",
+        "timestamp": "2026-10-15T03:13:28.679Z",
+        "signatureHash": "8bc4912d29e78dd6db017ad7"
+      },
+      {
+        "level": 2,
+        "approverUserId": "usr-prin-01",
+        "approverRole": "PRINCIPAL",
+        "approverName": "Dr. Arthur Pendelton",
+        "action": "APPROVED",
+        "remarks": "Sanctioned and approved under Institute Research Capex 2026.",
+        "timestamp": "2026-10-15T03:13:28.729Z",
+        "signatureHash": "0d4f0e6fc89dafcff6b9ba62"
+      }
+    ],
+    "createdAt": "2026-10-15T03:13:28.627Z",
+    "updatedAt": "2026-10-15T03:13:28.729Z",
+    "completionSeal": "APPROVED-SEAL-E1FA2EBE355A7128542D1846AE138408"
+  },
+  {
+    "id": "WF-REQ-2026-6785",
+    "workflowType": "GRADE_CORRECTION",
+    "institutionId": "inst-apex-01",
+    "requesterId": "usr-admin-01",
+    "requesterName": "provost.evans@classroom.edu",
+    "requesterRole": "SUPER_ADMIN",
+    "entityId": "exam-cs402-grade-corr",
+    "title": "Mid-Term Question 4 Revaluation Discrepancy",
+    "description": "Answer script question 4 re-totaling adds 3 marks following evaluator re-check.",
+    "metadata": {
+      "originalMarks": 72,
+      "revisedMarks": 75,
+      "courseCode": "CS-402"
+    },
+    "currentLevel": 2,
+    "requiredLevels": 2,
+    "authorizedRolesPerLevel": {
+      "1": [
+        "HOD",
+        "EXAMINATION_CONTROLLER"
+      ],
+      "2": [
+        "PRINCIPAL",
+        "SUPER_ADMIN"
+      ]
+    },
+    "status": "PENDING",
+    "auditTrail": [
+      {
+        "level": 1,
+        "approverUserId": "usr-admin-01",
+        "approverRole": "SUPER_ADMIN",
+        "approverName": "provost.evans@classroom.edu",
+        "action": "APPROVED",
+        "remarks": "CoE reviewed original answer key; verified revised total.",
+        "timestamp": "2026-10-15T03:13:01.196Z",
+        "signatureHash": "8f70e5815c4a5ab6fe16187a"
+      }
+    ],
+    "createdAt": "2026-10-15T03:13:01.146Z",
+    "updatedAt": "2026-10-15T03:13:01.196Z"
+  },
+  {
+    "id": "WF-REQ-2026-9225",
+    "workflowType": "PURCHASE_REQUISITION",
+    "institutionId": "inst-apex-01",
+    "requesterId": "fac-chen-01",
+    "requesterName": "Dr. Wei Chen",
+    "requesterRole": "HOD",
+    "entityId": "po-quantum-lab-01",
+    "title": "Liquid Helium Cryostat Purchase for Quantum Computing Lab",
+    "description": "Requisitioning 50L Cryostat dewars for Qubit coherence experiments.",
+    "metadata": {
+      "estimatedCost": 15000,
+      "vendor": "CryoTech Systems Ltd"
+    },
+    "currentLevel": 2,
+    "requiredLevels": 2,
+    "authorizedRolesPerLevel": {
+      "1": [
+        "HOD",
+        "ACCOUNTANT"
+      ],
+      "2": [
+        "PRINCIPAL",
+        "SUPER_ADMIN"
+      ]
+    },
+    "status": "APPROVED",
+    "auditTrail": [
+      {
+        "level": 1,
+        "approverUserId": "usr-acct-01",
+        "approverRole": "ACCOUNTANT",
+        "approverName": "Chief Financial Accountant",
+        "action": "APPROVED",
+        "remarks": "Budget line item cleared under Sponsored Research Equipment Grant.",
+        "timestamp": "2026-10-15T03:13:01.034Z",
+        "signatureHash": "867b5909d2222ea2c6eacac5"
+      },
+      {
+        "level": 2,
+        "approverUserId": "usr-prin-01",
+        "approverRole": "PRINCIPAL",
+        "approverName": "Dr. Arthur Pendelton",
+        "action": "APPROVED",
+        "remarks": "Sanctioned and approved under Institute Research Capex 2026.",
+        "timestamp": "2026-10-15T03:13:01.091Z",
+        "signatureHash": "aa579dc8033bfb3a4ed1fe37"
+      }
+    ],
+    "createdAt": "2026-10-15T03:13:00.977Z",
+    "updatedAt": "2026-10-15T03:13:01.091Z",
+    "completionSeal": "APPROVED-SEAL-0C2A15DDED72789B9E699DF4AFA92564"
+  },
+  {
+    "id": "WF-REQ-2026-9900",
+    "workflowType": "GRADE_CORRECTION",
+    "institutionId": "inst-apex-01",
+    "requesterId": "usr-admin-01",
+    "requesterName": "provost.evans@classroom.edu",
+    "requesterRole": "SUPER_ADMIN",
+    "entityId": "exam-cs402-grade-corr",
+    "title": "Mid-Term Question 4 Revaluation Discrepancy",
+    "description": "Answer script question 4 re-totaling adds 3 marks following evaluator re-check.",
+    "metadata": {
+      "originalMarks": 72,
+      "revisedMarks": 75,
+      "courseCode": "CS-402"
+    },
+    "currentLevel": 2,
+    "requiredLevels": 2,
+    "authorizedRolesPerLevel": {
+      "1": [
+        "HOD",
+        "EXAMINATION_CONTROLLER"
+      ],
+      "2": [
+        "PRINCIPAL",
+        "SUPER_ADMIN"
+      ]
+    },
+    "status": "PENDING",
+    "auditTrail": [
+      {
+        "level": 1,
+        "approverUserId": "usr-admin-01",
+        "approverRole": "SUPER_ADMIN",
+        "approverName": "provost.evans@classroom.edu",
+        "action": "APPROVED",
+        "remarks": "CoE reviewed original answer key; verified revised total.",
+        "timestamp": "2026-10-15T03:12:28.742Z",
+        "signatureHash": "b34ccf9c71784291a965ae50"
+      }
+    ],
+    "createdAt": "2026-10-15T03:12:28.690Z",
+    "updatedAt": "2026-10-15T03:12:28.742Z"
+  },
+  {
+    "id": "WF-REQ-2026-2221",
+    "workflowType": "PURCHASE_REQUISITION",
+    "institutionId": "inst-apex-01",
+    "requesterId": "fac-chen-01",
+    "requesterName": "Dr. Wei Chen",
+    "requesterRole": "HOD",
+    "entityId": "po-quantum-lab-01",
+    "title": "Liquid Helium Cryostat Purchase for Quantum Computing Lab",
+    "description": "Requisitioning 50L Cryostat dewars for Qubit coherence experiments.",
+    "metadata": {
+      "estimatedCost": 15000,
+      "vendor": "CryoTech Systems Ltd"
+    },
+    "currentLevel": 2,
+    "requiredLevels": 2,
+    "authorizedRolesPerLevel": {
+      "1": [
+        "HOD",
+        "ACCOUNTANT"
+      ],
+      "2": [
+        "PRINCIPAL",
+        "SUPER_ADMIN"
+      ]
+    },
+    "status": "APPROVED",
+    "auditTrail": [
+      {
+        "level": 1,
+        "approverUserId": "usr-acct-01",
+        "approverRole": "ACCOUNTANT",
+        "approverName": "Chief Financial Accountant",
+        "action": "APPROVED",
+        "remarks": "Budget line item cleared under Sponsored Research Equipment Grant.",
+        "timestamp": "2026-10-15T03:12:28.470Z",
+        "signatureHash": "ea7d2d54e27c22b45c7dc48f"
+      },
+      {
+        "level": 2,
+        "approverUserId": "usr-prin-01",
+        "approverRole": "PRINCIPAL",
+        "approverName": "Dr. Arthur Pendelton",
+        "action": "APPROVED",
+        "remarks": "Sanctioned and approved under Institute Research Capex 2026.",
+        "timestamp": "2026-10-15T03:12:28.632Z",
+        "signatureHash": "283a47e55beb53ee93aec6c3"
+      }
+    ],
+    "createdAt": "2026-10-15T03:12:28.418Z",
+    "updatedAt": "2026-10-15T03:12:28.632Z",
+    "completionSeal": "APPROVED-SEAL-823B4A9928D570551690712C6A046F97"
+  },
+  {
+    "id": "WF-REQ-2026-3465",
+    "workflowType": "GRADE_CORRECTION",
+    "institutionId": "inst-apex-01",
+    "requesterId": "usr-admin-01",
+    "requesterName": "provost.evans@classroom.edu",
+    "requesterRole": "SUPER_ADMIN",
+    "entityId": "exam-cs402-grade-corr",
+    "title": "Mid-Term Question 4 Revaluation Discrepancy",
+    "description": "Answer script question 4 re-totaling adds 3 marks following evaluator re-check.",
+    "metadata": {
+      "originalMarks": 72,
+      "revisedMarks": 75,
+      "courseCode": "CS-402"
+    },
+    "currentLevel": 2,
+    "requiredLevels": 2,
+    "authorizedRolesPerLevel": {
+      "1": [
+        "HOD",
+        "EXAMINATION_CONTROLLER"
+      ],
+      "2": [
+        "PRINCIPAL",
+        "SUPER_ADMIN"
+      ]
+    },
+    "status": "PENDING",
+    "auditTrail": [
+      {
+        "level": 1,
+        "approverUserId": "usr-admin-01",
+        "approverRole": "SUPER_ADMIN",
+        "approverName": "provost.evans@classroom.edu",
+        "action": "APPROVED",
+        "remarks": "CoE reviewed original answer key; verified revised total.",
+        "timestamp": "2026-10-15T03:11:16.698Z",
+        "signatureHash": "febac5506fe5bd29aa6ec367"
+      }
+    ],
+    "createdAt": "2026-10-15T03:11:16.605Z",
+    "updatedAt": "2026-10-15T03:11:16.698Z"
+  },
+  {
+    "id": "WF-REQ-2026-6577",
+    "workflowType": "PURCHASE_REQUISITION",
+    "institutionId": "inst-apex-01",
+    "requesterId": "fac-chen-01",
+    "requesterName": "Dr. Wei Chen",
+    "requesterRole": "HOD",
+    "entityId": "po-quantum-lab-01",
+    "title": "Liquid Helium Cryostat Purchase for Quantum Computing Lab",
+    "description": "Requisitioning 50L Cryostat dewars for Qubit coherence experiments.",
+    "metadata": {
+      "estimatedCost": 15000,
+      "vendor": "CryoTech Systems Ltd"
+    },
+    "currentLevel": 2,
+    "requiredLevels": 2,
+    "authorizedRolesPerLevel": {
+      "1": [
+        "HOD",
+        "ACCOUNTANT"
+      ],
+      "2": [
+        "PRINCIPAL",
+        "SUPER_ADMIN"
+      ]
+    },
+    "status": "APPROVED",
+    "auditTrail": [
+      {
+        "level": 1,
+        "approverUserId": "usr-acct-01",
+        "approverRole": "ACCOUNTANT",
+        "approverName": "Chief Financial Accountant",
+        "action": "APPROVED",
+        "remarks": "Budget line item cleared under Sponsored Research Equipment Grant.",
+        "timestamp": "2026-10-15T03:11:16.468Z",
+        "signatureHash": "a474f644058a6c198edf50f8"
+      },
+      {
+        "level": 2,
+        "approverUserId": "usr-prin-01",
+        "approverRole": "PRINCIPAL",
+        "approverName": "Dr. Arthur Pendelton",
+        "action": "APPROVED",
+        "remarks": "Sanctioned and approved under Institute Research Capex 2026.",
+        "timestamp": "2026-10-15T03:11:16.545Z",
+        "signatureHash": "dbda507a84a677e25c1b64aa"
+      }
+    ],
+    "createdAt": "2026-10-15T03:11:16.410Z",
+    "updatedAt": "2026-10-15T03:11:16.545Z",
+    "completionSeal": "APPROVED-SEAL-CF0397CBC7BB2D5C3BE75856986460E1"
+  },
+  {
     "id": "WF-REQ-2026-1879",
     "workflowType": "GRADE_CORRECTION",
     "institutionId": "inst-apex-01",

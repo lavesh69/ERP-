@@ -38,6 +38,474 @@
   ],
   "consultations": [
     {
+      "id": "cs-1792034441189",
+      "caseNo": "OPD-2026-588",
+      "patientName": "Vikram Seth",
+      "patientRoll": "2024-CSE-042",
+      "visitDate": "2026-10-15T03:20:41.189Z",
+      "chiefComplaint": "Acute tension migraine and high body temperature",
+      "vitals": {
+        "bp": "120/80",
+        "pulseRate": 74,
+        "temperatureF": 101.4,
+        "spo2Percent": 98
+      },
+      "diagnosis": "Viral pyrexia with cephalalgia",
+      "prescriptions": [
+        {
+          "name": "Paracetamol 650mg Tabs",
+          "dosage": "650mg",
+          "frequency": "BD",
+          "days": 3
+        }
+      ],
+      "attendingDoctor": "Campus Medical Officer",
+      "requiresSickBayAdmit": false,
+      "status": "TREATED_DISCHARGED"
+    },
+    {
+      "id": "cs-1792034440777",
+      "caseNo": "OPD-2026-511",
+      "patientName": "Alex Mercer",
+      "patientRoll": "CS2026-001",
+      "visitDate": "2026-10-15T03:20:40.777Z",
+      "chiefComplaint": "Severe migraine and acute eye fatigue during compiler build sprint",
+      "vitals": {
+        "bp": "125/82",
+        "pulseRate": 74,
+        "temperatureF": 98.8,
+        "spo2Percent": 99
+      },
+      "diagnosis": "Visual fatigue and tension headache",
+      "prescriptions": [
+        {
+          "name": "Naproxen",
+          "dosage": "250mg",
+          "frequency": "BID",
+          "days": 3
+        }
+      ],
+      "attendingDoctor": "Dr. Marcus Welby (Campus Physician)",
+      "requiresSickBayAdmit": true,
+      "status": "ADMITTED_SICK_BAY"
+    },
+    {
+      "id": "cs-1792034150972",
+      "caseNo": "OPD-2026-803",
+      "patientName": "Vikram Seth",
+      "patientRoll": "2024-CSE-042",
+      "visitDate": "2026-10-15T03:15:50.972Z",
+      "chiefComplaint": "Acute tension migraine and high body temperature",
+      "vitals": {
+        "bp": "120/80",
+        "pulseRate": 74,
+        "temperatureF": 101.4,
+        "spo2Percent": 98
+      },
+      "diagnosis": "Viral pyrexia with cephalalgia",
+      "prescriptions": [
+        {
+          "name": "Paracetamol 650mg Tabs",
+          "dosage": "650mg",
+          "frequency": "BD",
+          "days": 3
+        }
+      ],
+      "attendingDoctor": "Campus Medical Officer",
+      "requiresSickBayAdmit": false,
+      "status": "TREATED_DISCHARGED"
+    },
+    {
+      "id": "cs-1792034150551",
+      "caseNo": "OPD-2026-262",
+      "patientName": "Alex Mercer",
+      "patientRoll": "CS2026-001",
+      "visitDate": "2026-10-15T03:15:50.551Z",
+      "chiefComplaint": "Severe migraine and acute eye fatigue during compiler build sprint",
+      "vitals": {
+        "bp": "125/82",
+        "pulseRate": 74,
+        "temperatureF": 98.8,
+        "spo2Percent": 99
+      },
+      "diagnosis": "Visual fatigue and tension headache",
+      "prescriptions": [
+        {
+          "name": "Naproxen",
+          "dosage": "250mg",
+          "frequency": "BID",
+          "days": 3
+        }
+      ],
+      "attendingDoctor": "Dr. Marcus Welby (Campus Physician)",
+      "requiresSickBayAdmit": true,
+      "status": "ADMITTED_SICK_BAY"
+    },
+    {
+      "id": "cs-1792034118938",
+      "caseNo": "OPD-2026-852",
+      "patientName": "Vikram Seth",
+      "patientRoll": "2024-CSE-042",
+      "visitDate": "2026-10-15T03:15:18.938Z",
+      "chiefComplaint": "Acute tension migraine and high body temperature",
+      "vitals": {
+        "bp": "120/80",
+        "pulseRate": 74,
+        "temperatureF": 101.4,
+        "spo2Percent": 98
+      },
+      "diagnosis": "Viral pyrexia with cephalalgia",
+      "prescriptions": [
+        {
+          "name": "Paracetamol 650mg Tabs",
+          "dosage": "650mg",
+          "frequency": "BD",
+          "days": 3
+        }
+      ],
+      "attendingDoctor": "Campus Medical Officer",
+      "requiresSickBayAdmit": false,
+      "status": "TREATED_DISCHARGED"
+    },
+    {
+      "id": "cs-1792034118539",
+      "caseNo": "OPD-2026-407",
+      "patientName": "Alex Mercer",
+      "patientRoll": "CS2026-001",
+      "visitDate": "2026-10-15T03:15:18.539Z",
+      "chiefComplaint": "Severe migraine and acute eye fatigue during compiler build sprint",
+      "vitals": {
+        "bp": "125/82",
+        "pulseRate": 74,
+        "temperatureF": 98.8,
+        "spo2Percent": 99
+      },
+      "diagnosis": "Visual fatigue and tension headache",
+      "prescriptions": [
+        {
+          "name": "Naproxen",
+          "dosage": "250mg",
+          "frequency": "BID",
+          "days": 3
+        }
+      ],
+      "attendingDoctor": "Dr. Marcus Welby (Campus Physician)",
+      "requiresSickBayAdmit": true,
+      "status": "ADMITTED_SICK_BAY"
+    },
+    {
+      "id": "cs-1792034090306",
+      "caseNo": "OPD-2026-858",
+      "patientName": "Vikram Seth",
+      "patientRoll": "2024-CSE-042",
+      "visitDate": "2026-10-15T03:14:50.306Z",
+      "chiefComplaint": "Acute tension migraine and high body temperature",
+      "vitals": {
+        "bp": "120/80",
+        "pulseRate": 74,
+        "temperatureF": 101.4,
+        "spo2Percent": 98
+      },
+      "diagnosis": "Viral pyrexia with cephalalgia",
+      "prescriptions": [
+        {
+          "name": "Paracetamol 650mg Tabs",
+          "dosage": "650mg",
+          "frequency": "BD",
+          "days": 3
+        }
+      ],
+      "attendingDoctor": "Campus Medical Officer",
+      "requiresSickBayAdmit": false,
+      "status": "TREATED_DISCHARGED"
+    },
+    {
+      "id": "cs-1792034089858",
+      "caseNo": "OPD-2026-286",
+      "patientName": "Alex Mercer",
+      "patientRoll": "CS2026-001",
+      "visitDate": "2026-10-15T03:14:49.858Z",
+      "chiefComplaint": "Severe migraine and acute eye fatigue during compiler build sprint",
+      "vitals": {
+        "bp": "125/82",
+        "pulseRate": 74,
+        "temperatureF": 98.8,
+        "spo2Percent": 99
+      },
+      "diagnosis": "Visual fatigue and tension headache",
+      "prescriptions": [
+        {
+          "name": "Naproxen",
+          "dosage": "250mg",
+          "frequency": "BID",
+          "days": 3
+        }
+      ],
+      "attendingDoctor": "Dr. Marcus Welby (Campus Physician)",
+      "requiresSickBayAdmit": true,
+      "status": "ADMITTED_SICK_BAY"
+    },
+    {
+      "id": "cs-1792034057183",
+      "caseNo": "OPD-2026-809",
+      "patientName": "Vikram Seth",
+      "patientRoll": "2024-CSE-042",
+      "visitDate": "2026-10-15T03:14:17.183Z",
+      "chiefComplaint": "Acute tension migraine and high body temperature",
+      "vitals": {
+        "bp": "120/80",
+        "pulseRate": 74,
+        "temperatureF": 101.4,
+        "spo2Percent": 98
+      },
+      "diagnosis": "Viral pyrexia with cephalalgia",
+      "prescriptions": [
+        {
+          "name": "Paracetamol 650mg Tabs",
+          "dosage": "650mg",
+          "frequency": "BD",
+          "days": 3
+        }
+      ],
+      "attendingDoctor": "Campus Medical Officer",
+      "requiresSickBayAdmit": false,
+      "status": "TREATED_DISCHARGED"
+    },
+    {
+      "id": "cs-1792034056793",
+      "caseNo": "OPD-2026-729",
+      "patientName": "Alex Mercer",
+      "patientRoll": "CS2026-001",
+      "visitDate": "2026-10-15T03:14:16.793Z",
+      "chiefComplaint": "Severe migraine and acute eye fatigue during compiler build sprint",
+      "vitals": {
+        "bp": "125/82",
+        "pulseRate": 74,
+        "temperatureF": 98.8,
+        "spo2Percent": 99
+      },
+      "diagnosis": "Visual fatigue and tension headache",
+      "prescriptions": [
+        {
+          "name": "Naproxen",
+          "dosage": "250mg",
+          "frequency": "BID",
+          "days": 3
+        }
+      ],
+      "attendingDoctor": "Dr. Marcus Welby (Campus Physician)",
+      "requiresSickBayAdmit": true,
+      "status": "ADMITTED_SICK_BAY"
+    },
+    {
+      "id": "cs-1792034008606",
+      "caseNo": "OPD-2026-703",
+      "patientName": "Vikram Seth",
+      "patientRoll": "2024-CSE-042",
+      "visitDate": "2026-10-15T03:13:28.606Z",
+      "chiefComplaint": "Acute tension migraine and high body temperature",
+      "vitals": {
+        "bp": "120/80",
+        "pulseRate": 74,
+        "temperatureF": 101.4,
+        "spo2Percent": 98
+      },
+      "diagnosis": "Viral pyrexia with cephalalgia",
+      "prescriptions": [
+        {
+          "name": "Paracetamol 650mg Tabs",
+          "dosage": "650mg",
+          "frequency": "BD",
+          "days": 3
+        }
+      ],
+      "attendingDoctor": "Campus Medical Officer",
+      "requiresSickBayAdmit": false,
+      "status": "TREATED_DISCHARGED"
+    },
+    {
+      "id": "cs-1792034008235",
+      "caseNo": "OPD-2026-136",
+      "patientName": "Alex Mercer",
+      "patientRoll": "CS2026-001",
+      "visitDate": "2026-10-15T03:13:28.235Z",
+      "chiefComplaint": "Severe migraine and acute eye fatigue during compiler build sprint",
+      "vitals": {
+        "bp": "125/82",
+        "pulseRate": 74,
+        "temperatureF": 98.8,
+        "spo2Percent": 99
+      },
+      "diagnosis": "Visual fatigue and tension headache",
+      "prescriptions": [
+        {
+          "name": "Naproxen",
+          "dosage": "250mg",
+          "frequency": "BID",
+          "days": 3
+        }
+      ],
+      "attendingDoctor": "Dr. Marcus Welby (Campus Physician)",
+      "requiresSickBayAdmit": true,
+      "status": "ADMITTED_SICK_BAY"
+    },
+    {
+      "id": "cs-1792033980955",
+      "caseNo": "OPD-2026-125",
+      "patientName": "Vikram Seth",
+      "patientRoll": "2024-CSE-042",
+      "visitDate": "2026-10-15T03:13:00.955Z",
+      "chiefComplaint": "Acute tension migraine and high body temperature",
+      "vitals": {
+        "bp": "120/80",
+        "pulseRate": 74,
+        "temperatureF": 101.4,
+        "spo2Percent": 98
+      },
+      "diagnosis": "Viral pyrexia with cephalalgia",
+      "prescriptions": [
+        {
+          "name": "Paracetamol 650mg Tabs",
+          "dosage": "650mg",
+          "frequency": "BD",
+          "days": 3
+        }
+      ],
+      "attendingDoctor": "Campus Medical Officer",
+      "requiresSickBayAdmit": false,
+      "status": "TREATED_DISCHARGED"
+    },
+    {
+      "id": "cs-1792033980486",
+      "caseNo": "OPD-2026-631",
+      "patientName": "Alex Mercer",
+      "patientRoll": "CS2026-001",
+      "visitDate": "2026-10-15T03:13:00.486Z",
+      "chiefComplaint": "Severe migraine and acute eye fatigue during compiler build sprint",
+      "vitals": {
+        "bp": "125/82",
+        "pulseRate": 74,
+        "temperatureF": 98.8,
+        "spo2Percent": 99
+      },
+      "diagnosis": "Visual fatigue and tension headache",
+      "prescriptions": [
+        {
+          "name": "Naproxen",
+          "dosage": "250mg",
+          "frequency": "BID",
+          "days": 3
+        }
+      ],
+      "attendingDoctor": "Dr. Marcus Welby (Campus Physician)",
+      "requiresSickBayAdmit": true,
+      "status": "ADMITTED_SICK_BAY"
+    },
+    {
+      "id": "cs-1792033948398",
+      "caseNo": "OPD-2026-752",
+      "patientName": "Vikram Seth",
+      "patientRoll": "2024-CSE-042",
+      "visitDate": "2026-10-15T03:12:28.398Z",
+      "chiefComplaint": "Acute tension migraine and high body temperature",
+      "vitals": {
+        "bp": "120/80",
+        "pulseRate": 74,
+        "temperatureF": 101.4,
+        "spo2Percent": 98
+      },
+      "diagnosis": "Viral pyrexia with cephalalgia",
+      "prescriptions": [
+        {
+          "name": "Paracetamol 650mg Tabs",
+          "dosage": "650mg",
+          "frequency": "BD",
+          "days": 3
+        }
+      ],
+      "attendingDoctor": "Campus Medical Officer",
+      "requiresSickBayAdmit": false,
+      "status": "TREATED_DISCHARGED"
+    },
+    {
+      "id": "cs-1792033947901",
+      "caseNo": "OPD-2026-480",
+      "patientName": "Alex Mercer",
+      "patientRoll": "CS2026-001",
+      "visitDate": "2026-10-15T03:12:27.901Z",
+      "chiefComplaint": "Severe migraine and acute eye fatigue during compiler build sprint",
+      "vitals": {
+        "bp": "125/82",
+        "pulseRate": 74,
+        "temperatureF": 98.8,
+        "spo2Percent": 99
+      },
+      "diagnosis": "Visual fatigue and tension headache",
+      "prescriptions": [
+        {
+          "name": "Naproxen",
+          "dosage": "250mg",
+          "frequency": "BID",
+          "days": 3
+        }
+      ],
+      "attendingDoctor": "Dr. Marcus Welby (Campus Physician)",
+      "requiresSickBayAdmit": true,
+      "status": "ADMITTED_SICK_BAY"
+    },
+    {
+      "id": "cs-1792033876382",
+      "caseNo": "OPD-2026-823",
+      "patientName": "Vikram Seth",
+      "patientRoll": "2024-CSE-042",
+      "visitDate": "2026-10-15T03:11:16.382Z",
+      "chiefComplaint": "Acute tension migraine and high body temperature",
+      "vitals": {
+        "bp": "120/80",
+        "pulseRate": 74,
+        "temperatureF": 101.4,
+        "spo2Percent": 98
+      },
+      "diagnosis": "Viral pyrexia with cephalalgia",
+      "prescriptions": [
+        {
+          "name": "Paracetamol 650mg Tabs",
+          "dosage": "650mg",
+          "frequency": "BD",
+          "days": 3
+        }
+      ],
+      "attendingDoctor": "Campus Medical Officer",
+      "requiresSickBayAdmit": false,
+      "status": "TREATED_DISCHARGED"
+    },
+    {
+      "id": "cs-1792033875894",
+      "caseNo": "OPD-2026-495",
+      "patientName": "Alex Mercer",
+      "patientRoll": "CS2026-001",
+      "visitDate": "2026-10-15T03:11:15.894Z",
+      "chiefComplaint": "Severe migraine and acute eye fatigue during compiler build sprint",
+      "vitals": {
+        "bp": "125/82",
+        "pulseRate": 74,
+        "temperatureF": 98.8,
+        "spo2Percent": 99
+      },
+      "diagnosis": "Visual fatigue and tension headache",
+      "prescriptions": [
+        {
+          "name": "Naproxen",
+          "dosage": "250mg",
+          "frequency": "BID",
+          "days": 3
+        }
+      ],
+      "attendingDoctor": "Dr. Marcus Welby (Campus Physician)",
+      "requiresSickBayAdmit": true,
+      "status": "ADMITTED_SICK_BAY"
+    },
+    {
       "id": "cs-1792032938341",
       "caseNo": "OPD-2026-676",
       "patientName": "Vikram Seth",
@@ -2917,7 +3385,7 @@
       "id": "MED-01",
       "name": "Paracetamol 650mg Tabs",
       "category": "Analgesic / Antipyretic",
-      "stock": 48,
+      "stock": 44,
       "minThreshold": 30,
       "unit": "tablets",
       "expiry": "2027-08",

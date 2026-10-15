@@ -48,6 +48,7 @@ import {
   Rocket,
   Siren,
   UtensilsCrossed,
+  Hotel,
 } from "lucide-react";
 
 interface NavSection {
@@ -187,6 +188,13 @@ const NAV_SECTIONS: NavSection[] = [
         icon: ShieldAlert,
         badge: "Statutory",
         roles: ["SUPER_ADMIN", "INSTITUTION_ADMIN", "PRINCIPAL", "HOD", "FACULTY", "STUDENT", "PARENT", "HR_STAFF"],
+      },
+      {
+        name: "University Guest House",
+        href: "/guesthouse",
+        icon: Hotel,
+        badge: "Transit",
+        roles: ["SUPER_ADMIN", "INSTITUTION_ADMIN", "PRINCIPAL", "HOD", "FACULTY", "ACCOUNTANT", "HR_STAFF", "GUEST"],
       },
       {
         name: "Campus Assets",

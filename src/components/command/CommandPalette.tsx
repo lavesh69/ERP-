@@ -36,6 +36,7 @@ import {
   Gift,
   HeartHandshake,
   ShieldAlert,
+  Hotel,
 } from "lucide-react";
 
 interface CommandOption {
@@ -252,6 +253,22 @@ export function CommandPalette() {
       description: "UGC 2009 oath affidavits, formal Show-Cause Notices (72h), and Chief Proctor sanction orders",
       href: "/compliance",
       icon: ShieldAlert,
+    },
+    {
+      id: "nav-guesthouse",
+      category: "Navigation",
+      title: "University Guest House & Transit Accommodation",
+      description: "VIP Suites, visiting professor transit flats, and examiner lodging with departmental budget billing",
+      href: "/guesthouse",
+      icon: Hotel,
+    },
+    {
+      id: "nav-internships",
+      category: "Navigation",
+      title: "NEP 2020 Mandatory Industrial Training & Internships",
+      description: "University NOC issuance, student activity logbooks, industry appraisals, and 4-credit transfer",
+      href: "/careers",
+      icon: Briefcase,
     },
     {
       id: "nav-careers",

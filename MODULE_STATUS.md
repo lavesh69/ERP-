@@ -3,7 +3,7 @@
 **Platform:** CLASSROOM — School & College ERP / Academic Operating System  
 **Repository:** `lavesh69/ERP-`  
 **Assessment Date:** Academic Session 2026–2027  
-**Overall Readiness:** 100.0% Production Ready (1,650 / 1,650 Tests Passing, 205+ Routes Compiled)  
+**Overall Readiness:** 100.0% Production Ready (1,707 / 1,707 Tests Passing, 210+ Routes Compiled)  
 
 ---
 
@@ -64,6 +64,9 @@
 | **51** | **Examination Revaluation & Scrutiny Portal** | ✅ Complete | ✅ Complete (Double-Blind Masking, Disparity Referee, Automatic Bursar Refund) | ✅ Hardened | 4 tests (Suite 75) | **Production Ready** |
 | **52** | **Statutory Anti-Ragging & Proctorial Board Governance** | ✅ Complete | ✅ Complete (UGC 2009 Affidavits, Show-Cause Notices 72h, Chief Proctor Orders) | ✅ Hardened | 6 tests (Suite 75) | **Production Ready** |
 | **53** | **Hostel Mess Diet Rebate & Dining Tokens** | ✅ Complete | ✅ Complete (Absence $\ge 3$ Days Eligibility, Warden Approval, Food Waste Reduction) | ✅ Hardened | 7 tests (Suite 75) | **Production Ready** |
+| **54** | **NEP 2020 Industrial Training & Internships** | ✅ Complete | ✅ Complete (NOC Issuance, Weekly Activity Logbook, Viva Voce, 4 Credits SIS Transfer) | ✅ Hardened | 6 tests (Suite 76) | **Production Ready** |
+| **55** | **University Guest House & Transit Accommodation** | ✅ Complete | ✅ Complete (VIP Suites, Faculty Transit Flats, Dept Billing, Folio Dining, Invoices) | ✅ Hardened | 6 tests (Suite 76) | **Production Ready** |
+| **56** | **Curriculum Governance & Board of Studies (BoS)** | ✅ Complete | ✅ Complete (R2026 Schemes, External/Industry Consensus, Academic Council Gazette Seal) | ✅ Hardened | 5 tests (Suite 76) | **Production Ready** |
 
 ---
 
