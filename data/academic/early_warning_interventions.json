@@ -358,5 +358,17 @@
     "status": "IN_INTERVENTION",
     "createdAt": "2026-10-15T03:20:41.682Z",
     "updatedAt": "2026-10-15T03:20:41.696Z"
+  },
+  {
+    "id": "INTV-1792035318312-LTEF",
+    "studentId": "stu-mercer-01",
+    "institutionId": "inst-apex-01",
+    "assignedCounselorId": "usr-admin-01",
+    "counselorName": "Elena Evans",
+    "interventionType": "ACADEMIC_TUTORING",
+    "notes": "Assigned mentor for remedial coaching in Applied Mathematics.\n[2026-10-15T03:35:18.326Z] Scholar attended initial peer tutoring workshop.",
+    "status": "IN_INTERVENTION",
+    "createdAt": "2026-10-15T03:35:18.312Z",
+    "updatedAt": "2026-10-15T03:35:18.326Z"
   }
 ]

@@ -598,5 +598,25 @@
     "status": "ASSIGNED",
     "assignedByUserId": "usr-admin-01",
     "assignedAt": "2026-10-15T03:20:41.714Z"
+  },
+  {
+    "id": "SUB-REQ-1792035318344",
+    "substitutionPassNumber": "SUB-318344-2D5",
+    "institutionId": "inst-apex-01",
+    "absentFacultyId": "fac-chen-01",
+    "absentFacultyName": "Sarah Chen",
+    "substituteFacultyId": "fac-candidate-1",
+    "substituteFacultyName": "Dr. Alan Turing",
+    "date": "2026-10-20",
+    "dayOfWeek": "MONDAY",
+    "startTime": "14:00",
+    "endTime": "15:30",
+    "courseCode": "CS-402",
+    "courseName": "Cloud Systems Architecture",
+    "roomName": "Lab 3B",
+    "sectionName": "CSE-4A",
+    "status": "ASSIGNED",
+    "assignedByUserId": "usr-admin-01",
+    "assignedAt": "2026-10-15T03:35:18.344Z"
   }
 ]

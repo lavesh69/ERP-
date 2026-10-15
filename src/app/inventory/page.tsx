@@ -19,7 +19,10 @@ import {
   Tag,
   Filter,
   Download,
+  FileText,
 } from "lucide-react";
+
+import StoreIndentView from "@/components/inventory/StoreIndentView";
 
 interface InventorySummary {
   totalAssets: number;
@@ -33,7 +36,7 @@ interface InventorySummary {
 
 export default function InventoryPage() {
   const { currentUser } = useApp();
-  const [activeTab, setActiveTab] = useState<"assets" | "consumables" | "workorders" | "audit">("assets");
+  const [activeTab, setActiveTab] = useState<"assets" | "consumables" | "workorders" | "audit" | "store">("assets");
   const [loading, setLoading] = useState(true);
   const [summary, setSummary] = useState<InventorySummary | null>(null);
   const [assets, setAssets] = useState<any[]>([]);
@@ -297,6 +300,7 @@ export default function InventoryPage() {
           { id: "consumables", label: "Consumables & Lab Stock", icon: Package, count: summary?.lowStockItems },
           { id: "workorders", label: "Maintenance Work Orders", icon: Wrench, count: summary?.openWorkOrders },
           { id: "audit", label: "Depreciation & Audit Summary", icon: TrendingDown },
+          { id: "store", label: "Stationery & Exam Store", icon: FileText },
         ].map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
@@ -609,6 +613,13 @@ export default function InventoryPage() {
               <p className="text-xs text-charcoal-500 mt-0.5">Zero missing capital assets</p>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* TAB 5: STATIONERY & EXAMINATION STORE */}
+      {activeTab === "store" && (
+        <div className="mt-4">
+          <StoreIndentView />
         </div>
       )}
 

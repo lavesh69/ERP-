@@ -475,6 +475,20 @@ import {
   POST as handleBoSPost,
 } from "@/app/api/curriculum/bos/route";
 
+// Group 77: Central Instrumentation Facility (CIF), Stationery Store & Estate Infrastructure Works
+import {
+  GET as handleCIFGet,
+  POST as handleCIFPost,
+} from "@/app/api/research/cif/route";
+import {
+  GET as handleStoreGet,
+  POST as handleStorePost,
+} from "@/app/api/inventory/store/route";
+import {
+  GET as handleEstateGet,
+  POST as handleEstatePost,
+} from "@/app/api/estate/workorders/route";
+
 async function runTestSuite() {
   console.log("=================================================");
   console.log("🚀 STARTING CLASSROOM ERP COMPREHENSIVE TEST SUITE");
@@ -10508,6 +10522,297 @@ By breaking down large monolithic systems into decoupled microservices, systems 
   assert(councilRatifyData.data.status === "ACADEMIC_COUNCIL_RATIFIED", "Proposal status updated to ACADEMIC_COUNCIL_RATIFIED");
   assert(councilRatifyData.data.ratificationGazetteNumber.startsWith("APEX-AC-GAZETTE-2026-"), "Official Academic Council Gazette notification code stamped");
   assert(!!councilRatifyData.data.ratifiedAt, "Ratification timestamp logged");
+
+  // --- GROUP 77: Central Instrumentation Facility (CIF), Stationery Store & Estate Infrastructure Works ---
+  console.log("\n--- GROUP 77: Central Instrumentation Facility (CIF), Stationery Store & Estate Infrastructure Works ---");
+
+  // 77.1 GET /api/research/cif returns instruments & active bookings
+  const cifGetReq = new NextRequest("http://localhost:3000/api/research/cif", {
+    headers: { Cookie: `classroom_session=${adminToken}` },
+  });
+  const cifGetRes = await handleCIFGet(cifGetReq);
+  assert(cifGetRes.status === 200, "GET /api/research/cif returns 200 OK");
+  const cifGetData = await cifGetRes.json();
+  assert(cifGetData.success === true, "CIF GET returns success: true");
+  assert(cifGetData.instruments.length >= 4, "CIF equipment catalog seeded with analytical instruments");
+  assert(cifGetData.instruments.some((i: any) => i.code === "FESEM-01"), "Field Emission SEM present in catalog");
+  assert(cifGetData.analytics.uptimePercentage >= 50, "CIF operational uptime calculated");
+
+  // 77.2 Requisition CIF Beam Time Slot
+  const cifReqSlot = new NextRequest("http://localhost:3000/api/research/cif", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "REQUEST_SLOT",
+      instrumentId: "INST-CIF-SEM",
+      userId: "scholar-phd-test-77",
+      userName: "Rohan Chatterjee",
+      userEmail: "rohan.c@res.apex.edu",
+      userCategory: "INTERNAL_SCHOLAR",
+      departmentOrOrg: "Department of Metallurgical Engineering",
+      bookingDate: "2026-11-05",
+      timeSlot: "MORNING_0930_1300",
+      sampleCount: 2,
+      sampleState: "SOLID_POWDER",
+      hazardLevel: "NON_HAZARDOUS",
+      safetyDeclarationAccepted: true,
+      samplePrepRequired: true,
+      samplePrepDetails: "Gold sputter conductive layer",
+    }),
+  });
+  const cifReqRes = await handleCIFPost(cifReqSlot);
+  assert(cifReqRes.status === 201, "POST /api/research/cif (REQUEST_SLOT) returns 201 Created");
+  const cifReqData = await cifReqRes.json();
+  const testCifBookingId = cifReqData.booking.id;
+  assert(cifReqData.booking.bookingRef.startsWith("APEX-CIF-REQ-2026-"), "CIF requisition reference code stamped");
+  assert(cifReqData.booking.status === "SUBMITTED", "Initial CIF booking status is SUBMITTED");
+  assert(cifReqData.booking.calculatedTariff === 1900, "Tariff calculated accurately (3.5h x 400 + 2 x 250 = 1900)");
+
+  // 77.3 CIF Safety Committee Clearance
+  const cifSafetyReq = new NextRequest("http://localhost:3000/api/research/cif", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "CLEAR_SAFETY",
+      bookingId: testCifBookingId,
+      clearedBy: "Prof. Arvind Trivedi (CIF Safety Chair)",
+      remarks: "Sample MSDS non-toxic and compliant with vacuum chamber standards.",
+    }),
+  });
+  const cifSafetyRes = await handleCIFPost(cifSafetyReq);
+  assert(cifSafetyRes.status === 200, "POST /api/research/cif (CLEAR_SAFETY) returns 200 OK");
+  const cifSafetyData = await cifSafetyRes.json();
+  assert(cifSafetyData.booking.status === "SAFETY_CLEARED", "Status updated to SAFETY_CLEARED");
+
+  // 77.4 CIF Slot Confirmation & Cryptographic Token Minting
+  const cifConfirmReq = new NextRequest("http://localhost:3000/api/research/cif", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "CONFIRM_SLOT",
+      bookingId: testCifBookingId,
+      assignedOperator: "Dr. Rajesh Sharma (Sr. Scientific Officer)",
+    }),
+  });
+  const cifConfirmRes = await handleCIFPost(cifConfirmReq);
+  assert(cifConfirmRes.status === 200, "POST /api/research/cif (CONFIRM_SLOT) returns 200 OK");
+  const cifConfirmData = await cifConfirmRes.json();
+  assert(cifConfirmData.booking.status === "SLOT_CONFIRMED", "Status updated to SLOT_CONFIRMED");
+  assert(cifConfirmData.booking.slotToken.startsWith("APEX-CIF-SLOT-2026-"), "Cryptographic slot access token stamped");
+
+  // 77.5 CIF Beam Run Completion & Cryptographic Seal
+  const cifCompleteReq = new NextRequest("http://localhost:3000/api/research/cif", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "COMPLETE_RUN",
+      bookingId: testCifBookingId,
+      beamHoursUsed: 3.5,
+      operatorSignature: "Dr. Rajesh Sharma, SSO",
+      dataFileUrls: ["/data/cif/sem_spectra_01.dm3"],
+    }),
+  });
+  const cifCompleteRes = await handleCIFPost(cifCompleteReq);
+  assert(cifCompleteRes.status === 200, "POST /api/research/cif (COMPLETE_RUN) returns 200 OK");
+  const cifCompleteData = await cifCompleteRes.json();
+  assert(cifCompleteData.booking.status === "COMPLETED", "Status updated to COMPLETED");
+  assert(!!cifCompleteData.booking.completionData.cryptographicSeal, "Cryptographic completion seal minted");
+
+  // 77.6 GET /api/inventory/store returns catalog & indents
+  const storeGetReq = new NextRequest("http://localhost:3000/api/inventory/store", {
+    headers: { Cookie: `classroom_session=${adminToken}` },
+  });
+  const storeGetRes = await handleStoreGet(storeGetReq);
+  assert(storeGetRes.status === 200, "GET /api/inventory/store returns 200 OK");
+  const storeGetData = await storeGetRes.json();
+  assert(storeGetData.success === true, "Store GET returns success: true");
+  assert(storeGetData.items.some((i: any) => i.code === "BKLT-32"), "Main 32-Page Exam Answer Booklet present in catalog");
+  assert(storeGetData.analytics.totalBookletsOnHand > 0, "Examination booklet reserve recorded");
+
+  // 77.7 Create Departmental Store Indent
+  const storeCreateReq = new NextRequest("http://localhost:3000/api/inventory/store", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "CREATE_INDENT",
+      department: "Examination Center",
+      indentorId: "coe-officer-test",
+      indentorName: "Dr. Ramanathan Swamy",
+      indentorRole: "Controller of Examinations",
+      purpose: "Mid-Term End-Semester Examinations 2026",
+      examSessionCode: "MID-SEM-2026",
+      items: [
+        { itemId: "item-bklt-32", requestedQuantity: 1000 },
+        { itemId: "item-bklt-08", requestedQuantity: 500 },
+      ],
+    }),
+  });
+  const storeCreateRes = await handleStorePost(storeCreateReq);
+  assert(storeCreateRes.status === 201, "POST /api/inventory/store (CREATE_INDENT) returns 201 Created");
+  const storeCreateData = await storeCreateRes.json();
+  const testIndentId = storeCreateData.indent.id;
+  assert(storeCreateData.indent.indentNumber.startsWith("APEX-INDENT-2026-"), "Indent number generated");
+  assert(storeCreateData.indent.status === "SUBMITTED", "Initial indent status is SUBMITTED");
+
+  // 77.8 HOD Approval for Store Indent
+  const storeApproveReq = new NextRequest("http://localhost:3000/api/inventory/store", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "APPROVE_HOD",
+      indentId: testIndentId,
+      approvedBy: "Prof. S. R. Iyengar (Dean Academic Affairs)",
+      remarks: "Candidate strength cross-verified. Approved.",
+    }),
+  });
+  const storeApproveRes = await handleStorePost(storeApproveReq);
+  assert(storeApproveRes.status === 200, "POST /api/inventory/store (APPROVE_HOD) returns 200 OK");
+  const storeApproveData = await storeApproveRes.json();
+  assert(storeApproveData.indent.status === "HOD_APPROVED", "Status updated to HOD_APPROVED");
+
+  // 77.9 Storekeeper Dispatch with Serialized Barcode Range
+  const storeDispatchReq = new NextRequest("http://localhost:3000/api/inventory/store", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "DISPATCH_STORE",
+      indentId: testIndentId,
+      dispatchedBy: "Mr. B. K. Joshi (Chief Storekeeper)",
+      dispatches: [
+        { itemId: "item-bklt-32", dispatchedQuantity: 1000, barcodeRangeStart: "BKLT-2026-200001", barcodeRangeEnd: "BKLT-2026-201000" },
+        { itemId: "item-bklt-08", dispatchedQuantity: 500, barcodeRangeStart: "SUPP-2026-100001", barcodeRangeEnd: "SUPP-2026-100500" },
+      ],
+    }),
+  });
+  const storeDispatchRes = await handleStorePost(storeDispatchReq);
+  assert(storeDispatchRes.status === 200, "POST /api/inventory/store (DISPATCH_STORE) returns 200 OK");
+  const storeDispatchData = await storeDispatchRes.json();
+  assert(storeDispatchData.indent.status === "DISPATCHED", "Status updated to DISPATCHED");
+  assert(storeDispatchData.indent.dispatchVoucher.voucherNumber.startsWith("APEX-INDENT-DISP-2026-"), "Dispatch voucher number generated");
+  assert(storeDispatchData.indent.items[0].barcodeRangeStart === "BKLT-2026-200001", "Barcode range tracked in dispatch record");
+
+  // 77.10 Indentor Acknowledge Receipt
+  const storeAcknowledgeReq = new NextRequest("http://localhost:3000/api/inventory/store", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "RECEIVE_INDENT",
+      indentId: testIndentId,
+      receivedBy: "Examination Superintendent",
+      remarks: "All 1000 main and 500 supplementary booklets verified with intact seals.",
+    }),
+  });
+  const storeAcknowledgeRes = await handleStorePost(storeAcknowledgeReq);
+  assert(storeAcknowledgeRes.status === 200, "POST /api/inventory/store (RECEIVE_INDENT) returns 200 OK");
+  const storeAcknowledgeData = await storeAcknowledgeRes.json();
+  assert(storeAcknowledgeData.indent.status === "FULFILLED", "Status updated to FULFILLED");
+
+  // 77.11 GET /api/estate/workorders returns heavy assets & orders
+  const estateGetReq = new NextRequest("http://localhost:3000/api/estate/workorders", {
+    headers: { Cookie: `classroom_session=${adminToken}` },
+  });
+  const estateGetRes = await handleEstateGet(estateGetReq);
+  assert(estateGetRes.status === 200, "GET /api/estate/workorders returns 200 OK");
+  const estateGetData = await estateGetRes.json();
+  assert(estateGetData.success === true, "Estate GET returns success: true");
+  assert(estateGetData.assets.some((a: any) => a.assetCode === "EST-SUB-11KV"), "11kV Substation asset recorded in inventory");
+  assert(estateGetData.analytics.assetReliabilityRate > 0, "Campus asset reliability rate computed");
+
+  // 77.12 Raise Emergency Estate Work Order
+  const estateRaiseReq = new NextRequest("http://localhost:3000/api/estate/workorders", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "RAISE_WORK_ORDER",
+      discipline: "ELECTRICAL",
+      priority: "CRITICAL_EMERGENCY",
+      location: "Server Room B - High Performance Computing Cluster",
+      issueTitle: "Precision AC Compressor Power Feed Tripping Breaker",
+      issueDescription: "Server room ambient temperature rising rapidly due to cooling power failure.",
+      requesterId: "sys-admin-01",
+      requesterName: "Er. Amitava Sen",
+      requesterDepartment: "Central Computing Center",
+    }),
+  });
+  const estateRaiseRes = await handleEstatePost(estateRaiseReq);
+  assert(estateRaiseRes.status === 201, "POST /api/estate/workorders (RAISE_WORK_ORDER) returns 201 Created");
+  const estateRaiseData = await estateRaiseRes.json();
+  const testEstateOrderId = estateRaiseData.workOrder.id;
+  assert(estateRaiseData.workOrder.workOrderNumber.startsWith("APEX-ESTATE-WO-2026-"), "Work order number stamped");
+  assert(estateRaiseData.workOrder.slaHours === 2, "Critical emergency assigned statutory 2-Hour SLA");
+  assert(estateRaiseData.workOrder.status === "LOGGED", "Initial status is LOGGED");
+
+  // 77.13 Assign Junior Engineer to Work Order
+  const estateAssignReq = new NextRequest("http://localhost:3000/api/estate/workorders", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "ASSIGN_ENGINEER",
+      workOrderId: testEstateOrderId,
+      engineerName: "Er. Pradeep Nair (JE Electrical)",
+      engineerRole: "Junior Engineer (Electrical & Substations)",
+      estimatedMaterialCost: 4000,
+    }),
+  });
+  const estateAssignRes = await handleEstatePost(estateAssignReq);
+  assert(estateAssignRes.status === 200, "POST /api/estate/workorders (ASSIGN_ENGINEER) returns 200 OK");
+  const estateAssignData = await estateAssignRes.json();
+  assert(estateAssignData.workOrder.status === "ASSIGNED", "Status updated to ASSIGNED");
+  assert(estateAssignData.workOrder.assignedEngineer.engineerName.includes("Pradeep Nair"), "Junior engineer assigned");
+
+  // 77.14 Start Work with Materials BOQ
+  const estateStartReq = new NextRequest("http://localhost:3000/api/estate/workorders", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "START_WORK",
+      workOrderId: testEstateOrderId,
+      materialsBOQ: [
+        { materialName: "63A 3-Phase MCCB Breaker", quantity: 1, cost: 2800 },
+        { materialName: "Copper Busbar Clamp", quantity: 2, cost: 700 },
+      ],
+    }),
+  });
+  const estateStartRes = await handleEstatePost(estateStartReq);
+  assert(estateStartRes.status === 200, "POST /api/estate/workorders (START_WORK) returns 200 OK");
+  const estateStartData = await estateStartRes.json();
+  assert(estateStartData.workOrder.status === "IN_PROGRESS", "Status updated to IN_PROGRESS");
+  assert(estateStartData.workOrder.materialsBOQ.length === 2, "Materials BOQ registered in work order");
+
+  // 77.15 Complete Work and Affix Cryptographic Completion Certificate
+  const estateCompleteReq = new NextRequest("http://localhost:3000/api/estate/workorders", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "COMPLETE_WORK",
+      workOrderId: testEstateOrderId,
+      actualCost: 3500,
+      engineerNotes: "Replaced 63A breaker and tightened busbar connection. Temperature stabilized at 19C.",
+    }),
+  });
+  const estateCompleteRes = await handleEstatePost(estateCompleteReq);
+  assert(estateCompleteRes.status === 200, "POST /api/estate/workorders (COMPLETE_WORK) returns 200 OK");
+  const estateCompleteData = await estateCompleteRes.json();
+  assert(estateCompleteData.workOrder.status === "COMPLETED", "Status updated to COMPLETED");
+  assert(estateCompleteData.workOrder.completionDetails.completionCertificateNumber.startsWith("APEX-ESTATE-CERT-2026-"), "Completion certificate number generated");
+  assert(!!estateCompleteData.workOrder.completionDetails.cryptographicSeal, "Cryptographic completion seal stamped");
+
+  // 77.16 Close Work Order with Requester Rating
+  const estateCloseReq = new NextRequest("http://localhost:3000/api/estate/workorders", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "CLOSE_ORDER",
+      workOrderId: testEstateOrderId,
+      ratingStars: 5,
+      satisfactionFeedback: "Fast response within SLA. Prevented server cluster thermal shutdown.",
+    }),
+  });
+  const estateCloseRes = await handleEstatePost(estateCloseReq);
+  assert(estateCloseRes.status === 200, "POST /api/estate/workorders (CLOSE_ORDER) returns 200 OK");
+  const estateCloseData = await estateCloseRes.json();
+  assert(estateCloseData.workOrder.status === "CLOSED", "Status updated to CLOSED");
+  assert(estateCloseData.workOrder.userClosureRating.ratingStars === 5, "5-star satisfaction rating recorded");
 
   console.log("\n=================================================");
   console.log(`🎉 ALL ${passedTests}/${totalTests} TESTS PASSED SUCCESSFULLY!`);

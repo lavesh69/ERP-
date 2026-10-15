@@ -1,0 +1,183 @@
+{
+  "assets": [
+    {
+      "id": "asset-substation",
+      "assetCode": "EST-SUB-11KV",
+      "name": "Campus 11kV High-Tension Electrical Substation",
+      "discipline": "ELECTRICAL",
+      "location": "Main Substation Yard, West Campus Gate 3",
+      "status": "OPERATIONAL",
+      "installedYear": 2021,
+      "lastServicedDate": "2026-08-20",
+      "nextPreventiveServiceDue": "2026-11-20",
+      "specifications": "1500 kVA Step-Down Transformer with SF6 circuit breaker and auto power-factor correction."
+    },
+    {
+      "id": "asset-genset",
+      "assetCode": "EST-GEN-500KVA",
+      "name": "Diesel Generator Power Backup System (500 kVA)",
+      "discipline": "ELECTRICAL",
+      "location": "Powerhouse Annex Behind Administrative Block",
+      "status": "OPERATIONAL",
+      "installedYear": 2022,
+      "lastServicedDate": "2026-09-05",
+      "nextPreventiveServiceDue": "2026-12-05",
+      "specifications": "Cummins Turbocharged Diesel Engine with acoustic silent canopy and AMF synchronization panel."
+    },
+    {
+      "id": "asset-stp",
+      "assetCode": "EST-STP-100KLD",
+      "name": "100 kLD Sewage Treatment & Greywater Recycling Plant",
+      "discipline": "PLUMBING_WATER",
+      "location": "South Campus Utility Zone",
+      "status": "OPERATIONAL",
+      "installedYear": 2020,
+      "lastServicedDate": "2026-07-15",
+      "nextPreventiveServiceDue": "2026-10-25",
+      "specifications": "MBBR technology bioreactor with tertiary dual-media sand/carbon filtration and UV disinfectant."
+    },
+    {
+      "id": "asset-chiller",
+      "assetCode": "EST-HVAC-CHILLER",
+      "name": "Central Auditorium Water-Cooled Screw Chiller (250 TR)",
+      "discipline": "HVAC",
+      "location": "Central Library & Auditorium Basement Plant Room",
+      "status": "NEEDS_SERVICE",
+      "installedYear": 2019,
+      "lastServicedDate": "2026-05-10",
+      "nextPreventiveServiceDue": "2026-10-10",
+      "specifications": "Carrier 30XW series screw compressor using eco-friendly R134a refrigerant."
+    },
+    {
+      "id": "asset-fire-hydrant",
+      "assetCode": "EST-FIRE-PUMP",
+      "name": "Automatic Wet-Riser Firefighting Hydrant Pump System",
+      "discipline": "FIRE_SAFETY",
+      "location": "Underground Fire Water Reservoir (200,000 Liters)",
+      "status": "OPERATIONAL",
+      "installedYear": 2023,
+      "lastServicedDate": "2026-09-18",
+      "nextPreventiveServiceDue": "2026-12-18",
+      "specifications": "Main electric pump 75 HP, diesel standby pump 80 HP, jockey pressurization pump 10 HP."
+    }
+  ],
+  "workOrders": [
+    {
+      "id": "wo-1792035319021",
+      "workOrderNumber": "APEX-ESTATE-WO-2026-5070",
+      "discipline": "ELECTRICAL",
+      "priority": "CRITICAL_EMERGENCY",
+      "slaHours": 2,
+      "location": "Server Room B - High Performance Computing Cluster",
+      "issueTitle": "Precision AC Compressor Power Feed Tripping Breaker",
+      "issueDescription": "Server room ambient temperature rising rapidly due to cooling power failure.",
+      "requesterId": "sys-admin-01",
+      "requesterName": "Er. Amitava Sen",
+      "requesterDepartment": "Central Computing Center",
+      "status": "CLOSED",
+      "createdAt": "2026-10-15T03:35:19.021Z",
+      "updatedAt": "2026-10-15T03:35:19.037Z",
+      "assignedEngineer": {
+        "engineerName": "Er. Pradeep Nair (JE Electrical)",
+        "engineerRole": "Junior Engineer (Electrical & Substations)",
+        "assignedAt": "2026-10-15T03:35:19.025Z",
+        "targetResolutionDate": "2026-10-15T05:35:19.025Z",
+        "estimatedMaterialCost": 4000
+      },
+      "materialsBOQ": [
+        {
+          "materialName": "63A 3-Phase MCCB Breaker",
+          "quantity": 1,
+          "cost": 2800
+        },
+        {
+          "materialName": "Copper Busbar Clamp",
+          "quantity": 2,
+          "cost": 700
+        }
+      ],
+      "completionDetails": {
+        "completedAt": "2026-10-15T03:35:19.034Z",
+        "actualCost": 3500,
+        "engineerNotes": "Replaced 63A breaker and tightened busbar connection. Temperature stabilized at 19C.",
+        "completionCertificateNumber": "APEX-ESTATE-CERT-2026-9561",
+        "cryptographicSeal": "141145fbfe74020d966c4a306ec5d7abed9a4cb34de6190a5fa0d2530e39fc67"
+      },
+      "userClosureRating": {
+        "ratingStars": 5,
+        "satisfactionFeedback": "Fast response within SLA. Prevented server cluster thermal shutdown.",
+        "closedAt": "2026-10-15T03:35:19.037Z"
+      }
+    },
+    {
+      "id": "wo-2026-001",
+      "workOrderNumber": "APEX-ESTATE-WO-2026-1001",
+      "discipline": "HVAC",
+      "priority": "HIGH_PRIORITY",
+      "slaHours": 6,
+      "location": "Central Library - 2nd Floor Digital Reading Hall",
+      "issueTitle": "Air Conditioning VRF Unit 3 Tripping Circuit Breaker",
+      "issueDescription": "The 8.5 TR indoor cassette unit in the digital research hall trips the 3-phase MCB immediately upon compressor startup.",
+      "requesterId": "lib-head-01",
+      "requesterName": "Dr. Meenakshi Sundaram",
+      "requesterDepartment": "Central Library & Informatics",
+      "status": "IN_PROGRESS",
+      "assignedEngineer": {
+        "engineerName": "Er. Pradeep Nair (JE HVAC)",
+        "engineerRole": "Junior Engineer (HVAC & Mechanical)",
+        "assignedAt": "2026-10-15T06:30:00.000Z",
+        "targetResolutionDate": "2026-10-15T12:30:00.000Z",
+        "estimatedMaterialCost": 3500
+      },
+      "materialsBOQ": [
+        {
+          "materialName": "40A 3-Pole MCB Breaker",
+          "quantity": 1,
+          "cost": 1200
+        },
+        {
+          "materialName": "Compressor Contactor 24V Coil",
+          "quantity": 1,
+          "cost": 1800
+        }
+      ],
+      "createdAt": "2026-10-15T05:45:00.000Z",
+      "updatedAt": "2026-10-15T07:00:00.000Z"
+    },
+    {
+      "id": "wo-2026-002",
+      "workOrderNumber": "APEX-ESTATE-WO-2026-1002",
+      "discipline": "CIVIL",
+      "priority": "ROUTINE_PLANNED",
+      "slaHours": 72,
+      "location": "Engineering Block C - Room 204 (Smart Classroom)",
+      "issueTitle": "Acoustic False Ceiling Tile Repair & Window Latch Replacement",
+      "issueDescription": "Three mineral fiber ceiling panels dislodged due to wind gust; soundproofing is compromised.",
+      "requesterId": "fac-ece-44",
+      "requesterName": "Prof. Rajesh Kumar",
+      "requesterDepartment": "Department of Electronics & Communication",
+      "status": "COMPLETED",
+      "assignedEngineer": {
+        "engineerName": "Er. G. K. Sharma (JE Civil)",
+        "engineerRole": "Junior Engineer (Civil & Structural)",
+        "assignedAt": "2026-10-14T10:00:00.000Z",
+        "targetResolutionDate": "2026-10-17T10:00:00.000Z",
+        "estimatedMaterialCost": 1800
+      },
+      "completionDetails": {
+        "completedAt": "2026-10-14T16:30:00.000Z",
+        "actualCost": 1650,
+        "engineerNotes": "Replaced 3 Armstrong 600x600 ceiling tiles with aluminum grid clips and oiled window latches.",
+        "completionCertificateNumber": "APEX-ESTATE-CERT-2026-9041",
+        "cryptographicSeal": "f1a8c903b4e2d71628394a5c6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f"
+      },
+      "userClosureRating": {
+        "ratingStars": 5,
+        "satisfactionFeedback": "Swift repair before the afternoon laboratory session. Excellent finish.",
+        "closedAt": "2026-10-14T17:00:00.000Z"
+      },
+      "createdAt": "2026-10-14T09:15:00.000Z",
+      "updatedAt": "2026-10-14T17:00:00.000Z"
+    }
+  ]
+}

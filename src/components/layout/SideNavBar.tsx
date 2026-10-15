@@ -49,6 +49,9 @@ import {
   Siren,
   UtensilsCrossed,
   Hotel,
+  Microscope,
+  Package,
+  Wrench,
 } from "lucide-react";
 
 interface NavSection {
@@ -202,6 +205,27 @@ const NAV_SECTIONS: NavSection[] = [
         icon: Boxes,
         badge: "Assets",
         roles: ["SUPER_ADMIN", "INSTITUTION_ADMIN", "PRINCIPAL", "HOD", "ACCOUNTANT", "FACULTY"],
+      },
+      {
+        name: "Central Instruments",
+        href: "/cif",
+        icon: Microscope,
+        badge: "CIF",
+        roles: ["SUPER_ADMIN", "INSTITUTION_ADMIN", "PRINCIPAL", "HOD", "FACULTY", "STUDENT", "RESEARCH_COORDINATOR"],
+      },
+      {
+        name: "Stationery & Exam Store",
+        href: "/store",
+        icon: Package,
+        badge: "Store",
+        roles: ["SUPER_ADMIN", "INSTITUTION_ADMIN", "PRINCIPAL", "HOD", "FACULTY", "ACCOUNTANT", "EXAMINATION_CONTROLLER"],
+      },
+      {
+        name: "Estate & Works Office",
+        href: "/estate",
+        icon: Wrench,
+        badge: "Works",
+        roles: ["SUPER_ADMIN", "INSTITUTION_ADMIN", "PRINCIPAL", "HOD", "FACULTY", "ACCOUNTANT", "HR_STAFF"],
       },
       {
         name: "Admissions CRM",

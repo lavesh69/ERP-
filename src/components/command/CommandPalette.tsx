@@ -37,6 +37,9 @@ import {
   HeartHandshake,
   ShieldAlert,
   Hotel,
+  Microscope,
+  Package,
+  Wrench,
 } from "lucide-react";
 
 interface CommandOption {
@@ -285,6 +288,30 @@ export function CommandPalette() {
       description: "NAAC Criteria 1–7 SSR dossier builder, NBA SAR Outcome-Based Education, and AQAR seal",
       href: "/accreditation",
       icon: Award,
+    },
+    {
+      id: "nav-cif",
+      category: "Navigation",
+      title: "Central Instrumentation Facility (CIF)",
+      description: "Book FE-SEM, 500 MHz NMR, PXRD, and HRMS beam time slots with automated tariff billing",
+      href: "/cif",
+      icon: Microscope,
+    },
+    {
+      id: "nav-store",
+      category: "Navigation",
+      title: "Stationery & Examination Store",
+      description: "Indents for 32-page barcoded answer booklets, consumables, and store dispatch vouchers",
+      href: "/store",
+      icon: Package,
+    },
+    {
+      id: "nav-estate",
+      category: "Navigation",
+      title: "Estate Office & Infrastructure Works",
+      description: "CPWD engineering maintenance work orders for electrical substation, DG genset, STP, and chillers",
+      href: "/estate",
+      icon: Wrench,
     },
 
     // --- One-Click Institutional Quick Actions ---

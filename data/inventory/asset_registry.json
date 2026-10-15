@@ -1,6 +1,23 @@
 {
   "assets": [
     {
+      "id": "ast-1792035317141",
+      "assetTag": "AST-IT_-5714",
+      "name": "Quantum Computing Simulation Workstation",
+      "category": "IT_COMPUTING",
+      "department": "Computer Science & Engineering",
+      "locationRoom": "Advanced Quantum Lab (Q-104)",
+      "custodianFaculty": "Dr. Alan Turing",
+      "purchaseDate": "2025-01-10",
+      "purchaseCost": 18500,
+      "currentDepreciatedValue": 11985,
+      "warrantyExpiry": "2028-12-31",
+      "status": "OPERATIONAL",
+      "serialNumber": "SN-QUANTUM-2026-X1",
+      "modelNumber": "QC-SIM-V4",
+      "maintenanceHistoryCount": 1
+    },
+    {
       "id": "ast-1792034440605",
       "assetTag": "AST-IT_-2038",
       "name": "Quantum Computing Simulation Workstation",
@@ -1740,6 +1757,22 @@
     }
   ],
   "workOrders": [
+    {
+      "id": "wo-1792035317165",
+      "workOrderNo": "WO-2026-5756",
+      "assetId": "ast-1792035317141",
+      "assetTag": "AST-IT_-5714",
+      "assetName": "Quantum Computing Simulation Workstation",
+      "reportedIssue": "Liquid cooling fan speed oscillation detected during benchmark.",
+      "priority": "MEDIUM",
+      "status": "COMPLETED",
+      "assignedTechnician": "Marcus Vance",
+      "estimatedCost": 120,
+      "reportedDate": "2026-10-15T03:35:17.165Z",
+      "actualCost": 115,
+      "completedDate": "2026-10-15T03:35:17.177Z",
+      "notes": "Pump firmware updated and coolant refilled. Testing completed successfully."
+    },
     {
       "id": "wo-1792034440618",
       "workOrderNo": "WO-2026-4293",

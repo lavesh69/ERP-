@@ -27,6 +27,7 @@ import {
   FileCheck,
 } from "lucide-react";
 import EthicsClearanceTab from "@/components/research/EthicsClearanceTab";
+import CIFPortalTab from "@/components/research/CIFPortalTab";
 
 export default function ResearchPage() {
   const { showToast, setIsAIChatOpen, refreshTrigger, triggerRefresh } = useApp();
@@ -34,7 +35,7 @@ export default function ResearchPage() {
   const [projects, setProjects] = useState<any[]>([]);
   const [publications, setPublications] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<"projects" | "publications" | "ethics">("projects");
+  const [activeTab, setActiveTab] = useState<"projects" | "publications" | "ethics" | "cif">("projects");
   const [searchQuery, setSearchQuery] = useState("");
 
   // Proposal modal state
@@ -343,6 +344,17 @@ export default function ResearchPage() {
             >
               Institutional Ethics Board (IRB)
             </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab("cif")}
+              className={`px-4 py-2 rounded-2xl text-xs font-bold transition-all cursor-pointer ${
+                activeTab === "cif"
+                  ? "bg-rose-primary text-white shadow-xs"
+                  : "bg-surface-soft dark:bg-charcoal-800 text-charcoal-700 dark:text-charcoal-300 hover:bg-rose-container"
+              }`}
+            >
+              Central Instrumentation (CIF)
+            </button>
           </div>
 
           <div className="relative w-full sm:w-72">
@@ -523,6 +535,9 @@ export default function ResearchPage() {
 
         {/* Tab 3: Institutional Ethics Board (IRB) Clearance */}
         {activeTab === "ethics" && <EthicsClearanceTab />}
+
+        {/* Tab 4: Central Instrumentation Facility (CIF) Portal */}
+        {activeTab === "cif" && <CIFPortalTab />}
 
         {/* Modal 1: Submit Grant Proposal */}
         <Modal

@@ -1,5 +1,17 @@
 [
   {
+    "id": "pch-7279",
+    "staffId": "fac-01",
+    "staffName": "Dr. Alan Turing",
+    "terminalId": "BIO-ZKTECO-01",
+    "location": "Main Gate Turnstile A",
+    "punchMode": "FINGERPRINT",
+    "punchType": "PUNCH_IN",
+    "timestamp": "9:05:17 am",
+    "token": "BIO-TOKEN-CDF2AB",
+    "status": "AUTHENTICATED"
+  },
+  {
     "id": "pch-0723",
     "staffId": "fac-01",
     "staffName": "Dr. Alan Turing",

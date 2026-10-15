@@ -1,0 +1,270 @@
+{
+  "items": [
+    {
+      "id": "item-bklt-32",
+      "code": "BKLT-32",
+      "name": "Main 32-Page Barcoded Exam Answer Booklet",
+      "category": "EXAM_STATIONERY",
+      "unitOfMeasurement": "BOOKLETS",
+      "quantityOnHand": 44000,
+      "reorderThreshold": 10000,
+      "unitCost": 18.5,
+      "securityControlled": true,
+      "specifications": "Thread-sewn, 70 GSM security watermark, 2D QR and Code128 encrypted sequential serial number."
+    },
+    {
+      "id": "item-bklt-08",
+      "code": "BKLT-08",
+      "name": "8-Page Supplementary Answer Sheet",
+      "category": "EXAM_STATIONERY",
+      "unitOfMeasurement": "SHEETS",
+      "quantityOnHand": 27500,
+      "reorderThreshold": 5000,
+      "unitCost": 6.2,
+      "securityControlled": true,
+      "specifications": "Pre-punched, sequential micro-perforation with holographic stripe."
+    },
+    {
+      "id": "item-graph-a4",
+      "code": "GRAPH-A4",
+      "name": "Standard 2mm Linear & Semi-Log Graph Paper",
+      "category": "EXAM_STATIONERY",
+      "unitOfMeasurement": "SHEETS",
+      "quantityOnHand": 15000,
+      "reorderThreshold": 3000,
+      "unitCost": 1.5,
+      "securityControlled": false,
+      "specifications": "High-contrast green grid, 80 GSM maplitho paper, approved for University Engineering Exams."
+    },
+    {
+      "id": "item-draw-a3",
+      "code": "DRAW-A3",
+      "name": "A3 Engineering Cartridge Drawing Sheets",
+      "category": "EXAM_STATIONERY",
+      "unitOfMeasurement": "SHEETS",
+      "quantityOnHand": 4200,
+      "reorderThreshold": 1000,
+      "unitCost": 8,
+      "securityControlled": false,
+      "specifications": "140 GSM acid-free cartridge paper with standard institutional title block."
+    },
+    {
+      "id": "item-mark-reg",
+      "code": "MARK-REG",
+      "name": "Continuous Assessment & Attendance Ledger (Hardbound)",
+      "category": "ACADEMIC_CONSUMABLES",
+      "unitOfMeasurement": "UNITS",
+      "quantityOnHand": 480,
+      "reorderThreshold": 100,
+      "unitCost": 120,
+      "securityControlled": false,
+      "specifications": "120-page cloth-bound, 60 scholars x 40 lectures capacity."
+    },
+    {
+      "id": "item-wbm-box",
+      "code": "WBM-BOX",
+      "name": "Dry-Erase Whiteboard Marker Pack (4 Assorted Colors)",
+      "category": "ACADEMIC_CONSUMABLES",
+      "unitOfMeasurement": "BOXES",
+      "quantityOnHand": 320,
+      "reorderThreshold": 50,
+      "unitCost": 95,
+      "securityControlled": false,
+      "specifications": "Low-odor, xylene-free ink, bullet tip (2mm line width)."
+    },
+    {
+      "id": "item-paper-a4",
+      "code": "PAPER-A4",
+      "name": "A4 75 GSM High-Speed Copier Paper (5 Reams/Carton)",
+      "category": "OFFICE_SUPPLIES",
+      "unitOfMeasurement": "REAMS",
+      "quantityOnHand": 550,
+      "reorderThreshold": 100,
+      "unitCost": 240,
+      "securityControlled": false,
+      "specifications": "98% brightness, jam-free for high-volume syllabus printing."
+    },
+    {
+      "id": "item-chem-reag",
+      "code": "CHEM-REAG",
+      "name": "Analytical Grade General Chemistry Lab Reagents Kit",
+      "category": "LAB_CHEMICALS",
+      "unitOfMeasurement": "KITS",
+      "quantityOnHand": 35,
+      "reorderThreshold": 10,
+      "unitCost": 4500,
+      "securityControlled": true,
+      "specifications": "ISO certified titration salts, buffer solutions, and concentrated acids."
+    }
+  ],
+  "indents": [
+    {
+      "id": "indent-1792035318998",
+      "indentNumber": "APEX-INDENT-2026-6812",
+      "department": "Examination Center",
+      "indentorId": "coe-officer-test",
+      "indentorName": "Dr. Ramanathan Swamy",
+      "indentorRole": "Controller of Examinations",
+      "purpose": "Mid-Term End-Semester Examinations 2026",
+      "examSessionCode": "MID-SEM-2026",
+      "items": [
+        {
+          "itemId": "item-bklt-32",
+          "itemCode": "BKLT-32",
+          "itemName": "Main 32-Page Barcoded Exam Answer Booklet",
+          "requestedQuantity": 1000,
+          "dispatchedQuantity": 1000,
+          "barcodeRangeStart": "BKLT-2026-200001",
+          "barcodeRangeEnd": "BKLT-2026-201000"
+        },
+        {
+          "itemId": "item-bklt-08",
+          "itemCode": "BKLT-08",
+          "itemName": "8-Page Supplementary Answer Sheet",
+          "requestedQuantity": 500,
+          "dispatchedQuantity": 500,
+          "barcodeRangeStart": "SUPP-2026-100001",
+          "barcodeRangeEnd": "SUPP-2026-100500"
+        }
+      ],
+      "status": "FULFILLED",
+      "createdAt": "2026-10-15T03:35:18.998Z",
+      "updatedAt": "2026-10-15T03:35:19.012Z",
+      "hodApproval": {
+        "approvedBy": "Prof. S. R. Iyengar (Dean Academic Affairs)",
+        "approvedAt": "2026-10-15T03:35:19.003Z",
+        "remarks": "Candidate strength cross-verified. Approved."
+      },
+      "dispatchVoucher": {
+        "voucherNumber": "APEX-INDENT-DISP-2026-5522",
+        "dispatchedBy": "Mr. B. K. Joshi (Chief Storekeeper)",
+        "dispatchedAt": "2026-10-15T03:35:19.007Z",
+        "cryptographicSeal": "cf37065478275d6079c31cc39fa9216508359cf1dd1d8990dab5121c2b7c40a3",
+        "gatePassNumber": "STORE-GP-2026-1696"
+      },
+      "fulfillmentAcknowledgement": {
+        "receivedBy": "Examination Superintendent",
+        "receivedAt": "2026-10-15T03:35:19.012Z",
+        "remarks": "All 1000 main and 500 supplementary booklets verified with intact seals."
+      }
+    },
+    {
+      "id": "indent-2026-001",
+      "indentNumber": "APEX-INDENT-2026-1001",
+      "department": "Examination Cell & Evaluation Center",
+      "indentorId": "coe-officer-01",
+      "indentorName": "Dr. Ramanathan Swamy",
+      "indentorRole": "Controller of Examinations",
+      "purpose": "End-Semester Theory Examinations (Nov-Dec 2026 Session)",
+      "examSessionCode": "WINTER-2026-UG",
+      "items": [
+        {
+          "itemId": "item-bklt-32",
+          "itemCode": "BKLT-32",
+          "itemName": "Main 32-Page Barcoded Exam Answer Booklet",
+          "requestedQuantity": 5000,
+          "dispatchedQuantity": 5000,
+          "barcodeRangeStart": "BKLT-2026-100001",
+          "barcodeRangeEnd": "BKLT-2026-105000"
+        },
+        {
+          "itemId": "item-bklt-08",
+          "itemCode": "BKLT-08",
+          "itemName": "8-Page Supplementary Answer Sheet",
+          "requestedQuantity": 2000,
+          "dispatchedQuantity": 2000,
+          "barcodeRangeStart": "SUPP-2026-050001",
+          "barcodeRangeEnd": "SUPP-2026-052000"
+        }
+      ],
+      "status": "DISPATCHED",
+      "hodApproval": {
+        "approvedBy": "Prof. S. R. Iyengar (Dean Academic Affairs)",
+        "approvedAt": "2026-10-14T09:30:00.000Z",
+        "remarks": "Approved as per certified examination candidate roll strength."
+      },
+      "dispatchVoucher": {
+        "voucherNumber": "APEX-INDENT-DISP-2026-8801",
+        "dispatchedBy": "Mr. B. K. Joshi (Chief Storekeeper)",
+        "dispatchedAt": "2026-10-14T11:45:00.000Z",
+        "cryptographicSeal": "e9b2a758f12c4b0c9a778e34215f79b6d81234a5c6e7f8a9b0c1d2e3f4a5b6c7",
+        "gatePassNumber": "STORE-GP-2026-4421"
+      },
+      "createdAt": "2026-10-14T08:00:00.000Z",
+      "updatedAt": "2026-10-14T11:45:00.000Z"
+    },
+    {
+      "id": "indent-2026-002",
+      "indentNumber": "APEX-INDENT-2026-1002",
+      "department": "Department of Computer Science & Engineering",
+      "indentorId": "fac-cse-01",
+      "indentorName": "Dr. Alan Turing",
+      "indentorRole": "Head of Department",
+      "purpose": "Continuous Assessment Lab Journals and Markers for Semester 3 & 5",
+      "items": [
+        {
+          "itemId": "item-mark-reg",
+          "itemCode": "MARK-REG",
+          "itemName": "Continuous Assessment & Attendance Ledger (Hardbound)",
+          "requestedQuantity": 25
+        },
+        {
+          "itemId": "item-wbm-box",
+          "itemCode": "WBM-BOX",
+          "itemName": "Dry-Erase Whiteboard Marker Pack (4 Assorted Colors)",
+          "requestedQuantity": 15
+        }
+      ],
+      "status": "HOD_APPROVED",
+      "hodApproval": {
+        "approvedBy": "Dr. Alan Turing (HOD CSE)",
+        "approvedAt": "2026-10-15T08:15:00.000Z",
+        "remarks": "Urgent replenishment for programming labs."
+      },
+      "createdAt": "2026-10-15T07:45:00.000Z",
+      "updatedAt": "2026-10-15T08:15:00.000Z"
+    }
+  ],
+  "movements": [
+    {
+      "id": "mov-1792035319007-995",
+      "itemId": "item-bklt-08",
+      "itemCode": "BKLT-08",
+      "transactionType": "INDENT_ISSUE",
+      "quantity": 500,
+      "balanceAfter": 27500,
+      "referenceDoc": "APEX-INDENT-DISP-2026-5522",
+      "timestamp": "2026-10-15T03:35:19.007Z"
+    },
+    {
+      "id": "mov-1792035319007-962",
+      "itemId": "item-bklt-32",
+      "itemCode": "BKLT-32",
+      "transactionType": "INDENT_ISSUE",
+      "quantity": 1000,
+      "balanceAfter": 44000,
+      "referenceDoc": "APEX-INDENT-DISP-2026-5522",
+      "timestamp": "2026-10-15T03:35:19.007Z"
+    },
+    {
+      "id": "mov-01",
+      "itemId": "item-bklt-32",
+      "itemCode": "BKLT-32",
+      "transactionType": "INDENT_ISSUE",
+      "quantity": 5000,
+      "balanceAfter": 45000,
+      "referenceDoc": "APEX-INDENT-DISP-2026-8801",
+      "timestamp": "2026-10-14T11:45:00.000Z"
+    },
+    {
+      "id": "mov-02",
+      "itemId": "item-bklt-08",
+      "itemCode": "BKLT-08",
+      "transactionType": "INDENT_ISSUE",
+      "quantity": 2000,
+      "balanceAfter": 28000,
+      "referenceDoc": "APEX-INDENT-DISP-2026-8801",
+      "timestamp": "2026-10-14T11:45:00.000Z"
+    }
+  ]
+}
