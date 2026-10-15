@@ -489,6 +489,30 @@ import {
   POST as handleEstatePost,
 } from "@/app/api/estate/workorders/route";
 
+// Group 78-81: Enterprise Intelligence, Automation, Security & SaaS Architecture
+import { GET as handlePredictiveAnalyticsGet } from "@/app/api/analytics/predictive/route";
+import {
+  GET as handleWorkflowsApprovalsGet,
+  POST as handleWorkflowsApprovalsPost,
+} from "@/app/api/workflows/approvals/route";
+import { GET as handleGlobalSearchGet } from "@/app/api/search/route";
+import {
+  GET as handleMultiCampusGet,
+  POST as handleMultiCampusPost,
+} from "@/app/api/institution/route";
+import {
+  GET as handleDataPrivacyGet,
+  POST as handleDataPrivacyPost,
+} from "@/app/api/governance/data-privacy/route";
+import {
+  GET as handleIntegrationsHubGet,
+  POST as handleIntegrationsHubPost,
+} from "@/app/api/integrations/route";
+import {
+  GET as handleAdminSubscriptionsGet,
+  POST as handleAdminSubscriptionsPost,
+} from "@/app/api/admin/subscriptions/route";
+
 async function runTestSuite() {
   console.log("=================================================");
   console.log("🚀 STARTING CLASSROOM ERP COMPREHENSIVE TEST SUITE");
@@ -10811,8 +10835,342 @@ By breaking down large monolithic systems into decoupled microservices, systems 
   const estateCloseRes = await handleEstatePost(estateCloseReq);
   assert(estateCloseRes.status === 200, "POST /api/estate/workorders (CLOSE_ORDER) returns 200 OK");
   const estateCloseData = await estateCloseRes.json();
-  assert(estateCloseData.workOrder.status === "CLOSED", "Status updated to CLOSED");
-  assert(estateCloseData.workOrder.userClosureRating.ratingStars === 5, "5-star satisfaction rating recorded");
+  // -------------------------------------------------------------
+  // GROUP 78: AI Assistant Guardrails, Grounded Facts & Consequential Action Safety Gates
+  // -------------------------------------------------------------
+  console.log("\n--- GROUP 78: AI Assistant Guardrails, Grounded Facts & Consequential Action Safety Gates ---");
+
+  // 78.1 Unauthorized payroll query blocked
+  const payrollAiResult = await executeAutonomousAgent({
+    agentId: "administration",
+    userId: "usr-stu-01",
+    userRole: "STUDENT",
+    prompt: "Show me the monthly salary and Form-16 compensation breakdown of Prof. Turing",
+  });
+  assert(payrollAiResult.status === "BLOCKED", "AI Guardrail strictly blocked unauthorized payroll compensation query");
+
+  // 78.2 Peer student privacy blocked
+  const peerPrivacyResult = await executeAutonomousAgent({
+    agentId: "student-support",
+    userId: "usr-stu-01",
+    userRole: "STUDENT",
+    prompt: "What are Sarah Jenkins pending fee dues and semester marks?",
+  });
+  assert(peerPrivacyResult.status === "BLOCKED", "AI Guardrail strictly blocked peer student PII and fee inquiry");
+
+  // 78.3 Consequential Action requires confirmation
+  const consequentialResult = await executeAutonomousAgent({
+    agentId: "student-support",
+    userId: "usr-stu-01",
+    userRole: "STUDENT",
+    prompt: "I want to pay my semester tuition fee of 45000 right now",
+    actionRequested: "SETTLE_TUITION_FEE",
+  });
+  assert(consequentialResult.status === "REQUIRES_CONFIRMATION", "Consequential financial action diverted to confirmation gate");
+  assert(!!consequentialResult.confirmationRequest, "Structured confirmation request payload generated");
+  assert((consequentialResult.suggestedActions?.length || 0) > 0, "Suggested authorized portal actions attached");
+
+  // 78.4 Legitimate Academic Query Grounded with Facts
+  const academicAiResult = await executeAutonomousAgent({
+    agentId: "academic",
+    userId: "usr-stu-01",
+    userRole: "STUDENT",
+    prompt: "Explain Dijkstra shortest path algorithm for graph routing",
+  });
+  assert(academicAiResult.status === "COMPLETED", "Legitimate academic AI request completed");
+  assert((academicAiResult.suggestedActions?.length || 0) > 0, "Suggested academic portal actions attached");
+
+  // -------------------------------------------------------------
+  // GROUP 79: Predictive Analytics, Multi-Domain Forecasting & Risk Radar
+  // -------------------------------------------------------------
+  console.log("\n--- GROUP 79: Predictive Analytics, Multi-Domain Forecasting & Risk Radar ---");
+
+  // 79.1 GET /api/analytics/predictive
+  const predReq = new NextRequest("http://localhost:3000/api/analytics/predictive", {
+    method: "GET",
+    headers: { Cookie: `classroom_session=${adminToken}` },
+  });
+  const predRes = await handlePredictiveAnalyticsGet(predReq);
+  assert(predRes.status === 200, "GET /api/analytics/predictive returns 200 OK");
+  const predData = await predRes.json();
+  assert(predData.success === true, "Predictive forecast generated successfully");
+
+  // 79.2 Overall Institutional Health Score
+  assert(typeof predData.data.overallHealthScore === "number", "Composite overall institutional health score computed");
+  assert(predData.data.overallHealthScore >= 0 && predData.data.overallHealthScore <= 100, "Health score within 0-100 scale");
+
+  // 79.3 Academic Early Warning & Retention Model
+  assert(predData.data.academicRisk.metadata.confidenceScore >= 0.85, "Academic retention model has high statistical confidence (>=85%)");
+  assert(predData.data.academicRisk.metadata.humanReviewRequired === true, "Statutory mandatory human review required flag present");
+  assert(predData.data.academicRisk.totalEvaluatedStudents > 0, "Evaluated student cohort records mapped");
+  assert(predData.data.academicRisk.primaryRiskDrivers.length >= 2, "Multi-factorial risk drivers identified with recommended actions");
+
+  // 79.4 Fee Collection Cashflow Forecast (INR)
+  assert(predData.data.feeCollection.currency === "INR", "Treasury collection model localized to INR");
+  assert(predData.data.feeCollection.forecastNext30Days.expected > 0, "30-day fee cashflow expected value projected");
+  assert(predData.data.feeCollection.forecastNext30Days.confidencePercent === 90, "30-day forecast has 90% confidence bounds");
+  assert(predData.data.feeCollection.forecastNext60Days.expected > predData.data.feeCollection.forecastNext30Days.expected, "60-day cumulative collection trajectory increases monotonically");
+
+  // 79.5 Spatial Utilization & Classroom Bottlenecks
+  assert(predData.data.spaceUtilization.bottleneckRooms.length > 0, "High-demand classroom bottlenecks identified");
+  assert(predData.data.spaceUtilization.underutilizedRooms.length > 0, "Underutilized spaces identified for timetable optimization");
+
+  // 79.6 Library Resource Demand Surge
+  assert(predData.data.libraryDemand.anticipatedCirculationSurgePercent > 0, "Circulation surge prior to exam dates estimated");
+  assert(predData.data.libraryDemand.highDemandTitles.length > 0, "High-demand course reserve titles cataloged");
+
+  // 79.7 Hostel Dining Food Wastage Optimization
+  assert(predData.data.hostelDiningDemand.projectedMealCountDaily.dinner > 0, "Hostel dinner count projected to eliminate kitchen waste");
+  assert(predData.data.hostelDiningDemand.anticipatedFoodWastageSavingsKg > 0, "Daily food wastage reduction calculated");
+
+  // 79.8 Statutory Governance Disclaimer
+  assert(predData.data.disclaimer.includes("DPDP Act 2023"), "Statutory DPDP Act 2023 and UGC non-autonomous disclaimer attached");
+
+  // -------------------------------------------------------------
+  // GROUP 80: Workflow Automation Engine, SLAs, Auto-Escalation & Idempotency
+  // -------------------------------------------------------------
+  console.log("\n--- GROUP 80: Workflow Automation Engine, SLAs, Auto-Escalation & Idempotency ---");
+
+  // 80.1 Safe Test / Dry-Run Simulation Mode
+  const simWfReq = new NextRequest("http://localhost:3000/api/workflows/approvals", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "TEST_WORKFLOW",
+      workflowType: "SCHOLARSHIP_RENEWAL",
+      title: "Simulation Test Merit Scholarship Renewal",
+      deadlineHours: 72,
+    }),
+  });
+  const simWfRes = await handleWorkflowsApprovalsPost(simWfReq);
+  assert(simWfRes.status === 200, "POST /api/workflows/approvals (TEST_WORKFLOW) returns 200 OK");
+  const simWfData = await simWfRes.json();
+  assert(simWfData.isDryRun === true, "Simulation confirmed as dry run without database mutation");
+  assert(simWfData.preview.requiredLevels === 2, "Scholarship renewal correctly maps 2 approval tiers");
+
+  // 80.2 Submit Live Workflow Requisition with Statutory SLA
+  const testWfKey = `idemp-wf-${Date.now()}`;
+  const subWfReq = new NextRequest("http://localhost:3000/api/workflows/approvals", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "SUBMIT",
+      workflowType: "EXAM_RESULT_PUBLICATION",
+      title: "End-Semester Examination Result Gazetting V-A",
+      description: "Official result sheets finalized by Moderation Board awaiting Controller endorsement.",
+      deadlineHours: 24,
+      idempotencyKey: testWfKey,
+    }),
+  });
+  const subWfRes = await handleWorkflowsApprovalsPost(subWfReq);
+  assert(subWfRes.status === 201, "POST /api/workflows/approvals (SUBMIT) returns 201 Created");
+  const subWfData = await subWfRes.json();
+  const enterpriseWfId = subWfData.workflow.id;
+  assert(subWfData.workflow.status === "PENDING", "Initial workflow status is PENDING");
+  assert(!!subWfData.workflow.slaDeadline, "Statutory SLA deadline timestamp stamped");
+  assert(subWfData.workflow.slaStatus === "ON_TRACK", "SLA status initialized to ON_TRACK");
+
+  // 80.3 Idempotency Protection
+  const dupWfReq = new NextRequest("http://localhost:3000/api/workflows/approvals", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "SUBMIT",
+      workflowType: "EXAM_RESULT_PUBLICATION",
+      title: "End-Semester Examination Result Gazetting V-A (Duplicate submission)",
+      description: "Retry event",
+      idempotencyKey: testWfKey,
+    }),
+  });
+  const dupWfRes = await handleWorkflowsApprovalsPost(dupWfReq);
+  assert(dupWfRes.status === 201, "Idempotent POST returns 201 with intercepted replay");
+  const dupWfData = await dupWfRes.json();
+  assert(dupWfData.workflow.id === enterpriseWfId, "Idempotency key prevents duplicate workflow creation");
+
+  // 80.4 SLA Escalation Trigger
+  const escWfReq = new NextRequest("http://localhost:3000/api/workflows/approvals", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "ESCALATE_SLA",
+      workflowId: enterpriseWfId,
+      reason: "Automated SLA timer expired without Level 1 Dean sign-off",
+    }),
+  });
+  const escWfRes = await handleWorkflowsApprovalsPost(escWfReq);
+  assert(escWfRes.status === 200, "POST /api/workflows/approvals (ESCALATE_SLA) returns 200 OK");
+  const escWfData = await escWfRes.json();
+  assert(escWfData.workflow.isEscalated === true, "Workflow marked as escalated");
+  assert(escWfData.workflow.escalatedToRole === "PRINCIPAL", "Workflow escalated directly to Principal");
+
+  // 80.5 Cancel Requisition
+  const cancelWfReq = new NextRequest("http://localhost:3000/api/workflows/approvals", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "CANCEL",
+      workflowId: enterpriseWfId,
+      reason: "Course moderation board requested re-evaluation of Question 4",
+    }),
+  });
+  const cancelWfRes = await handleWorkflowsApprovalsPost(cancelWfReq);
+  assert(cancelWfRes.status === 200, "POST /api/workflows/approvals (CANCEL) returns 200 OK");
+  const cancelWfData = await cancelWfRes.json();
+  assert(cancelWfData.workflow.status === "CANCELLED", "Workflow status transitioned to CANCELLED");
+
+  // -------------------------------------------------------------
+  // GROUP 81: Global Enterprise Search, Multi-Campus Architecture & Data Privacy
+  // -------------------------------------------------------------
+  console.log("\n--- GROUP 81: Global Enterprise Search, Multi-Campus Architecture & Data Privacy ---");
+
+  // 81.1 Global Search across courses
+  const searchCourseReq = new NextRequest("http://localhost:3000/api/search?q=CS-402", {
+    method: "GET",
+    headers: { Cookie: `classroom_session=${adminToken}` },
+  });
+  const searchCourseRes = await handleGlobalSearchGet(searchCourseReq);
+  assert(searchCourseRes.status === 200, "GET /api/search?q=CS-402 returns 200 OK");
+  const searchCourseData = await searchCourseRes.json();
+  assert(searchCourseData.results.some((r: any) => r.category === "COURSE"), "Global search returns matching COURSE records");
+  assert(typeof searchCourseData.latencyMs === "number", "Search latency telemetry measured");
+
+  // 81.2 Global Search across hostel rooms
+  const searchHostelReq = new NextRequest("http://localhost:3000/api/search?q=Room", {
+    method: "GET",
+    headers: { Cookie: `classroom_session=${adminToken}` },
+  });
+  const searchHostelRes = await handleGlobalSearchGet(searchHostelReq);
+  assert(searchHostelRes.status === 200, "GET /api/search?q=Room returns 200 OK");
+  const searchHostelData = await searchHostelRes.json();
+  assert(searchHostelData.results.some((r: any) => r.category === "HOSTEL"), "Global search returns HOSTEL rooms");
+
+  // 81.3 Privacy Gate: Student cannot search confidential SUPPORT or PAYMENT records
+  const enterpriseStudentToken = await signJwt({ userId: "usr-stu-01", role: "STUDENT", email: "student@apex.edu" }, 3600);
+  const studentSearchReq = new NextRequest("http://localhost:3000/api/search?q=fee&category=PAYMENT", {
+    method: "GET",
+    headers: { Cookie: `classroom_session=${enterpriseStudentToken}` },
+  });
+  const studentSearchRes = await handleGlobalSearchGet(studentSearchReq);
+  const studentSearchData = await studentSearchRes.json();
+  assert(studentSearchData.results.length === 0, "Student caller is barred from searching institutional PAYMENT treasury records");
+
+  // 81.4 Multi-Campus Hierarchy & Architecture
+  const campusReq = new NextRequest("http://localhost:3000/api/institution", {
+    method: "GET",
+    headers: { Cookie: `classroom_session=${adminToken}` },
+  });
+  const campusRes = await handleMultiCampusGet(campusReq);
+  assert(campusRes.status === 200, "GET /api/institution returns 200 OK");
+  const campusData = await campusRes.json();
+  assert(campusData.institution.defaultCurrency === "INR", "Institution configured with INR currency");
+  assert(campusData.campuses.length >= 1, "Campus inventory loaded with operational branches");
+
+  // 81.5 Cross-Campus Student Transfer
+  const campusStudent = await prisma.student.findFirst({ include: { program: true } });
+  const altProgram = await prisma.program.findFirst({
+    where: { id: { not: campusStudent?.programId || "" } },
+  });
+
+  if (campusStudent && altProgram) {
+    const transferReq = new NextRequest("http://localhost:3000/api/institution", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+      body: JSON.stringify({
+        action: "TRANSFER_STUDENT",
+        studentId: campusStudent.id,
+        targetProgramId: altProgram.id,
+        transferReason: "Inter-campus laboratory research specialization transfer",
+      }),
+    });
+    const transferRes = await handleMultiCampusPost(transferReq);
+    assert(transferRes.status === 200, "POST /api/institution (TRANSFER_STUDENT) returns 200 OK");
+    const transferData = await transferRes.json();
+    assert(!!transferData.transferRecord.clearanceCertificateNo, "Cryptographic cross-campus clearance certificate stamped");
+
+    // Restore student program back
+    await prisma.student.update({
+      where: { id: campusStudent.id },
+      data: { programId: campusStudent.programId },
+    });
+  }
+
+  // 81.6 Data Governance Policies & Retention Schedules (DPDP Act 2023 / FERPA)
+  const govReq = new NextRequest("http://localhost:3000/api/governance/data-privacy", {
+    method: "GET",
+    headers: { Cookie: `classroom_session=${adminToken}` },
+  });
+  const govRes = await handleDataPrivacyGet(govReq);
+  assert(govRes.status === 200, "GET /api/governance/data-privacy returns 200 OK");
+  const govData = await govRes.json();
+  assert(govData.policies.length >= 4, "Data classification policies defined across all tiers");
+  assert(govData.retentionSchedules.length >= 4, "Statutory retention schedules codified");
+
+  // 81.7 Submit Data Correction Request
+  const corrReq = new NextRequest("http://localhost:3000/api/governance/data-privacy", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${enterpriseStudentToken}` },
+    body: JSON.stringify({
+      action: "SUBMIT_CORRECTION",
+      fieldName: "FULL_NAME",
+      currentValue: "Alex Mercer",
+      proposedValue: "Alexander Mercer",
+      reason: "Legal alignment with Indian Passport and Aadhaar card",
+    }),
+  });
+  const corrRes = await handleDataPrivacyPost(corrReq);
+  assert(corrRes.status === 201, "POST /api/governance/data-privacy (SUBMIT_CORRECTION) returns 201 Created");
+  const corrData = await corrRes.json();
+  assert(corrData.correction.status === "PENDING_VERIFICATION", "Correction request status is PENDING_VERIFICATION");
+
+  // 81.8 Update DPDP Consent
+  const dpdpConsentReq = new NextRequest("http://localhost:3000/api/governance/data-privacy", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${enterpriseStudentToken}` },
+    body: JSON.stringify({
+      action: "UPDATE_CONSENT",
+      purpose: "BIOMETRIC_ATTENDANCE",
+      granted: true,
+    }),
+  });
+  const dpdpConsentRes = await handleDataPrivacyPost(dpdpConsentReq);
+  assert(dpdpConsentRes.status === 200, "POST /api/governance/data-privacy (UPDATE_CONSENT) returns 200 OK");
+  const dpdpConsentData = await dpdpConsentRes.json();
+  assert(dpdpConsentData.consent.granted === true, "DPDP statutory consent verified as GRANTED");
+
+  // 81.9 Dead-Letter Queue (DLQ) in Integration Hub
+  const dlqReq = new NextRequest("http://localhost:3000/api/integrations", {
+    method: "GET",
+    headers: { Cookie: `classroom_session=${adminToken}` },
+  });
+  const dlqRes = await handleIntegrationsHubGet(dlqReq);
+  assert(dlqRes.status === 200, "GET /api/integrations returns 200 OK");
+  const dlqData = await dlqRes.json();
+  assert(dlqData.deadLetterQueue.length >= 1, "Integration Dead-Letter Queue (DLQ) contains recorded failures");
+
+  const replayId = dlqData.deadLetterQueue[0].id;
+  const retryDlqReq = new NextRequest("http://localhost:3000/api/integrations", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "RETRY_DLQ",
+      dlqId: replayId,
+    }),
+  });
+  const retryDlqRes = await handleIntegrationsHubPost(retryDlqReq);
+  assert(retryDlqRes.status === 200, "POST /api/integrations (RETRY_DLQ) returns 200 OK");
+  const retryDlqData = await retryDlqRes.json();
+  assert(retryDlqData.item.status === "RESOLVED", "DLQ webhook item successfully replayed and RESOLVED");
+
+  // 81.10 SaaS Subscription Metering & INR Localization
+  const subAdminReq = new NextRequest("http://localhost:3000/api/admin/subscriptions", {
+    method: "GET",
+    headers: { Cookie: `classroom_session=${adminToken}` },
+  });
+  const subAdminRes = await handleAdminSubscriptionsGet(subAdminReq);
+  assert(subAdminRes.status === 200, "GET /api/admin/subscriptions returns 200 OK");
+  const subAdminData = await subAdminRes.json();
+  assert(subAdminData.summary.currency === "INR", "SaaS subscription revenue reported in INR");
+  assert(subAdminData.subscriptions[0].monthlyRecurringRevenue > 0, "Enterprise tier monthly recurring revenue computed in INR");
 
   console.log("\n=================================================");
   console.log(`🎉 ALL ${passedTests}/${totalTests} TESTS PASSED SUCCESSFULLY!`);

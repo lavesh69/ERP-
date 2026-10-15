@@ -1,0 +1,39 @@
+[
+  {
+    "id": "DLQ-RZP-2026-001",
+    "connectorId": "razorpay",
+    "connectorName": "Razorpay Campus Gateway",
+    "eventType": "PAYMENT_WEBHOOK_DELIVERY",
+    "payload": {
+      "orderId": "order_Apex_99812",
+      "amount": 45000,
+      "currency": "INR",
+      "signature": "084fe82bc7491"
+    },
+    "errorMessage": "Connection timed out during banking settlement gateway webhook delivery (504 Gateway Timeout)",
+    "attemptsCount": 4,
+    "maxRetries": 3,
+    "status": "RESOLVED",
+    "firstFailedAt": "2026-10-15T19:59:42.904Z",
+    "lastFailedAt": "2026-10-15T21:00:54.752Z",
+    "nextRetryAt": "2026-10-15T21:29:42.904Z"
+  },
+  {
+    "id": "DLQ-WHT-2026-002",
+    "connectorId": "whatsapp",
+    "connectorName": "WhatsApp Business Cloud API",
+    "eventType": "ATTENDANCE_DEFICIT_DISPATCH",
+    "payload": {
+      "studentRoll": "APEX-CS-2401",
+      "parentPhone": "+91-9876543210",
+      "template": "attendance_condonation_notice_inr"
+    },
+    "errorMessage": "Rate limit exceeded (Cloud API HTTP 429) during peak morning SMS/WhatsApp dispatch cycle",
+    "attemptsCount": 5,
+    "maxRetries": 5,
+    "status": "PENDING_RETRY",
+    "firstFailedAt": "2026-10-15T18:59:42.904Z",
+    "lastFailedAt": "2026-10-15T20:59:42.904Z",
+    "nextRetryAt": "2026-10-15T21:14:42.904Z"
+  }
+]

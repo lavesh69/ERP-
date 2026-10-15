@@ -134,15 +134,35 @@ export interface AgentExecutionRequest {
   actionRequested?: string;
 }
 
+export interface SuggestedAction {
+  label: string;
+  href: string;
+  category: "ACADEMIC" | "FINANCE" | "ATTENDANCE" | "GOVERNANCE" | "SUPPORT";
+}
+
+export interface GroundedFact {
+  entity: string;
+  fact: string;
+  sourceTable: string;
+  verifiedAt: string;
+}
+
 export interface AgentExecutionResponse {
   agentId: AgentId;
-  status: "COMPLETED" | "REQUIRES_APPROVAL" | "BLOCKED" | "FAILED";
+  status: "COMPLETED" | "REQUIRES_APPROVAL" | "BLOCKED" | "FAILED" | "REQUIRES_CONFIRMATION";
   content: string;
   citations: GroundedCitation[];
+  retrievedFacts?: GroundedFact[];
+  suggestedActions?: SuggestedAction[];
   approvalRequest?: {
     action: string;
     details: string;
     targetEntity: string;
+  };
+  confirmationRequest?: {
+    action: string;
+    prompt: string;
+    consequences: string;
   };
 }
 
@@ -248,17 +268,62 @@ export async function executeAutonomousAgent(
     };
   }
 
-  // 2. CRITICAL GUARDRAIL: Strict protection of grades, fees, and disciplinary records
+  // 2. CONFIDENTIALITY GUARDRAILS: Protect payroll, salaries, and sensitive grievances
+  const isSalaryQuery = /\b(salary|payroll|ctc|compensation|payslip|form\s*16|remuneration)\b/i.test(request.prompt);
+  if (isSalaryQuery && !["SUPER_ADMIN", "INSTITUTION_ADMIN", "HR_STAFF", "ACCOUNTANT"].includes(request.userRole)) {
+    await logAuditEvent({
+      actorUserId: request.userId,
+      action: "AI_AGENT_EXECUTION",
+      targetEntity: "ConfidentialityGuardrail",
+      details: {
+        agentId: agent.id,
+        reason: "Unauthorized attempt to query employee payroll/compensation records.",
+      },
+    });
+
+    return {
+      agentId: request.agentId,
+      status: "BLOCKED",
+      content:
+        "SECURITY NOTICE: Employee payroll, salary structures, and Form-16 compensation records are strictly confidential and protected under institutional HR privacy policies. You do not have the required administrative clearance to access this data.",
+      citations: [],
+    };
+  }
+
+  const isGrievanceQuery = /\b(grievance|posh|harassment|disciplinary order)\b/i.test(request.prompt);
+  if (isGrievanceQuery && !["SUPER_ADMIN", "INSTITUTION_ADMIN", "PRINCIPAL", "HOD"].includes(request.userRole)) {
+    return {
+      agentId: request.agentId,
+      status: "BLOCKED",
+      content:
+        "CONFIDENTIALITY NOTICE: Formal grievance proceedings and disciplinary records are strictly confidential. Inquiries must be routed through the Office of the Chief Proctor or Internal Complaints Committee.",
+      citations: [],
+    };
+  }
+
+  const isPeerStudentQuery =
+    /\b(alex|sarah|john|student|classmate|roll)\b/i.test(request.prompt) &&
+    /\b(fee|marks|grade|due|result)\b/i.test(request.prompt);
+  if (isPeerStudentQuery && ["STUDENT", "PARENT"].includes(request.userRole)) {
+    return {
+      agentId: request.agentId,
+      status: "BLOCKED",
+      content:
+        "PRIVACY NOTICE: Access to peer student marks, fees, or transcript details is strictly prohibited under FERPA and DPDP privacy mandates. You are only authorized to query your own academic credentials.",
+      citations: [],
+    };
+  }
+
+  // 3. SECURITY GUARDRAIL: Strictly block autonomous modification of grades, financial ledgers, or disciplinary status
   if (
-    request.actionRequested &&
-    (request.actionRequested.includes("GRADE") ||
-      request.actionRequested.includes("FEE") ||
-      request.actionRequested.includes("DISCIPLINE"))
+    request.actionRequested === "ALTER_GRADE_RECORD" ||
+    request.actionRequested === "MUTATE_FINANCIAL_LEDGER" ||
+    request.actionRequested === "OVERRIDE_DISCIPLINARY"
   ) {
     await logAuditEvent({
       actorUserId: request.userId,
       action: "AI_AGENT_EXECUTION",
-      targetEntity: "OfficialRecordGuardrail",
+      targetEntity: "SecurityGuardrailAlert",
       details: {
         agentId: agent.id,
         actionAttempted: request.actionRequested,
@@ -275,21 +340,42 @@ export async function executeAutonomousAgent(
     };
   }
 
-  // 3. Check if sensitive action requires human approval
-  if (
-    request.actionRequested &&
-    agent.sensitiveActions.includes(request.actionRequested)
-  ) {
+  // 4. CONSEQUENTIAL ACTION CONFIRMATION GATE
+  const isConsequentialAction =
+    request.actionRequested ||
+    /\b(pay|settle fee|change grade|publish exam|approve admission|broadcast alert|send emergency siren)\b/i.test(
+      request.prompt
+    );
+
+  if (isConsequentialAction) {
+    await logAuditEvent({
+      actorUserId: request.userId,
+      action: "AI_AGENT_EXECUTION",
+      targetEntity: "ConsequentialActionSafetyGate",
+      details: {
+        agentId: agent.id,
+        actionAttempted: request.actionRequested || "MANUAL_ACTION_PROMPT",
+        prompt: request.prompt,
+      },
+    });
+
     return {
       agentId: request.agentId,
-      status: "REQUIRES_APPROVAL",
-      content: `The requested action (${request.actionRequested}) has been prepared by ${agent.name} but is held in pending status awaiting authorized human approval.`,
+      status: "REQUIRES_CONFIRMATION",
+      content:
+        "SAFEGUARD NOTICE: Consequential operations (such as fee payments, grade alterations, exam publication, admission approvals, and campus emergency broadcasts) cannot be executed autonomously by AI. This operation requires explicit human review and cryptographic authorization.",
       citations: [],
-      approvalRequest: {
-        action: request.actionRequested,
-        details: `Proposal: ${request.prompt}`,
-        targetEntity: agent.name,
+      confirmationRequest: {
+        action: request.actionRequested || "PROCEED_TO_OFFICIAL_PORTAL",
+        prompt: request.prompt,
+        consequences:
+          "Executing this consequential action mutates official university ledgers or regulatory records. Requires verified administrator / bursar sign-off.",
       },
+      suggestedActions: [
+        { label: "Open Bursar Treasury Ledger", href: "/finance", category: "FINANCE" },
+        { label: "Examination Controller Board", href: "/examinations", category: "GOVERNANCE" },
+        { label: "Admissions Counseling Portal", href: "/admissions", category: "GOVERNANCE" },
+      ],
     };
   }
 
@@ -299,9 +385,50 @@ export async function executeAutonomousAgent(
     userRole: request.userRole,
   });
 
-  // 5. Query live database context
+  // 5. Query live database context and extract Grounded Facts
   let dbContext = "";
+  const retrievedFacts: GroundedFact[] = [];
+  const suggestedActions: SuggestedAction[] = [];
+
   try {
+    const isFeeQuery = /\b(fee|tuition|dues|balance|installments|scholarship|refund)\b/i.test(request.prompt);
+    const isAttendanceQuery = /\b(attendance|defaulter|75%|condonation|absence|medical leave)\b/i.test(request.prompt);
+    const isApprovalQuery = /\b(approval|workflow|petition|requisition|leave request)\b/i.test(request.prompt);
+
+    if (isFeeQuery) {
+      const fees = await prisma.studentFee.findMany({
+        take: 3,
+        include: { student: { include: { user: true } }, feeStructure: true },
+      });
+      if (fees.length > 0) {
+        fees.forEach((f) => {
+          const due = Math.max(0, f.totalAmount - f.paidAmount - f.discountAmount);
+          retrievedFacts.push({
+            entity: f.student.user.firstName + " " + f.student.user.lastName,
+            fact: `Assessed ₹${f.totalAmount.toLocaleString("en-IN")}, Paid ₹${f.paidAmount.toLocaleString("en-IN")}, Pending Due: ₹${due.toLocaleString("en-IN")} (${f.status})`,
+            sourceTable: "StudentFee",
+            verifiedAt: new Date().toISOString(),
+          });
+        });
+        suggestedActions.push({ label: "View Fee Breakdown", href: "/finance", category: "FINANCE" });
+        suggestedActions.push({ label: "Request Installment Plan", href: "/parent", category: "FINANCE" });
+      }
+    }
+
+    if (isAttendanceQuery) {
+      const lowAttendanceCount = await prisma.student.count({
+        where: { attendanceRate: { lt: 75.0 } },
+      });
+      retrievedFacts.push({
+        entity: "Institutional Attendance Telemetry",
+        fact: `Senate 75% Threshold: ${lowAttendanceCount} scholars currently flagged below attendance compliance requirements.`,
+        sourceTable: "AttendanceRecord",
+        verifiedAt: new Date().toISOString(),
+      });
+      suggestedActions.push({ label: "Attendance Dashboard", href: "/attendance", category: "ATTENDANCE" });
+      suggestedActions.push({ label: "File Condonation Petition", href: "/attendance", category: "ATTENDANCE" });
+    }
+
     if (request.agentId === "academic") {
       const courseFilter = request.institutionId ? { department: { campus: { institutionId: request.institutionId } } } : {};
       const [courses, assignments, exams] = await Promise.all([
@@ -313,6 +440,9 @@ export async function executeAutonomousAgent(
       const pendingAssignStr = assignments.map((a) => `${a.title} (Due: ${a.dueDate.toISOString().split("T")[0]})`).join("; ");
       const upcomingExamStr = exams.map((e) => `${e.title} (${e.examDate.toISOString().split("T")[0]})`).join("; ");
       dbContext = `\n\n**Live Academic Schedule Grounding**:\n- **Registered Courses**: ${activeCoursesStr || "CS-402, BIO-210"}\n- **Upcoming Assignments**: ${pendingAssignStr || "None pending"}\n- **Scheduled Exams**: ${upcomingExamStr || "Fall Mid-Terms scheduled"}`;
+
+      suggestedActions.push({ label: "View Course LMS", href: "/lms", category: "ACADEMIC" });
+      suggestedActions.push({ label: "Inspect Exam Timetable", href: "/examinations", category: "ACADEMIC" });
     } else if (request.agentId === "analytics") {
       const instFilter = request.institutionId ? { user: { institutionId: request.institutionId } } : {};
       const [totalStudents, defaulters, avgAttendance] = await Promise.all([
@@ -328,16 +458,27 @@ export async function executeAutonomousAgent(
             : `${defaulters.length} scholars currently flagged below Senate 75% threshold (individual PII protected)`)
         : "None (All scholars above 75% threshold)";
       dbContext = `\n\n**Live Institution Telemetry**:\n- **Total Enrolled Scholars**: ${totalStudents}\n- **Cohort Biometric Average**: ${rate}%\n- **Defaulter Risk Flag (<75%)**: ${defaulterList}`;
+
+      retrievedFacts.push({
+        entity: "Cohort Retention & Attendance",
+        fact: `Average Campus Attendance: ${rate}%, Active Enrollment: ${totalStudents}`,
+        sourceTable: "Student",
+        verifiedAt: new Date().toISOString(),
+      });
+      suggestedActions.push({ label: "Executive BI Dashboard", href: "/analytics", category: "GOVERNANCE" });
     } else if (request.agentId === "student-support" || request.agentId === "administration") {
       const [rooms, books] = await Promise.all([
         prisma.room.findMany({ take: 3 }),
         prisma.libraryBook.findMany({ take: 3 }),
       ]);
       dbContext = `\n\n**Campus Infrastructure & Resources**:\n- **Available Smart Pods**: ${rooms.map((r) => `${r.name} (${r.code} - Cap: ${r.capacity})`).join(", ")}\n- **Circulation Reserves**: ${books.map((b) => `"${b.title}" (${b.availableCopies}/${b.totalCopies} available)`).join(", ")}`;
+      suggestedActions.push({ label: "Reserve Library Book", href: "/library", category: "SUPPORT" });
+      suggestedActions.push({ label: "Timetable & Room Matrix", href: "/timetable", category: "SUPPORT" });
     } else if (request.agentId === "faculty-assistant") {
       const facFilter = request.institutionId ? { user: { institutionId: request.institutionId } } : {};
       const faculty = await prisma.faculty.findMany({ where: facFilter, include: { user: true, department: true }, take: 3 });
       dbContext = `\n\n**Faculty Allocation Registry**:\n${faculty.map((f) => `- **${f.user.firstName} ${f.user.lastName}** (${f.designation}, ${f.department.code}): ${f.weeklyHours} hrs/week`).join("\n")}`;
+      suggestedActions.push({ label: "Faculty Workload Portal", href: "/faculty", category: "ACADEMIC" });
     }
   } catch (err) {
     console.warn("Could not query DB context for AI agent, using static baseline:", err);
@@ -390,5 +531,7 @@ export async function executeAutonomousAgent(
     status: "COMPLETED",
     content: responseText,
     citations,
+    retrievedFacts: retrievedFacts.length > 0 ? retrievedFacts : undefined,
+    suggestedActions: suggestedActions.length > 0 ? suggestedActions : undefined,
   };
 }

@@ -26,9 +26,11 @@ import {
   Search,
   Building2,
 } from "lucide-react";
+import { PredictiveRadarView } from "@/components/analytics/PredictiveRadarView";
 
 export default function AnalyticsPage() {
   const { showToast, refreshTrigger } = useApp();
+  const [activeTab, setActiveTab] = useState<"bi_overview" | "predictive_radar">("bi_overview");
   const [data, setData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [timeRange, setTimeRange] = useState<"fall2026" | "spring2026" | "ay2025" | "all">("fall2026");
@@ -229,6 +231,41 @@ export default function AnalyticsPage() {
           </div>
         </div>
 
+        {/* View Mode Tabs */}
+        <div className="flex items-center gap-2 border-b border-border dark:border-charcoal-800 pb-2">
+          <button
+            type="button"
+            onClick={() => setActiveTab("bi_overview")}
+            className={`px-4 py-2 rounded-2xl text-xs font-bold transition-all flex items-center gap-2 ${
+              activeTab === "bi_overview"
+                ? "bg-rose-primary text-white shadow-md shadow-rose-primary/20"
+                : "text-charcoal-600 dark:text-charcoal-400 hover:text-charcoal-900 dark:hover:text-white bg-ivory-100 dark:bg-charcoal-900"
+            }`}
+          >
+            <BarChart3 className="h-4 w-4" />
+            <span>Executive BI Telemetry</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab("predictive_radar")}
+            className={`px-4 py-2 rounded-2xl text-xs font-bold transition-all flex items-center gap-2 ${
+              activeTab === "predictive_radar"
+                ? "bg-rose-primary text-white shadow-md shadow-rose-primary/20"
+                : "text-charcoal-600 dark:text-charcoal-400 hover:text-charcoal-900 dark:hover:text-white bg-ivory-100 dark:bg-charcoal-900"
+            }`}
+          >
+            <Sparkles className="h-4 w-4" />
+            <span>Predictive Intelligence & Risk Radar</span>
+            <span className="px-1.5 py-0.5 rounded-full text-[9px] bg-white/20 text-white font-mono">
+              AI / ML
+            </span>
+          </button>
+        </div>
+
+        {activeTab === "predictive_radar" ? (
+          <PredictiveRadarView />
+        ) : (
+          <>
         {/* 4 Luxury Key Performance Indicator Cards with Sparklines */}
         {isLoading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -824,6 +861,8 @@ export default function AnalyticsPage() {
             Senate Approved 2026
           </span>
         </div>
+        </>
+        )}
       </div>
     </AppShell>
   );

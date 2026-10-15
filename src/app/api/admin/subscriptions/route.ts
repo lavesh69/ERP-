@@ -8,7 +8,7 @@ import { logger } from "@/lib/logging/logger";
 interface SubscriptionPlan {
   tier: "TRIAL" | "STARTER" | "GROWTH" | "ENTERPRISE";
   maxStudents: number;
-  pricePerMonthUsd: number;
+  pricePerMonthInr: number;
   features: string[];
 }
 
@@ -16,25 +16,25 @@ const PLAN_TIERS: Record<string, SubscriptionPlan> = {
   TRIAL: {
     tier: "TRIAL",
     maxStudents: 500,
-    pricePerMonthUsd: 0,
+    pricePerMonthInr: 0,
     features: ["Core SIS", "Basic Attendance", "Manual Grading"],
   },
   STARTER: {
     tier: "STARTER",
     maxStudents: 2000,
-    pricePerMonthUsd: 499,
+    pricePerMonthInr: 39999,
     features: ["Core SIS", "Dynamic QR Attendance", "CBCS Grading", "Finance Ledgers"],
   },
   GROWTH: {
     tier: "GROWTH",
     maxStudents: 5000,
-    pricePerMonthUsd: 999,
+    pricePerMonthInr: 79999,
     features: ["All Starter Features", "BLE Beacons", "LMS Progression", "ATS Placement"],
   },
   ENTERPRISE: {
     tier: "ENTERPRISE",
     maxStudents: 25000,
-    pricePerMonthUsd: 2499,
+    pricePerMonthInr: 199999,
     features: ["All Growth Features", "Autonomous AI Agents", "Semantic RAG Engine", "Custom SLAs"],
   },
 };
@@ -73,8 +73,8 @@ export async function GET(req: NextRequest) {
         maxStudents: plan.maxStudents,
         enrolledStudents: Math.min(totalStudents, plan.maxStudents),
         utilizationPercentage: Number(((totalStudents / plan.maxStudents) * 100).toFixed(1)),
-        monthlyRecurringRevenue: plan.pricePerMonthUsd,
-        currency: "USD",
+        monthlyRecurringRevenue: plan.pricePerMonthInr,
+        currency: "INR",
         licenseStatus: "ACTIVE",
         expiresAt: expiryDate.toISOString(),
         features: plan.features,
@@ -86,7 +86,8 @@ export async function GET(req: NextRequest) {
       summary: {
         totalInstitutions: institutions.length,
         totalEnrolledSeats: totalStudents,
-        totalMmrUsd: subscriptions.reduce((sum, s) => sum + s.monthlyRecurringRevenue, 0),
+        totalMmrInr: subscriptions.reduce((sum, s) => sum + s.monthlyRecurringRevenue, 0),
+        currency: "INR",
       },
       subscriptions,
     });
@@ -129,7 +130,8 @@ export async function POST(req: NextRequest) {
         previousTier: "STANDARD",
         newTier: plan.tier,
         seatLimit: finalSeats,
-        mrr: plan.pricePerMonthUsd,
+        mrrInr: plan.pricePerMonthInr,
+        currency: "INR",
       },
     });
 
@@ -140,6 +142,8 @@ export async function POST(req: NextRequest) {
         institutionId: institution.id,
         tier: plan.tier,
         maxStudents: finalSeats,
+        pricePerMonthInr: plan.pricePerMonthInr,
+        currency: "INR",
         licenseStatus: "ACTIVE",
         renewedAt: new Date().toISOString(),
         expiresAt: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),

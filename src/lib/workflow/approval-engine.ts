@@ -27,16 +27,23 @@ export type InstitutionalWorkflowType =
   | "STAFF_LEAVE"
   | "DOCUMENT_VERIFICATION"
   | "PURCHASE_REQUISITION"
-  | "STUDENT_PETITION";
+  | "STUDENT_PETITION"
+  | "SCHOLARSHIP_RENEWAL"
+  | "EXAM_RESULT_PUBLICATION"
+  | "HOSTEL_GATE_PASS"
+  | "MAINTENANCE_ESCALATION"
+  | "RESEARCH_GRANT_MILESTONE"
+  | "PLACEMENT_OFFER_VERIFICATION";
 
 export type WorkflowStatus = "PENDING" | "APPROVED" | "REJECTED" | "CANCELLED";
+export type SlaStatus = "ON_TRACK" | "WARNING" | "BREACHED";
 
 export interface ApprovalStepLog {
   level: number;
   approverUserId: string;
   approverRole: UserRole;
   approverName: string;
-  action: "APPROVED" | "REJECTED";
+  action: "APPROVED" | "REJECTED" | "ESCALATED" | "CANCELLED";
   remarks: string;
   timestamp: string;
   signatureHash: string;
@@ -61,11 +68,24 @@ export interface WorkflowItem {
   completionSeal?: string;
   createdAt: string;
   updatedAt: string;
+  // Enterprise SLA & Escalation
+  deadlineHours: number;
+  slaDeadline: string;
+  slaStatus: SlaStatus;
+  idempotencyKey?: string;
+  isEscalated?: boolean;
+  escalatedToRole?: UserRole;
+  escalatedAt?: string;
+  isDryRun?: boolean;
 }
 
-const DEFAULT_WORKFLOW_RULES: Record<InstitutionalWorkflowType, { requiredLevels: number; authorizedRoles: Record<number, UserRole[]> }> = {
+const DEFAULT_WORKFLOW_RULES: Record<
+  InstitutionalWorkflowType,
+  { requiredLevels: number; defaultDeadlineHours: number; authorizedRoles: Record<number, UserRole[]> }
+> = {
   ADMISSION_APPROVAL: {
     requiredLevels: 2,
+    defaultDeadlineHours: 48,
     authorizedRoles: {
       1: ["HOD", "FACULTY", "INSTITUTION_ADMIN"],
       2: ["PRINCIPAL", "SUPER_ADMIN"],
@@ -73,6 +93,7 @@ const DEFAULT_WORKFLOW_RULES: Record<InstitutionalWorkflowType, { requiredLevels
   },
   FEE_WAIVER: {
     requiredLevels: 2,
+    defaultDeadlineHours: 48,
     authorizedRoles: {
       1: ["ACCOUNTANT", "INSTITUTION_ADMIN"],
       2: ["PRINCIPAL", "SUPER_ADMIN"],
@@ -80,6 +101,7 @@ const DEFAULT_WORKFLOW_RULES: Record<InstitutionalWorkflowType, { requiredLevels
   },
   ATTENDANCE_CONDONATION: {
     requiredLevels: 2,
+    defaultDeadlineHours: 24,
     authorizedRoles: {
       1: ["CLASS_TEACHER", "HOD"],
       2: ["PRINCIPAL", "SUPER_ADMIN"],
@@ -87,6 +109,7 @@ const DEFAULT_WORKFLOW_RULES: Record<InstitutionalWorkflowType, { requiredLevels
   },
   GRADE_CORRECTION: {
     requiredLevels: 2,
+    defaultDeadlineHours: 24,
     authorizedRoles: {
       1: ["HOD", "EXAMINATION_CONTROLLER"],
       2: ["PRINCIPAL", "SUPER_ADMIN"],
@@ -94,6 +117,7 @@ const DEFAULT_WORKFLOW_RULES: Record<InstitutionalWorkflowType, { requiredLevels
   },
   STAFF_LEAVE: {
     requiredLevels: 2,
+    defaultDeadlineHours: 48,
     authorizedRoles: {
       1: ["HOD", "HR_STAFF"],
       2: ["PRINCIPAL", "SUPER_ADMIN"],
@@ -101,12 +125,14 @@ const DEFAULT_WORKFLOW_RULES: Record<InstitutionalWorkflowType, { requiredLevels
   },
   DOCUMENT_VERIFICATION: {
     requiredLevels: 1,
+    defaultDeadlineHours: 24,
     authorizedRoles: {
       1: ["INSTITUTION_ADMIN", "PRINCIPAL", "SUPER_ADMIN", "HOD", "EXAMINATION_CONTROLLER"],
     },
   },
   PURCHASE_REQUISITION: {
     requiredLevels: 2,
+    defaultDeadlineHours: 72,
     authorizedRoles: {
       1: ["HOD", "ACCOUNTANT"],
       2: ["PRINCIPAL", "SUPER_ADMIN"],
@@ -114,11 +140,73 @@ const DEFAULT_WORKFLOW_RULES: Record<InstitutionalWorkflowType, { requiredLevels
   },
   STUDENT_PETITION: {
     requiredLevels: 1,
+    defaultDeadlineHours: 48,
     authorizedRoles: {
       1: ["CLASS_TEACHER", "HOD", "PRINCIPAL", "SUPER_ADMIN"],
     },
   },
+  SCHOLARSHIP_RENEWAL: {
+    requiredLevels: 2,
+    defaultDeadlineHours: 72,
+    authorizedRoles: {
+      1: ["ACCOUNTANT", "INSTITUTION_ADMIN"],
+      2: ["PRINCIPAL", "SUPER_ADMIN"],
+    },
+  },
+  EXAM_RESULT_PUBLICATION: {
+    requiredLevels: 2,
+    defaultDeadlineHours: 24,
+    authorizedRoles: {
+      1: ["HOD", "EXAMINATION_CONTROLLER"],
+      2: ["PRINCIPAL", "SUPER_ADMIN"],
+    },
+  },
+  HOSTEL_GATE_PASS: {
+    requiredLevels: 1,
+    defaultDeadlineHours: 12,
+    authorizedRoles: {
+      1: ["CLASS_TEACHER", "INSTITUTION_ADMIN", "PRINCIPAL"],
+    },
+  },
+  MAINTENANCE_ESCALATION: {
+    requiredLevels: 2,
+    defaultDeadlineHours: 24,
+    authorizedRoles: {
+      1: ["INSTITUTION_ADMIN", "ACCOUNTANT"],
+      2: ["PRINCIPAL", "SUPER_ADMIN"],
+    },
+  },
+  RESEARCH_GRANT_MILESTONE: {
+    requiredLevels: 2,
+    defaultDeadlineHours: 72,
+    authorizedRoles: {
+      1: ["RESEARCH_COORDINATOR", "HOD"],
+      2: ["PRINCIPAL", "SUPER_ADMIN"],
+    },
+  },
+  PLACEMENT_OFFER_VERIFICATION: {
+    requiredLevels: 2,
+    defaultDeadlineHours: 48,
+    authorizedRoles: {
+      1: ["PLACEMENT_OFFICER", "HOD"],
+      2: ["PRINCIPAL", "SUPER_ADMIN"],
+    },
+  },
 };
+
+function computeCurrentSlaStatus(deadlineIso: string, status: WorkflowStatus): SlaStatus {
+  if (status !== "PENDING") return "ON_TRACK";
+  const nowMs = Date.now();
+  const deadlineMs = new Date(deadlineIso).getTime();
+  if (nowMs > deadlineMs) {
+    return "BREACHED";
+  }
+  const remainingHours = (deadlineMs - nowMs) / (1000 * 3600);
+  if (remainingHours <= 12) {
+    return "WARNING";
+  }
+  return "ON_TRACK";
+}
 
 const SEED_WORKFLOWS: WorkflowItem[] = [
   {
@@ -130,7 +218,8 @@ const SEED_WORKFLOWS: WorkflowItem[] = [
     requesterRole: "STUDENT",
     entityId: "fee-sem5-mercer",
     title: "National Merit Fee Concession Request (50% Tuition Waiver)",
-    description: "Applicant awarded National Cyber Olympiad Gold Medal; requesting authorized 50% tuition scholarship fee concession.",
+    description:
+      "Applicant awarded National Cyber Olympiad Gold Medal; requesting authorized 50% tuition scholarship fee concession.",
     metadata: {
       totalOriginalFee: 4500,
       concessionRequested: 2250,
@@ -143,6 +232,9 @@ const SEED_WORKFLOWS: WorkflowItem[] = [
     auditTrail: [],
     createdAt: new Date(Date.now() - 48 * 3600 * 1000).toISOString(),
     updatedAt: new Date(Date.now() - 48 * 3600 * 1000).toISOString(),
+    deadlineHours: 48,
+    slaDeadline: new Date(Date.now() - 1 * 3600 * 1000).toISOString(), // Breached for realism
+    slaStatus: "BREACHED",
   },
   {
     id: "WF-REQ-2026-0002",
@@ -153,7 +245,8 @@ const SEED_WORKFLOWS: WorkflowItem[] = [
     requesterRole: "STUDENT",
     entityId: "cs402-attendance-jenkins",
     title: "Hospitalization Medical Attendance Condonation (CS-402)",
-    description: "Hospitalized for 10 days due to acute viral pneumonia. Requesting statutory medical waiver to restore 75% examination eligibility.",
+    description:
+      "Hospitalized for 10 days due to acute viral pneumonia. Requesting statutory medical waiver to restore 75% examination eligibility.",
     metadata: {
       courseCode: "CS-402",
       lecturesMissed: 8,
@@ -166,6 +259,9 @@ const SEED_WORKFLOWS: WorkflowItem[] = [
     auditTrail: [],
     createdAt: new Date(Date.now() - 24 * 3600 * 1000).toISOString(),
     updatedAt: new Date(Date.now() - 24 * 3600 * 1000).toISOString(),
+    deadlineHours: 24,
+    slaDeadline: new Date(Date.now() + 18 * 3600 * 1000).toISOString(),
+    slaStatus: "ON_TRACK",
   },
 ];
 
@@ -207,11 +303,20 @@ class UnifiedApprovalEngineStore {
     workflowType?: InstitutionalWorkflowType;
     status?: WorkflowStatus;
     canApproveRole?: UserRole;
+    slaStatus?: SlaStatus;
   }): WorkflowItem[] {
     let result = [...this.workflows];
 
+    // Refresh dynamic SLA status
+    result = result.map((w) => ({
+      ...w,
+      slaStatus: computeCurrentSlaStatus(w.slaDeadline, w.status),
+    }));
+
     if (filters?.institutionId) {
-      result = result.filter((w) => w.institutionId === filters.institutionId || w.institutionId === "global");
+      result = result.filter(
+        (w) => w.institutionId === filters.institutionId || w.institutionId === "global"
+      );
     }
     if (filters?.requesterId) {
       result = result.filter((w) => w.requesterId === filters.requesterId);
@@ -222,11 +327,18 @@ class UnifiedApprovalEngineStore {
     if (filters?.status) {
       result = result.filter((w) => w.status === filters.status);
     }
+    if (filters?.slaStatus) {
+      result = result.filter((w) => w.slaStatus === filters.slaStatus);
+    }
     if (filters?.canApproveRole) {
       result = result.filter((w) => {
         if (w.status !== "PENDING") return false;
         const allowedRoles = w.authorizedRolesPerLevel[w.currentLevel] || [];
-        return allowedRoles.includes(filters.canApproveRole!) || filters.canApproveRole === "SUPER_ADMIN";
+        return (
+          allowedRoles.includes(filters.canApproveRole!) ||
+          filters.canApproveRole === "SUPER_ADMIN" ||
+          (w.isEscalated && ["PRINCIPAL", "SUPER_ADMIN"].includes(filters.canApproveRole!))
+        );
       });
     }
 
@@ -234,7 +346,12 @@ class UnifiedApprovalEngineStore {
   }
 
   public getWorkflowById(id: string): WorkflowItem | null {
-    return this.workflows.find((w) => w.id === id) || null;
+    const item = this.workflows.find((w) => w.id === id);
+    if (!item) return null;
+    return {
+      ...item,
+      slaStatus: computeCurrentSlaStatus(item.slaDeadline, item.status),
+    };
   }
 
   public createWorkflowItem(data: {
@@ -247,9 +364,28 @@ class UnifiedApprovalEngineStore {
     title: string;
     description: string;
     metadata?: Record<string, any>;
+    deadlineHours?: number;
+    idempotencyKey?: string;
+    isDryRun?: boolean;
   }): WorkflowItem {
-    const rules = DEFAULT_WORKFLOW_RULES[data.workflowType];
-    const id = `WF-REQ-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`;
+    // 1. Idempotency Check
+    if (data.idempotencyKey) {
+      const existing = this.workflows.find((w) => w.idempotencyKey === data.idempotencyKey);
+      if (existing) {
+        logger.info("Idempotent workflow request intercepted, returning existing item", {
+          id: existing.id,
+          key: data.idempotencyKey,
+        });
+        return existing;
+      }
+    }
+
+    const rules =
+      DEFAULT_WORKFLOW_RULES[data.workflowType] || DEFAULT_WORKFLOW_RULES.STUDENT_PETITION;
+    const deadlineHours = data.deadlineHours || rules.defaultDeadlineHours || 48;
+    const now = new Date();
+    const slaDeadline = new Date(now.getTime() + deadlineHours * 3600 * 1000).toISOString();
+    const id = `WF-REQ-${now.getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`;
 
     const newItem: WorkflowItem = {
       id,
@@ -267,13 +403,25 @@ class UnifiedApprovalEngineStore {
       authorizedRolesPerLevel: rules.authorizedRoles,
       status: "PENDING",
       auditTrail: [],
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
+      createdAt: now.toISOString(),
+      updatedAt: now.toISOString(),
+      deadlineHours,
+      slaDeadline,
+      slaStatus: "ON_TRACK",
+      idempotencyKey: data.idempotencyKey,
+      isDryRun: data.isDryRun,
     };
 
-    this.workflows.unshift(newItem);
-    this.save();
-    logger.info("New institutional workflow requisition initiated", { id, type: data.workflowType });
+    if (!data.isDryRun) {
+      this.workflows.unshift(newItem);
+      this.save();
+      logger.info("New institutional workflow requisition initiated", {
+        id,
+        type: data.workflowType,
+        slaDeadline,
+      });
+    }
+
     return newItem;
   }
 
@@ -287,7 +435,7 @@ class UnifiedApprovalEngineStore {
     decision: "APPROVE" | "REJECT",
     remarks: string
   ): { success: boolean; error?: string; workflow?: WorkflowItem } {
-    const item = this.getWorkflowById(workflowId);
+    const item = this.workflows.find((w) => w.id === workflowId);
     if (!item) {
       return { success: false, error: "Workflow requisition not found" };
     }
@@ -297,7 +445,10 @@ class UnifiedApprovalEngineStore {
     }
 
     const currentAllowedRoles = item.authorizedRolesPerLevel[item.currentLevel] || [];
-    const isAuthorized = currentAllowedRoles.includes(approver.role) || approver.role === "SUPER_ADMIN";
+    const isAuthorized =
+      currentAllowedRoles.includes(approver.role) ||
+      approver.role === "SUPER_ADMIN" ||
+      (item.isEscalated && ["PRINCIPAL", "SUPER_ADMIN"].includes(approver.role));
 
     if (!isAuthorized) {
       return {
@@ -328,13 +479,18 @@ class UnifiedApprovalEngineStore {
       item.completionSeal = `REJECTED-${signatureHash}`;
     } else {
       if (item.currentLevel < item.requiredLevels) {
-        // Escalate to next approval tier
+        // Advance to next approval tier
         item.currentLevel += 1;
       } else {
         // Fully approved across all tiers
         item.status = "APPROVED";
         const finalAuditString = `${item.id}:${item.auditTrail.map((s) => s.signatureHash).join("|")}`;
-        item.completionSeal = `APPROVED-SEAL-${crypto.createHash("sha256").update(finalAuditString).digest("hex").slice(0, 32).toUpperCase()}`;
+        item.completionSeal = `APPROVED-SEAL-${crypto
+          .createHash("sha256")
+          .update(finalAuditString)
+          .digest("hex")
+          .slice(0, 32)
+          .toUpperCase()}`;
       }
     }
 
@@ -346,7 +502,85 @@ class UnifiedApprovalEngineStore {
       currentLevel: item.currentLevel,
     });
 
-    return { success: true, workflow: item };
+    return {
+      success: true,
+      workflow: { ...item, slaStatus: computeCurrentSlaStatus(item.slaDeadline, item.status) },
+    };
+  }
+
+  public escalateWorkflow(
+    workflowId: string,
+    reason: string,
+    escalatedByUserId: string = "system-sla-watcher"
+  ): { success: boolean; error?: string; workflow?: WorkflowItem } {
+    const item = this.workflows.find((w) => w.id === workflowId);
+    if (!item) return { success: false, error: "Workflow not found" };
+    if (item.status !== "PENDING") {
+      return { success: false, error: "Only PENDING workflows can be escalated" };
+    }
+
+    item.isEscalated = true;
+    item.escalatedToRole = "PRINCIPAL";
+    item.escalatedAt = new Date().toISOString();
+
+    const signatureHash = crypto
+      .createHash("sha256")
+      .update(`ESCALATE:${item.id}:${item.currentLevel}:${reason}:${Date.now()}`)
+      .digest("hex")
+      .slice(0, 24);
+
+    item.auditTrail.push({
+      level: item.currentLevel,
+      approverUserId: escalatedByUserId,
+      approverRole: "SUPER_ADMIN",
+      approverName: "Institutional SLA Auto-Escalation Sentinel",
+      action: "ESCALATED",
+      remarks: `SLA Escalation Triggered: ${reason}. Escalated to Office of the Principal.`,
+      timestamp: item.escalatedAt,
+      signatureHash,
+    });
+
+    item.updatedAt = item.escalatedAt;
+    this.save();
+
+    logger.warn("Workflow escalated to executive leadership", { id: item.id, reason });
+    return {
+      success: true,
+      workflow: { ...item, slaStatus: computeCurrentSlaStatus(item.slaDeadline, item.status) },
+    };
+  }
+
+  public cancelWorkflow(
+    workflowId: string,
+    userId: string,
+    reason: string
+  ): { success: boolean; error?: string; workflow?: WorkflowItem } {
+    const item = this.workflows.find((w) => w.id === workflowId);
+    if (!item) return { success: false, error: "Workflow not found" };
+    if (item.status !== "PENDING") {
+      return { success: false, error: `Cannot cancel workflow already in ${item.status} state` };
+    }
+
+    item.status = "CANCELLED";
+    const nowIso = new Date().toISOString();
+    item.updatedAt = nowIso;
+
+    item.auditTrail.push({
+      level: item.currentLevel,
+      approverUserId: userId,
+      approverRole: item.requesterRole,
+      approverName: item.requesterName,
+      action: "CANCELLED",
+      remarks: `Requester cancelled submission: ${reason}`,
+      timestamp: nowIso,
+      signatureHash: crypto.createHash("sha256").update(`CANCEL:${item.id}:${nowIso}`).digest("hex").slice(0, 24),
+    });
+
+    this.save();
+    return {
+      success: true,
+      workflow: { ...item, slaStatus: computeCurrentSlaStatus(item.slaDeadline, item.status) },
+    };
   }
 }
 

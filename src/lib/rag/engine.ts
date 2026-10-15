@@ -188,7 +188,7 @@ export const SEED_KNOWLEDGE_DOCUMENTS: DocumentChunk[] = [
     documentId: "doc-fin-01",
     title: "University Bursar Fee Policy & Installments",
     category: "POLICY",
-    content: "Fee Payment Deadlines: Fall semester tuition fees must be cleared by the 15th of the term start month. Installment payment plans allow 3 equal splits with a 2% administrative fee. A late payment fee of $25 per week applies after the final grace period.",
+    content: "Fee Payment Deadlines: Fall semester tuition fees must be cleared by the 15th of the term start month. Installment payment plans allow 3 equal splits with a 2% administrative fee. A late payment fee of ₹500 per week applies after the final grace period.",
     chunkIndex: 0,
   },
 ];

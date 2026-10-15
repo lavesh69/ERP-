@@ -1,0 +1,40 @@
+{
+  "corrections": [
+    {
+      "id": "CORR-2026-370",
+      "requesterUserId": "usr-stu-01",
+      "requesterRole": "STUDENT",
+      "fieldName": "FULL_NAME",
+      "currentValue": "Alex Mercer",
+      "proposedValue": "Alexander Mercer",
+      "reason": "Legal alignment with Indian Passport and Aadhaar card",
+      "status": "PENDING_VERIFICATION",
+      "createdAt": "2026-10-15T21:00:54.743Z",
+      "updatedAt": "2026-10-15T21:00:54.743Z"
+    },
+    {
+      "id": "CORR-2026-001",
+      "requesterUserId": "usr-stu-01",
+      "requesterRole": "STUDENT",
+      "fieldName": "FULL_NAME",
+      "currentValue": "Alex Mercer",
+      "proposedValue": "Alexander Mercer",
+      "reason": "Government Passport and Aadhaar name alignment for international visa processing",
+      "supportingDocumentUrl": "https://docs.classroom.internal/vault/passport_mercer.pdf",
+      "status": "PENDING_VERIFICATION",
+      "createdAt": "2026-10-13T20:59:43.027Z",
+      "updatedAt": "2026-10-13T20:59:43.027Z"
+    }
+  ],
+  "consents": [
+    {
+      "id": "CNS-mva0wsws",
+      "userId": "usr-stu-01",
+      "userRole": "STUDENT",
+      "purpose": "BIOMETRIC_ATTENDANCE",
+      "granted": true,
+      "grantedAt": "2026-10-15T21:00:54.748Z",
+      "ipAddress": "127.0.0.1"
+    }
+  ]
+}
