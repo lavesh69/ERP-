@@ -513,6 +513,8 @@ import {
   POST as handleAdminSubscriptionsPost,
 } from "@/app/api/admin/subscriptions/route";
 import { POST as handleQrVerifyPost } from "@/app/api/attendance/qr/verify/route";
+import { inventoryStore } from "@/lib/inventory/inventory-store";
+import { getAllRefundVouchers } from "@/lib/finance/finance-store";
 
 async function runTestSuite() {
   console.log("=================================================");
@@ -9743,7 +9745,7 @@ By breaking down large monolithic systems into decoupled microservices, systems 
     method: "GET",
     headers: { Cookie: `classroom_session=${adminToken}` },
   });
-  const clinicHealthGetRes = await handleMedicalClearanceGet();
+  const clinicHealthGetRes = await handleMedicalClearanceGet(clinicHealthGetReq);
   assert(clinicHealthGetRes.status === 200, "GET /api/clinic/medical-clearance returns 200 OK");
 
   const clinicVaccineReq = new NextRequest("http://localhost:3000/api/clinic/medical-clearance", {
@@ -9787,7 +9789,7 @@ By breaking down large monolithic systems into decoupled microservices, systems 
     method: "GET",
     headers: { Cookie: `classroom_session=${adminToken}` },
   });
-  const hostelAuditGetRes = await handleHostelInventoryAuditGet();
+  const hostelAuditGetRes = await handleHostelInventoryAuditGet(hostelAuditGetReq);
   assert(hostelAuditGetRes.status === 200, "GET /api/hostel/inventory-audit returns 200 OK");
 
   const hostelAuditPostReq = new NextRequest("http://localhost:3000/api/hostel/inventory-audit", {
@@ -11398,6 +11400,267 @@ By breaking down large monolithic systems into decoupled microservices, systems 
   });
   const unauthMaintRes = await handleTransportPost(unauthMaintReq);
   assert(unauthMaintRes.status === 403, "Student cannot record fleet vehicle maintenance (403)");
+
+  // -------------------------------------------------------------
+  // GROUP 84: Deep Feature Hardening, Cross-Module Lifecycle Integrity & Security Boundary Defense
+  // -------------------------------------------------------------
+  console.log("\n--- GROUP 84: Deep Feature Hardening, Cross-Module Lifecycle Integrity & Security Boundary Defense ---");
+
+  // 84.1 Unauthenticated Estate API access control
+  const unauthEstateGetReq = new NextRequest("http://localhost:3000/api/estate/workorders", { method: "GET" });
+  const unauthEstateGetRes = await handleEstateGet(unauthEstateGetReq);
+  assert(unauthEstateGetRes.status === 401, "Unauthenticated request to GET /api/estate/workorders is rejected (401)");
+
+  const unauthEstatePostReq = new NextRequest("http://localhost:3000/api/estate/workorders", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ action: "ASSIGN_ENGINEER", workOrderId: "wo-test", engineerName: "Hacker" }),
+  });
+  const unauthEstatePostRes = await handleEstatePost(unauthEstatePostReq);
+  assert(unauthEstatePostRes.status === 401, "Unauthenticated request to POST /api/estate/workorders is rejected (401)");
+
+  // 84.2 Student RBAC boundary on Estate operations
+  const studentEstateAssignReq = new NextRequest("http://localhost:3000/api/estate/workorders", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${enterpriseStudentToken}` },
+    body: JSON.stringify({ action: "ASSIGN_ENGINEER", workOrderId: "wo-test", engineerName: "Er. Self" }),
+  });
+  const studentEstateAssignRes = await handleEstatePost(studentEstateAssignReq);
+  assert(studentEstateAssignRes.status === 403, "Student caller attempting ASSIGN_ENGINEER on estate workorders is barred (403)");
+
+  const studentEstateCompleteReq = new NextRequest("http://localhost:3000/api/estate/workorders", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${enterpriseStudentToken}` },
+    body: JSON.stringify({ action: "COMPLETE_WORK", workOrderId: "wo-test", actualCost: 500 }),
+  });
+  const studentEstateCompleteRes = await handleEstatePost(studentEstateCompleteReq);
+  assert(studentEstateCompleteRes.status === 403, "Student caller attempting COMPLETE_WORK on estate workorders is barred (403)");
+
+  // 84.3 Unauthenticated Hostel Inventory Audit access control
+  const unauthHostelGetReq = new NextRequest("http://localhost:3000/api/hostel/inventory-audit", { method: "GET" });
+  const unauthHostelGetRes = await handleHostelInventoryAuditGet(unauthHostelGetReq);
+  assert(unauthHostelGetRes.status === 401, "Unauthenticated request to GET /api/hostel/inventory-audit is rejected (401)");
+
+  const unauthHostelPostReq = new NextRequest("http://localhost:3000/api/hostel/inventory-audit", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ action: "CONDUCT_MOVE_OUT_AUDIT", inspectionId: "INSP-2026-081", assets: [] }),
+  });
+  const unauthHostelPostRes = await handleHostelInventoryAuditPost(unauthHostelPostReq);
+  assert(unauthHostelPostRes.status === 401, "Unauthenticated request to POST /api/hostel/inventory-audit is rejected (401)");
+
+  // 84.4 Student RBAC boundary on Hostel Move-Out Audit
+  const studentHostelAuditReq = new NextRequest("http://localhost:3000/api/hostel/inventory-audit", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${enterpriseStudentToken}` },
+    body: JSON.stringify({ action: "CONDUCT_MOVE_OUT_AUDIT", inspectionId: "INSP-2026-081", assets: [] }),
+  });
+  const studentHostelAuditRes = await handleHostelInventoryAuditPost(studentHostelAuditReq);
+  assert(studentHostelAuditRes.status === 403, "Student caller attempting CONDUCT_MOVE_OUT_AUDIT is barred (403)");
+
+  // 84.5 Unauthenticated Clinic Medical Clearance access control
+  const unauthClinicGetReq = new NextRequest("http://localhost:3000/api/clinic/medical-clearance", { method: "GET" });
+  const unauthClinicGetRes = await handleMedicalClearanceGet(unauthClinicGetReq);
+  assert(unauthClinicGetRes.status === 401, "Unauthenticated request to GET /api/clinic/medical-clearance is rejected (401)");
+
+  const unauthClinicPostReq = new NextRequest("http://localhost:3000/api/clinic/medical-clearance", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ action: "CERTIFY_FITNESS", studentId: "STU-2026-001", fitnessCategory: "FIT_FOR_ALL" }),
+  });
+  const unauthClinicPostRes = await handleMedicalClearancePost(unauthClinicPostReq);
+  assert(unauthClinicPostRes.status === 401, "Unauthenticated request to POST /api/clinic/medical-clearance is rejected (401)");
+
+  // 84.6 Student RBAC boundary on Clinic Medical Certification
+  const studentClinicCertReq = new NextRequest("http://localhost:3000/api/clinic/medical-clearance", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${enterpriseStudentToken}` },
+    body: JSON.stringify({ action: "CERTIFY_FITNESS", studentId: "STU-2026-001", fitnessCategory: "FIT_FOR_ALL" }),
+  });
+  const studentClinicCertRes = await handleMedicalClearancePost(studentClinicCertReq);
+  assert(studentClinicCertRes.status === 403, "Student caller attempting CERTIFY_FITNESS on medical clearance is barred (403)");
+
+  // 84.7 Emergency Incident Command Role Alignment (HR_STAFF authorized, Student barred)
+  const hrStaffToken = await signJwt({ userId: "usr-hr-security-01", role: "HR_STAFF", email: "safety.officer@apex.edu" }, 3600);
+  const hrEmergencyBroadcastReq = new NextRequest("http://localhost:3000/api/emergency/broadcast", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${hrStaffToken}` },
+    body: JSON.stringify({
+      action: "DISPATCH_EMERGENCY",
+      category: "SEVERE_WEATHER_ALERT",
+      severity: "HIGH_WARNING",
+      headline: "Flash Thunderstorm Protocol: Secure Open Quads",
+      instructions: "All laboratory windows must be latched. Ground floor classes move to upper auditoriums.",
+      affectedLocations: ["Central Academic Block", "Sports Ground"],
+    }),
+  });
+  const hrEmergencyBroadcastRes = await handleEmergencyBroadcastPost(hrEmergencyBroadcastReq);
+  assert(hrEmergencyBroadcastRes.status === 201, "HR_STAFF Safety Commander can trigger campus emergency broadcast (201)");
+  const hrEmergencyData = await hrEmergencyBroadcastRes.json();
+  assert(hrEmergencyData.incident.incidentSeal.startsWith("CLERY-SEAL-"), "Emergency broadcast receives tamper-proof Clery seal");
+
+  const studentEmergencyReq = new NextRequest("http://localhost:3000/api/emergency/broadcast", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${enterpriseStudentToken}` },
+    body: JSON.stringify({
+      action: "DISPATCH_EMERGENCY",
+      category: "DRILL_SIMULATION",
+      headline: "Fake Alarm",
+      instructions: "No instructions",
+    }),
+  });
+  const studentEmergencyRes = await handleEmergencyBroadcastPost(studentEmergencyReq);
+  assert(studentEmergencyRes.status === 403, "Student caller barred from triggering campus emergency broadcast (403)");
+
+  // 84.8 Cross-Module Integration: Hostel Move-Out Caution Deposit -> Finance Treasury Refund Voucher
+  const hostelReconcileReq = new NextRequest("http://localhost:3000/api/hostel/inventory-audit", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "CONDUCT_MOVE_OUT_AUDIT",
+      inspectionId: "INSP-2026-081",
+      assets: [
+        { itemName: "Study Table & Drawers", category: "FURNITURE", moveInStatus: "PRISTINE", moveOutStatus: "GOOD", damageCharge: 0 },
+        { itemName: "Ergonomic Mesh Chair", category: "FURNITURE", moveInStatus: "PRISTINE", moveOutStatus: "DAMAGED", damageCharge: 25, notes: "Mesh torn" },
+        { itemName: "Single Bed Frame & Mattress", category: "FURNITURE", moveInStatus: "PRISTINE", moveOutStatus: "GOOD", damageCharge: 0 },
+        { itemName: "Room & Wardrobe RFID Keys", category: "KEY", moveInStatus: "PRISTINE", moveOutStatus: "GOOD", damageCharge: 0 },
+        { itemName: "Ceiling Fan & LED Fixtures", category: "ELECTRICAL", moveInStatus: "PRISTINE", moveOutStatus: "GOOD", damageCharge: 0 },
+      ],
+      wardenName: "Chief Warden Dr. H. C. Verma",
+      wardenNotes: "Move-out audit finalized with $25 chair mesh damage deduction.",
+    }),
+  });
+  const hostelReconcileRes = await handleHostelInventoryAuditPost(hostelReconcileReq);
+  assert(hostelReconcileRes.status === 200, "POST /api/hostel/inventory-audit reconciles move-out with 200 OK");
+  const hostelReconcileData = await hostelReconcileRes.json();
+  assert(hostelReconcileData.inspection.totalDamageDeductions === 25, "Damage deduction correctly calculated ($25)");
+  assert(hostelReconcileData.inspection.refundableAmount === 475, "Refundable caution deposit is $475 ($500 - $25)");
+  assert(typeof hostelReconcileData.inspection.financeRefundVoucherNo === "string" && hostelReconcileData.inspection.financeRefundVoucherNo.startsWith("RFND-"), "Hostel move-out audit generated Finance Treasury refund voucher");
+  assert(hostelReconcileData.inspection.damageDeductionNotes.includes("$25"), "Damage assessment itemizes damage deduction note");
+
+  const allRefunds = getAllRefundVouchers();
+  assert(allRefunds.some((v) => v.voucherNo === hostelReconcileData.inspection.financeRefundVoucherNo), "Finance Treasury ledger contains the generated caution deposit refund voucher");
+
+  // 84.9 Cross-Module Integration: Estate Works -> Central Store Consumables Inventory Stock Depletion
+  const estateDeductReq = new NextRequest("http://localhost:3000/api/estate/workorders", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "RAISE_WORK_ORDER",
+      discipline: "ELECTRICAL",
+      priority: "HIGH_PRIORITY",
+      location: "Physics Nano-Lab C-201",
+      issueTitle: "Unstable Power Distribution Busbar",
+      requesterId: "staff-phys-01",
+      requesterName: "Dr. C. V. Raman",
+      requesterDepartment: "Department of Physics",
+    }),
+  });
+  const estateDeductRes = await handleEstatePost(estateDeductReq);
+  assert(estateDeductRes.status === 201, "Estate work order raised for Nano-Lab (201)");
+  const estateDeductData = await estateDeductRes.json();
+  const woId = estateDeductData.workOrder.id;
+
+  // Start work with materials BOQ
+  const startWoReq = new NextRequest("http://localhost:3000/api/estate/workorders", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "START_WORK",
+      workOrderId: woId,
+      materialsBOQ: [
+        { materialName: "Industrial 3D Printing Filament (PLA+ 1.75mm)", quantity: 2, cost: 56 },
+        { materialName: "Shielded Cat6 Gigabit Patch Cables (3 Meter)", quantity: 3, cost: 105 },
+      ],
+    }),
+  });
+  const startWoRes = await handleEstatePost(startWoReq);
+  assert(startWoRes.status === 200, "Estate work started with materials BOQ (200)");
+
+  // Complete work and verify stock deduction
+  const estateCompleteWoReq = new NextRequest("http://localhost:3000/api/estate/workorders", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "COMPLETE_WORK",
+      workOrderId: woId,
+      actualCost: 161,
+      engineerNotes: "Busbar cabling replaced using Cat6 and custom 3D printed insulation shrouds.",
+    }),
+  });
+  const estateCompleteWoRes = await handleEstatePost(estateCompleteWoReq);
+  assert(estateCompleteWoRes.status === 200, "Estate work completed with 200 OK");
+  const completeWoData = await estateCompleteWoRes.json();
+  assert(completeWoData.inventoryStockReconciled === true, "Estate completion response confirms inventoryStockReconciled: true");
+  assert(completeWoData.workOrder.completionDetails.inventoryStockReconciled === true, "Work order completion details stamped with inventoryStockReconciled flag");
+
+  // 84.10 Inventory Store Consumable Reorder Logic & Subtraction Verification
+  const deductResult = inventoryStore.deductConsumable("Analytical Grade Ethanol (99.8% Pure)", 2, "Estate sterilization");
+  assert(deductResult.success === true, "inventoryStore.deductConsumable executes successfully");
+  assert(deductResult.item.needsReorder === true, "Low stock correctly evaluates needsReorder: true after deduction");
+
+  // 84.11 Admissions Counseling Seat Allotment -> Active SIS Profile Provisioning
+  const provisionCandidateReq = new NextRequest("http://localhost:3000/api/admissions/counseling", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "PROVISION_ALLOTTED_STUDENT",
+      applicant: {
+        applicantId: "app-coun-deep-01",
+        applicationNo: "APEX-2026-9911",
+        fullName: "Vikramaditya Sengupta",
+        category: "GENERAL",
+        allottedProgram: "Computer Science & Engineering",
+      },
+    }),
+  });
+  const provisionCandidateRes = await handleAdmissionsCounselingPost(provisionCandidateReq);
+  assert(provisionCandidateRes.status === 201, "Candidate seat allotment provisions active SIS profile with 201 Created");
+  const provisionCandidateData = await provisionCandidateRes.json();
+  assert(provisionCandidateData.enrollmentDetails.rollNumber.startsWith("2026-"), "Provisioned student roll number correctly formatted with 2026 prefix");
+  assert(provisionCandidateData.enrollmentDetails.email === "vikramadityasengupta@apex.edu", "Provisioned student receives institutional @apex.edu email address");
+  assert(provisionCandidateData.enrollmentDetails.enrollmentSeal.startsWith("APEX-ENROLL-SEAL-"), "Provisioned student receives tamper-evident SHA-256 enrollment seal");
+
+  // 84.12 Idempotent Student Provisioning
+  const reprovisionReq = new NextRequest("http://localhost:3000/api/admissions/counseling", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "PROVISION_ALLOTTED_STUDENT",
+      applicant: {
+        applicantId: "app-coun-deep-01",
+        applicationNo: "APEX-2026-9911",
+        fullName: "Vikramaditya Sengupta",
+        category: "GENERAL",
+        allottedProgram: "Computer Science & Engineering",
+      },
+    }),
+  });
+  const reprovisionRes = await handleAdmissionsCounselingPost(reprovisionReq);
+  assert(reprovisionRes.status === 201, "Idempotent re-provisioning returns 201 Created without error");
+  const reprovisionData = await reprovisionRes.json();
+  assert(reprovisionData.enrollmentDetails.studentId === provisionCandidateData.enrollmentDetails.studentId, "Idempotent re-provisioning preserves existing studentId without duplicate entity creation");
+
+  // 84.13 Clinical Medical Fitness Certification & 1-Year Expiry Verification
+  const clinicHoldReq = new NextRequest("http://localhost:3000/api/clinic/medical-clearance", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "CERTIFY_FITNESS",
+      studentId: "STU-2026-002",
+      officerName: "Dr. Arvind Swaminathan, MD",
+      fitnessCategory: "MEDICAL_HOLD",
+      physicianNotes: "Severe anaphylaxis precaution; pending dormitory epinephrine kit verification.",
+    }),
+  });
+  const clinicHoldRes = await handleMedicalClearancePost(clinicHoldReq);
+  assert(clinicHoldRes.status === 200, "POST /api/clinic/medical-clearance certifies MEDICAL_HOLD with 200 OK");
+  const clinicHoldData = await clinicHoldRes.json();
+  assert(clinicHoldData.passport.fitnessCategory === "MEDICAL_HOLD", "Fitness category updated to MEDICAL_HOLD");
+  assert(clinicHoldData.passport.medicalClearanceSeal.startsWith("APEX-MED-FIT-SEAL-"), "Medical passport stamped with cryptographic fitness seal");
+  const certDate = new Date(clinicHoldData.passport.certifiedAt);
+  const expiryDate = new Date(clinicHoldData.passport.validUntil);
+  assert(expiryDate.getFullYear() - certDate.getFullYear() === 1, "Medical clearance certificate validity spans exactly 1 statutory academic year");
 
   console.log("\n=================================================");
   console.log(`🎉 ALL ${passedTests}/${totalTests} TESTS PASSED SUCCESSFULLY!`);

@@ -21,8 +21,10 @@ import {
   ProgramQuotaAllocation,
   SeatAllotmentOrder,
 } from "@/lib/admissions/counseling-engine";
+import { useApp } from "@/context/AppContext";
 
 export function AdmissionsCounselingTab() {
+  const { showToast } = useApp();
   const [loading, setLoading] = useState(true);
   const [seatMatrix, setSeatMatrix] = useState<ProgramQuotaAllocation[]>([]);
   const [rankedCohort, setRankedCohort] = useState<RankedApplicant[]>([]);
@@ -56,11 +58,18 @@ export function AdmissionsCounselingTab() {
         }),
       });
       const data = await res.json();
-      if (data.success) {
+      if (data.success && data.enrollmentDetails) {
         setProvisionedScholar(data.enrollmentDetails);
+        showToast(
+          `Scholar ${data.enrollmentDetails.fullName} provisioned in SIS (Roll: ${data.enrollmentDetails.rollNumber})`,
+          "success"
+        );
+      } else {
+        showToast(data.error || "Provisioning failed", "error");
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error("Provisioning failed:", err);
+      showToast(err.message || "Network error provisioning student", "error");
     } finally {
       setProvisioning(false);
     }
@@ -114,9 +123,13 @@ export function AdmissionsCounselingTab() {
       const data = await res.json();
       if (data.success) {
         setCalcComposite(data.compositeScore);
+        showToast(`Composite Merit Score computed: ${data.compositeScore}`, "success");
+      } else {
+        showToast(data.error || "Merit score calculation failed", "error");
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error("Calculation failed:", err);
+      showToast(err.message || "Calculation failed", "error");
     }
   };
 
@@ -136,9 +149,13 @@ export function AdmissionsCounselingTab() {
       const data = await res.json();
       if (data.success) {
         setAllotmentOrder(data.order);
+        showToast(`Provisional seat allotment order generated for ${applicant.fullName}`, "success");
+      } else {
+        showToast(data.error || "Failed to generate allotment order", "error");
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error("Failed to generate allotment order:", err);
+      showToast(err.message || "Failed to generate allotment order", "error");
     } finally {
       setGeneratingOrder(false);
     }

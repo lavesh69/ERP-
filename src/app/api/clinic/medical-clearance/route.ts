@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getOptionalSession } from "@/lib/auth/admin-guard";
 import {
   getAllHealthPassports,
   updateImmunization,
@@ -6,8 +7,13 @@ import {
   getHealthClearanceAnalytics,
 } from "@/lib/clinic/medical-clearance-engine";
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
+    const session = await getOptionalSession(req);
+    if (!session) {
+      return NextResponse.json({ success: false, error: "Authentication required" }, { status: 401 });
+    }
+
     const passports = getAllHealthPassports();
     const analytics = getHealthClearanceAnalytics();
     return NextResponse.json({
@@ -27,6 +33,19 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   try {
+    const session = await getOptionalSession(req);
+    if (!session) {
+      return NextResponse.json({ success: false, error: "Authentication required" }, { status: 401 });
+    }
+
+    const CLINIC_STAFF_ROLES = ["SUPER_ADMIN", "INSTITUTION_ADMIN", "PRINCIPAL", "HR_STAFF", "FACULTY"];
+    if (!CLINIC_STAFF_ROLES.includes(session.role)) {
+      return NextResponse.json(
+        { success: false, error: "Forbidden: Only campus clinical staff and administrators can certify health records" },
+        { status: 403 }
+      );
+    }
+
     const body = await req.json();
     const { action } = body;
 

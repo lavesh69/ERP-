@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getOptionalSession } from "@/lib/auth/admin-guard";
 import {
   getAllInspections,
   recordMoveIn,
@@ -6,8 +7,13 @@ import {
   getHostelInventoryAnalytics,
 } from "@/lib/hostel/hostel-inventory-engine";
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
+    const session = await getOptionalSession(req);
+    if (!session) {
+      return NextResponse.json({ success: false, error: "Authentication required" }, { status: 401 });
+    }
+
     const inspections = getAllInspections();
     const analytics = getHostelInventoryAnalytics();
     return NextResponse.json({
@@ -27,6 +33,19 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   try {
+    const session = await getOptionalSession(req);
+    if (!session) {
+      return NextResponse.json({ success: false, error: "Authentication required" }, { status: 401 });
+    }
+
+    const HOSTEL_AUDIT_ROLES = ["SUPER_ADMIN", "INSTITUTION_ADMIN", "PRINCIPAL", "HR_STAFF", "FACULTY"];
+    if (!HOSTEL_AUDIT_ROLES.includes(session.role)) {
+      return NextResponse.json(
+        { success: false, error: "Forbidden: Only hostel administration and wardens can conduct audits" },
+        { status: 403 }
+      );
+    }
+
     const body = await req.json();
     const { action } = body;
 

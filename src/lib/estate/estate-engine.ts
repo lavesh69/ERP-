@@ -1,6 +1,7 @@
 import fs from "fs";
 import path from "path";
 import crypto from "crypto";
+import { inventoryStore } from "@/lib/inventory/inventory-store";
 
 export type EstateDiscipline = "CIVIL" | "ELECTRICAL" | "HVAC" | "PLUMBING_WATER" | "FIRE_SAFETY";
 export type EstatePriority = "CRITICAL_EMERGENCY" | "HIGH_PRIORITY" | "MEDIUM_PRIORITY" | "ROUTINE_PLANNED";
@@ -51,6 +52,7 @@ export interface EstateWorkOrder {
     engineerNotes: string;
     completionCertificateNumber: string;
     cryptographicSeal: string;
+    inventoryStockReconciled?: boolean;
   };
   userClosureRating?: {
     ratingStars: number;
@@ -336,6 +338,19 @@ export function completeEstateWork(params: {
   const sealPayload = `${order.workOrderNumber}:${certificateNumber}:${params.actualCost}:${Date.now()}`;
   const cryptographicSeal = crypto.createHash("sha256").update(sealPayload).digest("hex");
 
+  let stockReconciled = false;
+  if (order.materialsBOQ && order.materialsBOQ.length > 0) {
+    try {
+      inventoryStore.deductConsumables(
+        order.materialsBOQ.map((m) => ({ materialName: m.materialName, quantity: m.quantity })),
+        `Estate Work Order ${order.workOrderNumber} completion`
+      );
+      stockReconciled = true;
+    } catch (e) {
+      console.warn("Estate materials stock deduction notice:", e);
+    }
+  }
+
   order.status = "COMPLETED";
   order.completionDetails = {
     completedAt: new Date().toISOString(),
@@ -343,6 +358,7 @@ export function completeEstateWork(params: {
     engineerNotes: params.engineerNotes,
     completionCertificateNumber: certificateNumber,
     cryptographicSeal,
+    inventoryStockReconciled: stockReconciled,
   };
   order.updatedAt = new Date().toISOString();
 

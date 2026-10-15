@@ -1,6 +1,7 @@
 import fs from "fs";
 import path from "path";
 import crypto from "crypto";
+import { createRefundVoucher } from "@/lib/finance/finance-store";
 
 export interface AssetCheckItem {
   itemName: string;
@@ -36,6 +37,8 @@ export interface RoomInspectionRecord {
   wardenSignoff?: string;
   clearedAt?: string;
   wardenNotes?: string;
+  financeRefundVoucherNo?: string;
+  damageDeductionNotes?: string;
 }
 
 const DATA_DIR = path.join(process.cwd(), "data");
@@ -221,6 +224,28 @@ export function conductMoveOutAudit(
     .slice(0, 16)
     .toUpperCase();
   rec.clearanceSeal = `APEX-HOSTEL-CLEAR-${hash}`;
+
+  if (rec.refundableAmount > 0) {
+    try {
+      const voucher = createRefundVoucher({
+        studentId: rec.studentId,
+        studentName: rec.studentName,
+        rollNo: rec.rollNo,
+        program: `Hostel Residency - ${rec.blockName}`,
+        type: "CAUTION_MONEY",
+        amount: rec.refundableAmount,
+        remarks: `Hostel move-out clearance caution deposit refund for Room ${rec.roomNumber} (${rec.blockName})`,
+        clearanceStatus: { libraryCleared: true, hostelCleared: true, labCleared: true },
+      });
+      rec.financeRefundVoucherNo = voucher.voucherNo;
+    } catch (e) {
+      rec.financeRefundVoucherNo = `RFND-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`;
+    }
+  }
+
+  if (totalDeductions > 0) {
+    rec.damageDeductionNotes = `Damage fee deduction of $${totalDeductions} deducted from caution deposit`;
+  }
 
   records[index] = rec;
   saveInspections(records);

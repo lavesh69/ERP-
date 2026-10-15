@@ -300,4 +300,45 @@ export const inventoryStore = {
     writeStore(store);
     return order;
   },
+
+  deductConsumable(itemIdentifier: string, quantity: number, notes?: string) {
+    const store = readStore();
+    const query = itemIdentifier.trim().toLowerCase();
+    let target = store.consumables.find(
+      (c) =>
+        c.itemCode.toLowerCase() === query ||
+        c.name.toLowerCase().includes(query) ||
+        query.includes(c.name.toLowerCase())
+    );
+
+    if (!target) {
+      const cleanCode = itemIdentifier.replace(/[^A-Za-z0-9]/g, "").slice(0, 6).toUpperCase() || "GEN";
+      const newItem: ConsumableItem = {
+        id: `con-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+        itemCode: `MAT-${cleanCode}`,
+        name: itemIdentifier,
+        category: "Estate Maintenance Materials",
+        unit: "Units",
+        quantityOnHand: 0,
+        minReorderThreshold: 5,
+        unitCost: 100,
+        supplierName: "Apex Campus Central Store",
+        needsReorder: true,
+      };
+      store.consumables.push(newItem);
+      target = newItem;
+    }
+
+    const actualDeduct = Math.min(target.quantityOnHand, quantity);
+    target.quantityOnHand = Math.max(0, target.quantityOnHand - quantity);
+    target.needsReorder = evaluateReorderStatus(target.quantityOnHand, target.minReorderThreshold);
+
+    writeStore(store);
+    return { success: true, item: target, deducted: actualDeduct, notes };
+  },
+
+  deductConsumables(items: { materialName: string; quantity: number }[], notes?: string) {
+    return items.map((item) => this.deductConsumable(item.materialName, item.quantity, notes));
+  },
 };
+

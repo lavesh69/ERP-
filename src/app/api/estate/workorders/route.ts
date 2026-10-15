@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getOptionalSession } from "@/lib/auth/admin-guard";
 import {
   loadEstateData,
   raiseEstateWorkOrder,
@@ -12,6 +13,11 @@ import {
 
 export async function GET(req: NextRequest) {
   try {
+    const session = await getOptionalSession(req);
+    if (!session) {
+      return NextResponse.json({ success: false, error: "Authentication required" }, { status: 401 });
+    }
+
     const data = loadEstateData();
     const analytics = getEstateAnalytics();
     return NextResponse.json({
@@ -30,6 +36,11 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
+    const session = await getOptionalSession(req);
+    if (!session) {
+      return NextResponse.json({ success: false, error: "Authentication required" }, { status: 401 });
+    }
+
     const body = await req.json();
     const { action } = body;
 
@@ -38,6 +49,16 @@ export async function POST(req: NextRequest) {
         { success: false, error: "Action is required" },
         { status: 400 }
       );
+    }
+
+    const ESTATE_STAFF_ROLES = ["SUPER_ADMIN", "INSTITUTION_ADMIN", "PRINCIPAL", "HOD", "HR_STAFF", "FACULTY"];
+    if (["ASSIGN_ENGINEER", "START_WORK", "COMPLETE_WORK", "LOG_PREVENTIVE"].includes(action)) {
+      if (!ESTATE_STAFF_ROLES.includes(session.role)) {
+        return NextResponse.json(
+          { success: false, error: "Forbidden: Estate operations require maintenance staff clearance" },
+          { status: 403 }
+        );
+      }
     }
 
     if (action === "RAISE_WORK_ORDER") {
@@ -139,6 +160,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({
         success: true,
         message: "Work completion certified with cryptographic seal.",
+        inventoryStockReconciled: order.completionDetails?.inventoryStockReconciled || false,
         workOrder: order,
       });
     }

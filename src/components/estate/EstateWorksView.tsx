@@ -159,9 +159,12 @@ export default function EstateWorksView() {
         setStatusMessage({ type: "success", text: "Junior Engineer assigned successfully!" });
         setShowAssignModal(false);
         fetchData();
+      } else {
+        setStatusMessage({ type: "error", text: data.error || "Failed to assign engineer" });
       }
     } catch (err: any) {
       console.error(err);
+      setStatusMessage({ type: "error", text: err.message || "Failed to assign engineer" });
     }
   };
 
@@ -183,9 +186,12 @@ export default function EstateWorksView() {
       if (data.success) {
         setStatusMessage({ type: "success", text: "Work commenced and materials BOQ logged!" });
         fetchData();
+      } else {
+        setStatusMessage({ type: "error", text: data.error || "Failed to start work" });
       }
     } catch (err: any) {
       console.error(err);
+      setStatusMessage({ type: "error", text: err.message || "Failed to start work" });
     }
   };
 
@@ -204,15 +210,22 @@ export default function EstateWorksView() {
       });
       const data = await res.json();
       if (data.success) {
+        const certMsg = data.workOrder.completionDetails?.completionCertificateNumber
+          ? `Certificate: ${data.workOrder.completionDetails.completionCertificateNumber}`
+          : "Work certified";
+        const stockMsg = data.inventoryStockReconciled ? " (Materials stock reconciled)" : "";
         setStatusMessage({
           type: "success",
-          text: `Work certified! Certificate: ${data.workOrder.completionDetails?.completionCertificateNumber}`,
+          text: `Work certified! ${certMsg}${stockMsg}`,
         });
         setShowCompleteModal(false);
         fetchData();
+      } else {
+        setStatusMessage({ type: "error", text: data.error || "Failed to certify completion" });
       }
     } catch (err: any) {
       console.error(err);
+      setStatusMessage({ type: "error", text: err.message || "Failed to certify completion" });
     }
   };
 
@@ -234,9 +247,12 @@ export default function EstateWorksView() {
         setStatusMessage({ type: "success", text: "Work order closed with customer satisfaction sign-off!" });
         setShowRatingModal(false);
         fetchData();
+      } else {
+        setStatusMessage({ type: "error", text: data.error || "Failed to close work order" });
       }
     } catch (err: any) {
       console.error(err);
+      setStatusMessage({ type: "error", text: err.message || "Failed to close work order" });
     }
   };
 

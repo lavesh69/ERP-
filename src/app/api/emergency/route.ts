@@ -43,6 +43,7 @@ export async function POST(request: NextRequest) {
       "PRINCIPAL",
       "HOD",
       "FACULTY",
+      "HR_STAFF",
     ];
 
     if (!EMERGENCY_COMMAND_ROLES.includes(session.role)) {

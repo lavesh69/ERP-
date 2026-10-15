@@ -116,7 +116,7 @@ export default function EmergencyPage() {
     try {
       const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
       if (!AudioCtx) {
-        alert("Web Audio API is not supported in this browser.");
+        showToast("Web Audio API is not supported in this browser.", "warning");
         return;
       }
       if (!audioCtxRef.current || audioCtxRef.current.state === "closed") {

@@ -62,7 +62,7 @@ export async function POST(req: NextRequest) {
 
     // 1. DISPATCH_EMERGENCY (Command clearance required)
     if (action === "DISPATCH_EMERGENCY") {
-      const allowedCommanders = ["SUPER_ADMIN", "INSTITUTION_ADMIN", "PRINCIPAL", "SECURITY"];
+      const allowedCommanders = ["SUPER_ADMIN", "INSTITUTION_ADMIN", "PRINCIPAL", "HOD", "FACULTY", "HR_STAFF"];
       if (!allowedCommanders.includes(session.role)) {
         return NextResponse.json({ error: "Forbidden: Campus Security or Executive clearance required to trigger mass broadcast" }, { status: 403 });
       }
