@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { AppShell } from "@/components/layout/AppShell";
+import { Breadcrumbs } from "@/components/common/Breadcrumbs";
 import {
   Globe2,
   Plane,
@@ -296,8 +298,15 @@ export default function InternationalPage() {
   });
 
   return (
-    <div className="p-6 max-w-7xl mx-auto space-y-6">
-      {/* Header */}
+    <AppShell>
+      <div className="space-y-6 animate-in fade-in duration-300">
+        <Breadcrumbs
+          items={[
+            { label: "Dashboard", href: "/" },
+            { label: "International Relations & Exchange", href: "/international" },
+          ]}
+        />
+        {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
         <div className="space-y-1">
           <div className="flex items-center gap-3">
@@ -1512,5 +1521,6 @@ export default function InternationalPage() {
         </div>
       )}
     </div>
+    </AppShell>
   );
 }

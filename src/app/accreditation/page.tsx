@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { AppShell } from "@/components/layout/AppShell";
+import { Breadcrumbs } from "@/components/common/Breadcrumbs";
 import { useApp } from "@/context/AppContext";
 import {
   Award,
@@ -255,8 +257,15 @@ TOTAL,Composite Institutional NIRF Score,1.00,82.04,82.04,"Projected National Ra
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 p-6 md:p-8 space-y-6">
-      {/* Top Banner */}
+    <AppShell>
+      <div className="space-y-6 animate-in fade-in duration-300">
+        <Breadcrumbs
+          items={[
+            { label: "Dashboard", href: "/" },
+            { label: "Accreditation IQAC", href: "/accreditation" },
+          ]}
+        />
+        {/* Top Banner */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-200 dark:border-slate-800 pb-5">
         <div>
           <div className="flex items-center gap-3">
@@ -1250,5 +1259,6 @@ TOTAL,Composite Institutional NIRF Score,1.00,82.04,82.04,"Projected National Ra
         </div>
       )}
     </div>
+    </AppShell>
   );
 }

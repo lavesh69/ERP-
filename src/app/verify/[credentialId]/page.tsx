@@ -14,7 +14,7 @@ export default async function CredentialVerificationPage({ params }: PageProps) 
   const credential = await verifyCredentialRecord(credentialId);
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col justify-between py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-ivory-100 dark:bg-charcoal-950 text-charcoal-900 dark:text-ivory-100 flex flex-col justify-between py-12 px-4 sm:px-6 lg:px-8 selection:bg-rose-500 selection:text-white">
       <div className="max-w-2xl mx-auto w-full">
         {/* Header Branding */}
         <div className="text-center mb-8">

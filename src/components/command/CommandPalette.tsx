@@ -40,6 +40,7 @@ import {
   Microscope,
   Package,
   Wrench,
+  Globe2,
 } from "lucide-react";
 
 interface CommandOption {
@@ -330,6 +331,22 @@ export function CommandPalette() {
       description: "CPWD engineering maintenance work orders for electrical substation, DG genset, STP, and chillers",
       href: "/estate",
       icon: Wrench,
+    },
+    {
+      id: "nav-convocation",
+      category: "Navigation",
+      title: "Convocation & Degree Conferral Portal",
+      description: "No-dues clearance verification, academic honors, gown allocations, and digital degree dispatch",
+      href: "/convocation",
+      icon: GraduationCap,
+    },
+    {
+      id: "nav-international",
+      category: "Navigation",
+      title: "International Relations & Study Abroad Suite",
+      description: "Global university MoUs, inbound/outbound student exchange, and visa/FRRO compliance monitoring",
+      href: "/international",
+      icon: Globe2,
     },
 
     // --- One-Click Institutional Quick Actions ---

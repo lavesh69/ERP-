@@ -141,7 +141,7 @@ export default function PublicAdmissionsApplyPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-charcoal-950 text-charcoal-900 dark:text-ivory-100 flex flex-col justify-between selection:bg-rose-500 selection:text-white">
+    <div className="min-h-screen bg-ivory-100 dark:bg-charcoal-950 text-charcoal-900 dark:text-ivory-100 flex flex-col justify-between selection:bg-rose-500 selection:text-white">
       {/* Top Header */}
       <header className="border-b border-border dark:border-charcoal-800 bg-white/80 dark:bg-charcoal-900/80 backdrop-blur-md sticky top-0 z-30">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
