@@ -175,7 +175,7 @@ export function NightRollCallView({ blocks, currentUser, showToast }: Props) {
   return (
     <div className="space-y-6">
       {/* Top Banner & Curfew Countdown */}
-      <div className="p-6 rounded-2xl bg-gradient-to-r from-indigo-900/10 via-purple-900/10 to-slate-900/10 border border-indigo-500/20 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+      <div className="p-6 rounded-2xl bg-gradient-to-r from-indigo-900/10 via-purple-900/10 to-charcoal-900/10 border border-indigo-500/20 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400 mb-1">
             <Moon className="h-4 w-4" />

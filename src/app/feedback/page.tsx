@@ -81,7 +81,7 @@ function analyzeSentiment(remarks?: string, score?: number) {
       polarity: 0.05,
       label: "Neutral",
       tone: "NEUTRAL",
-      bg: "bg-slate-50 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border-slate-200 dark:border-slate-700",
+      bg: "bg-ivory-50 text-charcoal-700 dark:bg-charcoal-800 dark:text-ivory-300 border-border dark:border-charcoal-700",
       description: "Balanced feedback baseline.",
     };
   }
@@ -128,7 +128,7 @@ function analyzeSentiment(remarks?: string, score?: number) {
       polarity,
       label: "Balanced",
       tone: "NEUTRAL",
-      bg: "bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-300 border-slate-200 dark:border-slate-700",
+      bg: "bg-ivory-100 text-charcoal-800 dark:bg-charcoal-800 dark:text-ivory-300 border-border dark:border-charcoal-700",
       description: "Constructive observations with mixed reception.",
     };
   } else {
@@ -314,7 +314,7 @@ export default function FeedbackPage() {
               </button>
               <button
                 onClick={() => setShowSurveyModal(true)}
-                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium text-sm bg-rose-primary hover:bg-rose-600 text-white shadow-md transition-all active:scale-95"
+                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium text-sm bg-rose-primary hover:bg-rose-primary text-white shadow-md transition-all active:scale-95"
               >
                 <PlusCircle className="w-4 h-4" />
                 Submit Course Evaluation
@@ -338,70 +338,70 @@ export default function FeedbackPage() {
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
-          <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 mb-2">
+        <div className="bg-white dark:bg-charcoal-900 p-5 rounded-2xl border border-border dark:border-charcoal-800 shadow-sm">
+          <div className="flex items-center justify-between text-charcoal-500 dark:text-charcoal-400 mb-2">
             <span className="text-xs font-semibold uppercase tracking-wider">Total Submissions</span>
             <Users className="w-4 h-4 text-rose-500" />
           </div>
-          <div className="text-2xl font-bold text-slate-900 dark:text-white">
+          <div className="text-2xl font-bold text-charcoal-900 dark:text-ivory-100">
             {loading ? "..." : summary?.totalResponses || 0}
           </div>
-          <p className="text-xs text-slate-400 mt-1">100% Anonymized & Tamper-proof</p>
+          <p className="text-xs text-charcoal-400 mt-1">100% Anonymized & Tamper-proof</p>
         </div>
 
-        <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
-          <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 mb-2">
+        <div className="bg-white dark:bg-charcoal-900 p-5 rounded-2xl border border-border dark:border-charcoal-800 shadow-sm">
+          <div className="flex items-center justify-between text-charcoal-500 dark:text-charcoal-400 mb-2">
             <span className="text-xs font-semibold uppercase tracking-wider">Institutional Satisfaction</span>
             <Star className="w-4 h-4 text-amber-500" />
           </div>
-          <div className="text-2xl font-bold text-slate-900 dark:text-white">
+          <div className="text-2xl font-bold text-charcoal-900 dark:text-ivory-100">
             {loading ? "..." : `${summary?.averageSatisfactionRating || 0} / 5.0`}
           </div>
           <p className="text-xs text-emerald-600 dark:text-emerald-400 mt-1 font-medium">92% Positive Rating</p>
         </div>
 
-        <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
-          <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 mb-2">
+        <div className="bg-white dark:bg-charcoal-900 p-5 rounded-2xl border border-border dark:border-charcoal-800 shadow-sm">
+          <div className="flex items-center justify-between text-charcoal-500 dark:text-charcoal-400 mb-2">
             <span className="text-xs font-semibold uppercase tracking-wider">Faculty Evaluated</span>
             <Award className="w-4 h-4 text-indigo-500" />
           </div>
-          <div className="text-2xl font-bold text-slate-900 dark:text-white">
+          <div className="text-2xl font-bold text-charcoal-900 dark:text-ivory-100">
             {loading ? "..." : summary?.facultyEvaluatedCount || 0}
           </div>
-          <p className="text-xs text-slate-400 mt-1">Across all departments</p>
+          <p className="text-xs text-charcoal-400 mt-1">Across all departments</p>
         </div>
 
-        <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
-          <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 mb-2">
+        <div className="bg-white dark:bg-charcoal-900 p-5 rounded-2xl border border-border dark:border-charcoal-800 shadow-sm">
+          <div className="flex items-center justify-between text-charcoal-500 dark:text-charcoal-400 mb-2">
             <span className="text-xs font-semibold uppercase tracking-wider">High Distinction Index</span>
             <TrendingUp className="w-4 h-4 text-emerald-500" />
           </div>
-          <div className="text-2xl font-bold text-slate-900 dark:text-white">
+          <div className="text-2xl font-bold text-charcoal-900 dark:text-ivory-100">
             {loading ? "..." : summary?.topRatedFacultyCount || 0}
           </div>
-          <p className="text-xs text-slate-400 mt-1">FPI Score &ge; 4.0 / 5.0</p>
+          <p className="text-xs text-charcoal-400 mt-1">FPI Score &ge; 4.0 / 5.0</p>
         </div>
       </div>
 
       {/* Search and Department Filter Toolbar */}
-      <div className="flex flex-col sm:flex-row gap-3 items-center justify-between bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800">
+      <div className="flex flex-col sm:flex-row gap-3 items-center justify-between bg-white dark:bg-charcoal-900 p-4 rounded-xl border border-border dark:border-charcoal-800">
         <div className="relative w-full sm:w-96">
-          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-charcoal-400" />
           <input
             type="text"
             placeholder="Search by faculty, department or course..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-rose-500 text-slate-900 dark:text-white"
+            className="w-full pl-9 pr-4 py-2 bg-ivory-50 dark:bg-charcoal-800 border border-border dark:border-charcoal-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-rose-500 text-charcoal-900 dark:text-ivory-100"
           />
         </div>
         <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
           <div className="flex items-center gap-1.5">
-            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Dept:</span>
+            <span className="text-xs font-semibold text-charcoal-500 uppercase tracking-wider">Dept:</span>
             <select
               value={selectedDept}
               onChange={(e) => setSelectedDept(e.target.value)}
-              className="px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-rose-500 text-slate-900 dark:text-white"
+              className="px-3 py-2 bg-ivory-50 dark:bg-charcoal-800 border border-border dark:border-charcoal-700 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-rose-500 text-charcoal-900 dark:text-ivory-100"
             >
               <option value="ALL">All Departments</option>
               <option value="CSE">Computer Science (CSE)</option>
@@ -413,11 +413,11 @@ export default function FeedbackPage() {
           </div>
           {activeTab === "faculty" && (
             <div className="flex items-center gap-1.5">
-              <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Sort:</span>
+              <span className="text-xs font-semibold text-charcoal-500 uppercase tracking-wider">Sort:</span>
               <select
                 value={facultySortBy}
                 onChange={(e) => setFacultySortBy(e.target.value as any)}
-                className="px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-rose-500 text-slate-900 dark:text-white"
+                className="px-3 py-2 bg-ivory-50 dark:bg-charcoal-800 border border-border dark:border-charcoal-700 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-rose-500 text-charcoal-900 dark:text-ivory-100"
               >
                 <option value="FPI_DESC">Highest FPI (Score)</option>
                 <option value="FPI_ASC">Lowest FPI (Attention)</option>
@@ -430,13 +430,13 @@ export default function FeedbackPage() {
       </div>
 
       {/* Tabs */}
-      <div className="flex border-b border-slate-200 dark:border-slate-800 overflow-x-auto no-scrollbar flex-nowrap pb-px">
+      <div className="flex border-b border-border dark:border-charcoal-800 overflow-x-auto no-scrollbar flex-nowrap pb-px">
         <button
           onClick={() => setActiveTab("faculty")}
           className={`flex items-center gap-2 px-5 py-3 text-sm font-semibold border-b-2 transition-all whitespace-nowrap shrink-0 ${
             activeTab === "faculty"
-              ? "border-rose-600 text-rose-600 dark:text-rose-400"
-              : "border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200"
+              ? "border-rose-primary text-rose-primary dark:text-rose-400"
+              : "border-transparent text-charcoal-500 hover:text-charcoal-800 dark:hover:text-ivory-200"
           }`}
         >
           <Award className="w-4 h-4" />
@@ -446,8 +446,8 @@ export default function FeedbackPage() {
           onClick={() => setActiveTab("responses")}
           className={`flex items-center gap-2 px-5 py-3 text-sm font-semibold border-b-2 transition-all whitespace-nowrap shrink-0 ${
             activeTab === "responses"
-              ? "border-rose-600 text-rose-600 dark:text-rose-400"
-              : "border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200"
+              ? "border-rose-primary text-rose-primary dark:text-rose-400"
+              : "border-transparent text-charcoal-500 hover:text-charcoal-800 dark:hover:text-ivory-200"
           }`}
         >
           <FileText className="w-4 h-4" />
@@ -476,63 +476,63 @@ export default function FeedbackPage() {
             .map((fac) => (
             <div
               key={fac.facultyId}
-              className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4"
+              className="bg-white dark:bg-charcoal-900 p-5 rounded-2xl border border-border dark:border-charcoal-800 shadow-sm space-y-4"
             >
               <div className="flex justify-between items-start">
                 <div>
-                  <h3 className="font-bold text-slate-900 dark:text-white text-lg">{fac.facultyName}</h3>
-                  <p className="text-xs text-slate-500">
+                  <h3 className="font-bold text-charcoal-900 dark:text-ivory-100 text-lg">{fac.facultyName}</h3>
+                  <p className="text-xs text-charcoal-500">
                     Dept: {fac.departmentCode} • {fac.totalSubmissions} Student Evaluations
                   </p>
                 </div>
                 <div className="text-right">
-                  <span className="text-2xl font-black text-rose-600 dark:text-rose-400">
+                  <span className="text-2xl font-black text-rose-primary dark:text-rose-400">
                     {fac.overallFPI.toFixed(2)}
                   </span>
-                  <span className="text-xs text-slate-400 block font-semibold">{fac.performanceBand}</span>
+                  <span className="text-xs text-charcoal-400 block font-semibold">{fac.performanceBand}</span>
                 </div>
               </div>
 
               {/* 5-Criteria Rating Bars */}
               <div className="space-y-2 text-xs">
-                <div className="flex justify-between items-center text-slate-600 dark:text-slate-400">
+                <div className="flex justify-between items-center text-charcoal-600 dark:text-charcoal-400">
                   <span>Pedagogy & Teaching Quality</span>
                   <span className="font-semibold">{fac.avgPedagogy} / 5</span>
                 </div>
-                <div className="h-2 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                <div className="h-2 w-full bg-ivory-100 dark:bg-charcoal-800 rounded-full overflow-hidden">
                   <div
                     className="h-full bg-rose-500 rounded-full"
                     style={{ width: `${(fac.avgPedagogy / 5) * 100}%` }}
                   />
                 </div>
 
-                <div className="flex justify-between items-center text-slate-600 dark:text-slate-400">
+                <div className="flex justify-between items-center text-charcoal-600 dark:text-charcoal-400">
                   <span>Syllabus Coverage</span>
                   <span className="font-semibold">{fac.avgSyllabus} / 5</span>
                 </div>
-                <div className="h-2 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                <div className="h-2 w-full bg-ivory-100 dark:bg-charcoal-800 rounded-full overflow-hidden">
                   <div
                     className="h-full bg-indigo-500 rounded-full"
                     style={{ width: `${(fac.avgSyllabus / 5) * 100}%` }}
                   />
                 </div>
 
-                <div className="flex justify-between items-center text-slate-600 dark:text-slate-400">
+                <div className="flex justify-between items-center text-charcoal-600 dark:text-charcoal-400">
                   <span>Punctuality & Regularity</span>
                   <span className="font-semibold">{fac.avgPunctuality} / 5</span>
                 </div>
-                <div className="h-2 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                <div className="h-2 w-full bg-ivory-100 dark:bg-charcoal-800 rounded-full overflow-hidden">
                   <div
                     className="h-full bg-emerald-500 rounded-full"
                     style={{ width: `${(fac.avgPunctuality / 5) * 100}%` }}
                   />
                 </div>
 
-                <div className="flex justify-between items-center text-slate-600 dark:text-slate-400">
+                <div className="flex justify-between items-center text-charcoal-600 dark:text-charcoal-400">
                   <span>Doubt Clearing & Accessibility</span>
                   <span className="font-semibold">{fac.avgDoubtClearing} / 5</span>
                 </div>
-                <div className="h-2 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                <div className="h-2 w-full bg-ivory-100 dark:bg-charcoal-800 rounded-full overflow-hidden">
                   <div
                     className="h-full bg-amber-500 rounded-full"
                     style={{ width: `${(fac.avgDoubtClearing / 5) * 100}%` }}
@@ -540,7 +540,7 @@ export default function FeedbackPage() {
                 </div>
               </div>
 
-              <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex justify-end">
+              <div className="pt-3 border-t border-border/60 dark:border-charcoal-800 flex justify-end">
                 <button
                   onClick={() => setSelectedFacultyDossier(fac)}
                   className="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/60 dark:hover:bg-rose-900/60 text-rose-700 dark:text-rose-300 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors"
@@ -559,10 +559,10 @@ export default function FeedbackPage() {
             const matchesDept = selectedDept === "ALL" || fac.departmentCode === selectedDept;
             return matchesSearch && matchesDept;
           }).length === 0 && (
-            <div className="col-span-1 md:col-span-2 py-16 text-center bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-8 shadow-sm">
-              <Search className="w-12 h-12 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
-              <h4 className="font-semibold text-slate-900 dark:text-white text-base">No Faculty Feedback Records</h4>
-              <p className="text-xs text-slate-400 mt-1 max-w-sm mx-auto">
+            <div className="col-span-1 md:col-span-2 py-16 text-center bg-white dark:bg-charcoal-900 rounded-2xl border border-border dark:border-charcoal-800 p-8 shadow-sm">
+              <Search className="w-12 h-12 text-charcoal-300 dark:text-charcoal-600 mx-auto mb-3" />
+              <h4 className="font-semibold text-charcoal-900 dark:text-ivory-100 text-base">No Faculty Feedback Records</h4>
+              <p className="text-xs text-charcoal-400 mt-1 max-w-sm mx-auto">
                 No faculty index matches query &ldquo;{searchQuery}&rdquo; and department &ldquo;{selectedDept}&rdquo;.
               </p>
               <button
@@ -570,7 +570,7 @@ export default function FeedbackPage() {
                   setSearchQuery("");
                   setSelectedDept("ALL");
                 }}
-                className="mt-4 px-4 py-2 bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-800 rounded-xl text-xs font-semibold inline-flex items-center gap-1.5 hover:bg-rose-100 transition-all"
+                className="mt-4 px-4 py-2 bg-rose-50 dark:bg-rose-950/60 text-rose-primary dark:text-rose-400 border border-rose-200 dark:border-rose-800 rounded-xl text-xs font-semibold inline-flex items-center gap-1.5 hover:bg-rose-100 transition-all"
               >
                 <RotateCcw className="w-3.5 h-3.5" />
                 Reset Filters
@@ -598,23 +598,23 @@ export default function FeedbackPage() {
             const netSentiment = posPct - critPct;
 
             return (
-              <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 shadow-sm space-y-4">
+              <div className="bg-white dark:bg-charcoal-900 rounded-2xl border border-border dark:border-charcoal-800 p-5 shadow-sm space-y-4">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <div className="flex items-center gap-3">
                     <div className="p-2.5 bg-gradient-to-br from-indigo-500 to-purple-600 text-white rounded-xl">
                       <Brain className="w-5 h-5" />
                     </div>
                     <div>
-                      <h3 className="font-bold text-sm text-slate-800 dark:text-slate-100">
+                      <h3 className="font-bold text-sm text-charcoal-900 dark:text-ivory-100">
                         Campus Qualitative Sentiment Health Monitor
                       </h3>
-                      <p className="text-xs text-slate-400">
+                      <p className="text-xs text-charcoal-400">
                         Natural Language tone classification across {total} anonymized evaluations
                       </p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="text-xs text-slate-500 font-medium">Net Sentiment Score:</span>
+                    <span className="text-xs text-charcoal-500 font-medium">Net Sentiment Score:</span>
                     <span
                       className={`px-2.5 py-1 rounded-lg text-xs font-bold ${
                         netSentiment >= 50
@@ -629,7 +629,7 @@ export default function FeedbackPage() {
 
                 {/* Multicolored Progress Bar */}
                 <div className="space-y-1.5">
-                  <div className="h-3 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden flex">
+                  <div className="h-3 w-full bg-ivory-100 dark:bg-charcoal-800 rounded-full overflow-hidden flex">
                     <div
                       style={{ width: `${posPct}%` }}
                       className="bg-emerald-500 h-full transition-all duration-500"
@@ -646,7 +646,7 @@ export default function FeedbackPage() {
                       title={`Concerns: ${critPct}%`}
                     />
                   </div>
-                  <div className="flex justify-between items-center text-[11px] text-slate-500 dark:text-slate-400">
+                  <div className="flex justify-between items-center text-[11px] text-charcoal-500 dark:text-charcoal-400">
                     <span className="flex items-center gap-1.5">
                       <span className="w-2 h-2 rounded-full bg-emerald-500" />
                       Favorable / Delighted: <strong>{posPct}%</strong> ({pos})
@@ -665,28 +665,28 @@ export default function FeedbackPage() {
             );
           })()}
 
-          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
-          <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+          <div className="bg-white dark:bg-charcoal-900 rounded-2xl border border-border dark:border-charcoal-800 overflow-hidden shadow-sm">
+          <div className="p-4 border-b border-border dark:border-charcoal-800 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
             <div>
-              <span className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+              <span className="text-sm font-semibold text-charcoal-700 dark:text-ivory-300">
                 Recent Anonymized Course Feedback Entries
               </span>
-              <p className="text-xs text-slate-400">AI-computed sentiment polarity scores & qualitative reflections</p>
+              <p className="text-xs text-charcoal-400">AI-computed sentiment polarity scores & qualitative reflections</p>
             </div>
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-1.5 text-xs">
-                <span className="text-slate-500 font-medium">Sentiment:</span>
+                <span className="text-charcoal-500 font-medium">Sentiment:</span>
                 <select
                   value={sentimentFilter}
                   onChange={(e) => setSentimentFilter(e.target.value as any)}
-                  className="px-2.5 py-1 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-medium text-slate-800 dark:text-slate-200"
+                  className="px-2.5 py-1 bg-ivory-50 dark:bg-charcoal-800 border border-border dark:border-charcoal-700 rounded-lg text-xs font-medium text-charcoal-800 dark:text-ivory-200"
                 >
                   <option value="ALL">All Sentiments</option>
                   <option value="POSITIVE">Positive / Delighted Only</option>
                   <option value="CRITICAL">Constructive / Concerns</option>
                 </select>
               </div>
-              <div className="flex items-center gap-1.5 text-xs text-slate-400">
+              <div className="flex items-center gap-1.5 text-xs text-charcoal-400">
                 <ShieldCheck className="w-4 h-4 text-emerald-500" />
                 <span>Masked ID</span>
               </div>
@@ -694,7 +694,7 @@ export default function FeedbackPage() {
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
-              <thead className="bg-slate-50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 text-xs uppercase font-medium">
+              <thead className="bg-ivory-50 dark:bg-charcoal-800/50 text-charcoal-500 dark:text-charcoal-400 text-xs uppercase font-medium">
                 <tr>
                   <th className="py-3 px-4">Survey Ref</th>
                   <th className="py-3 px-4">Course</th>
@@ -706,7 +706,7 @@ export default function FeedbackPage() {
                   <th className="py-3 px-4 text-right">Action</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-slate-700 dark:text-slate-300">
+              <tbody className="divide-y divide-border dark:divide-charcoal-800 text-charcoal-700 dark:text-ivory-300">
                 {responses
                   .filter((r) => {
                     const q = searchQuery.toLowerCase();
@@ -728,8 +728,8 @@ export default function FeedbackPage() {
                   .map((r) => {
                     const sentiment = analyzeSentiment(r.qualitativeRemarks, r.overallScore);
                     return (
-                      <tr key={r.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/40">
-                        <td className="py-3 px-4 font-mono text-xs font-semibold text-rose-600 dark:text-rose-400">
+                      <tr key={r.id} className="hover:bg-ivory-50/50 dark:hover:bg-charcoal-800/40">
+                        <td className="py-3 px-4 font-mono text-xs font-semibold text-rose-primary dark:text-rose-400">
                           {r.surveyRef}
                         </td>
                         <td className="py-3 px-4 font-medium">
@@ -754,18 +754,18 @@ export default function FeedbackPage() {
                             <span>{sentiment.polarity > 0 ? `+${sentiment.polarity}` : sentiment.polarity} {sentiment.label}</span>
                           </span>
                         </td>
-                        <td className="py-3 px-4 text-xs italic text-slate-500 max-w-xs truncate">
+                        <td className="py-3 px-4 text-xs italic text-charcoal-500 max-w-xs truncate">
                           {r.qualitativeRemarks || "No qualitative remarks recorded."}
                         </td>
-                        <td className="py-3 px-4 text-xs text-slate-400">
+                        <td className="py-3 px-4 text-xs text-charcoal-400">
                           {new Date(r.submittedAt).toLocaleDateString()}
                         </td>
                         <td className="py-3 px-4 text-right">
                           <button
                             onClick={() => setSelectedSurveyDossier(r)}
-                            className="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-lg text-xs font-semibold inline-flex items-center gap-1.5 transition-colors"
+                            className="px-2.5 py-1 bg-ivory-100 hover:bg-ivory-200 dark:bg-charcoal-800 dark:hover:bg-charcoal-700 text-charcoal-700 dark:text-ivory-200 rounded-lg text-xs font-semibold inline-flex items-center gap-1.5 transition-colors"
                           >
-                            <Eye className="w-3.5 h-3.5 text-slate-500" />
+                            <Eye className="w-3.5 h-3.5 text-charcoal-500" />
                             Slip
                           </button>
                         </td>
@@ -786,15 +786,15 @@ export default function FeedbackPage() {
               r.surveyRef.toLowerCase().includes(q)
             );
           }).length === 0 && (
-            <div className="py-16 text-center border-t border-slate-100 dark:border-slate-800">
-              <Search className="w-12 h-12 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
-              <h4 className="font-semibold text-slate-900 dark:text-white text-base">No Survey Responses Found</h4>
-              <p className="text-xs text-slate-400 mt-1 max-w-sm mx-auto">
+            <div className="py-16 text-center border-t border-border/60 dark:border-charcoal-800">
+              <Search className="w-12 h-12 text-charcoal-300 dark:text-charcoal-600 mx-auto mb-3" />
+              <h4 className="font-semibold text-charcoal-900 dark:text-ivory-100 text-base">No Survey Responses Found</h4>
+              <p className="text-xs text-charcoal-400 mt-1 max-w-sm mx-auto">
                 No anonymous evaluations match your search query &ldquo;{searchQuery}&rdquo;.
               </p>
               <button
                 onClick={() => setSearchQuery("")}
-                className="mt-4 px-4 py-2 bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-800 rounded-xl text-xs font-semibold inline-flex items-center gap-1.5 hover:bg-rose-100 transition-all"
+                className="mt-4 px-4 py-2 bg-rose-50 dark:bg-rose-950/60 text-rose-primary dark:text-rose-400 border border-rose-200 dark:border-rose-800 rounded-xl text-xs font-semibold inline-flex items-center gap-1.5 hover:bg-rose-100 transition-all"
               >
                 <RotateCcw className="w-3.5 h-3.5" />
                 Reset Search
@@ -814,16 +814,16 @@ export default function FeedbackPage() {
           onClick={(e) => {
             if (e.target === e.currentTarget) setShowSurveyModal(false);
           }}
-          className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4"
+          className="fixed inset-0 z-50 bg-charcoal-950/80 backdrop-blur-sm flex items-center justify-center p-4"
         >
-          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 max-w-lg w-full space-y-4 shadow-xl max-h-[90vh] overflow-y-auto">
-            <div className="flex justify-between items-center border-b border-slate-200 dark:border-slate-800 pb-3">
-              <h2 className="text-lg font-bold text-slate-900 dark:text-white">
+          <div className="bg-white dark:bg-charcoal-900 rounded-2xl border border-border dark:border-charcoal-800 p-6 max-w-lg w-full space-y-4 shadow-xl max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center border-b border-border dark:border-charcoal-800 pb-3">
+              <h2 className="text-lg font-bold text-charcoal-900 dark:text-ivory-100">
                 Submit Course & Faculty Evaluation
               </h2>
               <button
                 onClick={() => setShowSurveyModal(false)}
-                className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+                className="p-1.5 text-charcoal-400 hover:text-charcoal-600 dark:hover:text-ivory-200 hover:bg-ivory-100 dark:hover:bg-charcoal-800 rounded-lg transition-colors"
                 aria-label="Close modal"
               >
                 <X className="w-5 h-5" />
@@ -833,7 +833,7 @@ export default function FeedbackPage() {
             <form onSubmit={handleSubmitSurvey} className="space-y-4 text-sm">
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
+                  <label className="block text-xs font-medium text-charcoal-600 dark:text-charcoal-400 mb-1">
                     Course Code
                   </label>
                   <input
@@ -841,11 +841,11 @@ export default function FeedbackPage() {
                     required
                     value={formData.courseCode}
                     onChange={(e) => setFormData({ ...formData, courseCode: e.target.value })}
-                    className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-rose-500 outline-none text-slate-900 dark:text-white"
+                    className="w-full px-3 py-2 bg-ivory-50 dark:bg-charcoal-800 border border-border dark:border-charcoal-700 rounded-xl focus:ring-2 focus:ring-rose-500 outline-none text-charcoal-900 dark:text-ivory-100"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
+                  <label className="block text-xs font-medium text-charcoal-600 dark:text-charcoal-400 mb-1">
                     Faculty Instructor
                   </label>
                   <input
@@ -853,14 +853,14 @@ export default function FeedbackPage() {
                     required
                     value={formData.facultyName}
                     onChange={(e) => setFormData({ ...formData, facultyName: e.target.value })}
-                    className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-rose-500 outline-none text-slate-900 dark:text-white"
+                    className="w-full px-3 py-2 bg-ivory-50 dark:bg-charcoal-800 border border-border dark:border-charcoal-700 rounded-xl focus:ring-2 focus:ring-rose-500 outline-none text-charcoal-900 dark:text-ivory-100"
                   />
                 </div>
               </div>
 
               {/* 5 Likert Ratings */}
-              <div className="space-y-3 bg-slate-50 dark:bg-slate-800/50 p-4 rounded-xl border border-slate-200 dark:border-slate-700">
-                <span className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wide block">
+              <div className="space-y-3 bg-ivory-50 dark:bg-charcoal-800/50 p-4 rounded-xl border border-border dark:border-charcoal-700">
+                <span className="text-xs font-bold text-charcoal-700 dark:text-ivory-300 uppercase tracking-wide block">
                   Evaluation Criteria (1 = Poor, 5 = Excellent)
                 </span>
 
@@ -872,7 +872,7 @@ export default function FeedbackPage() {
                   { key: "ratingCourseMaterial", label: "Quality of Slides, Notes & Lab Sheets" },
                 ].map(({ key, label }) => (
                   <div key={key} className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 text-xs py-1">
-                    <span className="text-slate-600 dark:text-slate-400 font-medium">{label}</span>
+                    <span className="text-charcoal-600 dark:text-charcoal-400 font-medium">{label}</span>
                     <div className="flex items-center gap-1">
                       {[1, 2, 3, 4, 5].map((val) => (
                         <button
@@ -881,8 +881,8 @@ export default function FeedbackPage() {
                           onClick={() => setFormData({ ...formData, [key]: val })}
                           className={`w-7 h-7 rounded-lg font-bold text-xs transition-all flex items-center justify-center ${
                             (formData as any)[key] === val
-                              ? "bg-rose-600 text-white shadow-sm shadow-rose-600/30 scale-105"
-                              : "bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:border-rose-400"
+                              ? "bg-rose-primary text-white shadow-sm shadow-rose-600/30 scale-105"
+                              : "bg-white dark:bg-charcoal-800 text-charcoal-700 dark:text-ivory-300 border border-border dark:border-charcoal-700 hover:border-rose-400"
                           }`}
                         >
                           {val}
@@ -894,7 +894,7 @@ export default function FeedbackPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
+                <label className="block text-xs font-medium text-charcoal-600 dark:text-charcoal-400 mb-1">
                   Qualitative Feedback / Suggestions (Optional)
                 </label>
                 <textarea
@@ -902,7 +902,7 @@ export default function FeedbackPage() {
                   value={formData.qualitativeRemarks}
                   onChange={(e) => setFormData({ ...formData, qualitativeRemarks: e.target.value })}
                   placeholder="Share constructive feedback regarding teaching pace or lab assignments..."
-                  className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-rose-500 outline-none text-slate-900 dark:text-white"
+                  className="w-full px-3 py-2 bg-ivory-50 dark:bg-charcoal-800 border border-border dark:border-charcoal-700 rounded-xl focus:ring-2 focus:ring-rose-500 outline-none text-charcoal-900 dark:text-ivory-100"
                 />
               </div>
 
@@ -910,14 +910,14 @@ export default function FeedbackPage() {
                 <button
                   type="button"
                   onClick={() => setShowSurveyModal(false)}
-                  className="px-4 py-2 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                  className="px-4 py-2 border border-border dark:border-charcoal-700 rounded-xl text-charcoal-600 dark:text-ivory-300 hover:bg-ivory-100 dark:hover:bg-charcoal-800 transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="px-5 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl font-medium disabled:opacity-50 transition-colors shadow-sm"
+                  className="px-5 py-2 bg-rose-primary hover:bg-rose-accent text-white rounded-xl font-medium disabled:opacity-50 transition-colors shadow-sm"
                 >
                   {submitting ? "Submitting..." : "Submit Anonymous Evaluation"}
                 </button>
@@ -936,47 +936,47 @@ export default function FeedbackPage() {
           onClick={(e) => {
             if (e.target === e.currentTarget) setSelectedFacultyDossier(null);
           }}
-          className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto animate-in fade-in duration-200"
+          className="fixed inset-0 z-50 bg-charcoal-950/80 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto animate-in fade-in duration-200"
         >
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl max-w-xl w-full p-6 shadow-2xl space-y-5 my-8">
-            <div className="flex items-start justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
+          <div className="bg-white dark:bg-charcoal-900 border border-border dark:border-charcoal-800 rounded-2xl max-w-xl w-full p-6 shadow-2xl space-y-5 my-8">
+            <div className="flex items-start justify-between border-b border-border/60 dark:border-charcoal-800 pb-4">
               <div className="flex items-center gap-3">
-                <div className="p-2.5 bg-rose-100 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 rounded-xl">
+                <div className="p-2.5 bg-rose-100 dark:bg-rose-950/60 text-rose-primary dark:text-rose-400 rounded-xl">
                   <Award className="w-6 h-6" />
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
-                    <h3 className="font-bold text-slate-900 dark:text-white text-lg">{selectedFacultyDossier.facultyName}</h3>
+                    <h3 className="font-bold text-charcoal-900 dark:text-ivory-100 text-lg">{selectedFacultyDossier.facultyName}</h3>
                     <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-rose-100 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300">
                       {selectedFacultyDossier.performanceBand}
                     </span>
                   </div>
-                  <p className="text-xs text-slate-400 mt-0.5">
+                  <p className="text-xs text-charcoal-400 mt-0.5">
                     Department: {selectedFacultyDossier.departmentCode} • Faculty ID: {selectedFacultyDossier.facultyId}
                   </p>
                 </div>
               </div>
               <button
                 onClick={() => setSelectedFacultyDossier(null)}
-                className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+                className="p-1.5 text-charcoal-400 hover:text-charcoal-600 dark:hover:text-ivory-200 hover:bg-ivory-100 dark:hover:bg-charcoal-800 rounded-lg transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             {/* Overall Score Highlight */}
-            <div className="p-4 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-200 dark:border-slate-700/60 flex items-center justify-between">
+            <div className="p-4 bg-ivory-50 dark:bg-charcoal-800/40 rounded-xl border border-border dark:border-charcoal-700/60 flex items-center justify-between">
               <div>
-                <span className="text-xs text-slate-500 font-medium">Faculty Performance Index (FPI)</span>
-                <div className="text-3xl font-black text-rose-600 dark:text-rose-400 mt-0.5">
-                  {selectedFacultyDossier.overallFPI.toFixed(2)} <span className="text-xs font-normal text-slate-400">/ 5.00</span>
+                <span className="text-xs text-charcoal-500 font-medium">Faculty Performance Index (FPI)</span>
+                <div className="text-3xl font-black text-rose-primary dark:text-rose-400 mt-0.5">
+                  {selectedFacultyDossier.overallFPI.toFixed(2)} <span className="text-xs font-normal text-charcoal-400">/ 5.00</span>
                 </div>
                 <div className="text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold mt-1">
                   Based on {selectedFacultyDossier.totalSubmissions} verified student evaluations
                 </div>
               </div>
               <div className="text-right">
-                <div className="text-xs font-semibold text-slate-700 dark:text-slate-300">IQAC Accreditation Band</div>
+                <div className="text-xs font-semibold text-charcoal-700 dark:text-ivory-300">IQAC Accreditation Band</div>
                 <span className="inline-block mt-1 px-3 py-1 bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 rounded-lg text-xs font-bold">
                   Statutory Tier-A Met
                 </span>
@@ -985,72 +985,72 @@ export default function FeedbackPage() {
 
             {/* Criteria Breakdown */}
             <div className="space-y-2.5 text-xs">
-              <h4 className="font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider text-[11px]">
+              <h4 className="font-bold text-charcoal-800 dark:text-ivory-200 uppercase tracking-wider text-[11px]">
                 5-Pillar Student Evaluation Metric Distribution
               </h4>
 
-              <div className="space-y-1.5 p-3 bg-slate-50 dark:bg-slate-800/30 rounded-xl border border-slate-100 dark:border-slate-800">
+              <div className="space-y-1.5 p-3 bg-ivory-50 dark:bg-charcoal-800/30 rounded-xl border border-border/60 dark:border-charcoal-800">
                 <div className="flex justify-between items-center">
-                  <span className="text-slate-600 dark:text-slate-300">1. Pedagogy & Conceptual Clarity</span>
-                  <span className="font-bold text-slate-900 dark:text-white">{selectedFacultyDossier.avgPedagogy} / 5</span>
+                  <span className="text-charcoal-600 dark:text-ivory-300">1. Pedagogy & Conceptual Clarity</span>
+                  <span className="font-bold text-charcoal-900 dark:text-ivory-100">{selectedFacultyDossier.avgPedagogy} / 5</span>
                 </div>
-                <div className="h-1.5 w-full bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+                <div className="h-1.5 w-full bg-ivory-200 dark:bg-charcoal-700 rounded-full overflow-hidden">
                   <div className="h-full bg-rose-500 rounded-full" style={{ width: `${(selectedFacultyDossier.avgPedagogy / 5) * 100}%` }} />
                 </div>
               </div>
 
-              <div className="space-y-1.5 p-3 bg-slate-50 dark:bg-slate-800/30 rounded-xl border border-slate-100 dark:border-slate-800">
+              <div className="space-y-1.5 p-3 bg-ivory-50 dark:bg-charcoal-800/30 rounded-xl border border-border/60 dark:border-charcoal-800">
                 <div className="flex justify-between items-center">
-                  <span className="text-slate-600 dark:text-slate-300">2. Syllabus Completeness & Course Pace</span>
-                  <span className="font-bold text-slate-900 dark:text-white">{selectedFacultyDossier.avgSyllabus} / 5</span>
+                  <span className="text-charcoal-600 dark:text-ivory-300">2. Syllabus Completeness & Course Pace</span>
+                  <span className="font-bold text-charcoal-900 dark:text-ivory-100">{selectedFacultyDossier.avgSyllabus} / 5</span>
                 </div>
-                <div className="h-1.5 w-full bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+                <div className="h-1.5 w-full bg-ivory-200 dark:bg-charcoal-700 rounded-full overflow-hidden">
                   <div className="h-full bg-indigo-500 rounded-full" style={{ width: `${(selectedFacultyDossier.avgSyllabus / 5) * 100}%` }} />
                 </div>
               </div>
 
-              <div className="space-y-1.5 p-3 bg-slate-50 dark:bg-slate-800/30 rounded-xl border border-slate-100 dark:border-slate-800">
+              <div className="space-y-1.5 p-3 bg-ivory-50 dark:bg-charcoal-800/30 rounded-xl border border-border/60 dark:border-charcoal-800">
                 <div className="flex justify-between items-center">
-                  <span className="text-slate-600 dark:text-slate-300">3. Lecture Punctuality & Attendance Rigor</span>
-                  <span className="font-bold text-slate-900 dark:text-white">{selectedFacultyDossier.avgPunctuality} / 5</span>
+                  <span className="text-charcoal-600 dark:text-ivory-300">3. Lecture Punctuality & Attendance Rigor</span>
+                  <span className="font-bold text-charcoal-900 dark:text-ivory-100">{selectedFacultyDossier.avgPunctuality} / 5</span>
                 </div>
-                <div className="h-1.5 w-full bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+                <div className="h-1.5 w-full bg-ivory-200 dark:bg-charcoal-700 rounded-full overflow-hidden">
                   <div className="h-full bg-emerald-500 rounded-full" style={{ width: `${(selectedFacultyDossier.avgPunctuality / 5) * 100}%` }} />
                 </div>
               </div>
 
-              <div className="space-y-1.5 p-3 bg-slate-50 dark:bg-slate-800/30 rounded-xl border border-slate-100 dark:border-slate-800">
+              <div className="space-y-1.5 p-3 bg-ivory-50 dark:bg-charcoal-800/30 rounded-xl border border-border/60 dark:border-charcoal-800">
                 <div className="flex justify-between items-center">
-                  <span className="text-slate-600 dark:text-slate-300">4. Doubt Resolution & Office Hours Availability</span>
-                  <span className="font-bold text-slate-900 dark:text-white">{selectedFacultyDossier.avgDoubtClearing} / 5</span>
+                  <span className="text-charcoal-600 dark:text-ivory-300">4. Doubt Resolution & Office Hours Availability</span>
+                  <span className="font-bold text-charcoal-900 dark:text-ivory-100">{selectedFacultyDossier.avgDoubtClearing} / 5</span>
                 </div>
-                <div className="h-1.5 w-full bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+                <div className="h-1.5 w-full bg-ivory-200 dark:bg-charcoal-700 rounded-full overflow-hidden">
                   <div className="h-full bg-amber-500 rounded-full" style={{ width: `${(selectedFacultyDossier.avgDoubtClearing / 5) * 100}%` }} />
                 </div>
               </div>
 
-              <div className="space-y-1.5 p-3 bg-slate-50 dark:bg-slate-800/30 rounded-xl border border-slate-100 dark:border-slate-800">
+              <div className="space-y-1.5 p-3 bg-ivory-50 dark:bg-charcoal-800/30 rounded-xl border border-border/60 dark:border-charcoal-800">
                 <div className="flex justify-between items-center">
-                  <span className="text-slate-600 dark:text-slate-300">5. Course Material Quality & LMS References</span>
-                  <span className="font-bold text-slate-900 dark:text-white">{selectedFacultyDossier.avgCourseMaterial} / 5</span>
+                  <span className="text-charcoal-600 dark:text-ivory-300">5. Course Material Quality & LMS References</span>
+                  <span className="font-bold text-charcoal-900 dark:text-ivory-100">{selectedFacultyDossier.avgCourseMaterial} / 5</span>
                 </div>
-                <div className="h-1.5 w-full bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+                <div className="h-1.5 w-full bg-ivory-200 dark:bg-charcoal-700 rounded-full overflow-hidden">
                   <div className="h-full bg-cyan-500 rounded-full" style={{ width: `${(selectedFacultyDossier.avgCourseMaterial / 5) * 100}%` }} />
                 </div>
               </div>
             </div>
 
-            <div className="flex justify-end gap-2.5 pt-2 border-t border-slate-100 dark:border-slate-800">
+            <div className="flex justify-end gap-2.5 pt-2 border-t border-border/60 dark:border-charcoal-800">
               <button
                 onClick={() => window.print()}
-                className="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-colors"
+                className="px-3.5 py-2 bg-ivory-100 hover:bg-ivory-200 dark:bg-charcoal-800 dark:hover:bg-charcoal-700 text-charcoal-700 dark:text-ivory-200 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-colors"
               >
                 <Printer className="w-3.5 h-3.5" />
                 Print FPI Report
               </button>
               <button
                 onClick={() => setSelectedFacultyDossier(null)}
-                className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-semibold shadow-sm transition-colors"
+                className="px-4 py-2 bg-rose-primary hover:bg-rose-accent text-white rounded-xl text-xs font-semibold shadow-sm transition-colors"
               >
                 Done
               </button>
@@ -1068,44 +1068,44 @@ export default function FeedbackPage() {
           onClick={(e) => {
             if (e.target === e.currentTarget) setSelectedSurveyDossier(null);
           }}
-          className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto animate-in fade-in duration-200"
+          className="fixed inset-0 z-50 bg-charcoal-950/80 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto animate-in fade-in duration-200"
         >
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-5 my-8">
-            <div className="flex items-start justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
+          <div className="bg-white dark:bg-charcoal-900 border border-border dark:border-charcoal-800 rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-5 my-8">
+            <div className="flex items-start justify-between border-b border-border/60 dark:border-charcoal-800 pb-4">
               <div className="flex items-center gap-3">
-                <div className="p-2.5 bg-rose-100 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 rounded-xl">
+                <div className="p-2.5 bg-rose-100 dark:bg-rose-950/60 text-rose-primary dark:text-rose-400 rounded-xl">
                   <FileText className="w-6 h-6" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-slate-900 dark:text-white text-lg">Course Evaluation Entry</h3>
-                  <p className="text-xs font-mono text-slate-400 mt-0.5">{selectedSurveyDossier.surveyRef}</p>
+                  <h3 className="font-bold text-charcoal-900 dark:text-ivory-100 text-lg">Course Evaluation Entry</h3>
+                  <p className="text-xs font-mono text-charcoal-400 mt-0.5">{selectedSurveyDossier.surveyRef}</p>
                 </div>
               </div>
               <button
                 onClick={() => setSelectedSurveyDossier(null)}
-                className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+                className="p-1.5 text-charcoal-400 hover:text-charcoal-600 dark:hover:text-ivory-200 hover:bg-ivory-100 dark:hover:bg-charcoal-800 rounded-lg transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             <div className="grid grid-cols-2 gap-3 text-xs">
-              <div className="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl space-y-1">
-                <span className="text-[11px] text-slate-400 uppercase font-medium block">Course</span>
-                <span className="font-semibold text-slate-900 dark:text-white block">{selectedSurveyDossier.courseCode}</span>
-                <span className="text-slate-500 block truncate">{selectedSurveyDossier.courseName}</span>
+              <div className="p-3 bg-ivory-50 dark:bg-charcoal-800/50 rounded-xl space-y-1">
+                <span className="text-[11px] text-charcoal-400 uppercase font-medium block">Course</span>
+                <span className="font-semibold text-charcoal-900 dark:text-ivory-100 block">{selectedSurveyDossier.courseCode}</span>
+                <span className="text-charcoal-500 block truncate">{selectedSurveyDossier.courseName}</span>
               </div>
-              <div className="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl space-y-1">
-                <span className="text-[11px] text-slate-400 uppercase font-medium block">Instructor Evaluated</span>
-                <span className="font-semibold text-slate-900 dark:text-white block">{selectedSurveyDossier.facultyName}</span>
+              <div className="p-3 bg-ivory-50 dark:bg-charcoal-800/50 rounded-xl space-y-1">
+                <span className="text-[11px] text-charcoal-400 uppercase font-medium block">Instructor Evaluated</span>
+                <span className="font-semibold text-charcoal-900 dark:text-ivory-100 block">{selectedSurveyDossier.facultyName}</span>
                 <span className="text-emerald-600 dark:text-emerald-400 font-medium block">Verified Faculty</span>
               </div>
             </div>
 
-            <div className="p-4 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-200 dark:border-slate-700/60 flex items-center justify-between">
+            <div className="p-4 bg-ivory-50 dark:bg-charcoal-800/40 rounded-xl border border-border dark:border-charcoal-700/60 flex items-center justify-between">
               <div>
-                <span className="text-xs text-slate-500">Cumulative Evaluation Rating</span>
-                <div className="flex items-center gap-1.5 text-2xl font-black text-slate-900 dark:text-white mt-0.5">
+                <span className="text-xs text-charcoal-500">Cumulative Evaluation Rating</span>
+                <div className="flex items-center gap-1.5 text-2xl font-black text-charcoal-900 dark:text-ivory-100 mt-0.5">
                   <Star className="w-5 h-5 fill-amber-400 text-amber-500" />
                   {selectedSurveyDossier.overallScore} / 5.0
                 </div>
@@ -1116,41 +1116,41 @@ export default function FeedbackPage() {
             </div>
 
             {/* 5-Criteria Likert Breakdown for this response */}
-            <div className="p-3.5 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-200 dark:border-slate-700/60 space-y-2 text-xs">
-              <span className="font-bold text-slate-800 dark:text-slate-200 block text-[11px] uppercase tracking-wider">
+            <div className="p-3.5 bg-ivory-50 dark:bg-charcoal-800/40 rounded-xl border border-border dark:border-charcoal-700/60 space-y-2 text-xs">
+              <span className="font-bold text-charcoal-800 dark:text-ivory-200 block text-[11px] uppercase tracking-wider">
                 5-Parameter Likert Score Audit:
               </span>
               <div className="grid grid-cols-2 gap-2 text-[11px]">
-                <div className="p-2 bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800">
-                  <span className="text-slate-400 block text-[10px]">Pedagogy & Delivery</span>
-                  <span className="font-bold font-mono text-slate-900 dark:text-white">
+                <div className="p-2 bg-white dark:bg-charcoal-900 rounded-lg border border-border dark:border-charcoal-800">
+                  <span className="text-charcoal-400 block text-[10px]">Pedagogy & Delivery</span>
+                  <span className="font-bold font-mono text-charcoal-900 dark:text-ivory-100">
                     {selectedSurveyDossier.ratingPedagogy ?? (selectedSurveyDossier.overallScore >= 4 ? 5 : 4)} / 5
                   </span>
                 </div>
-                <div className="p-2 bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800">
-                  <span className="text-slate-400 block text-[10px]">Syllabus Depth</span>
-                  <span className="font-bold font-mono text-slate-900 dark:text-white">
+                <div className="p-2 bg-white dark:bg-charcoal-900 rounded-lg border border-border dark:border-charcoal-800">
+                  <span className="text-charcoal-400 block text-[10px]">Syllabus Depth</span>
+                  <span className="font-bold font-mono text-charcoal-900 dark:text-ivory-100">
                     {selectedSurveyDossier.ratingSyllabus ?? (selectedSurveyDossier.overallScore >= 4 ? 4 : 3)} / 5
                   </span>
                 </div>
-                <div className="p-2 bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800">
-                  <span className="text-slate-400 block text-[10px]">Punctuality</span>
-                  <span className="font-bold font-mono text-slate-900 dark:text-white">
+                <div className="p-2 bg-white dark:bg-charcoal-900 rounded-lg border border-border dark:border-charcoal-800">
+                  <span className="text-charcoal-400 block text-[10px]">Punctuality</span>
+                  <span className="font-bold font-mono text-charcoal-900 dark:text-ivory-100">
                     {selectedSurveyDossier.ratingPunctuality ?? 5} / 5
                   </span>
                 </div>
-                <div className="p-2 bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800">
-                  <span className="text-slate-400 block text-[10px]">Doubt Resolution</span>
-                  <span className="font-bold font-mono text-slate-900 dark:text-white">
+                <div className="p-2 bg-white dark:bg-charcoal-900 rounded-lg border border-border dark:border-charcoal-800">
+                  <span className="text-charcoal-400 block text-[10px]">Doubt Resolution</span>
+                  <span className="font-bold font-mono text-charcoal-900 dark:text-ivory-100">
                     {selectedSurveyDossier.ratingDoubtClearing ?? (selectedSurveyDossier.overallScore >= 3.5 ? 4 : 3)} / 5
                   </span>
                 </div>
               </div>
             </div>
 
-            <div className="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl text-xs space-y-1">
-              <span className="text-[11px] text-slate-400 uppercase font-medium block">Qualitative Feedback</span>
-              <p className="text-slate-700 dark:text-slate-300 italic leading-relaxed">
+            <div className="p-3 bg-ivory-50 dark:bg-charcoal-800/50 rounded-xl text-xs space-y-1">
+              <span className="text-[11px] text-charcoal-400 uppercase font-medium block">Qualitative Feedback</span>
+              <p className="text-charcoal-700 dark:text-ivory-300 italic leading-relaxed">
                 &ldquo;{selectedSurveyDossier.qualitativeRemarks || "No qualitative remarks recorded."}&rdquo;
               </p>
             </div>
@@ -1159,11 +1159,11 @@ export default function FeedbackPage() {
             {(() => {
               const sent = analyzeSentiment(selectedSurveyDossier.qualitativeRemarks, selectedSurveyDossier.overallScore);
               return (
-                <div className="p-4 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-200 dark:border-slate-700/60 space-y-2.5">
+                <div className="p-4 bg-ivory-50 dark:bg-charcoal-800/40 rounded-xl border border-border dark:border-charcoal-700/60 space-y-2.5">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <Brain className="w-4 h-4 text-purple-600 dark:text-purple-400" />
-                      <span className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                      <span className="text-xs font-bold text-charcoal-900 dark:text-ivory-100 uppercase tracking-wider">
                         AI Sentiment & NLP Diagnostic
                       </span>
                     </div>
@@ -1172,42 +1172,42 @@ export default function FeedbackPage() {
                     </span>
                   </div>
                   <div className="space-y-1">
-                    <div className="flex justify-between text-[11px] text-slate-500">
+                    <div className="flex justify-between text-[11px] text-charcoal-500">
                       <span>Valence Polarity Metric</span>
-                      <span className="font-mono font-semibold text-slate-700 dark:text-slate-300">Classification: {sent.tone}</span>
+                      <span className="font-mono font-semibold text-charcoal-700 dark:text-ivory-300">Classification: {sent.tone}</span>
                     </div>
-                    <div className="w-full bg-slate-200 dark:bg-slate-700 h-2 rounded-full overflow-hidden flex">
+                    <div className="w-full bg-ivory-200 dark:bg-charcoal-700 h-2 rounded-full overflow-hidden flex">
                       <div
                         className="bg-emerald-500 h-full rounded-full transition-all duration-300"
                         style={{ width: `${Math.max(5, Math.min(100, (sent.polarity + 1) * 50))}%` }}
                       />
                     </div>
                   </div>
-                  <p className="text-[11px] text-slate-600 dark:text-slate-300 leading-relaxed bg-white/60 dark:bg-slate-900/60 p-2.5 rounded-lg border border-slate-100 dark:border-slate-800">
+                  <p className="text-[11px] text-charcoal-600 dark:text-ivory-300 leading-relaxed bg-white/60 dark:bg-charcoal-900/60 p-2.5 rounded-lg border border-border/60 dark:border-charcoal-800">
                     {sent.description}
                   </p>
                 </div>
               );
             })()}
 
-            <div className="flex justify-between items-center text-xs text-slate-400 border-t border-slate-100 dark:border-slate-800 pt-3">
+            <div className="flex justify-between items-center text-xs text-charcoal-400 border-t border-border/60 dark:border-charcoal-800 pt-3">
               <span>Timestamp: {new Date(selectedSurveyDossier.submittedAt).toLocaleString()}</span>
               <span className="flex items-center gap-1 text-emerald-600 font-medium">
                 <ShieldCheck className="w-3.5 h-3.5" /> Masked ID
               </span>
             </div>
 
-            <div className="flex justify-end gap-2.5 pt-2 border-t border-slate-100 dark:border-slate-800">
+            <div className="flex justify-end gap-2.5 pt-2 border-t border-border/60 dark:border-charcoal-800">
               <button
                 onClick={() => window.print()}
-                className="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-colors"
+                className="px-3.5 py-2 bg-ivory-100 hover:bg-ivory-200 dark:bg-charcoal-800 dark:hover:bg-charcoal-700 text-charcoal-700 dark:text-ivory-200 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-colors"
               >
                 <Printer className="w-3.5 h-3.5" />
                 Print Evaluation Slip
               </button>
               <button
                 onClick={() => setSelectedSurveyDossier(null)}
-                className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-semibold shadow-sm transition-colors"
+                className="px-4 py-2 bg-rose-primary hover:bg-rose-accent text-white rounded-xl text-xs font-semibold shadow-sm transition-colors"
               >
                 Close
               </button>

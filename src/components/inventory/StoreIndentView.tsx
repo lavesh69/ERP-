@@ -20,6 +20,7 @@ import {
   Tag,
   ArrowRight,
   Check,
+  X,
 } from "lucide-react";
 
 export default function StoreIndentView() {
@@ -238,25 +239,25 @@ export default function StoreIndentView() {
   return (
     <div className="space-y-6">
       {/* Header Banner */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-5 rounded-2xl bg-gradient-to-r from-slate-900 via-sky-950 to-slate-900 border border-sky-900/50 text-white shadow-xl">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-5 rounded-2xl bg-gradient-to-r from-charcoal-900 via-rose-950 to-charcoal-900 border border-border/60 text-white shadow-xl">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
-            <span className="p-1.5 rounded-lg bg-sky-500/20 text-sky-400 border border-sky-500/30">
+            <span className="p-1.5 rounded-lg bg-rose-500/20 text-rose-300 border border-rose-500/30">
               <Package className="w-5 h-5" />
             </span>
-            <h2 className="text-xl font-bold tracking-tight text-white">Central Store & Examination Stationery Desk</h2>
-            <span className="text-xs px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-medium">
+            <h2 className="text-xl font-bold tracking-tight text-white">Central Store &amp; Examination Stationery Desk</h2>
+            <span className="text-xs px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-medium">
               Serialized Barcode Security
             </span>
           </div>
-          <p className="text-sm text-slate-300">
+          <p className="text-sm text-ivory-200">
             Automated requisitions for 32-page Examination Answer Booklets, supplementary sheets, continuous assessment ledgers, and lab consumables.
           </p>
         </div>
 
         <button
           onClick={handleOpenIndentModal}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold bg-sky-600 hover:bg-sky-500 text-white transition shadow-lg shadow-sky-600/20 shrink-0"
+          className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold bg-rose-primary hover:bg-rose-primary/90 text-white transition shadow-lg shadow-rose-950/20 shrink-0"
         >
           <Plus className="w-4 h-4" />
           Raise Department Indent
@@ -267,12 +268,12 @@ export default function StoreIndentView() {
         <div
           className={`p-4 rounded-xl flex items-center justify-between border ${
             statusMessage.type === "success"
-              ? "bg-emerald-950/40 text-emerald-300 border-emerald-800/60"
-              : "bg-rose-950/40 text-rose-300 border-rose-800/60"
+              ? "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800/60"
+              : "bg-rose-50 dark:bg-rose-950/40 text-rose-800 dark:text-rose-300 border-rose-200 dark:border-rose-800/60"
           }`}
         >
           <div className="flex items-center gap-3 text-sm font-medium">
-            {statusMessage.type === "success" ? <CheckCircle2 className="w-5 h-5 text-emerald-400" /> : <AlertTriangle className="w-5 h-5 text-rose-400" />}
+            {statusMessage.type === "success" ? <CheckCircle2 className="w-5 h-5 text-emerald-500 dark:text-emerald-400" /> : <AlertTriangle className="w-5 h-5 text-rose-500 dark:text-rose-400" />}
             <span>{statusMessage.text}</span>
           </div>
           <button onClick={() => setStatusMessage(null)} className="text-xs opacity-70 hover:opacity-100">Dismiss</button>
@@ -282,72 +283,72 @@ export default function StoreIndentView() {
       {/* KPI Ribbon */}
       {analytics && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <div className="p-4 rounded-xl bg-slate-900/60 border border-slate-800">
-            <span className="text-xs font-medium text-slate-400 block mb-1">Exam Booklets In Vault</span>
-            <div className="text-2xl font-bold text-white flex items-center justify-between">
+          <div className="p-4 rounded-xl bg-white dark:bg-charcoal-900 border border-border dark:border-charcoal-800 shadow-sm">
+            <span className="text-xs font-medium text-charcoal-500 dark:text-charcoal-400 block mb-1">Exam Booklets In Vault</span>
+            <div className="text-2xl font-bold text-charcoal-900 dark:text-ivory-100 flex items-center justify-between">
               <span>{analytics.totalBookletsOnHand.toLocaleString()}</span>
-              <FileText className="w-5 h-5 text-sky-400 opacity-60" />
+              <FileText className="w-5 h-5 text-rose-primary dark:text-rose-400 opacity-60" />
             </div>
-            <span className="text-[11px] text-emerald-400 mt-1 block">Barcoded 32p & 8p sheets</span>
+            <span className="text-[11px] text-emerald-600 dark:text-emerald-400 mt-1 block">Barcoded 32p &amp; 8p sheets</span>
           </div>
 
-          <div className="p-4 rounded-xl bg-slate-900/60 border border-slate-800">
-            <span className="text-xs font-medium text-slate-400 block mb-1">Store Inventory Valuation</span>
-            <div className="text-2xl font-bold text-emerald-400 flex items-center justify-between">
+          <div className="p-4 rounded-xl bg-white dark:bg-charcoal-900 border border-border dark:border-charcoal-800 shadow-sm">
+            <span className="text-xs font-medium text-charcoal-500 dark:text-charcoal-400 block mb-1">Store Inventory Valuation</span>
+            <div className="text-2xl font-bold text-emerald-600 dark:text-emerald-400 flex items-center justify-between">
               <span>₹{analytics.totalInventoryValuation.toLocaleString()}</span>
               <DollarSign className="w-5 h-5 text-emerald-500 opacity-60" />
             </div>
-            <span className="text-[11px] text-slate-400 mt-1 block">{analytics.totalItemCategories} Catalog SKUs</span>
+            <span className="text-[11px] text-charcoal-500 dark:text-charcoal-400 mt-1 block">{analytics.totalItemCategories} Catalog SKUs</span>
           </div>
 
-          <div className="p-4 rounded-xl bg-slate-900/60 border border-slate-800">
-            <span className="text-xs font-medium text-slate-400 block mb-1">Pending Indents</span>
-            <div className="text-2xl font-bold text-amber-400 flex items-center justify-between">
+          <div className="p-4 rounded-xl bg-white dark:bg-charcoal-900 border border-border dark:border-charcoal-800 shadow-sm">
+            <span className="text-xs font-medium text-charcoal-500 dark:text-charcoal-400 block mb-1">Pending Indents</span>
+            <div className="text-2xl font-bold text-amber-600 dark:text-amber-400 flex items-center justify-between">
               <span>{analytics.pendingIndents}</span>
               <Clock className="w-5 h-5 text-amber-500 opacity-60" />
             </div>
-            <span className="text-[11px] text-slate-400 mt-1 block">HOD / Store review queue</span>
+            <span className="text-[11px] text-charcoal-500 dark:text-charcoal-400 mt-1 block">HOD / Store review queue</span>
           </div>
 
-          <div className="p-4 rounded-xl bg-slate-900/60 border border-slate-800">
-            <span className="text-xs font-medium text-slate-400 block mb-1">Low Stock Alerts</span>
-            <div className="text-2xl font-bold text-rose-400 flex items-center justify-between">
+          <div className="p-4 rounded-xl bg-white dark:bg-charcoal-900 border border-border dark:border-charcoal-800 shadow-sm">
+            <span className="text-xs font-medium text-charcoal-500 dark:text-charcoal-400 block mb-1">Low Stock Alerts</span>
+            <div className="text-2xl font-bold text-rose-600 dark:text-rose-400 flex items-center justify-between">
               <span>{analytics.lowStockAlertsCount}</span>
               <AlertTriangle className="w-5 h-5 text-rose-500 opacity-60" />
             </div>
-            <span className="text-[11px] text-rose-400 mt-1 block">Threshold breach</span>
+            <span className="text-[11px] text-rose-600 dark:text-rose-400 mt-1 block">Threshold breach</span>
           </div>
         </div>
       )}
 
       {/* Tabs */}
-      <div className="flex border-b border-slate-800 gap-6 overflow-x-auto no-scrollbar flex-nowrap">
+      <div className="flex border-b border-border dark:border-charcoal-800 gap-6 overflow-x-auto no-scrollbar flex-nowrap">
         <button
           onClick={() => setActiveTab("catalog")}
           className={`pb-3 font-semibold text-sm transition-colors border-b-2 whitespace-nowrap shrink-0 ${
             activeTab === "catalog"
-              ? "border-sky-500 text-sky-400"
-              : "border-transparent text-slate-400 hover:text-slate-200"
+              ? "border-rose-primary text-rose-primary dark:text-rose-400"
+              : "border-transparent text-charcoal-500 hover:text-charcoal-800 dark:text-charcoal-400 dark:hover:text-ivory-200"
           }`}
         >
-          Store Inventory & Stock Levels ({items.length})
+          Store Inventory &amp; Stock Levels ({items.length})
         </button>
         <button
           onClick={() => setActiveTab("indents")}
           className={`pb-3 font-semibold text-sm transition-colors border-b-2 whitespace-nowrap shrink-0 ${
             activeTab === "indents"
-              ? "border-sky-500 text-sky-400"
-              : "border-transparent text-slate-400 hover:text-slate-200"
+              ? "border-rose-primary text-rose-primary dark:text-rose-400"
+              : "border-transparent text-charcoal-500 hover:text-charcoal-800 dark:text-charcoal-400 dark:hover:text-ivory-200"
           }`}
         >
-          Department Indents & Dispatch Vouchers ({indents.length})
+          Department Indents &amp; Dispatch Vouchers ({indents.length})
         </button>
         <button
           onClick={() => setActiveTab("movements")}
           className={`pb-3 font-semibold text-sm transition-colors border-b-2 whitespace-nowrap shrink-0 ${
             activeTab === "movements"
-              ? "border-sky-500 text-sky-400"
-              : "border-transparent text-slate-400 hover:text-slate-200"
+              ? "border-rose-primary text-rose-primary dark:text-rose-400"
+              : "border-transparent text-charcoal-500 hover:text-charcoal-800 dark:text-charcoal-400 dark:hover:text-ivory-200"
           }`}
         >
           Stock Audit Ledger ({movements.length})
@@ -362,47 +363,47 @@ export default function StoreIndentView() {
             return (
               <div
                 key={item.id}
-                className="p-4 rounded-xl bg-slate-900/70 border border-slate-800 hover:border-slate-700 transition flex flex-col justify-between"
+                className="p-4 rounded-xl bg-white dark:bg-charcoal-900 border border-border dark:border-charcoal-800 hover:border-rose-300 dark:hover:border-rose-900/50 shadow-sm transition flex flex-col justify-between"
               >
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <span className="text-[11px] px-2 py-0.5 rounded bg-sky-500/10 text-sky-400 font-mono font-bold border border-sky-500/20">
+                    <span className="text-[11px] px-2 py-0.5 rounded bg-rose-50 dark:bg-rose-950/40 text-rose-primary dark:text-rose-300 font-mono font-bold border border-rose-200 dark:border-rose-800">
                       {item.code}
                     </span>
                     {item.securityControlled && (
-                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-400 border border-purple-500/20 font-semibold flex items-center gap-1">
+                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800 font-semibold flex items-center gap-1">
                         <QrCode className="w-3 h-3" /> Encrypted
                       </span>
                     )}
                   </div>
 
-                  <h3 className="text-sm font-bold text-white line-clamp-1">{item.name}</h3>
-                  <p className="text-[11px] text-slate-400 leading-relaxed line-clamp-2">
+                  <h3 className="text-sm font-bold text-charcoal-900 dark:text-ivory-100 line-clamp-1">{item.name}</h3>
+                  <p className="text-[11px] text-charcoal-500 dark:text-charcoal-400 leading-relaxed line-clamp-2">
                     {item.specifications}
                   </p>
 
-                  <div className="pt-2 border-t border-slate-800 space-y-1 text-xs">
-                    <div className="flex justify-between text-slate-400">
+                  <div className="pt-2 border-t border-border/60 dark:border-charcoal-800 space-y-1 text-xs">
+                    <div className="flex justify-between text-charcoal-500 dark:text-charcoal-400">
                       <span>On-Hand:</span>
-                      <span className={`font-bold ${isLow ? "text-rose-400" : "text-white"}`}>
+                      <span className={`font-bold ${isLow ? "text-rose-600 dark:text-rose-400" : "text-charcoal-900 dark:text-ivory-100"}`}>
                         {item.quantityOnHand.toLocaleString()} {item.unitOfMeasurement}
                       </span>
                     </div>
-                    <div className="flex justify-between text-slate-500 text-[11px]">
+                    <div className="flex justify-between text-charcoal-400 dark:text-charcoal-500 text-[11px]">
                       <span>Reorder Buffer:</span>
                       <span>{item.reorderThreshold.toLocaleString()}</span>
                     </div>
-                    <div className="flex justify-between text-slate-500 text-[11px]">
+                    <div className="flex justify-between text-charcoal-400 dark:text-charcoal-500 text-[11px]">
                       <span>Unit Value:</span>
-                      <span className="text-slate-300 font-medium">₹{item.unitCost}</span>
+                      <span className="text-charcoal-700 dark:text-ivory-300 font-medium">₹{item.unitCost}</span>
                     </div>
                   </div>
                 </div>
 
-                <div className="pt-3 mt-3 border-t border-slate-800/80 flex items-center justify-between">
+                <div className="pt-3 mt-3 border-t border-border/60 dark:border-charcoal-800/80 flex items-center justify-between">
                   <span
                     className={`text-[10px] px-2 py-0.5 rounded-full font-semibold ${
-                      isLow ? "bg-rose-500/10 text-rose-400 border border-rose-500/20" : "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                      isLow ? "bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800" : "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800"
                     }`}
                   >
                     {isLow ? "Low Stock Alert" : "Adequate Vault Buffer"}
@@ -420,51 +421,51 @@ export default function StoreIndentView() {
           {indents.map((indent) => (
             <div
               key={indent.id}
-              className="p-4 rounded-xl bg-slate-900/60 border border-slate-800 flex flex-col lg:flex-row lg:items-center justify-between gap-4"
+              className="p-4 rounded-xl bg-white dark:bg-charcoal-900 border border-border dark:border-charcoal-800 shadow-sm flex flex-col lg:flex-row lg:items-center justify-between gap-4"
             >
               <div className="space-y-1.5 max-w-3xl">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <span className="font-mono text-xs font-semibold text-sky-400 bg-sky-500/10 px-2.5 py-0.5 rounded-md border border-sky-500/20">
+                  <span className="font-mono text-xs font-semibold text-rose-primary dark:text-rose-400 bg-rose-50 dark:bg-rose-950/40 px-2.5 py-0.5 rounded-md border border-rose-200 dark:border-rose-800">
                     {indent.indentNumber}
                   </span>
-                  <span className="text-sm font-bold text-white">{indent.department}</span>
+                  <span className="text-sm font-bold text-charcoal-900 dark:text-ivory-100">{indent.department}</span>
                   <span
                     className={`text-[11px] px-2.5 py-0.5 rounded-full font-semibold border ${
                       indent.status === "FULFILLED"
-                        ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+                        ? "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800"
                         : indent.status === "DISPATCHED"
-                        ? "bg-sky-500/10 text-sky-400 border-sky-500/20"
+                        ? "bg-sky-50 dark:bg-sky-950/40 text-sky-700 dark:text-sky-300 border-sky-200 dark:border-sky-800"
                         : indent.status === "HOD_APPROVED"
-                        ? "bg-indigo-500/10 text-indigo-400 border-indigo-500/20"
-                        : "bg-amber-500/10 text-amber-400 border-amber-500/20"
+                        ? "bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800"
+                        : "bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-800"
                     }`}
                   >
                     {indent.status}
                   </span>
                   {indent.examSessionCode && (
-                    <span className="text-[11px] font-mono text-purple-300 bg-purple-950/40 px-2 py-0.5 rounded border border-purple-800">
+                    <span className="text-[11px] font-mono text-purple-700 dark:text-purple-300 bg-purple-50 dark:bg-purple-950/40 px-2 py-0.5 rounded border border-purple-200 dark:border-purple-800">
                       {indent.examSessionCode}
                     </span>
                   )}
                 </div>
 
-                <p className="text-xs text-slate-300">
-                  <span className="text-slate-400">Purpose: </span>{indent.purpose}
+                <p className="text-xs text-charcoal-700 dark:text-ivory-300">
+                  <span className="text-charcoal-400">Purpose: </span>{indent.purpose}
                 </p>
 
-                <div className="flex items-center gap-4 text-xs text-slate-400 flex-wrap">
+                <div className="flex items-center gap-4 text-xs text-charcoal-500 dark:text-charcoal-400 flex-wrap">
                   <span>Indentor: {indent.indentorName} ({indent.indentorRole})</span>
                   <span>Items: {indent.items.map((i: any) => `${i.requestedQuantity}x ${i.itemCode}`).join(", ")}</span>
                 </div>
 
                 {indent.dispatchVoucher && (
-                  <div className="p-2 rounded-lg bg-sky-950/30 border border-sky-900/40 text-[11px] text-sky-300 space-y-1 font-mono">
+                  <div className="p-2 rounded-lg bg-ivory-50 dark:bg-charcoal-800/50 border border-border dark:border-charcoal-700 text-[11px] text-charcoal-700 dark:text-ivory-300 space-y-1 font-mono">
                     <div className="flex justify-between">
                       <span>Voucher: {indent.dispatchVoucher.voucherNumber} (GP: {indent.dispatchVoucher.gatePassNumber})</span>
                       <span>Dispatched By: {indent.dispatchVoucher.dispatchedBy}</span>
                     </div>
                     {indent.items.some((i: any) => i.barcodeRangeStart) && (
-                      <div className="text-purple-300">
+                      <div className="text-purple-600 dark:text-purple-400">
                         Barcodes: {indent.items.filter((i: any) => i.barcodeRangeStart).map((i: any) => `${i.itemCode}: [${i.barcodeRangeStart} to ${i.barcodeRangeEnd}]`).join("; ")}
                       </div>
                     )}
@@ -477,7 +478,7 @@ export default function StoreIndentView() {
                 {indent.status === "SUBMITTED" && (
                   <button
                     onClick={() => handleApproveHOD(indent.id)}
-                    className="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-indigo-600 hover:bg-indigo-500 text-white transition flex items-center gap-1"
+                    className="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-indigo-600 hover:bg-indigo-500 text-white transition flex items-center gap-1 shadow-sm"
                   >
                     <Check className="w-3.5 h-3.5" />
                     HOD Endorse
@@ -486,7 +487,7 @@ export default function StoreIndentView() {
                 {indent.status === "HOD_APPROVED" && (
                   <button
                     onClick={() => handleOpenDispatchModal(indent)}
-                    className="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-sky-600 hover:bg-sky-500 text-white transition flex items-center gap-1 shadow-md shadow-sky-600/20"
+                    className="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-rose-primary hover:bg-rose-primary/90 text-white transition flex items-center gap-1 shadow-sm"
                   >
                     <Package className="w-3.5 h-3.5" />
                     Dispatch from Store
@@ -495,7 +496,7 @@ export default function StoreIndentView() {
                 {indent.status === "DISPATCHED" && (
                   <button
                     onClick={() => handleAcknowledgeReceipt(indent.id)}
-                    className="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white transition flex items-center gap-1"
+                    className="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white transition flex items-center gap-1 shadow-sm"
                   >
                     <CheckCircle2 className="w-3.5 h-3.5" />
                     Acknowledge Delivery
@@ -509,10 +510,10 @@ export default function StoreIndentView() {
 
       {/* Tab 3: Stock Movement Ledger */}
       {activeTab === "movements" && (
-        <div className="p-4 rounded-xl bg-slate-900/60 border border-slate-800 overflow-x-auto">
+        <div className="p-4 rounded-xl bg-white dark:bg-charcoal-900 border border-border dark:border-charcoal-800 shadow-sm overflow-x-auto">
           <table className="w-full text-left text-xs">
             <thead>
-              <tr className="border-b border-slate-800 text-slate-400 font-semibold uppercase tracking-wider text-[10px]">
+              <tr className="border-b border-border dark:border-charcoal-800 text-charcoal-500 dark:text-charcoal-400 font-semibold uppercase tracking-wider text-[10px]">
                 <th className="pb-3">Timestamp</th>
                 <th className="pb-3">SKU Code</th>
                 <th className="pb-3">Transaction</th>
@@ -521,31 +522,31 @@ export default function StoreIndentView() {
                 <th className="pb-3">Reference Voucher</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800/60">
+            <tbody className="divide-y divide-border/60 dark:divide-charcoal-800">
               {movements.map((m) => (
-                <tr key={m.id} className="hover:bg-slate-800/30">
-                  <td className="py-2.5 text-slate-400 font-mono text-[11px]">
+                <tr key={m.id} className="hover:bg-ivory-50/50 dark:hover:bg-charcoal-800/40">
+                  <td className="py-2.5 text-charcoal-500 dark:text-charcoal-400 font-mono text-[11px]">
                     {new Date(m.timestamp).toLocaleDateString()} {new Date(m.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                   </td>
-                  <td className="py-2.5 font-bold text-white font-mono">{m.itemCode}</td>
+                  <td className="py-2.5 font-bold text-charcoal-900 dark:text-ivory-100 font-mono">{m.itemCode}</td>
                   <td className="py-2.5">
                     <span
                       className={`text-[10px] px-2 py-0.5 rounded font-semibold ${
                         m.transactionType === "INDENT_ISSUE"
-                          ? "bg-amber-500/10 text-amber-400 border border-amber-500/20"
-                          : "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                          ? "bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800"
+                          : "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800"
                       }`}
                     >
                       {m.transactionType}
                     </span>
                   </td>
-                  <td className="py-2.5 text-right font-bold text-slate-200">
+                  <td className="py-2.5 text-right font-bold text-charcoal-900 dark:text-ivory-100">
                     {m.transactionType === "INDENT_ISSUE" ? `-${m.quantity}` : `+${m.quantity}`}
                   </td>
-                  <td className="py-2.5 text-right font-mono text-slate-300 font-bold">
+                  <td className="py-2.5 text-right font-mono text-charcoal-800 dark:text-ivory-200 font-bold">
                     {m.balanceAfter.toLocaleString()}
                   </td>
-                  <td className="py-2.5 font-mono text-sky-400 text-[11px]">{m.referenceDoc}</td>
+                  <td className="py-2.5 font-mono text-rose-primary dark:text-rose-400 text-[11px]">{m.referenceDoc}</td>
                 </tr>
               ))}
             </tbody>
@@ -562,33 +563,39 @@ export default function StoreIndentView() {
           onClick={(e) => {
             if (e.target === e.currentTarget) setShowIndentModal(false);
           }}
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-charcoal-950/80 backdrop-blur-sm"
         >
-          <div className="w-full max-w-xl p-6 rounded-2xl bg-slate-900 border border-slate-700 text-white shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-              <h3 className="text-base font-bold text-white">Raise Departmental Store Indent</h3>
-              <button onClick={() => setShowIndentModal(false)} className="text-slate-400 hover:text-white text-lg">×</button>
+          <div className="w-full max-w-xl p-6 rounded-2xl bg-white dark:bg-charcoal-900 border border-border dark:border-charcoal-800 text-charcoal-900 dark:text-ivory-100 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-border dark:border-charcoal-800 pb-3">
+              <h3 className="text-base font-bold text-charcoal-900 dark:text-ivory-100">Raise Departmental Store Indent</h3>
+              <button
+                onClick={() => setShowIndentModal(false)}
+                className="p-1.5 text-charcoal-400 hover:text-charcoal-600 dark:hover:text-ivory-200 hover:bg-ivory-100 dark:hover:bg-charcoal-800 rounded-lg transition-colors"
+                aria-label="Close modal"
+              >
+                <X className="w-5 h-5" />
+              </button>
             </div>
 
             <form onSubmit={submitIndent} className="space-y-4 text-xs">
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-slate-400 block mb-1">Department</label>
+                  <label className="text-charcoal-600 dark:text-charcoal-400 block mb-1 font-medium">Department</label>
                   <input
                     type="text"
                     value={indentForm.department}
                     onChange={(e) => setIndentForm({ ...indentForm, department: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white"
+                    className="w-full px-3 py-2 rounded-xl bg-ivory-50 dark:bg-charcoal-800 border border-border dark:border-charcoal-700 text-charcoal-900 dark:text-ivory-100 focus:outline-none focus:ring-2 focus:ring-rose-500"
                     required
                   />
                 </div>
                 <div>
-                  <label className="text-slate-400 block mb-1">Indentor Name</label>
+                  <label className="text-charcoal-600 dark:text-charcoal-400 block mb-1 font-medium">Indentor Name</label>
                   <input
                     type="text"
                     value={indentForm.indentorName}
                     onChange={(e) => setIndentForm({ ...indentForm, indentorName: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white"
+                    className="w-full px-3 py-2 rounded-xl bg-ivory-50 dark:bg-charcoal-800 border border-border dark:border-charcoal-700 text-charcoal-900 dark:text-ivory-100 focus:outline-none focus:ring-2 focus:ring-rose-500"
                     required
                   />
                 </div>
@@ -596,35 +603,35 @@ export default function StoreIndentView() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-slate-400 block mb-1">Purpose / End-Use</label>
+                  <label className="text-charcoal-600 dark:text-charcoal-400 block mb-1 font-medium">Purpose / End-Use</label>
                   <input
                     type="text"
                     value={indentForm.purpose}
                     onChange={(e) => setIndentForm({ ...indentForm, purpose: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white"
+                    className="w-full px-3 py-2 rounded-xl bg-ivory-50 dark:bg-charcoal-800 border border-border dark:border-charcoal-700 text-charcoal-900 dark:text-ivory-100 focus:outline-none focus:ring-2 focus:ring-rose-500"
                     required
                   />
                 </div>
                 <div>
-                  <label className="text-slate-400 block mb-1">Exam Session Code (Optional)</label>
+                  <label className="text-charcoal-600 dark:text-charcoal-400 block mb-1 font-medium">Exam Session Code (Optional)</label>
                   <input
                     type="text"
                     value={indentForm.examSessionCode}
                     onChange={(e) => setIndentForm({ ...indentForm, examSessionCode: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white font-mono"
+                    className="w-full px-3 py-2 rounded-xl bg-ivory-50 dark:bg-charcoal-800 border border-border dark:border-charcoal-700 text-charcoal-900 dark:text-ivory-100 font-mono focus:outline-none focus:ring-2 focus:ring-rose-500"
                     placeholder="e.g. END-SEM-NOV-2026"
                   />
                 </div>
               </div>
 
               {/* Line Items */}
-              <div className="space-y-2 pt-2 border-t border-slate-800">
+              <div className="space-y-2 pt-2 border-t border-border dark:border-charcoal-800">
                 <div className="flex items-center justify-between">
-                  <span className="font-semibold text-slate-300">Requisition Items</span>
+                  <span className="font-semibold text-charcoal-700 dark:text-ivory-300">Requisition Items</span>
                   <button
                     type="button"
                     onClick={handleAddItemToIndent}
-                    className="text-sky-400 hover:text-sky-300 flex items-center gap-1 font-semibold"
+                    className="text-rose-primary dark:text-rose-400 hover:underline flex items-center gap-1 font-semibold"
                   >
                     <Plus className="w-3.5 h-3.5" /> Add Item
                   </button>
@@ -639,7 +646,7 @@ export default function StoreIndentView() {
                         updated[idx].itemId = e.target.value;
                         setSelectedItems(updated);
                       }}
-                      className="flex-1 px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white"
+                      className="flex-1 px-3 py-2 rounded-xl bg-ivory-50 dark:bg-charcoal-800 border border-border dark:border-charcoal-700 text-charcoal-900 dark:text-ivory-100 focus:outline-none focus:ring-2 focus:ring-rose-500"
                     >
                       {items.map((i) => (
                         <option key={i.id} value={i.id}>
@@ -657,34 +664,35 @@ export default function StoreIndentView() {
                         updated[idx].requestedQuantity = Number(e.target.value);
                         setSelectedItems(updated);
                       }}
-                      className="w-24 px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white text-right"
+                      className="w-24 px-3 py-2 rounded-xl bg-ivory-50 dark:bg-charcoal-800 border border-border dark:border-charcoal-700 text-charcoal-900 dark:text-ivory-100 text-right focus:outline-none focus:ring-2 focus:ring-rose-500"
                     />
 
                     {selectedItems.length > 1 && (
                       <button
                         type="button"
                         onClick={() => handleRemoveItemFromIndent(idx)}
-                        className="p-2 text-rose-400 hover:text-rose-300"
+                        className="p-2 text-rose-500 hover:text-rose-600 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/40 transition"
+                        aria-label="Remove item"
                       >
-                        ×
+                        <X className="w-4 h-4" />
                       </button>
                     )}
                   </div>
                 ))}
               </div>
 
-              <div className="flex justify-end gap-2 pt-3 border-t border-slate-800">
+              <div className="flex justify-end gap-2 pt-3 border-t border-border dark:border-charcoal-800">
                 <button
                   type="button"
                   onClick={() => setShowIndentModal(false)}
-                  className="px-4 py-2 rounded-xl bg-slate-800 text-slate-300"
+                  className="px-4 py-2 rounded-xl bg-ivory-100 hover:bg-ivory-200 dark:bg-charcoal-800 dark:hover:bg-charcoal-700 text-charcoal-700 dark:text-ivory-200 font-medium transition"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="px-5 py-2 rounded-xl bg-sky-600 hover:bg-sky-500 font-bold text-white transition disabled:opacity-50"
+                  className="px-5 py-2 rounded-xl bg-rose-primary hover:bg-rose-primary/90 font-bold text-white transition disabled:opacity-50 shadow-md shadow-rose-950/20"
                 >
                   {isSubmitting ? "Logging Indent..." : "Submit Requisition"}
                 </button>
@@ -703,28 +711,34 @@ export default function StoreIndentView() {
           onClick={(e) => {
             if (e.target === e.currentTarget) setShowDispatchModal(false);
           }}
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-charcoal-950/80 backdrop-blur-sm"
         >
-          <div className="w-full max-w-lg p-6 rounded-2xl bg-slate-900 border border-slate-700 text-white shadow-2xl space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+          <div className="w-full max-w-lg p-6 rounded-2xl bg-white dark:bg-charcoal-900 border border-border dark:border-charcoal-800 text-charcoal-900 dark:text-ivory-100 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between border-b border-border dark:border-charcoal-800 pb-3">
               <div>
-                <h3 className="text-base font-bold text-white">Store Dispatch Voucher & Barcode Range</h3>
-                <p className="text-xs text-sky-400">{selectedIndentForDispatch.indentNumber} · {selectedIndentForDispatch.department}</p>
+                <h3 className="text-base font-bold text-charcoal-900 dark:text-ivory-100">Store Dispatch Voucher &amp; Barcode Range</h3>
+                <p className="text-xs text-rose-primary dark:text-rose-400 font-medium">{selectedIndentForDispatch.indentNumber} • {selectedIndentForDispatch.department}</p>
               </div>
-              <button onClick={() => setShowDispatchModal(false)} className="text-slate-400 hover:text-white text-lg">×</button>
+              <button
+                onClick={() => setShowDispatchModal(false)}
+                className="p-1.5 text-charcoal-400 hover:text-charcoal-600 dark:hover:text-ivory-200 hover:bg-ivory-100 dark:hover:bg-charcoal-800 rounded-lg transition-colors"
+                aria-label="Close modal"
+              >
+                <X className="w-5 h-5" />
+              </button>
             </div>
 
             <form onSubmit={submitDispatch} className="space-y-4 text-xs">
               {selectedIndentForDispatch.items.map((item: any) => (
-                <div key={item.itemId} className="p-3 rounded-xl bg-slate-950 border border-slate-800 space-y-2">
-                  <div className="flex justify-between items-center font-semibold text-white">
+                <div key={item.itemId} className="p-3 rounded-xl bg-ivory-50 dark:bg-charcoal-800/50 border border-border dark:border-charcoal-700 space-y-2">
+                  <div className="flex justify-between items-center font-semibold text-charcoal-900 dark:text-ivory-100">
                     <span>{item.itemName}</span>
-                    <span className="text-sky-400">Req: {item.requestedQuantity}</span>
+                    <span className="text-rose-primary dark:text-rose-400 font-bold">Req: {item.requestedQuantity}</span>
                   </div>
 
                   <div className="grid grid-cols-3 gap-2">
                     <div>
-                      <label className="text-slate-500 block text-[10px]">Dispatch Qty</label>
+                      <label className="text-charcoal-500 dark:text-charcoal-400 block text-[10px] font-medium">Dispatch Qty</label>
                       <input
                         type="number"
                         value={dispatchData[item.itemId]?.dispatchedQuantity ?? item.requestedQuantity}
@@ -737,11 +751,11 @@ export default function StoreIndentView() {
                             },
                           });
                         }}
-                        className="w-full px-2.5 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-white"
+                        className="w-full px-2.5 py-1.5 rounded-lg bg-white dark:bg-charcoal-900 border border-border dark:border-charcoal-700 text-charcoal-900 dark:text-ivory-100 focus:outline-none focus:ring-1 focus:ring-rose-500"
                       />
                     </div>
                     <div>
-                      <label className="text-slate-500 block text-[10px]">Barcode From</label>
+                      <label className="text-charcoal-500 dark:text-charcoal-400 block text-[10px] font-medium">Barcode From</label>
                       <input
                         type="text"
                         placeholder="BKLT-2026-0001"
@@ -755,11 +769,11 @@ export default function StoreIndentView() {
                             },
                           });
                         }}
-                        className="w-full px-2.5 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-white font-mono text-[11px]"
+                        className="w-full px-2.5 py-1.5 rounded-lg bg-white dark:bg-charcoal-900 border border-border dark:border-charcoal-700 text-charcoal-900 dark:text-ivory-100 font-mono text-[11px] focus:outline-none focus:ring-1 focus:ring-rose-500"
                       />
                     </div>
                     <div>
-                      <label className="text-slate-500 block text-[10px]">Barcode To</label>
+                      <label className="text-charcoal-500 dark:text-charcoal-400 block text-[10px] font-medium">Barcode To</label>
                       <input
                         type="text"
                         placeholder="BKLT-2026-1000"
@@ -773,26 +787,26 @@ export default function StoreIndentView() {
                             },
                           });
                         }}
-                        className="w-full px-2.5 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-white font-mono text-[11px]"
+                        className="w-full px-2.5 py-1.5 rounded-lg bg-white dark:bg-charcoal-900 border border-border dark:border-charcoal-700 text-charcoal-900 dark:text-ivory-100 font-mono text-[11px] focus:outline-none focus:ring-1 focus:ring-rose-500"
                       />
                     </div>
                   </div>
                 </div>
               ))}
 
-              <div className="flex justify-end gap-2 pt-2 border-t border-slate-800">
+              <div className="flex justify-end gap-2 pt-2 border-t border-border dark:border-charcoal-800">
                 <button
                   type="button"
                   onClick={() => setShowDispatchModal(false)}
-                  className="px-4 py-2 rounded-xl bg-slate-800 text-slate-300"
+                  className="px-4 py-2 rounded-xl bg-ivory-100 hover:bg-ivory-200 dark:bg-charcoal-800 dark:hover:bg-charcoal-700 text-charcoal-700 dark:text-ivory-200 font-medium transition"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-xl bg-sky-600 hover:bg-sky-500 font-bold text-white transition shadow-md shadow-sky-600/20"
+                  className="px-5 py-2 rounded-xl bg-rose-primary hover:bg-rose-primary/90 font-bold text-white transition shadow-md shadow-rose-950/20"
                 >
-                  Confirm Dispatch & Seal
+                  Confirm Dispatch &amp; Seal
                 </button>
               </div>
             </form>

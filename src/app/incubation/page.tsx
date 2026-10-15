@@ -280,69 +280,69 @@ export default function IncubationPage() {
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
-          <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 mb-2">
+        <div className="bg-white dark:bg-charcoal-900 p-5 rounded-2xl border border-border dark:border-charcoal-800 shadow-sm">
+          <div className="flex items-center justify-between text-charcoal-500 dark:text-charcoal-400 mb-2">
             <span className="text-xs font-semibold uppercase tracking-wider">Incubated Startups</span>
             <Rocket className="w-4 h-4 text-violet-500" />
           </div>
-          <div className="text-2xl font-bold text-slate-900 dark:text-white">
+          <div className="text-2xl font-bold text-charcoal-900 dark:text-ivory-100">
             {loading ? "..." : summary?.totalVentures || 0}
           </div>
-          <p className="text-xs text-slate-400 mt-1">{summary?.activeVentures || 0} Currently Active in Cohort</p>
+          <p className="text-xs text-charcoal-400 mt-1">{summary?.activeVentures || 0} Currently Active in Cohort</p>
         </div>
 
-        <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
-          <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 mb-2">
+        <div className="bg-white dark:bg-charcoal-900 p-5 rounded-2xl border border-border dark:border-charcoal-800 shadow-sm">
+          <div className="flex items-center justify-between text-charcoal-500 dark:text-charcoal-400 mb-2">
             <span className="text-xs font-semibold uppercase tracking-wider">Seed Grants Disbursed</span>
             <DollarSign className="w-4 h-4 text-emerald-500" />
           </div>
-          <div className="text-2xl font-bold text-slate-900 dark:text-white">
+          <div className="text-2xl font-bold text-charcoal-900 dark:text-ivory-100">
             ${loading ? "..." : (summary?.totalSeedCapitalDisbursed || 0).toLocaleString()}
           </div>
           <p className="text-xs text-emerald-600 dark:text-emerald-400 mt-1 font-medium">University Venture Fund</p>
         </div>
 
-        <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
-          <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 mb-2">
+        <div className="bg-white dark:bg-charcoal-900 p-5 rounded-2xl border border-border dark:border-charcoal-800 shadow-sm">
+          <div className="flex items-center justify-between text-charcoal-500 dark:text-charcoal-400 mb-2">
             <span className="text-xs font-semibold uppercase tracking-wider">External Capital Raised</span>
             <TrendingUp className="w-4 h-4 text-indigo-500" />
           </div>
-          <div className="text-2xl font-bold text-slate-900 dark:text-white">
+          <div className="text-2xl font-bold text-charcoal-900 dark:text-ivory-100">
             ${loading ? "..." : (summary?.totalExternalFundingRaised || 0).toLocaleString()}
           </div>
-          <p className="text-xs text-slate-400 mt-1">VC & Angel Syndicates</p>
+          <p className="text-xs text-charcoal-400 mt-1">VC & Angel Syndicates</p>
         </div>
 
-        <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
-          <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 mb-2">
+        <div className="bg-white dark:bg-charcoal-900 p-5 rounded-2xl border border-border dark:border-charcoal-800 shadow-sm">
+          <div className="flex items-center justify-between text-charcoal-500 dark:text-charcoal-400 mb-2">
             <span className="text-xs font-semibold uppercase tracking-wider">Patents & IP Filed</span>
             <Lightbulb className="w-4 h-4 text-amber-500" />
           </div>
-          <div className="text-2xl font-bold text-slate-900 dark:text-white">
+          <div className="text-2xl font-bold text-charcoal-900 dark:text-ivory-100">
             {loading ? "..." : summary?.totalPatentsFiled || 0}
           </div>
-          <p className="text-xs text-slate-400 mt-1">Tech Transfer Office (TTO)</p>
+          <p className="text-xs text-charcoal-400 mt-1">Tech Transfer Office (TTO)</p>
         </div>
       </div>
 
       {/* Search & Sector Filter Toolbar */}
-      <div className="flex flex-col sm:flex-row gap-3 items-center justify-between bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800">
+      <div className="flex flex-col sm:flex-row gap-3 items-center justify-between bg-white dark:bg-charcoal-900 p-4 rounded-xl border border-border dark:border-charcoal-800">
         <div className="relative w-full sm:w-96">
-          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-charcoal-400" />
           <input
             type="text"
             placeholder="Search startups, founders, technologies..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-violet-500 text-slate-900 dark:text-white"
+            className="w-full pl-9 pr-4 py-2 bg-ivory-50 dark:bg-charcoal-800 border border-border dark:border-charcoal-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-violet-500 text-charcoal-900 dark:text-ivory-100"
           />
         </div>
         <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
-          <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Sector:</span>
+          <span className="text-xs font-semibold text-charcoal-500 uppercase tracking-wider">Sector:</span>
           <select
             value={filterSector}
             onChange={(e) => setFilterSector(e.target.value)}
-            className="px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-violet-500 text-slate-900 dark:text-white"
+            className="px-3 py-2 bg-ivory-50 dark:bg-charcoal-800 border border-border dark:border-charcoal-700 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-violet-500 text-charcoal-900 dark:text-ivory-100"
           >
             <option value="ALL">All Sectors</option>
             <option value="AI_ML">AI & Machine Learning</option>
@@ -353,11 +353,11 @@ export default function IncubationPage() {
             <option value="EDTECH">EdTech & Platforms</option>
           </select>
 
-          <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider sm:ml-2">Stage:</span>
+          <span className="text-xs font-semibold text-charcoal-500 uppercase tracking-wider sm:ml-2">Stage:</span>
           <select
             value={filterStage}
             onChange={(e) => setFilterStage(e.target.value)}
-            className="px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-violet-500 text-slate-900 dark:text-white"
+            className="px-3 py-2 bg-ivory-50 dark:bg-charcoal-800 border border-border dark:border-charcoal-700 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-violet-500 text-charcoal-900 dark:text-ivory-100"
           >
             <option value="ALL">All Stages</option>
             <option value="PRE_INCUBATION">Pre-Incubation</option>
@@ -370,13 +370,13 @@ export default function IncubationPage() {
       </div>
 
       {/* Tabs */}
-      <div className="flex border-b border-slate-200 dark:border-slate-800 overflow-x-auto no-scrollbar flex-nowrap">
+      <div className="flex border-b border-border dark:border-charcoal-800 overflow-x-auto no-scrollbar flex-nowrap">
         <button
           onClick={() => setActiveTab("ventures")}
           className={`flex items-center gap-2 px-5 py-3 text-sm font-semibold border-b-2 transition-all whitespace-nowrap shrink-0 ${
             activeTab === "ventures"
               ? "border-violet-600 text-violet-600 dark:text-violet-400"
-              : "border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200"
+              : "border-transparent text-charcoal-500 hover:text-charcoal-800 dark:hover:text-ivory-200"
           }`}
         >
           <Rocket className="w-4 h-4" />
@@ -387,7 +387,7 @@ export default function IncubationPage() {
           className={`flex items-center gap-2 px-5 py-3 text-sm font-semibold border-b-2 transition-all whitespace-nowrap shrink-0 ${
             activeTab === "portfolio"
               ? "border-violet-600 text-violet-600 dark:text-violet-400"
-              : "border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200"
+              : "border-transparent text-charcoal-500 hover:text-charcoal-800 dark:hover:text-ivory-200"
           }`}
         >
           <TrendingUp className="w-4 h-4" />
@@ -398,7 +398,7 @@ export default function IncubationPage() {
           className={`flex items-center gap-2 px-5 py-3 text-sm font-semibold border-b-2 transition-all whitespace-nowrap shrink-0 ${
             activeTab === "investor"
               ? "border-violet-600 text-violet-600 dark:text-violet-400"
-              : "border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200"
+              : "border-transparent text-charcoal-500 hover:text-charcoal-800 dark:hover:text-ivory-200"
           }`}
         >
           <Award className="w-4 h-4" />
@@ -425,14 +425,14 @@ export default function IncubationPage() {
             .map((s) => (
             <div
               key={s.id}
-              className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4"
+              className="bg-white dark:bg-charcoal-900 p-5 rounded-2xl border border-border dark:border-charcoal-800 shadow-sm space-y-4"
             >
               <div className="flex justify-between items-start">
                 <div>
-                  <h3 className="font-bold text-slate-900 dark:text-white text-base">
+                  <h3 className="font-bold text-charcoal-900 dark:text-ivory-100 text-base">
                     {s.startupName}
                   </h3>
-                  <p className="text-xs text-slate-500">
+                  <p className="text-xs text-charcoal-500">
                     Founder: {s.founderName} ({s.founderRole})
                   </p>
                 </div>
@@ -441,11 +441,11 @@ export default function IncubationPage() {
                 </span>
               </div>
 
-              <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed line-clamp-3">
+              <p className="text-xs text-charcoal-600 dark:text-charcoal-400 leading-relaxed line-clamp-3">
                 {s.pitchDeckSummary}
               </p>
 
-              <div className="space-y-1.5 text-xs text-slate-600 dark:text-slate-400 border-t border-slate-100 dark:border-slate-800 pt-3">
+              <div className="space-y-1.5 text-xs text-charcoal-600 dark:text-charcoal-400 border-t border-border/60 dark:border-charcoal-800 pt-3">
                 <div className="flex justify-between">
                   <span>Current Stage:</span>
                   <span className="font-semibold text-violet-600 dark:text-violet-400">
@@ -454,7 +454,7 @@ export default function IncubationPage() {
                 </div>
                 <div className="flex justify-between">
                   <span>Seed Disbursed:</span>
-                  <span className="font-semibold text-slate-900 dark:text-white">
+                  <span className="font-semibold text-charcoal-900 dark:text-ivory-100">
                     ${s.seedGrantDisbursed.toLocaleString()} ({s.universityEquityPercentage}% Equity)
                   </span>
                 </div>
@@ -466,19 +466,19 @@ export default function IncubationPage() {
                 </div>
                 <div className="flex justify-between">
                   <span>Workspaces / Desks:</span>
-                  <span className="font-semibold text-slate-800 dark:text-slate-200">
+                  <span className="font-semibold text-charcoal-800 dark:text-ivory-200">
                     {s.labDesksAllocated} Desks (MakerSpace)
                   </span>
                 </div>
                 <div className="flex justify-between">
                   <span>Lead Mentor:</span>
-                  <span className="font-semibold text-slate-800 dark:text-slate-200">
+                  <span className="font-semibold text-charcoal-800 dark:text-ivory-200">
                     {s.mentorName}
                   </span>
                 </div>
               </div>
 
-              <div className="flex items-center justify-between border-t border-slate-100 dark:border-slate-800 pt-3">
+              <div className="flex items-center justify-between border-t border-border/60 dark:border-charcoal-800 pt-3">
                 <button
                   onClick={() => setSelectedStartupDossier(s)}
                   className="px-2.5 py-1 bg-violet-50 hover:bg-violet-100 dark:bg-violet-950/60 dark:hover:bg-violet-900/60 text-violet-700 dark:text-violet-300 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors"
@@ -487,7 +487,7 @@ export default function IncubationPage() {
                   Term Sheet
                 </button>
                 <div className="flex items-center gap-1.5">
-                  <span className="text-[11px] font-semibold text-slate-400">Stage:</span>
+                  <span className="text-[11px] font-semibold text-charcoal-400">Stage:</span>
                   <select
                     value={s.stage}
                     onChange={(e) => handleUpdateStartupStage(s.id, e.target.value)}
@@ -516,10 +516,10 @@ export default function IncubationPage() {
             const matchesStage = filterStage === "ALL" || s.stage === filterStage;
             return matchesSearch && matchesSector && matchesStage;
           }).length === 0 && (
-            <div className="col-span-1 md:col-span-3 py-16 text-center bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-8 shadow-sm">
-              <Rocket className="w-12 h-12 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
-              <h4 className="font-semibold text-slate-900 dark:text-white text-base">No Ventures Found</h4>
-              <p className="text-xs text-slate-400 mt-1 max-w-sm mx-auto">
+            <div className="col-span-1 md:col-span-3 py-16 text-center bg-white dark:bg-charcoal-900 rounded-2xl border border-border dark:border-charcoal-800 p-8 shadow-sm">
+              <Rocket className="w-12 h-12 text-charcoal-300 dark:text-charcoal-600 mx-auto mb-3" />
+              <h4 className="font-semibold text-charcoal-900 dark:text-ivory-100 text-base">No Ventures Found</h4>
+              <p className="text-xs text-charcoal-400 mt-1 max-w-sm mx-auto">
                 No startup ventures match your search &ldquo;{searchQuery}&rdquo; and active filters.
               </p>
               <button
@@ -541,45 +541,45 @@ export default function IncubationPage() {
       {/* Tab 2: Portfolio Analysis & Cap-Table Waterfall */}
       {activeTab === "portfolio" && (
         <div className="space-y-6">
-          <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-6">
+          <div className="bg-white dark:bg-charcoal-900 p-6 rounded-2xl border border-border dark:border-charcoal-800 shadow-sm space-y-6">
             <div>
-              <h2 className="text-lg font-bold text-slate-900 dark:text-white">
+              <h2 className="text-lg font-bold text-charcoal-900 dark:text-ivory-100">
                 Institutional Venture Fund & Capital Overview
               </h2>
-              <p className="text-sm text-slate-500">
+              <p className="text-sm text-charcoal-500">
                 Equity Stakes, Technology Transfer Filings & Co-Investment Multipliers
               </p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl space-y-2">
-                <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
+              <div className="p-4 bg-ivory-50 dark:bg-charcoal-800/50 rounded-xl space-y-2">
+                <span className="text-xs font-semibold text-charcoal-500 uppercase tracking-wide">
                   Estimated Portfolio Valuation
                 </span>
                 <div className="text-3xl font-extrabold text-violet-600 dark:text-violet-400">
                   ${(summary?.estimatedPortfolioValuation || 0).toLocaleString()}
                 </div>
-                <p className="text-xs text-slate-400">Across active incubated companies</p>
+                <p className="text-xs text-charcoal-400">Across active incubated companies</p>
               </div>
 
-              <div className="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl space-y-2">
-                <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
+              <div className="p-4 bg-ivory-50 dark:bg-charcoal-800/50 rounded-xl space-y-2">
+                <span className="text-xs font-semibold text-charcoal-500 uppercase tracking-wide">
                   Innovation Workspace Density
                 </span>
-                <div className="text-3xl font-extrabold text-slate-900 dark:text-white">
+                <div className="text-3xl font-extrabold text-charcoal-900 dark:text-ivory-100">
                   {summary?.totalWorkspacesAllocated || 0} Desks
                 </div>
-                <p className="text-xs text-slate-400">Cleanroom & prototyping benches occupied</p>
+                <p className="text-xs text-charcoal-400">Cleanroom & prototyping benches occupied</p>
               </div>
 
-              <div className="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl space-y-2">
-                <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
+              <div className="p-4 bg-ivory-50 dark:bg-charcoal-800/50 rounded-xl space-y-2">
+                <span className="text-xs font-semibold text-charcoal-500 uppercase tracking-wide">
                   Capital Multiplier Ratio
                 </span>
                 <div className="text-3xl font-extrabold text-emerald-600 dark:text-emerald-400">
                   11.7x
                 </div>
-                <p className="text-xs text-slate-400">External VC dollars raised per $1 seed grant</p>
+                <p className="text-xs text-charcoal-400">External VC dollars raised per $1 seed grant</p>
               </div>
             </div>
           </div>
@@ -601,22 +601,22 @@ export default function IncubationPage() {
             const investorVal = Math.round((postInvestorPct / 100) * postMoneyValuation);
 
             return (
-              <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-6">
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-200 dark:border-slate-800">
+              <div className="bg-white dark:bg-charcoal-900 p-6 rounded-2xl border border-border dark:border-charcoal-800 shadow-sm space-y-6">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-border dark:border-charcoal-800">
                   <div className="flex items-center gap-3">
                     <div className="p-3 bg-violet-100 dark:bg-violet-950/60 text-violet-700 dark:text-violet-300 rounded-xl">
                       <Calculator className="w-6 h-6" />
                     </div>
                     <div>
                       <div className="flex items-center gap-2">
-                        <h3 className="font-bold text-lg text-slate-900 dark:text-white">
+                        <h3 className="font-bold text-lg text-charcoal-900 dark:text-ivory-100">
                           Startup Cap Table Waterfall & SAFE Dilution Engine
                         </h3>
                         <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-violet-50 dark:bg-violet-900/40 text-violet-700 dark:text-violet-300 border border-violet-200 dark:border-violet-800">
                           YC Post-Money SAFE Standard
                         </span>
                       </div>
-                      <p className="text-xs text-slate-500">
+                      <p className="text-xs text-charcoal-500">
                         Model pre-seed to Series A funding rounds, option pool shuffles, and institutional dilution waterfalls.
                       </p>
                     </div>
@@ -642,7 +642,7 @@ export default function IncubationPage() {
                         a.click();
                         document.body.removeChild(a);
                       }}
-                      className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-semibold inline-flex items-center gap-1.5 transition-all"
+                      className="px-3 py-1.5 bg-ivory-100 hover:bg-ivory-200 dark:bg-charcoal-800 dark:hover:bg-charcoal-700 text-charcoal-700 dark:text-ivory-200 rounded-xl text-xs font-semibold inline-flex items-center gap-1.5 transition-all"
                     >
                       <Download className="w-3.5 h-3.5" />
                       Export Cap-Table CSV
@@ -651,9 +651,9 @@ export default function IncubationPage() {
                 </div>
 
                 {/* Interactive Simulator Sliders & Inputs */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 bg-slate-50 dark:bg-slate-850 p-4 rounded-xl border border-slate-200 dark:border-slate-800 text-xs">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 bg-ivory-50 dark:bg-charcoal-900/60 p-4 rounded-xl border border-border dark:border-charcoal-800 text-xs">
                   <div>
-                    <label className="block text-slate-600 dark:text-slate-300 font-semibold mb-1">
+                    <label className="block text-charcoal-600 dark:text-ivory-300 font-semibold mb-1">
                       Pre-Money Valuation Cap ($)
                     </label>
                     <input
@@ -661,13 +661,13 @@ export default function IncubationPage() {
                       value={capPreMoneyVal}
                       onChange={(e) => setCapPreMoneyVal(Number(e.target.value) || 100000)}
                       step={500000}
-                      className="w-full p-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg font-mono font-bold"
+                      className="w-full p-2 bg-white dark:bg-charcoal-800 border border-border dark:border-charcoal-700 rounded-lg font-mono font-bold"
                     />
-                    <span className="text-[10px] text-slate-400 mt-0.5 block">${(capPreMoneyVal / 1000000).toFixed(2)}M Cap</span>
+                    <span className="text-[10px] text-charcoal-400 mt-0.5 block">${(capPreMoneyVal / 1000000).toFixed(2)}M Cap</span>
                   </div>
 
                   <div>
-                    <label className="block text-slate-600 dark:text-slate-300 font-semibold mb-1">
+                    <label className="block text-charcoal-600 dark:text-ivory-300 font-semibold mb-1">
                       New Investment Amount ($)
                     </label>
                     <input
@@ -675,13 +675,13 @@ export default function IncubationPage() {
                       value={capInvestmentAmt}
                       onChange={(e) => setCapInvestmentAmt(Number(e.target.value) || 50000)}
                       step={100000}
-                      className="w-full p-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg font-mono font-bold"
+                      className="w-full p-2 bg-white dark:bg-charcoal-800 border border-border dark:border-charcoal-700 rounded-lg font-mono font-bold"
                     />
                     <span className="text-[10px] text-emerald-500 mt-0.5 block">${(capInvestmentAmt / 1000).toFixed(0)}k Seed Check</span>
                   </div>
 
                   <div>
-                    <label className="block text-slate-600 dark:text-slate-300 font-semibold mb-1">
+                    <label className="block text-charcoal-600 dark:text-ivory-300 font-semibold mb-1">
                       ESOP Pool Top-Up Expansion (%)
                     </label>
                     <input
@@ -690,13 +690,13 @@ export default function IncubationPage() {
                       onChange={(e) => setCapEsopExpansion(Number(e.target.value) || 0)}
                       min={0}
                       max={20}
-                      className="w-full p-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg font-mono font-bold"
+                      className="w-full p-2 bg-white dark:bg-charcoal-800 border border-border dark:border-charcoal-700 rounded-lg font-mono font-bold"
                     />
-                    <span className="text-[10px] text-slate-400 mt-0.5 block">Unallocated option pool expansion</span>
+                    <span className="text-[10px] text-charcoal-400 mt-0.5 block">Unallocated option pool expansion</span>
                   </div>
 
                   <div>
-                    <label className="block text-slate-600 dark:text-slate-300 font-semibold mb-1">
+                    <label className="block text-charcoal-600 dark:text-ivory-300 font-semibold mb-1">
                       Initial Founder Equity: {capFounderShare}%
                     </label>
                     <input
@@ -714,7 +714,7 @@ export default function IncubationPage() {
                   </div>
 
                   <div>
-                    <label className="block text-slate-600 dark:text-slate-300 font-semibold mb-1">
+                    <label className="block text-charcoal-600 dark:text-ivory-300 font-semibold mb-1">
                       University Incubator Stake: {capUnivStake}%
                     </label>
                     <input
@@ -732,7 +732,7 @@ export default function IncubationPage() {
                   </div>
 
                   <div>
-                    <label className="block text-slate-600 dark:text-slate-300 font-semibold mb-1">
+                    <label className="block text-charcoal-600 dark:text-ivory-300 font-semibold mb-1">
                       Pre-Round ESOP Pool: {capEsopShare}%
                     </label>
                     <input
@@ -748,7 +748,7 @@ export default function IncubationPage() {
 
                 {/* Ownership Waterfall Visualization */}
                 <div className="space-y-4">
-                  <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500">
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-charcoal-500">
                     Ownership Structure: Pre-Round vs. Post-Round Waterfall
                   </h4>
 
@@ -797,9 +797,9 @@ export default function IncubationPage() {
                 </div>
 
                 {/* Detailed Stakeholder Ledger */}
-                <div className="overflow-x-auto border border-slate-200 dark:border-slate-800 rounded-xl">
+                <div className="overflow-x-auto border border-border dark:border-charcoal-800 rounded-xl">
                   <table className="w-full text-left text-xs">
-                    <thead className="bg-slate-50 dark:bg-slate-800 text-slate-500">
+                    <thead className="bg-ivory-50 dark:bg-charcoal-800 text-charcoal-500">
                       <tr>
                         <th className="p-3">Stakeholder Class</th>
                         <th className="p-3">Pre-Round %</th>
@@ -808,49 +808,49 @@ export default function IncubationPage() {
                         <th className="p-3 text-right">Implied Equity Valuation</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
-                      <tr className="hover:bg-slate-50/50 dark:hover:bg-slate-800/40">
-                        <td className="p-3 font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+                    <tbody className="divide-y divide-border dark:divide-charcoal-800">
+                      <tr className="hover:bg-ivory-50/50 dark:hover:bg-charcoal-800/40">
+                        <td className="p-3 font-semibold text-charcoal-900 dark:text-ivory-100 flex items-center gap-2">
                           <span className="w-3 h-3 rounded bg-violet-600" />
                           Founders & Core Leadership
                         </td>
                         <td className="p-3 font-mono">{capFounderShare}%</td>
                         <td className="p-3 font-mono font-bold text-violet-600 dark:text-violet-400">{postFounderPct}%</td>
                         <td className="p-3 font-mono text-rose-500">{(postFounderPct - capFounderShare).toFixed(2)}%</td>
-                        <td className="p-3 font-mono font-bold text-right text-slate-900 dark:text-white">
+                        <td className="p-3 font-mono font-bold text-right text-charcoal-900 dark:text-ivory-100">
                           ${founderVal.toLocaleString()}
                         </td>
                       </tr>
-                      <tr className="hover:bg-slate-50/50 dark:hover:bg-slate-800/40">
-                        <td className="p-3 font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+                      <tr className="hover:bg-ivory-50/50 dark:hover:bg-charcoal-800/40">
+                        <td className="p-3 font-semibold text-charcoal-900 dark:text-ivory-100 flex items-center gap-2">
                           <span className="w-3 h-3 rounded bg-indigo-600" />
                           University Incubator AIC Fund
                         </td>
                         <td className="p-3 font-mono">{capUnivStake}%</td>
                         <td className="p-3 font-mono font-bold text-indigo-600 dark:text-indigo-400">{postUnivPct}%</td>
                         <td className="p-3 font-mono text-rose-500">{(postUnivPct - capUnivStake).toFixed(2)}%</td>
-                        <td className="p-3 font-mono font-bold text-right text-slate-900 dark:text-white">
+                        <td className="p-3 font-mono font-bold text-right text-charcoal-900 dark:text-ivory-100">
                           ${univVal.toLocaleString()}
                         </td>
                       </tr>
-                      <tr className="hover:bg-slate-50/50 dark:hover:bg-slate-800/40">
-                        <td className="p-3 font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+                      <tr className="hover:bg-ivory-50/50 dark:hover:bg-charcoal-800/40">
+                        <td className="p-3 font-semibold text-charcoal-900 dark:text-ivory-100 flex items-center gap-2">
                           <span className="w-3 h-3 rounded bg-emerald-600" />
                           Employee ESOP Option Pool
                         </td>
                         <td className="p-3 font-mono">{capEsopShare}%</td>
                         <td className="p-3 font-mono font-bold text-emerald-600 dark:text-emerald-400">{postEsopPct}%</td>
                         <td className="p-3 font-mono text-emerald-600">+{capEsopExpansion}% Top-Up</td>
-                        <td className="p-3 font-mono font-bold text-right text-slate-900 dark:text-white">
+                        <td className="p-3 font-mono font-bold text-right text-charcoal-900 dark:text-ivory-100">
                           ${esopVal.toLocaleString()}
                         </td>
                       </tr>
-                      <tr className="hover:bg-slate-50/50 dark:hover:bg-slate-800/40 bg-amber-50/40 dark:bg-amber-950/20">
+                      <tr className="hover:bg-ivory-50/50 dark:hover:bg-charcoal-800/40 bg-amber-50/40 dark:bg-amber-950/20">
                         <td className="p-3 font-semibold text-amber-900 dark:text-amber-200 flex items-center gap-2">
                           <span className="w-3 h-3 rounded bg-amber-500" />
                           New SAFE / Seed Syndicate Investors
                         </td>
-                        <td className="p-3 font-mono text-slate-400">0.00%</td>
+                        <td className="p-3 font-mono text-charcoal-400">0.00%</td>
                         <td className="p-3 font-mono font-bold text-amber-600 dark:text-amber-400">{postInvestorPct}%</td>
                         <td className="p-3 font-mono text-amber-600 font-bold">+{postInvestorPct}% New Issue</td>
                         <td className="p-3 font-mono font-bold text-right text-amber-600 dark:text-amber-400">
@@ -870,29 +870,29 @@ export default function IncubationPage() {
       {activeTab === "investor" && (
         <div className="space-y-6">
           {/* Header & Venture Selector */}
-          <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+          <div className="bg-white dark:bg-charcoal-900 p-6 rounded-2xl border border-border dark:border-charcoal-800 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
             <div>
               <div className="flex items-center gap-2">
                 <span className="p-2 bg-violet-50 dark:bg-violet-950/60 text-violet-600 dark:text-violet-400 rounded-xl">
                   <Award className="w-5 h-5" />
                 </span>
-                <h2 className="text-lg font-bold text-slate-900 dark:text-white">
+                <h2 className="text-lg font-bold text-charcoal-900 dark:text-ivory-100">
                   Angel & VC Investor Evaluation Scorecard
                 </h2>
               </div>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+              <p className="text-xs text-charcoal-500 dark:text-charcoal-400 mt-1">
                 Institutional Investment Committee Due Diligence Rubric (5-Pillars Weighted Matrix)
               </p>
             </div>
 
             <div className="flex items-center gap-3 w-full md:w-auto">
-              <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider shrink-0">
+              <span className="text-xs font-semibold text-charcoal-500 uppercase tracking-wider shrink-0">
                 Target Venture:
               </span>
               <select
                 value={evalVentureId || (startups[0]?.id || "")}
                 onChange={(e) => setEvalVentureId(e.target.value)}
-                className="w-full md:w-64 px-3.5 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-violet-500"
+                className="w-full md:w-64 px-3.5 py-2 bg-ivory-50 dark:bg-charcoal-800 border border-border dark:border-charcoal-700 rounded-xl text-xs font-semibold text-charcoal-800 dark:text-ivory-200 focus:outline-none focus:ring-2 focus:ring-violet-500"
               >
                 {startups.map((s) => (
                   <option key={s.id} value={s.id}>
@@ -969,29 +969,29 @@ ${evalCommitteeNotes}
                         {currentVenture.startupName.charAt(0)}
                       </div>
                       <div>
-                        <div className="font-bold text-slate-900 dark:text-white text-sm">
+                        <div className="font-bold text-charcoal-900 dark:text-ivory-100 text-sm">
                           {currentVenture.startupName}
                         </div>
-                        <div className="text-slate-500">
+                        <div className="text-charcoal-500">
                           Founder: {currentVenture.founderName} • Sector: {currentVenture.sector} • Ref: {currentVenture.companyRef}
                         </div>
                       </div>
                     </div>
-                    <div className="flex items-center gap-4 text-slate-700 dark:text-slate-300">
+                    <div className="flex items-center gap-4 text-charcoal-700 dark:text-ivory-300">
                       <div>
-                        <span className="text-[10px] text-slate-400 uppercase block font-semibold">Seed Disbursed</span>
-                        <span className="font-extrabold text-slate-900 dark:text-white">
+                        <span className="text-[10px] text-charcoal-400 uppercase block font-semibold">Seed Disbursed</span>
+                        <span className="font-extrabold text-charcoal-900 dark:text-ivory-100">
                           ${currentVenture.seedGrantDisbursed.toLocaleString()}
                         </span>
                       </div>
                       <div>
-                        <span className="text-[10px] text-slate-400 uppercase block font-semibold">External Funding</span>
+                        <span className="text-[10px] text-charcoal-400 uppercase block font-semibold">External Funding</span>
                         <span className="font-extrabold text-emerald-600 dark:text-emerald-400">
                           ${currentVenture.externalFundingRaised.toLocaleString()}
                         </span>
                       </div>
                       <div>
-                        <span className="text-[10px] text-slate-400 uppercase block font-semibold">Equity Stake</span>
+                        <span className="text-[10px] text-charcoal-400 uppercase block font-semibold">Equity Stake</span>
                         <span className="font-extrabold text-violet-600 dark:text-violet-400">
                           {currentVenture.universityEquityPercentage}%
                         </span>
@@ -1030,18 +1030,18 @@ ${evalCommitteeNotes}
                         }`}>
                           {isTier1 ? "Tier 1: High Conviction" : isTier2 ? "Tier 2: Conditional Diligence" : "Tier 3: Needs Iteration"}
                         </span>
-                        <span className="text-xs font-semibold text-slate-500">
+                        <span className="text-xs font-semibold text-charcoal-500">
                           {compositeScore >= 80 ? "Fast-Track Seed Qualified" : compositeScore >= 65 ? "Requires Milestone Audit" : "Lab Mentorship Track"}
                         </span>
                       </div>
-                      <h3 className="text-base font-bold text-slate-900 dark:text-white">
+                      <h3 className="text-base font-bold text-charcoal-900 dark:text-ivory-100">
                         {isTier1
                           ? "Approved for Fast-Track Institutional Seed Allocation ($50,000 - $100,000)"
                           : isTier2
                           ? "Conditionally Approved Pending Customer Pilot Verification & Patent Filing"
                           : "Incubation Lab Mentorship Required Before Seed Committee Review"}
                       </h3>
-                      <p className="text-xs text-slate-500 dark:text-slate-400 max-w-xl">
+                      <p className="text-xs text-charcoal-500 dark:text-charcoal-400 max-w-xl">
                         {isTier1
                           ? "Exceptional score across team execution, defensible technical IP, and TAM scale. Recommendation: Sanction SAFE agreement and assign Demo Day key pitch slot."
                           : isTier2
@@ -1065,7 +1065,7 @@ ${evalCommitteeNotes}
                     </button>
                     <button
                       onClick={handleDownloadMemo}
-                      className="flex-1 md:flex-initial px-4 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl text-xs font-semibold border border-slate-200 dark:border-slate-700 transition-all text-center flex items-center justify-center gap-1.5"
+                      className="flex-1 md:flex-initial px-4 py-2.5 bg-ivory-100 hover:bg-ivory-200 dark:bg-charcoal-800 dark:hover:bg-charcoal-700 text-charcoal-700 dark:text-ivory-300 rounded-xl text-xs font-semibold border border-border dark:border-charcoal-700 transition-all text-center flex items-center justify-center gap-1.5"
                     >
                       <Download className="w-3.5 h-3.5" />
                       Export Memo (.md)
@@ -1074,13 +1074,13 @@ ${evalCommitteeNotes}
                 </div>
 
                 {/* 5-Pillars Evaluation Sliders */}
-                <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-6">
-                  <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+                <div className="bg-white dark:bg-charcoal-900 p-6 rounded-2xl border border-border dark:border-charcoal-800 shadow-sm space-y-6">
+                  <div className="flex items-center justify-between border-b border-border/60 dark:border-charcoal-800 pb-3">
                     <div>
-                      <h3 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                      <h3 className="text-sm font-bold text-charcoal-900 dark:text-ivory-100 uppercase tracking-wider">
                         5-Pillar Investment Diligence Rubric
                       </h3>
-                      <p className="text-xs text-slate-500">
+                      <p className="text-xs text-charcoal-500">
                         Adjust individual weights to evaluate startup readiness and defensibility
                       </p>
                     </div>
@@ -1092,7 +1092,7 @@ ${evalCommitteeNotes}
                         setEvalTraction(70);
                         setEvalUnitEcon(80);
                       }}
-                      className="px-3 py-1 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-400 rounded-lg text-xs font-medium flex items-center gap-1 transition-all"
+                      className="px-3 py-1 bg-ivory-100 hover:bg-ivory-200 dark:bg-charcoal-800 dark:hover:bg-charcoal-700 text-charcoal-600 dark:text-charcoal-400 rounded-lg text-xs font-medium flex items-center gap-1 transition-all"
                     >
                       <RotateCcw className="w-3 h-3" />
                       Reset Rubric
@@ -1101,9 +1101,9 @@ ${evalCommitteeNotes}
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {/* Pillar 1 */}
-                    <div className="space-y-2 p-4 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-100 dark:border-slate-800">
+                    <div className="space-y-2 p-4 bg-ivory-50 dark:bg-charcoal-800/40 rounded-xl border border-border/60 dark:border-charcoal-800">
                       <div className="flex justify-between items-center text-xs">
-                        <span className="font-bold text-slate-800 dark:text-slate-200">
+                        <span className="font-bold text-charcoal-800 dark:text-ivory-200">
                           1. Team Pedigree & Domain Grit (25% Weight)
                         </span>
                         <span className="px-2 py-0.5 rounded-md font-mono font-bold bg-violet-100 text-violet-700 dark:bg-violet-950/60 dark:text-violet-300">
@@ -1118,15 +1118,15 @@ ${evalCommitteeNotes}
                         onChange={(e) => setEvalTeam(Number(e.target.value))}
                         className="w-full accent-violet-600 cursor-pointer"
                       />
-                      <p className="text-[11px] text-slate-400">
+                      <p className="text-[11px] text-charcoal-400">
                         Technical founder depth, student-faculty cohesion, past publications & hackathon track record.
                       </p>
                     </div>
 
                     {/* Pillar 2 */}
-                    <div className="space-y-2 p-4 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-100 dark:border-slate-800">
+                    <div className="space-y-2 p-4 bg-ivory-50 dark:bg-charcoal-800/40 rounded-xl border border-border/60 dark:border-charcoal-800">
                       <div className="flex justify-between items-center text-xs">
-                        <span className="font-bold text-slate-800 dark:text-slate-200">
+                        <span className="font-bold text-charcoal-800 dark:text-ivory-200">
                           2. Market Size & TAM Scale (20% Weight)
                         </span>
                         <span className="px-2 py-0.5 rounded-md font-mono font-bold bg-violet-100 text-violet-700 dark:bg-violet-950/60 dark:text-violet-300">
@@ -1141,15 +1141,15 @@ ${evalCommitteeNotes}
                         onChange={(e) => setEvalTam(Number(e.target.value))}
                         className="w-full accent-violet-600 cursor-pointer"
                       />
-                      <p className="text-[11px] text-slate-400">
+                      <p className="text-[11px] text-charcoal-400">
                         Total addressable market ($500M+), annual CAGR {">"} 18%, macro economic tailwinds & urgency.
                       </p>
                     </div>
 
                     {/* Pillar 3 */}
-                    <div className="space-y-2 p-4 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-100 dark:border-slate-800">
+                    <div className="space-y-2 p-4 bg-ivory-50 dark:bg-charcoal-800/40 rounded-xl border border-border/60 dark:border-charcoal-800">
                       <div className="flex justify-between items-center text-xs">
-                        <span className="font-bold text-slate-800 dark:text-slate-200">
+                        <span className="font-bold text-charcoal-800 dark:text-ivory-200">
                           3. IP Moat & Tech Defensibility (20% Weight)
                         </span>
                         <span className="px-2 py-0.5 rounded-md font-mono font-bold bg-violet-100 text-violet-700 dark:bg-violet-950/60 dark:text-violet-300">
@@ -1164,15 +1164,15 @@ ${evalCommitteeNotes}
                         onChange={(e) => setEvalMoat(Number(e.target.value))}
                         className="w-full accent-violet-600 cursor-pointer"
                       />
-                      <p className="text-[11px] text-slate-400">
+                      <p className="text-[11px] text-charcoal-400">
                         Indian/PCT patents, proprietary datasets, proprietary hardware architectures & high switching cost.
                       </p>
                     </div>
 
                     {/* Pillar 4 */}
-                    <div className="space-y-2 p-4 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-100 dark:border-slate-800">
+                    <div className="space-y-2 p-4 bg-ivory-50 dark:bg-charcoal-800/40 rounded-xl border border-border/60 dark:border-charcoal-800">
                       <div className="flex justify-between items-center text-xs">
-                        <span className="font-bold text-slate-800 dark:text-slate-200">
+                        <span className="font-bold text-charcoal-800 dark:text-ivory-200">
                           4. Traction & Commercial Velocity (20% Weight)
                         </span>
                         <span className="px-2 py-0.5 rounded-md font-mono font-bold bg-violet-100 text-violet-700 dark:bg-violet-950/60 dark:text-violet-300">
@@ -1187,15 +1187,15 @@ ${evalCommitteeNotes}
                         onChange={(e) => setEvalTraction(Number(e.target.value))}
                         className="w-full accent-violet-600 cursor-pointer"
                       />
-                      <p className="text-[11px] text-slate-400">
+                      <p className="text-[11px] text-charcoal-400">
                         Active enterprise pilots, signed Letters of Intent (LOIs), MoM usage velocity & beta retention.
                       </p>
                     </div>
 
                     {/* Pillar 5 */}
-                    <div className="col-span-1 md:col-span-2 space-y-2 p-4 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-100 dark:border-slate-800">
+                    <div className="col-span-1 md:col-span-2 space-y-2 p-4 bg-ivory-50 dark:bg-charcoal-800/40 rounded-xl border border-border/60 dark:border-charcoal-800">
                       <div className="flex justify-between items-center text-xs">
-                        <span className="font-bold text-slate-800 dark:text-slate-200">
+                        <span className="font-bold text-charcoal-800 dark:text-ivory-200">
                           5. Unit Economics & Capital Runway (15% Weight)
                         </span>
                         <span className="px-2 py-0.5 rounded-md font-mono font-bold bg-violet-100 text-violet-700 dark:bg-violet-950/60 dark:text-violet-300">
@@ -1210,7 +1210,7 @@ ${evalCommitteeNotes}
                         onChange={(e) => setEvalUnitEcon(Number(e.target.value))}
                         className="w-full accent-violet-600 cursor-pointer"
                       />
-                      <p className="text-[11px] text-slate-400">
+                      <p className="text-[11px] text-charcoal-400">
                         Gross margins {">"} 65%, low churn, customer payback {"<"} 12 months & runway duration post-grant.
                       </p>
                     </div>
@@ -1218,14 +1218,14 @@ ${evalCommitteeNotes}
                 </div>
 
                 {/* Term Sheet Sanction & Committee Notes */}
-                <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
-                  <h3 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                <div className="bg-white dark:bg-charcoal-900 p-6 rounded-2xl border border-border dark:border-charcoal-800 shadow-sm space-y-4">
+                  <h3 className="text-sm font-bold text-charcoal-900 dark:text-ivory-100 uppercase tracking-wider">
                     Term Sheet Parameters & Committee Notes
                   </h3>
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="space-y-1.5">
-                      <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                      <label className="text-xs font-semibold text-charcoal-500 uppercase tracking-wider">
                         SAFE Valuation Cap ($)
                       </label>
                       <input
@@ -1233,11 +1233,11 @@ ${evalCommitteeNotes}
                         step="250000"
                         value={evalValuationCap}
                         onChange={(e) => setEvalValuationCap(Number(e.target.value))}
-                        className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-bold text-slate-800 dark:text-slate-200"
+                        className="w-full px-3.5 py-2.5 bg-ivory-50 dark:bg-charcoal-800 border border-border dark:border-charcoal-700 rounded-xl text-sm font-bold text-charcoal-800 dark:text-ivory-200"
                       />
                     </div>
                     <div className="space-y-1.5">
-                      <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                      <label className="text-xs font-semibold text-charcoal-500 uppercase tracking-wider">
                         Seed Check Allocation ($)
                       </label>
                       <input
@@ -1245,36 +1245,36 @@ ${evalCommitteeNotes}
                         step="10000"
                         value={evalSeedTicket}
                         onChange={(e) => setEvalSeedTicket(Number(e.target.value))}
-                        className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-bold text-slate-800 dark:text-slate-200"
+                        className="w-full px-3.5 py-2.5 bg-ivory-50 dark:bg-charcoal-800 border border-border dark:border-charcoal-700 rounded-xl text-sm font-bold text-charcoal-800 dark:text-ivory-200"
                       />
                     </div>
                     <div className="space-y-1.5">
-                      <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                      <label className="text-xs font-semibold text-charcoal-500 uppercase tracking-wider">
                         University Equity Stake
                       </label>
-                      <div className="w-full px-3.5 py-2.5 bg-slate-100 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-bold text-violet-600 dark:text-violet-400">
+                      <div className="w-full px-3.5 py-2.5 bg-ivory-100 dark:bg-charcoal-800/60 border border-border dark:border-charcoal-700 rounded-xl text-sm font-bold text-violet-600 dark:text-violet-400">
                         {currentVenture?.universityEquityPercentage || 3}% Institutional Common
                       </div>
                     </div>
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                    <label className="text-xs font-semibold text-charcoal-500 uppercase tracking-wider">
                       Diligence Committee Synthesis & Rationale
                     </label>
                     <textarea
                       rows={2}
                       value={evalCommitteeNotes}
                       onChange={(e) => setEvalCommitteeNotes(e.target.value)}
-                      className="w-full px-3.5 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs text-slate-800 dark:text-slate-200"
+                      className="w-full px-3.5 py-2 bg-ivory-50 dark:bg-charcoal-800 border border-border dark:border-charcoal-700 rounded-xl text-xs text-charcoal-800 dark:text-ivory-200"
                       placeholder="Add specific investor committee observations, milestones, or risk disclosures..."
                     />
                   </div>
 
-                  <div className="flex justify-end gap-3 pt-3 border-t border-slate-100 dark:border-slate-800">
+                  <div className="flex justify-end gap-3 pt-3 border-t border-border/60 dark:border-charcoal-800">
                     <button
                       onClick={() => window.print()}
-                      className="px-4 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all"
+                      className="px-4 py-2 bg-ivory-100 hover:bg-ivory-200 dark:bg-charcoal-800 dark:hover:bg-charcoal-700 text-charcoal-700 dark:text-ivory-200 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all"
                     >
                       <Printer className="w-3.5 h-3.5" />
                       Print Dossier
@@ -1305,16 +1305,16 @@ ${evalCommitteeNotes}
           onClick={(e) => {
             if (e.target === e.currentTarget) setShowModal(false);
           }}
-          className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4"
+          className="fixed inset-0 z-50 bg-charcoal-950/80 backdrop-blur-sm flex items-center justify-center p-4"
         >
-          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 max-w-lg w-full space-y-4 shadow-xl">
-            <div className="flex justify-between items-center border-b border-slate-200 dark:border-slate-800 pb-3">
-              <h2 className="text-lg font-bold text-slate-900 dark:text-white">
+          <div className="bg-white dark:bg-charcoal-900 rounded-2xl border border-border dark:border-charcoal-800 p-6 max-w-lg w-full space-y-4 shadow-xl">
+            <div className="flex justify-between items-center border-b border-border dark:border-charcoal-800 pb-3">
+              <h2 className="text-lg font-bold text-charcoal-900 dark:text-ivory-100">
                 Onboard Startup into Incubator
               </h2>
               <button
                 onClick={() => setShowModal(false)}
-                className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+                className="p-1.5 text-charcoal-400 hover:text-charcoal-600 dark:hover:text-ivory-200 hover:bg-ivory-100 dark:hover:bg-charcoal-800 rounded-lg transition-colors"
                 aria-label="Close modal"
               >
                 <X className="w-5 h-5" />
@@ -1324,7 +1324,7 @@ ${evalCommitteeNotes}
             <form onSubmit={handleRegister} className="space-y-4 text-sm">
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
+                  <label className="block text-xs font-medium text-charcoal-600 dark:text-charcoal-400 mb-1">
                     Startup Name
                   </label>
                   <input
@@ -1332,11 +1332,11 @@ ${evalCommitteeNotes}
                     required
                     value={formData.startupName}
                     onChange={(e) => setFormData({ ...formData, startupName: e.target.value })}
-                    className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl"
+                    className="w-full px-3 py-2 bg-ivory-50 dark:bg-charcoal-800 border border-border dark:border-charcoal-700 rounded-xl"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
+                  <label className="block text-xs font-medium text-charcoal-600 dark:text-charcoal-400 mb-1">
                     Founder Name
                   </label>
                   <input
@@ -1344,20 +1344,20 @@ ${evalCommitteeNotes}
                     required
                     value={formData.founderName}
                     onChange={(e) => setFormData({ ...formData, founderName: e.target.value })}
-                    className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl"
+                    className="w-full px-3 py-2 bg-ivory-50 dark:bg-charcoal-800 border border-border dark:border-charcoal-700 rounded-xl"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
+                  <label className="block text-xs font-medium text-charcoal-600 dark:text-charcoal-400 mb-1">
                     Sector
                   </label>
                   <select
                     value={formData.sector}
                     onChange={(e) => setFormData({ ...formData, sector: e.target.value })}
-                    className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl"
+                    className="w-full px-3 py-2 bg-ivory-50 dark:bg-charcoal-800 border border-border dark:border-charcoal-700 rounded-xl"
                   >
                     <option value="AI_ML">AI & Machine Learning</option>
                     <option value="HEALTHTECH">HealthTech & BioTech</option>
@@ -1368,13 +1368,13 @@ ${evalCommitteeNotes}
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
+                  <label className="block text-xs font-medium text-charcoal-600 dark:text-charcoal-400 mb-1">
                     Founder Affiliation
                   </label>
                   <select
                     value={formData.founderRole}
                     onChange={(e) => setFormData({ ...formData, founderRole: e.target.value as any })}
-                    className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl"
+                    className="w-full px-3 py-2 bg-ivory-50 dark:bg-charcoal-800 border border-border dark:border-charcoal-700 rounded-xl"
                   >
                     <option value="STUDENT">Enrolled Student</option>
                     <option value="ALUMNI">Alumni Graduate</option>
@@ -1384,7 +1384,7 @@ ${evalCommitteeNotes}
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
+                <label className="block text-xs font-medium text-charcoal-600 dark:text-charcoal-400 mb-1">
                   Problem Statement & Pitch Summary
                 </label>
                 <textarea
@@ -1393,13 +1393,13 @@ ${evalCommitteeNotes}
                   value={formData.pitchDeckSummary}
                   onChange={(e) => setFormData({ ...formData, pitchDeckSummary: e.target.value })}
                   placeholder="Summarize product value proposition, market size, and technology differentiation..."
-                  className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl"
+                  className="w-full px-3 py-2 bg-ivory-50 dark:bg-charcoal-800 border border-border dark:border-charcoal-700 rounded-xl"
                 />
               </div>
 
               <div className="grid grid-cols-3 gap-3">
                 <div>
-                  <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
+                  <label className="block text-xs font-medium text-charcoal-600 dark:text-charcoal-400 mb-1">
                     Seed Grant ($)
                   </label>
                   <input
@@ -1408,11 +1408,11 @@ ${evalCommitteeNotes}
                     onChange={(e) =>
                       setFormData({ ...formData, seedGrantDisbursed: Number(e.target.value) })
                     }
-                    className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl"
+                    className="w-full px-3 py-2 bg-ivory-50 dark:bg-charcoal-800 border border-border dark:border-charcoal-700 rounded-xl"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
+                  <label className="block text-xs font-medium text-charcoal-600 dark:text-charcoal-400 mb-1">
                     Univ Equity (%)
                   </label>
                   <input
@@ -1425,11 +1425,11 @@ ${evalCommitteeNotes}
                         universityEquityPercentage: Number(e.target.value),
                       })
                     }
-                    className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl"
+                    className="w-full px-3 py-2 bg-ivory-50 dark:bg-charcoal-800 border border-border dark:border-charcoal-700 rounded-xl"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
+                  <label className="block text-xs font-medium text-charcoal-600 dark:text-charcoal-400 mb-1">
                     Lab Desks
                   </label>
                   <input
@@ -1438,7 +1438,7 @@ ${evalCommitteeNotes}
                     onChange={(e) =>
                       setFormData({ ...formData, labDesksAllocated: Number(e.target.value) })
                     }
-                    className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl"
+                    className="w-full px-3 py-2 bg-ivory-50 dark:bg-charcoal-800 border border-border dark:border-charcoal-700 rounded-xl"
                   />
                 </div>
               </div>
@@ -1447,7 +1447,7 @@ ${evalCommitteeNotes}
                 <button
                   type="button"
                   onClick={() => setShowModal(false)}
-                  className="px-4 py-2 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-600 dark:text-slate-300"
+                  className="px-4 py-2 border border-border dark:border-charcoal-700 rounded-xl text-charcoal-600 dark:text-ivory-300"
                 >
                   Cancel
                 </button>
@@ -1473,79 +1473,79 @@ ${evalCommitteeNotes}
           onClick={(e) => {
             if (e.target === e.currentTarget) setSelectedStartupDossier(null);
           }}
-          className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto animate-in fade-in duration-200"
+          className="fixed inset-0 z-50 bg-charcoal-950/80 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto animate-in fade-in duration-200"
         >
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl max-w-xl w-full p-6 shadow-2xl space-y-5 my-8">
-            <div className="flex items-start justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
+          <div className="bg-white dark:bg-charcoal-900 border border-border dark:border-charcoal-800 rounded-2xl max-w-xl w-full p-6 shadow-2xl space-y-5 my-8">
+            <div className="flex items-start justify-between border-b border-border/60 dark:border-charcoal-800 pb-4">
               <div className="flex items-center gap-3">
                 <div className="p-2.5 bg-violet-100 dark:bg-violet-950/60 text-violet-600 dark:text-violet-400 rounded-xl">
                   <Rocket className="w-6 h-6" />
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
-                    <h3 className="font-bold text-slate-900 dark:text-white text-lg">{selectedStartupDossier.startupName}</h3>
+                    <h3 className="font-bold text-charcoal-900 dark:text-ivory-100 text-lg">{selectedStartupDossier.startupName}</h3>
                     <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-violet-100 dark:bg-violet-950/60 text-violet-700 dark:text-violet-300">
                       {selectedStartupDossier.sector.replace(/_/g, " ")}
                     </span>
                   </div>
-                  <p className="text-xs font-mono text-slate-400 mt-0.5">
+                  <p className="text-xs font-mono text-charcoal-400 mt-0.5">
                     Ref: {selectedStartupDossier.companyRef} • Stage: {selectedStartupDossier.stage.replace(/_/g, " ")}
                   </p>
                 </div>
               </div>
               <button
                 onClick={() => setSelectedStartupDossier(null)}
-                className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+                className="p-1.5 text-charcoal-400 hover:text-charcoal-600 dark:hover:text-ivory-200 hover:bg-ivory-100 dark:hover:bg-charcoal-800 rounded-lg transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             {/* Founder Identity Card */}
-            <div className="p-3 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-200 dark:border-slate-700/60 flex items-center justify-between text-xs">
+            <div className="p-3 bg-ivory-50 dark:bg-charcoal-800/40 rounded-xl border border-border dark:border-charcoal-700/60 flex items-center justify-between text-xs">
               <div>
-                <span className="text-[11px] text-slate-400 uppercase font-medium">Founding Principal</span>
-                <div className="font-bold text-slate-900 dark:text-white text-sm">{selectedStartupDossier.founderName}</div>
-                <div className="text-slate-500 font-mono text-[11px]">
+                <span className="text-[11px] text-charcoal-400 uppercase font-medium">Founding Principal</span>
+                <div className="font-bold text-charcoal-900 dark:text-ivory-100 text-sm">{selectedStartupDossier.founderName}</div>
+                <div className="text-charcoal-500 font-mono text-[11px]">
                   {selectedStartupDossier.founderRole} • ID: {selectedStartupDossier.founderRollOrStaffId}
                 </div>
               </div>
               <div className="text-right">
-                <span className="text-[11px] text-slate-400 uppercase font-medium">Incubated Date</span>
-                <div className="font-semibold text-slate-800 dark:text-slate-200">
+                <span className="text-[11px] text-charcoal-400 uppercase font-medium">Incubated Date</span>
+                <div className="font-semibold text-charcoal-800 dark:text-ivory-200">
                   {new Date(selectedStartupDossier.incubatedDate).toLocaleDateString()}
                 </div>
               </div>
             </div>
 
             {/* Pitch Summary */}
-            <div className="p-3.5 bg-slate-50 dark:bg-slate-800/50 rounded-xl text-xs space-y-1">
-              <span className="text-[11px] text-slate-400 uppercase font-bold tracking-wider block">Executive Pitch Thesis</span>
-              <p className="text-slate-700 dark:text-slate-300 leading-relaxed">{selectedStartupDossier.pitchDeckSummary}</p>
+            <div className="p-3.5 bg-ivory-50 dark:bg-charcoal-800/50 rounded-xl text-xs space-y-1">
+              <span className="text-[11px] text-charcoal-400 uppercase font-bold tracking-wider block">Executive Pitch Thesis</span>
+              <p className="text-charcoal-700 dark:text-ivory-300 leading-relaxed">{selectedStartupDossier.pitchDeckSummary}</p>
             </div>
 
             {/* Cap Table & Capital Structure */}
             <div className="space-y-2">
-              <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">
+              <h4 className="text-xs font-bold text-charcoal-800 dark:text-ivory-200 uppercase tracking-wider">
                 Capital Structure & Cap Table Ledger
               </h4>
               <div className="grid grid-cols-3 gap-2.5 text-xs">
                 <div className="p-3 bg-violet-50/50 dark:bg-violet-950/30 rounded-xl border border-violet-100 dark:border-violet-900/50">
-                  <span className="text-[10px] text-slate-400 uppercase font-medium block">Seed Grant</span>
-                  <span className="font-extrabold text-slate-900 dark:text-white text-sm block mt-0.5">
+                  <span className="text-[10px] text-charcoal-400 uppercase font-medium block">Seed Grant</span>
+                  <span className="font-extrabold text-charcoal-900 dark:text-ivory-100 text-sm block mt-0.5">
                     ${selectedStartupDossier.seedGrantDisbursed.toLocaleString()}
                   </span>
                   <span className="text-violet-600 dark:text-violet-400 font-semibold text-[10px] block">Non-Dilutive</span>
                 </div>
                 <div className="p-3 bg-violet-50/50 dark:bg-violet-950/30 rounded-xl border border-violet-100 dark:border-violet-900/50">
-                  <span className="text-[10px] text-slate-400 uppercase font-medium block">University Equity</span>
+                  <span className="text-[10px] text-charcoal-400 uppercase font-medium block">University Equity</span>
                   <span className="font-extrabold text-violet-600 dark:text-violet-400 text-sm block mt-0.5">
                     {selectedStartupDossier.universityEquityPercentage}%
                   </span>
-                  <span className="text-slate-500 text-[10px] block">Institutional Stake</span>
+                  <span className="text-charcoal-500 text-[10px] block">Institutional Stake</span>
                 </div>
                 <div className="p-3 bg-emerald-50/50 dark:bg-emerald-950/30 rounded-xl border border-emerald-100 dark:border-emerald-900/50">
-                  <span className="text-[10px] text-slate-400 uppercase font-medium block">External Funding</span>
+                  <span className="text-[10px] text-charcoal-400 uppercase font-medium block">External Funding</span>
                   <span className="font-extrabold text-emerald-600 dark:text-emerald-400 text-sm block mt-0.5">
                     ${selectedStartupDossier.externalFundingRaised.toLocaleString()}
                   </span>
@@ -1556,18 +1556,18 @@ ${evalCommitteeNotes}
 
             {/* IP & Mentorship Grid */}
             <div className="grid grid-cols-2 gap-3 text-xs">
-              <div className="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl space-y-1">
-                <span className="text-[11px] text-slate-400 uppercase font-medium block">MakerSpace & IP</span>
-                <span className="font-semibold text-slate-900 dark:text-white block">
+              <div className="p-3 bg-ivory-50 dark:bg-charcoal-800/50 rounded-xl space-y-1">
+                <span className="text-[11px] text-charcoal-400 uppercase font-medium block">MakerSpace & IP</span>
+                <span className="font-semibold text-charcoal-900 dark:text-ivory-100 block">
                   {selectedStartupDossier.labDesksAllocated} Hardware Desks • Cleanroom B-12
                 </span>
                 <span className="text-indigo-600 dark:text-indigo-400 font-medium block">
                   PCT/US2026/049102 • {selectedStartupDossier.patentsFiled} Patents Filed
                 </span>
               </div>
-              <div className="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl space-y-1">
+              <div className="p-3 bg-ivory-50 dark:bg-charcoal-800/50 rounded-xl space-y-1">
                 <div className="flex justify-between items-center">
-                  <span className="text-[11px] text-slate-400 uppercase font-medium block">Lead Mentor</span>
+                  <span className="text-[11px] text-charcoal-400 uppercase font-medium block">Lead Mentor</span>
                   <button
                     type="button"
                     onClick={() => {
@@ -1580,16 +1580,16 @@ ${evalCommitteeNotes}
                     Open in Scorecard →
                   </button>
                 </div>
-                <span className="font-semibold text-slate-900 dark:text-white block truncate">
+                <span className="font-semibold text-charcoal-900 dark:text-ivory-100 block truncate">
                   {selectedStartupDossier.mentorName}
                 </span>
                 <span className="text-emerald-600 dark:text-emerald-400 font-medium block">Weekly Advisory Review</span>
               </div>
             </div>
 
-            <div className="flex flex-wrap items-center justify-between gap-2.5 pt-2 border-t border-slate-100 dark:border-slate-800">
+            <div className="flex flex-wrap items-center justify-between gap-2.5 pt-2 border-t border-border/60 dark:border-charcoal-800">
               <div className="flex flex-wrap items-center gap-1.5 text-xs">
-                <span className="text-slate-400 text-[11px] font-semibold mr-1">Stage:</span>
+                <span className="text-charcoal-400 text-[11px] font-semibold mr-1">Stage:</span>
                 <button
                   onClick={async () => {
                     await handleUpdateStartupStage(selectedStartupDossier.id, "MVP_BUILD");
@@ -1631,7 +1631,7 @@ ${evalCommitteeNotes}
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => window.print()}
-                  className="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-colors"
+                  className="px-3.5 py-2 bg-ivory-100 hover:bg-ivory-200 dark:bg-charcoal-800 dark:hover:bg-charcoal-700 text-charcoal-700 dark:text-ivory-200 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-colors"
                 >
                   <Printer className="w-3.5 h-3.5" />
                   Print Term Sheet

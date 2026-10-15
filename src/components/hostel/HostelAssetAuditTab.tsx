@@ -315,7 +315,7 @@ export default function HostelAssetAuditTab() {
                     </td>
                     <td className="py-3.5 px-4 whitespace-nowrap">
                       <div className="font-semibold text-charcoal-800 dark:text-ivory-200">{item.studentName}</div>
-                      <div className="font-mono text-[10px] text-slate-500">{item.rollNo}</div>
+                      <div className="font-mono text-[10px] text-charcoal-500 dark:text-charcoal-400">{item.rollNo}</div>
                     </td>
                     <td className="py-3.5 px-4 whitespace-nowrap font-medium">
                       ${item.cautionDepositAmount}

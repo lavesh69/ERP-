@@ -490,23 +490,23 @@ export default function EmergencyPage() {
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
-          <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 mb-2">
+        <div className="bg-white dark:bg-charcoal-900 p-5 rounded-2xl border border-border dark:border-charcoal-800 shadow-sm">
+          <div className="flex items-center justify-between text-charcoal-500 dark:text-charcoal-400 mb-2">
             <span className="text-xs font-semibold uppercase tracking-wider">Active Threat Level</span>
             <ShieldAlert className="w-4 h-4 text-emerald-500" />
           </div>
-          <div className="text-2xl font-bold text-slate-900 dark:text-white">
+          <div className="text-2xl font-bold text-charcoal-900 dark:text-ivory-100">
             {activeAlert ? "CRITICAL ALERT" : "NORMAL (GREEN)"}
           </div>
-          <p className="text-xs text-slate-400 mt-1">24/7 Perimeter Surveillance</p>
+          <p className="text-xs text-charcoal-400 mt-1">24/7 Perimeter Surveillance</p>
         </div>
 
-        <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
-          <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 mb-2">
+        <div className="bg-white dark:bg-charcoal-900 p-5 rounded-2xl border border-border dark:border-charcoal-800 shadow-sm">
+          <div className="flex items-center justify-between text-charcoal-500 dark:text-charcoal-400 mb-2">
             <span className="text-xs font-semibold uppercase tracking-wider">Muster Accountability</span>
             <Users className="w-4 h-4 text-indigo-500" />
           </div>
-          <div className="text-2xl font-bold text-slate-900 dark:text-white">
+          <div className="text-2xl font-bold text-charcoal-900 dark:text-ivory-100">
             {loading ? "..." : `${summary?.totalAccountedPercentage || 100}%`}
           </div>
           <p className="text-xs text-emerald-600 dark:text-emerald-400 mt-1 font-medium">
@@ -514,45 +514,45 @@ export default function EmergencyPage() {
           </p>
         </div>
 
-        <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
-          <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 mb-2">
+        <div className="bg-white dark:bg-charcoal-900 p-5 rounded-2xl border border-border dark:border-charcoal-800 shadow-sm">
+          <div className="flex items-center justify-between text-charcoal-500 dark:text-charcoal-400 mb-2">
             <span className="text-xs font-semibold uppercase tracking-wider">Muster Points</span>
             <CheckCircle2 className="w-4 h-4 text-emerald-500" />
           </div>
-          <div className="text-2xl font-bold text-slate-900 dark:text-white">
+          <div className="text-2xl font-bold text-charcoal-900 dark:text-ivory-100">
             {loading ? "..." : `${summary?.safePointsCount || 3} / ${summary?.totalMusterPoints || 3}`}
           </div>
-          <p className="text-xs text-slate-400 mt-1">Wardens On Active Duty</p>
+          <p className="text-xs text-charcoal-400 mt-1">Wardens On Active Duty</p>
         </div>
 
-        <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
-          <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 mb-2">
+        <div className="bg-white dark:bg-charcoal-900 p-5 rounded-2xl border border-border dark:border-charcoal-800 shadow-sm">
+          <div className="flex items-center justify-between text-charcoal-500 dark:text-charcoal-400 mb-2">
             <span className="text-xs font-semibold uppercase tracking-wider">Multi-Channel Gateways</span>
             <Volume2 className="w-4 h-4 text-amber-500" />
           </div>
-          <div className="text-2xl font-bold text-slate-900 dark:text-white">5 Gateways Active</div>
-          <p className="text-xs text-slate-400 mt-1">Sirens, SMS, Push, PA, Email</p>
+          <div className="text-2xl font-bold text-charcoal-900 dark:text-ivory-100">5 Gateways Active</div>
+          <p className="text-xs text-charcoal-400 mt-1">Sirens, SMS, Push, PA, Email</p>
         </div>
       </div>
 
       {/* Search & Category Filter Toolbar */}
-      <div className="flex flex-col sm:flex-row gap-3 items-center justify-between bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800">
+      <div className="flex flex-col sm:flex-row gap-3 items-center justify-between bg-white dark:bg-charcoal-900 p-4 rounded-xl border border-border dark:border-charcoal-800">
         <div className="relative w-full sm:w-96">
-          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-charcoal-400" />
           <input
             type="text"
             placeholder="Search alerts, zones, incident codes..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-red-500 text-slate-900 dark:text-white"
+            className="w-full pl-9 pr-4 py-2 bg-ivory-50 dark:bg-charcoal-800 border border-border dark:border-charcoal-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-red-500 text-charcoal-900 dark:text-ivory-100"
           />
         </div>
         <div className="flex items-center gap-2 w-full sm:w-auto">
-          <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Category:</span>
+          <span className="text-xs font-semibold text-charcoal-500 uppercase tracking-wider">Category:</span>
           <select
             value={filterCategory}
             onChange={(e) => setFilterCategory(e.target.value)}
-            className="px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-red-500 text-slate-900 dark:text-white"
+            className="px-3 py-2 bg-ivory-50 dark:bg-charcoal-800 border border-border dark:border-charcoal-700 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-red-500 text-charcoal-900 dark:text-ivory-100"
           >
             <option value="ALL">All Categories</option>
             <option value="FIRE_EVACUATION">Fire Evacuation</option>
@@ -565,13 +565,13 @@ export default function EmergencyPage() {
       </div>
 
       {/* Tabs */}
-      <div className="flex border-b border-slate-200 dark:border-slate-800 overflow-x-auto no-scrollbar flex-nowrap">
+      <div className="flex border-b border-border dark:border-charcoal-800 overflow-x-auto no-scrollbar flex-nowrap">
         <button
           onClick={() => setActiveTab("alerts")}
           className={`flex items-center gap-2 px-5 py-3 text-sm font-semibold border-b-2 transition-all whitespace-nowrap shrink-0 ${
             activeTab === "alerts"
               ? "border-red-600 text-red-600 dark:text-red-400"
-              : "border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200"
+              : "border-transparent text-charcoal-500 hover:text-charcoal-800 dark:hover:text-ivory-200"
           }`}
         >
           <Radio className="w-4 h-4" />
@@ -582,7 +582,7 @@ export default function EmergencyPage() {
           className={`flex items-center gap-2 px-5 py-3 text-sm font-semibold border-b-2 transition-all whitespace-nowrap shrink-0 ${
             activeTab === "muster"
               ? "border-red-600 text-red-600 dark:text-red-400"
-              : "border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200"
+              : "border-transparent text-charcoal-500 hover:text-charcoal-800 dark:hover:text-ivory-200"
           }`}
         >
           <Users className="w-4 h-4" />
@@ -593,7 +593,7 @@ export default function EmergencyPage() {
           className={`flex items-center gap-2 px-5 py-3 text-sm font-semibold border-b-2 transition-all whitespace-nowrap shrink-0 ${
             activeTab === "siren"
               ? "border-red-600 text-red-600 dark:text-red-400"
-              : "border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200"
+              : "border-transparent text-charcoal-500 hover:text-charcoal-800 dark:hover:text-ivory-200"
           }`}
         >
           <Siren className="w-4 h-4" />
@@ -620,10 +620,10 @@ export default function EmergencyPage() {
             .map((al) => (
             <div
               key={al.id}
-              className={`bg-white dark:bg-slate-900 p-5 rounded-2xl border shadow-sm space-y-3 ${
+              className={`bg-white dark:bg-charcoal-900 p-5 rounded-2xl border shadow-sm space-y-3 ${
                 al.isActive
                   ? "border-red-500 bg-red-50/20"
-                  : "border-slate-200 dark:border-slate-800"
+                  : "border-border dark:border-charcoal-800"
               }`}
             >
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
@@ -637,8 +637,8 @@ export default function EmergencyPage() {
                   >
                     {al.severity.replace("_", " ")}
                   </span>
-                  <span className="font-mono text-xs font-bold text-slate-500">{al.alertCode}</span>
-                  <span className="text-xs text-slate-400">• {new Date(al.initiatedAt).toLocaleString()}</span>
+                  <span className="font-mono text-xs font-bold text-charcoal-500">{al.alertCode}</span>
+                  <span className="text-xs text-charcoal-400">• {new Date(al.initiatedAt).toLocaleString()}</span>
                 </div>
 
                 {al.isActive ? (
@@ -649,27 +649,27 @@ export default function EmergencyPage() {
                     Mark ALL CLEAR
                   </button>
                 ) : (
-                  <span className="px-2.5 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-500 rounded text-xs font-medium">
+                  <span className="px-2.5 py-0.5 bg-ivory-100 dark:bg-charcoal-800 text-charcoal-500 rounded text-xs font-medium">
                     Resolved &amp; Logged
                   </span>
                 )}
               </div>
 
               <div>
-                <h3 className="font-bold text-slate-900 dark:text-white text-base">{al.headline}</h3>
-                <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">{al.instructions}</p>
+                <h3 className="font-bold text-charcoal-900 dark:text-ivory-100 text-base">{al.headline}</h3>
+                <p className="text-sm text-charcoal-600 dark:text-charcoal-400 mt-1">{al.instructions}</p>
               </div>
 
-              <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-100 dark:border-slate-800 text-xs text-slate-500">
+              <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-border/60 dark:border-charcoal-800 text-xs text-charcoal-500">
                 <div className="flex flex-wrap items-center gap-1.5">
-                  <span className="font-semibold text-slate-600 dark:text-slate-400">Affected Zones:</span>
+                  <span className="font-semibold text-charcoal-600 dark:text-charcoal-400">Affected Zones:</span>
                   {al.affectedZones.map((z, i) => (
-                    <span key={i} className="bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded text-[11px]">
+                    <span key={i} className="bg-ivory-100 dark:bg-charcoal-800 px-2 py-0.5 rounded text-[11px]">
                       {z}
                     </span>
                   ))}
                   <span className="mx-1">•</span>
-                  <span className="font-mono text-[11px] text-slate-400">Seal: {al.cryptographicBroadcastSeal}</span>
+                  <span className="font-mono text-[11px] text-charcoal-400">Seal: {al.cryptographicBroadcastSeal}</span>
                 </div>
                 <button
                   onClick={() => setSelectedAlertDossier(al)}
@@ -693,10 +693,10 @@ export default function EmergencyPage() {
             const matchesCategory = filterCategory === "ALL" || al.category === filterCategory;
             return matchesSearch && matchesCategory;
           }).length === 0 && (
-            <div className="py-16 text-center bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-8 shadow-sm">
-              <ShieldCheck className="w-12 h-12 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
-              <h4 className="font-semibold text-slate-900 dark:text-white text-base">No Incidents Found</h4>
-              <p className="text-xs text-slate-400 mt-1 max-w-sm mx-auto">
+            <div className="py-16 text-center bg-white dark:bg-charcoal-900 rounded-2xl border border-border dark:border-charcoal-800 p-8 shadow-sm">
+              <ShieldCheck className="w-12 h-12 text-charcoal-300 dark:text-charcoal-600 mx-auto mb-3" />
+              <h4 className="font-semibold text-charcoal-900 dark:text-ivory-100 text-base">No Incidents Found</h4>
+              <p className="text-xs text-charcoal-400 mt-1 max-w-sm mx-auto">
                 No active or historical emergency alerts match your query &ldquo;{searchQuery}&rdquo;.
               </p>
               <button
@@ -720,26 +720,26 @@ export default function EmergencyPage() {
           {musterPoints.map((mp) => (
             <div
               key={mp.id}
-              className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4"
+              className="bg-white dark:bg-charcoal-900 p-5 rounded-2xl border border-border dark:border-charcoal-800 shadow-sm space-y-4"
             >
               <div className="flex justify-between items-start">
                 <div>
-                  <h3 className="font-bold text-slate-900 dark:text-white text-base">{mp.name}</h3>
-                  <p className="text-xs text-slate-500">Zone: {mp.zone}</p>
+                  <h3 className="font-bold text-charcoal-900 dark:text-ivory-100 text-base">{mp.name}</h3>
+                  <p className="text-xs text-charcoal-500">Zone: {mp.zone}</p>
                 </div>
                 <span className="px-2.5 py-1 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 rounded-lg text-xs font-bold">
                   {mp.status.replace("_", " ")}
                 </span>
               </div>
 
-              <div className="space-y-1.5 text-xs text-slate-600 dark:text-slate-400">
+              <div className="space-y-1.5 text-xs text-charcoal-600 dark:text-charcoal-400">
                 <div className="flex justify-between">
                   <span>Evacuees Assembled:</span>
-                  <span className="font-bold text-slate-900 dark:text-white">
+                  <span className="font-bold text-charcoal-900 dark:text-ivory-100">
                     {mp.currentEvacueesCount} / {mp.capacity} Max
                   </span>
                 </div>
-                <div className="h-2 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                <div className="h-2 w-full bg-ivory-100 dark:bg-charcoal-800 rounded-full overflow-hidden">
                   <div
                     className="h-full bg-emerald-500 rounded-full"
                     style={{ width: `${(mp.currentEvacueesCount / mp.capacity) * 100}%` }}
@@ -747,7 +747,7 @@ export default function EmergencyPage() {
                 </div>
                 <div className="flex justify-between pt-2">
                   <span>Assigned Warden:</span>
-                  <span className="font-semibold text-slate-800 dark:text-slate-200">
+                  <span className="font-semibold text-charcoal-800 dark:text-ivory-200">
                     {mp.assignedWarden}
                   </span>
                 </div>
@@ -759,12 +759,12 @@ export default function EmergencyPage() {
                 </div>
               </div>
 
-              <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex justify-end">
+              <div className="pt-2 border-t border-border/60 dark:border-charcoal-800 flex justify-end">
                 <button
                   onClick={() => setSelectedMusterDossier(mp)}
-                  className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors"
+                  className="px-3 py-1.5 bg-ivory-100 hover:bg-ivory-200 dark:bg-charcoal-800 dark:hover:bg-charcoal-700 text-charcoal-700 dark:text-ivory-200 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors"
                 >
-                  <Eye className="w-3.5 h-3.5 text-slate-500" />
+                  <Eye className="w-3.5 h-3.5 text-charcoal-500" />
                   Inspect Post
                 </button>
               </div>
@@ -777,8 +777,8 @@ export default function EmergencyPage() {
       {activeTab === "siren" && (
         <div className="space-y-6">
           {/* Synthesizer Control Deck */}
-          <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-6">
-            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-b border-slate-100 dark:border-slate-800 pb-4">
+          <div className="bg-white dark:bg-charcoal-900 p-6 rounded-2xl border border-border dark:border-charcoal-800 shadow-sm space-y-6">
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-b border-border/60 dark:border-charcoal-800 pb-4">
               <div>
                 <div className="flex items-center gap-2.5">
                   <div className={`p-2.5 rounded-xl ${
@@ -789,19 +789,19 @@ export default function EmergencyPage() {
                     <Siren className={`w-6 h-6 ${isSirenActive ? "animate-spin" : ""}`} />
                   </div>
                   <div>
-                    <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                    <h2 className="text-lg font-bold text-charcoal-900 dark:text-ivory-100 flex items-center gap-2">
                       Campus Siren Synthesizer &amp; Public Address Matrix
                       {isSirenActive ? (
                         <span className="px-2 py-0.5 text-xs font-black uppercase rounded-full bg-red-100 dark:bg-red-950/80 text-red-700 dark:text-red-300 animate-pulse">
                           Acoustic Alarm Broadcasting
                         </span>
                       ) : (
-                        <span className="px-2 py-0.5 text-xs font-semibold uppercase rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400">
+                        <span className="px-2 py-0.5 text-xs font-semibold uppercase rounded-full bg-ivory-100 dark:bg-charcoal-800 text-charcoal-600 dark:text-charcoal-400">
                           Standby Mode
                         </span>
                       )}
                     </h2>
-                    <p className="text-xs text-slate-500">
+                    <p className="text-xs text-charcoal-500">
                       Real-Time Web Audio API Dual-Tone Frequency Sweeper &amp; 120 dBA PA Horn Network
                     </p>
                   </div>
@@ -842,8 +842,8 @@ export default function EmergencyPage() {
             </div>
 
             {/* Live Waveform & Telemetry Display */}
-            <div className="p-5 bg-slate-950 rounded-2xl border border-slate-800 space-y-4">
-              <div className="flex items-center justify-between text-xs font-mono text-slate-400">
+            <div className="p-5 bg-charcoal-950 rounded-2xl border border-charcoal-800 space-y-4">
+              <div className="flex items-center justify-between text-xs font-mono text-charcoal-400">
                 <span className="flex items-center gap-2 text-emerald-400 font-semibold">
                   <Activity className="w-4 h-4 animate-pulse" />
                   LIVE ACOUSTIC TELEMETRY STREAM
@@ -854,7 +854,7 @@ export default function EmergencyPage() {
               </div>
 
               {/* Animated Waveform Bars */}
-              <div className="h-24 bg-slate-900/80 rounded-xl p-4 flex items-end justify-between gap-1.5 border border-slate-800/80 overflow-hidden">
+              <div className="h-24 bg-charcoal-900/80 rounded-xl p-4 flex items-end justify-between gap-1.5 border border-charcoal-800/80 overflow-hidden">
                 {waveformBars.map((height, idx) => (
                   <div
                     key={idx}
@@ -873,8 +873,8 @@ export default function EmergencyPage() {
               </div>
 
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs font-mono">
-                <div className="p-2.5 bg-slate-900 rounded-lg border border-slate-800">
-                  <span className="text-[10px] text-slate-500 block uppercase">Carrier Tone</span>
+                <div className="p-2.5 bg-charcoal-900 rounded-lg border border-charcoal-800">
+                  <span className="text-[10px] text-charcoal-500 block uppercase">Carrier Tone</span>
                   <span className="text-white font-bold">
                     {sirenMode === "EVACUATION_WAIL"
                       ? "750 - 1250 Hz (Sweep)"
@@ -883,18 +883,18 @@ export default function EmergencyPage() {
                       : "523 - 1046 Hz (Harmonic)"}
                   </span>
                 </div>
-                <div className="p-2.5 bg-slate-900 rounded-lg border border-slate-800">
-                  <span className="text-[10px] text-slate-500 block uppercase">Acoustic SPL</span>
+                <div className="p-2.5 bg-charcoal-900 rounded-lg border border-charcoal-800">
+                  <span className="text-[10px] text-charcoal-500 block uppercase">Acoustic SPL</span>
                   <span className="text-emerald-400 font-bold">
                     {isSirenActive ? "118.5 dBA @ 10m" : "0 dBA (Ambient)"}
                   </span>
                 </div>
-                <div className="p-2.5 bg-slate-900 rounded-lg border border-slate-800">
-                  <span className="text-[10px] text-slate-500 block uppercase">Web Audio Engine</span>
+                <div className="p-2.5 bg-charcoal-900 rounded-lg border border-charcoal-800">
+                  <span className="text-[10px] text-charcoal-500 block uppercase">Web Audio Engine</span>
                   <span className="text-cyan-400 font-bold">48 kHz Stereo Low-Latency</span>
                 </div>
-                <div className="p-2.5 bg-slate-900 rounded-lg border border-slate-800">
-                  <span className="text-[10px] text-slate-500 block uppercase">Hardware Relays</span>
+                <div className="p-2.5 bg-charcoal-900 rounded-lg border border-charcoal-800">
+                  <span className="text-[10px] text-charcoal-500 block uppercase">Hardware Relays</span>
                   <span className="text-amber-400 font-bold">6 Horn Arrays Armed</span>
                 </div>
               </div>
@@ -903,7 +903,7 @@ export default function EmergencyPage() {
             {/* Profile Picker & Volume Controls */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
               <div className="space-y-3">
-                <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider block">
+                <label className="text-xs font-bold text-charcoal-700 dark:text-ivory-300 uppercase tracking-wider block">
                   Select Acoustic Sound Profile:
                 </label>
                 <div className="space-y-2">
@@ -935,17 +935,17 @@ export default function EmergencyPage() {
                       className={`w-full text-left p-3 rounded-xl border transition-all text-xs flex items-center justify-between ${
                         sirenMode === p.id
                           ? "bg-red-50 dark:bg-red-950/40 border-red-300 dark:border-red-800 text-red-900 dark:text-red-200 shadow-sm"
-                          : "bg-slate-50 dark:bg-slate-800/40 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:border-slate-300"
+                          : "bg-ivory-50 dark:bg-charcoal-800/40 border-border dark:border-charcoal-800 text-charcoal-700 dark:text-ivory-300 hover:border-charcoal-300 dark:hover:border-charcoal-600"
                       }`}
                     >
                       <div>
                         <div className="font-bold">{p.title}</div>
-                        <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">{p.subtitle}</div>
+                        <div className="text-[11px] text-charcoal-500 dark:text-charcoal-400 mt-0.5">{p.subtitle}</div>
                       </div>
                       <div className={`w-3.5 h-3.5 rounded-full border-2 ml-3 shrink-0 ${
                         sirenMode === p.id
                           ? "border-red-600 bg-red-600"
-                          : "border-slate-300 dark:border-slate-600"
+                          : "border-charcoal-300 dark:border-charcoal-600"
                       }`} />
                     </button>
                   ))}
@@ -955,10 +955,10 @@ export default function EmergencyPage() {
               <div className="space-y-4">
                 <div className="space-y-2">
                   <div className="flex items-center justify-between text-xs">
-                    <span className="font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                    <span className="font-bold text-charcoal-700 dark:text-ivory-300 uppercase tracking-wider">
                       Master Monitor Volume
                     </span>
-                    <span className="font-mono font-bold px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200">
+                    <span className="font-mono font-bold px-2 py-0.5 rounded bg-ivory-100 dark:bg-charcoal-800 text-charcoal-800 dark:text-ivory-200">
                       {Math.round(sirenVolume * 100)}%
                     </span>
                   </div>
@@ -971,7 +971,7 @@ export default function EmergencyPage() {
                     onChange={(e) => setSirenVolume(Number(e.target.value))}
                     className="w-full accent-red-600 cursor-pointer"
                   />
-                  <div className="flex justify-between text-[11px] text-slate-400">
+                  <div className="flex justify-between text-[11px] text-charcoal-400">
                     <span>Mute (0%)</span>
                     <span>Comfortable (15%)</span>
                     <span>Max Monitor (50%)</span>
@@ -992,13 +992,13 @@ export default function EmergencyPage() {
           </div>
 
           {/* Hardware Horn Relay Matrix */}
-          <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+          <div className="bg-white dark:bg-charcoal-900 p-6 rounded-2xl border border-border dark:border-charcoal-800 shadow-sm space-y-4">
+            <div className="flex items-center justify-between border-b border-border/60 dark:border-charcoal-800 pb-3">
               <div>
-                <h3 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                <h3 className="text-sm font-bold text-charcoal-900 dark:text-ivory-100 uppercase tracking-wider">
                   Campus PA Speaker Relays &amp; Horn Network
                 </h3>
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-charcoal-500">
                   Direct telemetry from IP-addressable outdoor sirens and indoor voice annunciators
                 </p>
               </div>
@@ -1008,7 +1008,7 @@ export default function EmergencyPage() {
                   setTimeout(() => stopSiren(), 3000);
                   setMessage({ text: "3-Second Acoustic Pulse Chime dispatched to all horns.", type: "success" });
                 }}
-                className="px-3.5 py-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all"
+                className="px-3.5 py-1.5 bg-ivory-100 hover:bg-ivory-200 dark:bg-charcoal-800 dark:hover:bg-charcoal-700 text-charcoal-700 dark:text-ivory-300 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all"
               >
                 <BellRing className="w-3.5 h-3.5" />
                 Pulse Test Chime (3s)
@@ -1026,12 +1026,12 @@ export default function EmergencyPage() {
               ].map((horn) => (
                 <div
                   key={horn.id}
-                  className="p-4 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-200 dark:border-slate-800 space-y-3"
+                  className="p-4 bg-ivory-50 dark:bg-charcoal-800/40 rounded-xl border border-border dark:border-charcoal-800 space-y-3"
                 >
                   <div className="flex items-start justify-between">
                     <div>
-                      <div className="font-bold text-slate-900 dark:text-white text-xs">{horn.name}</div>
-                      <div className="text-[11px] text-slate-400 font-mono">
+                      <div className="font-bold text-charcoal-900 dark:text-ivory-100 text-xs">{horn.name}</div>
+                      <div className="text-[11px] text-charcoal-400 font-mono">
                         {horn.id} • {horn.ip}
                       </div>
                     </div>
@@ -1042,11 +1042,11 @@ export default function EmergencyPage() {
                   </div>
 
                   <div className="flex items-center justify-between text-xs">
-                    <span className="text-slate-500">Zone: {horn.zone}</span>
+                    <span className="text-charcoal-500">Zone: {horn.zone}</span>
                     <span className="font-mono font-bold text-red-600 dark:text-red-400">{horn.spl}</span>
                   </div>
 
-                  <div className="pt-2 border-t border-slate-100 dark:border-slate-700/60 flex items-center justify-between text-[11px]">
+                  <div className="pt-2 border-t border-border/60 dark:border-charcoal-700/60 flex items-center justify-between text-[11px]">
                     <span className="text-emerald-600 dark:text-emerald-400 font-medium">Ping: 18ms</span>
                     <button
                       onClick={() => {
@@ -1054,7 +1054,7 @@ export default function EmergencyPage() {
                         setTimeout(() => stopSiren(), 2000);
                         setMessage({ text: `2-second chirp dispatched to ${horn.name} (${horn.id})`, type: "success" });
                       }}
-                      className="px-2.5 py-1 bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-800 dark:text-slate-200 rounded font-semibold transition"
+                      className="px-2.5 py-1 bg-ivory-200 hover:bg-ivory-300 dark:bg-charcoal-700 dark:hover:bg-charcoal-600 text-charcoal-800 dark:text-ivory-200 rounded font-semibold transition"
                     >
                       Chirp (2s)
                     </button>
@@ -1073,17 +1073,17 @@ export default function EmergencyPage() {
           onClick={(e) => {
             if (e.target === e.currentTarget) setShowBroadcastModal(false);
           }}
-          className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4"
+          className="fixed inset-0 z-50 bg-charcoal-950/80 backdrop-blur-sm flex items-center justify-center p-4"
         >
-          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-red-200 dark:border-red-900 p-6 max-w-lg w-full space-y-4 shadow-2xl">
-            <div className="flex justify-between items-center border-b border-slate-200 dark:border-slate-800 pb-3">
+          <div className="bg-white dark:bg-charcoal-900 rounded-2xl border border-red-200 dark:border-red-900 p-6 max-w-lg w-full space-y-4 shadow-2xl">
+            <div className="flex justify-between items-center border-b border-border dark:border-charcoal-800 pb-3">
               <div className="flex items-center gap-2 text-red-600">
                 <Siren className="w-5 h-5 animate-spin" />
                 <h2 className="text-lg font-bold">Dispatch Campus Emergency Alert</h2>
               </div>
               <button
                 onClick={() => setShowBroadcastModal(false)}
-                className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+                className="p-1.5 text-charcoal-400 hover:text-charcoal-600 dark:hover:text-ivory-200 hover:bg-ivory-100 dark:hover:bg-charcoal-800 rounded-lg transition-colors"
                 aria-label="Close modal"
               >
                 <X className="w-5 h-5" />
@@ -1092,7 +1092,7 @@ export default function EmergencyPage() {
 
             <form onSubmit={handleBroadcast} className="space-y-4 text-sm">
               <div>
-                <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">
+                <label className="block text-xs font-semibold text-charcoal-500 uppercase tracking-wider mb-1.5">
                   ⚡ Quick Response Presets:
                 </label>
                 <div className="flex flex-wrap gap-1.5">
@@ -1111,13 +1111,13 @@ export default function EmergencyPage() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
+                  <label className="block text-xs font-medium text-charcoal-600 dark:text-charcoal-400 mb-1">
                     Emergency Category
                   </label>
                   <select
                     value={formData.category}
                     onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                    className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl"
+                    className="w-full px-3 py-2 bg-ivory-50 dark:bg-charcoal-800 border border-border dark:border-charcoal-700 rounded-xl"
                   >
                     <option value="FIRE_EVACUATION">Fire / Hazardous Gas Leak</option>
                     <option value="SEVERE_WEATHER_ALERT">Severe Cyclone / Flood Warning</option>
@@ -1127,13 +1127,13 @@ export default function EmergencyPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
+                  <label className="block text-xs font-medium text-charcoal-600 dark:text-charcoal-400 mb-1">
                     Severity Tier
                   </label>
                   <select
                     value={formData.severity}
                     onChange={(e) => setFormData({ ...formData, severity: e.target.value })}
-                    className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl"
+                    className="w-full px-3 py-2 bg-ivory-50 dark:bg-charcoal-800 border border-border dark:border-charcoal-700 rounded-xl"
                   >
                     <option value="CRITICAL_EVACUATION">Critical Evacuation</option>
                     <option value="HIGH_WARNING">High Warning</option>
@@ -1144,7 +1144,7 @@ export default function EmergencyPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
+                <label className="block text-xs font-medium text-charcoal-600 dark:text-charcoal-400 mb-1">
                   Alert Headline
                 </label>
                 <input
@@ -1152,12 +1152,12 @@ export default function EmergencyPage() {
                   required
                   value={formData.headline}
                   onChange={(e) => setFormData({ ...formData, headline: e.target.value })}
-                  className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl font-bold"
+                  className="w-full px-3 py-2 bg-ivory-50 dark:bg-charcoal-800 border border-border dark:border-charcoal-700 rounded-xl font-bold"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
+                <label className="block text-xs font-medium text-charcoal-600 dark:text-charcoal-400 mb-1">
                   Actionable Safety Instructions
                 </label>
                 <textarea
@@ -1165,7 +1165,7 @@ export default function EmergencyPage() {
                   required
                   value={formData.instructions}
                   onChange={(e) => setFormData({ ...formData, instructions: e.target.value })}
-                  className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl"
+                  className="w-full px-3 py-2 bg-ivory-50 dark:bg-charcoal-800 border border-border dark:border-charcoal-700 rounded-xl"
                 />
               </div>
 
@@ -1177,7 +1177,7 @@ export default function EmergencyPage() {
                 <button
                   type="button"
                   onClick={() => setShowBroadcastModal(false)}
-                  className="px-4 py-2 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-600 dark:text-slate-300"
+                  className="px-4 py-2 border border-border dark:border-charcoal-700 rounded-xl text-charcoal-600 dark:text-ivory-300"
                 >
                   Cancel
                 </button>
@@ -1203,29 +1203,29 @@ export default function EmergencyPage() {
           onClick={(e) => {
             if (e.target === e.currentTarget) setSelectedAlertDossier(null);
           }}
-          className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto animate-in fade-in duration-200"
+          className="fixed inset-0 z-50 bg-charcoal-950/80 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto animate-in fade-in duration-200"
         >
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl max-w-xl w-full p-6 shadow-2xl space-y-5 my-8">
-            <div className="flex items-start justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
+          <div className="bg-white dark:bg-charcoal-900 border border-border dark:border-charcoal-800 rounded-2xl max-w-xl w-full p-6 shadow-2xl space-y-5 my-8">
+            <div className="flex items-start justify-between border-b border-border/60 dark:border-charcoal-800 pb-4">
               <div className="flex items-center gap-3">
                 <div className="p-2.5 bg-red-100 dark:bg-red-950/60 text-red-600 dark:text-red-400 rounded-xl">
                   <Radio className="w-6 h-6" />
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
-                    <h3 className="font-bold text-slate-900 dark:text-white text-lg">Incident Operations Brief</h3>
-                    <span className={`px-2 py-0.5 rounded-full text-[11px] font-bold ${selectedAlertDossier.isActive ? "bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-300" : "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300"}`}>
+                    <h3 className="font-bold text-charcoal-900 dark:text-ivory-100 text-lg">Incident Operations Brief</h3>
+                    <span className={`px-2 py-0.5 rounded-full text-[11px] font-bold ${selectedAlertDossier.isActive ? "bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-300" : "bg-ivory-100 text-charcoal-700 dark:bg-charcoal-800 dark:text-ivory-300"}`}>
                       {selectedAlertDossier.isActive ? "ACTIVE DISPATCH" : "RESOLVED"}
                     </span>
                   </div>
-                  <p className="text-xs font-mono text-slate-400 mt-0.5">
+                  <p className="text-xs font-mono text-charcoal-400 mt-0.5">
                     Code: {selectedAlertDossier.alertCode} • Category: {selectedAlertDossier.category.replace(/_/g, " ")}
                   </p>
                 </div>
               </div>
               <button
                 onClick={() => setSelectedAlertDossier(null)}
-                className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+                className="p-1.5 text-charcoal-400 hover:text-charcoal-600 dark:hover:text-ivory-200 hover:bg-ivory-100 dark:hover:bg-charcoal-800 rounded-lg transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -1237,33 +1237,33 @@ export default function EmergencyPage() {
                 <span className="font-bold uppercase tracking-wider text-red-700 dark:text-red-400 text-[11px]">
                   {selectedAlertDossier.severity.replace(/_/g, " ")}
                 </span>
-                <span className="text-slate-500 font-mono text-[11px]">
+                <span className="text-charcoal-500 font-mono text-[11px]">
                   Initiated: {new Date(selectedAlertDossier.initiatedAt).toLocaleString()}
                 </span>
               </div>
-              <h4 className="font-bold text-slate-900 dark:text-white text-base leading-snug">
+              <h4 className="font-bold text-charcoal-900 dark:text-ivory-100 text-base leading-snug">
                 {selectedAlertDossier.headline}
               </h4>
-              <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed font-medium">
+              <p className="text-xs text-charcoal-700 dark:text-ivory-300 leading-relaxed font-medium">
                 {selectedAlertDossier.instructions}
               </p>
             </div>
 
             {/* Affected Zones & Transmission Channels */}
             <div className="grid grid-cols-2 gap-3 text-xs">
-              <div className="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl space-y-1.5">
-                <span className="text-[11px] text-slate-400 uppercase font-medium block">Affected Campus Quadrants</span>
+              <div className="p-3 bg-ivory-50 dark:bg-charcoal-800/50 rounded-xl space-y-1.5">
+                <span className="text-[11px] text-charcoal-400 uppercase font-medium block">Affected Campus Quadrants</span>
                 <div className="flex flex-wrap gap-1.5">
                   {selectedAlertDossier.affectedZones.map((z, i) => (
-                    <span key={i} className="px-2 py-0.5 bg-white dark:bg-slate-700 rounded border border-slate-200 dark:border-slate-600 text-slate-800 dark:text-slate-200 font-medium">
+                    <span key={i} className="px-2 py-0.5 bg-white dark:bg-charcoal-800 rounded border border-border dark:border-charcoal-700 text-charcoal-800 dark:text-ivory-200 font-medium">
                       {z}
                     </span>
                   ))}
                 </div>
               </div>
-              <div className="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl space-y-1.5">
+              <div className="p-3 bg-ivory-50 dark:bg-charcoal-800/50 rounded-xl space-y-1.5">
                 <div className="flex justify-between items-center">
-                  <span className="text-[11px] text-slate-400 uppercase font-medium block">Multi-Channel Dispatches</span>
+                  <span className="text-[11px] text-charcoal-400 uppercase font-medium block">Multi-Channel Dispatches</span>
                   <button
                     type="button"
                     onClick={() => {
@@ -1291,37 +1291,37 @@ export default function EmergencyPage() {
                 Emergency Dispatch Gateway Telemetry:
               </span>
               <div className="grid grid-cols-4 gap-2 text-center text-[10px]">
-                <div className="p-1.5 bg-white dark:bg-slate-900 rounded border border-red-100 dark:border-red-900/30">
-                  <span className="text-slate-400 block">SMS Gateway</span>
+                <div className="p-1.5 bg-white dark:bg-charcoal-900 rounded border border-red-100 dark:border-red-900/30">
+                  <span className="text-charcoal-400 block">SMS Gateway</span>
                   <span className="font-bold text-emerald-600">100% (4,820 msgs)</span>
                 </div>
-                <div className="p-1.5 bg-white dark:bg-slate-900 rounded border border-red-100 dark:border-red-900/30">
-                  <span className="text-slate-400 block">Push Pager</span>
+                <div className="p-1.5 bg-white dark:bg-charcoal-900 rounded border border-red-100 dark:border-red-900/30">
+                  <span className="text-charcoal-400 block">Push Pager</span>
                   <span className="font-bold text-emerald-600">98.4% (3,210 app)</span>
                 </div>
-                <div className="p-1.5 bg-white dark:bg-slate-900 rounded border border-red-100 dark:border-red-900/30">
-                  <span className="text-slate-400 block">PA Audio / Siren</span>
+                <div className="p-1.5 bg-white dark:bg-charcoal-900 rounded border border-red-100 dark:border-red-900/30">
+                  <span className="text-charcoal-400 block">PA Audio / Siren</span>
                   <span className="font-bold text-red-600">120dB Armed</span>
                 </div>
-                <div className="p-1.5 bg-white dark:bg-slate-900 rounded border border-red-100 dark:border-red-900/30">
-                  <span className="text-slate-400 block">Campus Email</span>
+                <div className="p-1.5 bg-white dark:bg-charcoal-900 rounded border border-red-100 dark:border-red-900/30">
+                  <span className="text-charcoal-400 block">Campus Email</span>
                   <span className="font-bold text-emerald-600">Dispatched</span>
                 </div>
               </div>
             </div>
 
             {/* Clery Act Audit Trail & Cryptographic Seal */}
-            <div className="p-3 bg-slate-50 dark:bg-slate-800/30 rounded-xl text-xs space-y-1 font-mono border border-slate-100 dark:border-slate-800">
-              <div className="flex justify-between text-slate-500">
+            <div className="p-3 bg-ivory-50 dark:bg-charcoal-800/30 rounded-xl text-xs space-y-1 font-mono border border-border/60 dark:border-charcoal-800">
+              <div className="flex justify-between text-charcoal-500">
                 <span>Authorized Officer: <strong>{selectedAlertDossier.initiatedBy}</strong></span>
                 <span>Clery Act Standard: <strong>Compliant (34 CFR 668.46)</strong></span>
               </div>
-              <div className="text-[11px] text-slate-400 pt-1 break-all">
+              <div className="text-[11px] text-charcoal-400 pt-1 break-all">
                 Broadcast SHA-256 Seal: {selectedAlertDossier.cryptographicBroadcastSeal}
               </div>
             </div>
 
-            <div className="flex flex-wrap items-center justify-between gap-2.5 pt-2 border-t border-slate-100 dark:border-slate-800">
+            <div className="flex flex-wrap items-center justify-between gap-2.5 pt-2 border-t border-border/60 dark:border-charcoal-800">
               <div>
                 {selectedAlertDossier.isActive && (
                   <button
@@ -1342,7 +1342,7 @@ export default function EmergencyPage() {
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => window.print()}
-                  className="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-colors"
+                  className="px-3.5 py-2 bg-ivory-100 hover:bg-ivory-200 dark:bg-charcoal-800 dark:hover:bg-charcoal-700 text-charcoal-700 dark:text-ivory-200 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-colors"
                 >
                   <Printer className="w-3.5 h-3.5" />
                   Print Incident Log
@@ -1368,44 +1368,44 @@ export default function EmergencyPage() {
           onClick={(e) => {
             if (e.target === e.currentTarget) setSelectedMusterDossier(null);
           }}
-          className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto animate-in fade-in duration-200"
+          className="fixed inset-0 z-50 bg-charcoal-950/80 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto animate-in fade-in duration-200"
         >
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-5 my-8">
-            <div className="flex items-start justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
+          <div className="bg-white dark:bg-charcoal-900 border border-border dark:border-charcoal-800 rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-5 my-8">
+            <div className="flex items-start justify-between border-b border-border/60 dark:border-charcoal-800 pb-4">
               <div className="flex items-center gap-3">
                 <div className="p-2.5 bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 rounded-xl">
                   <CheckCircle2 className="w-6 h-6" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-slate-900 dark:text-white text-lg">{selectedMusterDossier.name}</h3>
-                  <p className="text-xs text-slate-400 mt-0.5">
+                  <h3 className="font-bold text-charcoal-900 dark:text-ivory-100 text-lg">{selectedMusterDossier.name}</h3>
+                  <p className="text-xs text-charcoal-400 mt-0.5">
                     Designated Safety Quadrant: {selectedMusterDossier.zone}
                   </p>
                 </div>
               </div>
               <button
                 onClick={() => setSelectedMusterDossier(null)}
-                className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+                className="p-1.5 text-charcoal-400 hover:text-charcoal-600 dark:hover:text-ivory-200 hover:bg-ivory-100 dark:hover:bg-charcoal-800 rounded-lg transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             {/* Occupancy Card */}
-            <div className="p-4 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-200 dark:border-slate-700/60 space-y-2">
+            <div className="p-4 bg-ivory-50 dark:bg-charcoal-800/40 rounded-xl border border-border dark:border-charcoal-700/60 space-y-2">
               <div className="flex justify-between items-center text-xs">
-                <span className="font-medium text-slate-600 dark:text-slate-300">Live Evacuees Assembly Rate:</span>
-                <span className="font-mono font-bold text-slate-900 dark:text-white">
+                <span className="font-medium text-charcoal-600 dark:text-ivory-300">Live Evacuees Assembly Rate:</span>
+                <span className="font-mono font-bold text-charcoal-900 dark:text-ivory-100">
                   {selectedMusterDossier.currentEvacueesCount} / {selectedMusterDossier.capacity} Persons ({((selectedMusterDossier.currentEvacueesCount / selectedMusterDossier.capacity) * 100).toFixed(0)}%)
                 </span>
               </div>
-              <div className="h-2 w-full bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+              <div className="h-2 w-full bg-ivory-200 dark:bg-charcoal-700 rounded-full overflow-hidden">
                 <div
                   className="h-full bg-emerald-500 rounded-full"
                   style={{ width: `${(selectedMusterDossier.currentEvacueesCount / selectedMusterDossier.capacity) * 100}%` }}
                 />
               </div>
-              <div className="text-[11px] text-slate-400 flex justify-between">
+              <div className="text-[11px] text-charcoal-400 flex justify-between">
                 <span>Safe Capacity Margin Remaining:</span>
                 <span className="font-semibold text-emerald-600 dark:text-emerald-400">
                   {selectedMusterDossier.capacity - selectedMusterDossier.currentEvacueesCount} spaces
@@ -1415,22 +1415,22 @@ export default function EmergencyPage() {
 
             {/* Assigned Safety Warden */}
             <div className="grid grid-cols-2 gap-3 text-xs">
-              <div className="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl space-y-1">
-                <span className="text-[11px] text-slate-400 uppercase font-medium block">Chief Zone Warden</span>
-                <span className="font-semibold text-slate-900 dark:text-white text-sm block">{selectedMusterDossier.assignedWarden}</span>
+              <div className="p-3 bg-ivory-50 dark:bg-charcoal-800/50 rounded-xl space-y-1">
+                <span className="text-[11px] text-charcoal-400 uppercase font-medium block">Chief Zone Warden</span>
+                <span className="font-semibold text-charcoal-900 dark:text-ivory-100 text-sm block">{selectedMusterDossier.assignedWarden}</span>
                 <span className="text-emerald-600 font-semibold block">On-Scene & Certified</span>
               </div>
-              <div className="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl space-y-1">
-                <span className="text-[11px] text-slate-400 uppercase font-medium block">Direct Emergency Radio</span>
+              <div className="p-3 bg-ivory-50 dark:bg-charcoal-800/50 rounded-xl space-y-1">
+                <span className="text-[11px] text-charcoal-400 uppercase font-medium block">Direct Emergency Radio</span>
                 <span className="font-mono font-bold text-indigo-600 dark:text-indigo-400 text-sm block">{selectedMusterDossier.wardenPhone}</span>
-                <span className="text-slate-500 block">24/7 Red Line Link</span>
+                <span className="text-charcoal-500 block">24/7 Red Line Link</span>
               </div>
             </div>
 
             {/* Life Safety Gear Installed */}
-            <div className="p-3 bg-slate-50 dark:bg-slate-800/30 rounded-xl text-xs space-y-1.5 border border-slate-100 dark:border-slate-800 text-slate-600 dark:text-slate-300">
-              <div className="font-bold text-slate-800 dark:text-slate-200">Standard Muster Life-Safety Amenities</div>
-              <div className="grid grid-cols-2 gap-2 text-[11px] text-slate-500 pt-1">
+            <div className="p-3 bg-ivory-50 dark:bg-charcoal-800/30 rounded-xl text-xs space-y-1.5 border border-border/60 dark:border-charcoal-800 text-charcoal-600 dark:text-ivory-300">
+              <div className="font-bold text-charcoal-800 dark:text-ivory-200">Standard Muster Life-Safety Amenities</div>
+              <div className="grid grid-cols-2 gap-2 text-[11px] text-charcoal-500 pt-1">
                 <div>✓ Trauma First Aid Kit: <span className="text-emerald-600 font-medium">Equipped</span></div>
                 <div>✓ Automated AED: <span className="text-emerald-600 font-medium">Inspected</span></div>
                 <div>✓ Megaphone & Siren: <span className="text-emerald-600 font-medium">Charged</span></div>
@@ -1448,7 +1448,7 @@ export default function EmergencyPage() {
                   All Units Accounted
                 </span>
               </div>
-              <div className="grid grid-cols-2 gap-1.5 text-[11px] text-slate-600 dark:text-slate-300">
+              <div className="grid grid-cols-2 gap-1.5 text-[11px] text-charcoal-600 dark:text-ivory-300">
                 <div>• Floor 1 & Common Rooms: <span className="text-emerald-600 font-semibold">Cleared (100%)</span></div>
                 <div>• Floor 2 Lecture Theatres: <span className="text-emerald-600 font-semibold">Cleared (100%)</span></div>
                 <div>• Research Labs & Basements: <span className="text-emerald-600 font-semibold">Evacuated</span></div>
@@ -1456,9 +1456,9 @@ export default function EmergencyPage() {
               </div>
             </div>
 
-            <div className="flex flex-wrap items-center justify-between gap-2.5 pt-2 border-t border-slate-100 dark:border-slate-800">
+            <div className="flex flex-wrap items-center justify-between gap-2.5 pt-2 border-t border-border/60 dark:border-charcoal-800">
               <div className="flex items-center gap-1.5 text-xs">
-                <span className="text-slate-400 text-[11px] font-semibold mr-1">Check-in:</span>
+                <span className="text-charcoal-400 text-[11px] font-semibold mr-1">Check-in:</span>
                 <button
                   onClick={() => handleUpdateMusterCount(selectedMusterDossier.id, 10)}
                   className="px-2.5 py-1 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 rounded-lg font-medium transition-colors"
@@ -1467,7 +1467,7 @@ export default function EmergencyPage() {
                 </button>
                 <button
                   onClick={() => handleUpdateMusterCount(selectedMusterDossier.id, -10)}
-                  className="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-lg font-medium transition-colors"
+                  className="px-2.5 py-1 bg-ivory-100 hover:bg-ivory-200 dark:bg-charcoal-800 text-charcoal-700 dark:text-ivory-300 rounded-lg font-medium transition-colors"
                 >
                   -10 Correct
                 </button>
@@ -1476,7 +1476,7 @@ export default function EmergencyPage() {
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => window.print()}
-                  className="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-colors"
+                  className="px-3.5 py-2 bg-ivory-100 hover:bg-ivory-200 dark:bg-charcoal-800 dark:hover:bg-charcoal-700 text-charcoal-700 dark:text-ivory-200 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-colors"
                 >
                   <Printer className="w-3.5 h-3.5" />
                   Print Post Sheet
