@@ -85,6 +85,28 @@ export default function DigitalELibraryTab() {
     fetchItems();
   }, [searchQuery, selectedDept, selectedType, selectedAccess]);
 
+  const isAnyModalOpen = !!(citationModalItem || downloadModalPass || showDepositModal);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setCitationModalItem(null);
+        setDownloadModalPass(null);
+        setShowDepositModal(false);
+      }
+    };
+    if (isAnyModalOpen) {
+      document.body.style.overflow = "hidden";
+      window.addEventListener("keydown", handleKeyDown);
+    } else {
+      document.body.style.overflow = "unset";
+    }
+    return () => {
+      document.body.style.overflow = "unset";
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isAnyModalOpen]);
+
   const handleOpenCitation = async (item: RepositoryItem, style: "APA" | "IEEE" | "BIBTEX" = "APA") => {
     setCitationModalItem(item);
     setCitationStyle(style);
@@ -397,7 +419,15 @@ export default function DigitalELibraryTab() {
 
       {/* Modal: Citation Generator */}
       {citationModalItem && (
-        <div className="fixed inset-0 z-50 bg-charcoal-950/70 backdrop-blur-sm flex items-center justify-center p-4">
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Export Citation & Metadata"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setCitationModalItem(null);
+          }}
+          className="fixed inset-0 z-50 bg-charcoal-950/70 backdrop-blur-sm flex items-center justify-center p-4"
+        >
           <div className="bg-white dark:bg-charcoal-900 rounded-2xl max-w-lg w-full p-6 border border-border dark:border-charcoal-800 shadow-2xl animate-in zoom-in-95 duration-200 space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-border dark:border-charcoal-800">
               <div className="flex items-center gap-2">
@@ -452,7 +482,15 @@ export default function DigitalELibraryTab() {
 
       {/* Modal: Secure Watermarked Download Pass */}
       {downloadModalPass && (
-        <div className="fixed inset-0 z-50 bg-charcoal-950/70 backdrop-blur-sm flex items-center justify-center p-4">
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Secured Watermark Download Certificate"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setDownloadModalPass(null);
+          }}
+          className="fixed inset-0 z-50 bg-charcoal-950/70 backdrop-blur-sm flex items-center justify-center p-4"
+        >
           <div className="bg-white dark:bg-charcoal-900 rounded-2xl max-w-lg w-full p-6 border border-border dark:border-charcoal-800 shadow-2xl animate-in zoom-in-95 duration-200 space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-border dark:border-charcoal-800">
               <div className="flex items-center gap-2">
@@ -516,7 +554,15 @@ export default function DigitalELibraryTab() {
 
       {/* Modal: Deposit Research Artifact */}
       {showDepositModal && (
-        <div className="fixed inset-0 z-50 bg-charcoal-950/70 backdrop-blur-sm flex items-center justify-center p-4">
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Deposit Academic Work to Institutional Repository"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setShowDepositModal(false);
+          }}
+          className="fixed inset-0 z-50 bg-charcoal-950/70 backdrop-blur-sm flex items-center justify-center p-4"
+        >
           <div className="bg-white dark:bg-charcoal-900 rounded-2xl max-w-xl w-full p-6 border border-border dark:border-charcoal-800 shadow-2xl animate-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-border dark:border-charcoal-800">
               <div className="flex items-center gap-2">

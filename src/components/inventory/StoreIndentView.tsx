@@ -79,6 +79,10 @@ export default function StoreIndentView() {
   }, []);
 
   useEffect(() => {
+    if (!showIndentModal && !showDispatchModal) return;
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         setShowIndentModal(false);
@@ -86,8 +90,11 @@ export default function StoreIndentView() {
       }
     };
     window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, []);
+    return () => {
+      document.body.style.overflow = originalOverflow;
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [showIndentModal, showDispatchModal]);
 
   const handleOpenIndentModal = () => {
     if (items.length > 0) {
@@ -314,10 +321,10 @@ export default function StoreIndentView() {
       )}
 
       {/* Tabs */}
-      <div className="flex border-b border-slate-800 gap-6">
+      <div className="flex border-b border-slate-800 gap-6 overflow-x-auto no-scrollbar flex-nowrap">
         <button
           onClick={() => setActiveTab("catalog")}
-          className={`pb-3 font-semibold text-sm transition-colors border-b-2 ${
+          className={`pb-3 font-semibold text-sm transition-colors border-b-2 whitespace-nowrap shrink-0 ${
             activeTab === "catalog"
               ? "border-sky-500 text-sky-400"
               : "border-transparent text-slate-400 hover:text-slate-200"
@@ -327,7 +334,7 @@ export default function StoreIndentView() {
         </button>
         <button
           onClick={() => setActiveTab("indents")}
-          className={`pb-3 font-semibold text-sm transition-colors border-b-2 ${
+          className={`pb-3 font-semibold text-sm transition-colors border-b-2 whitespace-nowrap shrink-0 ${
             activeTab === "indents"
               ? "border-sky-500 text-sky-400"
               : "border-transparent text-slate-400 hover:text-slate-200"
@@ -337,7 +344,7 @@ export default function StoreIndentView() {
         </button>
         <button
           onClick={() => setActiveTab("movements")}
-          className={`pb-3 font-semibold text-sm transition-colors border-b-2 ${
+          className={`pb-3 font-semibold text-sm transition-colors border-b-2 whitespace-nowrap shrink-0 ${
             activeTab === "movements"
               ? "border-sky-500 text-sky-400"
               : "border-transparent text-slate-400 hover:text-slate-200"
@@ -549,6 +556,9 @@ export default function StoreIndentView() {
       {/* New Indent Modal */}
       {showIndentModal && (
         <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Raise Departmental Store Indent"
           onClick={(e) => {
             if (e.target === e.currentTarget) setShowIndentModal(false);
           }}
@@ -687,6 +697,9 @@ export default function StoreIndentView() {
       {/* Dispatch Modal */}
       {showDispatchModal && selectedIndentForDispatch && (
         <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Store Dispatch Voucher & Barcode Range"
           onClick={(e) => {
             if (e.target === e.currentTarget) setShowDispatchModal(false);
           }}

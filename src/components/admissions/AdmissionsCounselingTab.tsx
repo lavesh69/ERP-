@@ -69,6 +69,20 @@ export function AdmissionsCounselingTab() {
     fetchCounselingData();
   }, []);
 
+  useEffect(() => {
+    if (!allotmentOrder) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setAllotmentOrder(null);
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [allotmentOrder]);
+
   const fetchCounselingData = async () => {
     try {
       setLoading(true);
@@ -382,7 +396,15 @@ export function AdmissionsCounselingTab() {
 
       {/* Seat Allotment Order Modal */}
       {allotmentOrder && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in">
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Provisional Seat Allotment Order"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setAllotmentOrder(null);
+          }}
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in"
+        >
           <div className="bg-white dark:bg-charcoal-900 border border-border dark:border-charcoal-800 rounded-2xl max-w-xl w-full p-6 shadow-2xl space-y-4">
             <div className="flex items-start justify-between border-b pb-3">
               <div>

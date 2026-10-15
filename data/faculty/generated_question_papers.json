@@ -1,5 +1,241 @@
 [
   {
+    "id": "QP-CS-402-SET_B-1792042775696",
+    "courseCode": "CS-402",
+    "courseTitle": "Advanced Distributed Systems",
+    "departmentCode": "CSE",
+    "examinationTitle": "Summative Examination 2026",
+    "totalMarks": 68,
+    "durationHours": 3,
+    "paperSet": "SET_B",
+    "sections": [
+      {
+        "sectionName": "Part A — Conceptual Foundations (Answer All Questions)",
+        "instructions": "Short descriptive questions testing foundational understanding. 4 Marks each.",
+        "totalMarks": 12,
+        "questions": [
+          {
+            "qNumber": "Q1",
+            "text": "Explain how HMAC-SHA256 tokens verify request authenticity and prevent parameter tampering in RESTful webhook endpoints.",
+            "marks": 4,
+            "bloomLevel": "L2_UNDERSTAND",
+            "coCode": "CO5",
+            "difficulty": "EASY",
+            "rubric": "Secret pre-shared key, hash computation over full raw request payload, and constant-time string comparison."
+          },
+          {
+            "qNumber": "Q2",
+            "text": "Explain the difference between strong consistency and eventual consistency with a distributed database example.",
+            "marks": 4,
+            "bloomLevel": "L2_UNDERSTAND",
+            "coCode": "CO1",
+            "difficulty": "EASY",
+            "rubric": "Contrast synchronous quorum read/writes vs background gossip anti-entropy synchronization."
+          },
+          {
+            "qNumber": "Q3",
+            "text": "Define CAP Theorem and state why network partitions cannot be completely eliminated in distributed clusters.",
+            "marks": 4,
+            "bloomLevel": "L1_REMEMBER",
+            "coCode": "CO1",
+            "difficulty": "EASY",
+            "rubric": "State Consistency, Availability, Partition tolerance trade-off with network latency reality."
+          }
+        ]
+      },
+      {
+        "sectionName": "Part B — Analytical Reasoning & Technical Derivations",
+        "instructions": "Detailed analytical problems testing algorithmic design and derivations.",
+        "totalMarks": 28,
+        "questions": [
+          {
+            "qNumber": "Q4",
+            "text": "Demonstrate how formal verification using TLA+ model checking identifies distributed race conditions in two-phase commit protocols.",
+            "marks": 10,
+            "bloomLevel": "L4_ANALYZE",
+            "coCode": "CO5",
+            "difficulty": "HARD",
+            "rubric": "Specification of states, temporal logic invariants (Inv_NoTwoDecisions), and state-space exploration."
+          },
+          {
+            "qNumber": "Q5",
+            "text": "Describe the Circuit Breaker pattern states (Closed, Open, Half-Open) and write a pseudo-code implementation handling timeout thresholds.",
+            "marks": 8,
+            "bloomLevel": "L3_APPLY",
+            "coCode": "CO4",
+            "difficulty": "MEDIUM",
+            "rubric": "State transition machine with failure rate tripping threshold, sleep window timer, and canary probe requests."
+          },
+          {
+            "qNumber": "Q6",
+            "text": "Derive the mathematical formulation of Scaled Dot-Product Attention and explain why sqrt(d_k) scaling prevents vanishing softmax gradients.",
+            "marks": 10,
+            "bloomLevel": "L4_ANALYZE",
+            "coCode": "CO3",
+            "difficulty": "MEDIUM",
+            "rubric": "Derivation: Softmax(Q K^T / sqrt(d_k)) V. Variance of dot products grows with dimension d_k without scaling."
+          }
+        ]
+      },
+      {
+        "sectionName": "Part C — Architectural Synthesis & Capstone System Design",
+        "instructions": "Comprehensive long-form system architecture and fault-tolerant design challenges.",
+        "totalMarks": 28,
+        "questions": [
+          {
+            "qNumber": "Q7",
+            "text": "Architect an event-driven saga orchestration pipeline for an enterprise university fee settlement system that guarantees idempotency.",
+            "marks": 16,
+            "bloomLevel": "L6_CREATE",
+            "coCode": "CO5",
+            "difficulty": "HARD",
+            "rubric": "Choreography vs orchestrator comparison, compensating rollback transactions, and outbox pattern with Kafka/RabbitMQ."
+          },
+          {
+            "qNumber": "Q8",
+            "text": "Evaluate FlashAttention IO-awareness compared to standard attention when training 32k context-length language models on modern GPU SRAM.",
+            "marks": 12,
+            "bloomLevel": "L5_EVALUATE",
+            "coCode": "CO3",
+            "difficulty": "HARD",
+            "rubric": "Critical evaluation of HBM vs SRAM bandwidth bottlenecks, tiling outer loops, and online softmax recomputation."
+          }
+        ]
+      }
+    ],
+    "bloomDistributionAchieved": {
+      "rememberUnderstandPercent": 18,
+      "applyAnalyzePercent": 41,
+      "evaluateCreatePercent": 41
+    },
+    "difficultyDistributionAchieved": {
+      "easyPercent": 18,
+      "mediumPercent": 26,
+      "hardPercent": 56
+    },
+    "cryptographicPaperSeal": "APEX-QP-SEAL-50F66746857BECABD9545DB6",
+    "generatedByFaculty": "Dr. Rajesh K. Sharma",
+    "generatedAt": "2026-10-15T05:39:35.696Z"
+  },
+  {
+    "id": "QP-CS-402-SET_A-1792042775585",
+    "courseCode": "CS-402",
+    "courseTitle": "Advanced Distributed Systems",
+    "departmentCode": "CSE",
+    "examinationTitle": "Summative Examination 2026",
+    "totalMarks": 66,
+    "durationHours": 3,
+    "paperSet": "SET_A",
+    "sections": [
+      {
+        "sectionName": "Part A — Conceptual Foundations (Answer All Questions)",
+        "instructions": "Short descriptive questions testing foundational understanding. 4 Marks each.",
+        "totalMarks": 12,
+        "questions": [
+          {
+            "qNumber": "Q1",
+            "text": "Define CAP Theorem and state why network partitions cannot be completely eliminated in distributed clusters.",
+            "marks": 4,
+            "bloomLevel": "L1_REMEMBER",
+            "coCode": "CO1",
+            "difficulty": "EASY",
+            "rubric": "State Consistency, Availability, Partition tolerance trade-off with network latency reality."
+          },
+          {
+            "qNumber": "Q2",
+            "text": "Explain the difference between strong consistency and eventual consistency with a distributed database example.",
+            "marks": 4,
+            "bloomLevel": "L2_UNDERSTAND",
+            "coCode": "CO1",
+            "difficulty": "EASY",
+            "rubric": "Contrast synchronous quorum read/writes vs background gossip anti-entropy synchronization."
+          },
+          {
+            "qNumber": "Q3",
+            "text": "Explain how HMAC-SHA256 tokens verify request authenticity and prevent parameter tampering in RESTful webhook endpoints.",
+            "marks": 4,
+            "bloomLevel": "L2_UNDERSTAND",
+            "coCode": "CO5",
+            "difficulty": "EASY",
+            "rubric": "Secret pre-shared key, hash computation over full raw request payload, and constant-time string comparison."
+          }
+        ]
+      },
+      {
+        "sectionName": "Part B — Analytical Reasoning & Technical Derivations",
+        "instructions": "Detailed analytical problems testing algorithmic design and derivations.",
+        "totalMarks": 26,
+        "questions": [
+          {
+            "qNumber": "Q4",
+            "text": "Calculate the read and write quorums (R, W) required for strict serializability in a 9-node distributed storage cluster.",
+            "marks": 6,
+            "bloomLevel": "L3_APPLY",
+            "coCode": "CO1",
+            "difficulty": "MEDIUM",
+            "rubric": "Apply R + W > N and W > N/2. For N=9, R=5, W=5 or R=4, W=6 satisfies strict quorum intersection."
+          },
+          {
+            "qNumber": "Q5",
+            "text": "Analyze the Raft consensus leader election protocol during split-vote scenarios and show how randomized election timeouts prevent livelock.",
+            "marks": 10,
+            "bloomLevel": "L4_ANALYZE",
+            "coCode": "CO2",
+            "difficulty": "MEDIUM",
+            "rubric": "Detailed phase breakdown of candidate requestVote RPCs, majority grant, and randomized jitter 150-300ms."
+          },
+          {
+            "qNumber": "Q6",
+            "text": "Derive the mathematical formulation of Scaled Dot-Product Attention and explain why sqrt(d_k) scaling prevents vanishing softmax gradients.",
+            "marks": 10,
+            "bloomLevel": "L4_ANALYZE",
+            "coCode": "CO3",
+            "difficulty": "MEDIUM",
+            "rubric": "Derivation: Softmax(Q K^T / sqrt(d_k)) V. Variance of dot products grows with dimension d_k without scaling."
+          }
+        ]
+      },
+      {
+        "sectionName": "Part C — Architectural Synthesis & Capstone System Design",
+        "instructions": "Comprehensive long-form system architecture and fault-tolerant design challenges.",
+        "totalMarks": 28,
+        "questions": [
+          {
+            "qNumber": "Q7",
+            "text": "Design a fault-tolerant geo-replicated state machine using multi-Paxos that survives cross-regional fiber outages.",
+            "marks": 16,
+            "bloomLevel": "L6_CREATE",
+            "coCode": "CO2",
+            "difficulty": "HARD",
+            "rubric": "Architecture diagram with leader lease, witness nodes in third region, and pipeline commit log protocol."
+          },
+          {
+            "qNumber": "Q8",
+            "text": "Evaluate FlashAttention IO-awareness compared to standard attention when training 32k context-length language models on modern GPU SRAM.",
+            "marks": 12,
+            "bloomLevel": "L5_EVALUATE",
+            "coCode": "CO3",
+            "difficulty": "HARD",
+            "rubric": "Critical evaluation of HBM vs SRAM bandwidth bottlenecks, tiling outer loops, and online softmax recomputation."
+          }
+        ]
+      }
+    ],
+    "bloomDistributionAchieved": {
+      "rememberUnderstandPercent": 18,
+      "applyAnalyzePercent": 39,
+      "evaluateCreatePercent": 42
+    },
+    "difficultyDistributionAchieved": {
+      "easyPercent": 18,
+      "mediumPercent": 39,
+      "hardPercent": 42
+    },
+    "cryptographicPaperSeal": "APEX-QP-SEAL-BEDC8EDD1EB8823C77C8F828",
+    "generatedByFaculty": "Dr. Rajesh K. Sharma",
+    "generatedAt": "2026-10-15T05:39:35.585Z"
+  },
+  {
     "id": "QP-CS-402-SET_B-1792036321694",
     "courseCode": "CS-402",
     "courseTitle": "Advanced Distributed Systems",

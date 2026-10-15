@@ -6,7 +6,7 @@
       "name": "Main 32-Page Barcoded Exam Answer Booklet",
       "category": "EXAM_STATIONERY",
       "unitOfMeasurement": "BOOKLETS",
-      "quantityOnHand": 43000,
+      "quantityOnHand": 42000,
       "reorderThreshold": 10000,
       "unitCost": 18.5,
       "securityControlled": true,
@@ -18,7 +18,7 @@
       "name": "8-Page Supplementary Answer Sheet",
       "category": "EXAM_STATIONERY",
       "unitOfMeasurement": "SHEETS",
-      "quantityOnHand": 27000,
+      "quantityOnHand": 26500,
       "reorderThreshold": 5000,
       "unitCost": 6.2,
       "securityControlled": true,
@@ -98,6 +98,56 @@
     }
   ],
   "indents": [
+    {
+      "id": "indent-1792042776533",
+      "indentNumber": "APEX-INDENT-2026-6941",
+      "department": "Examination Center",
+      "indentorId": "coe-officer-test",
+      "indentorName": "Dr. Ramanathan Swamy",
+      "indentorRole": "Controller of Examinations",
+      "purpose": "Mid-Term End-Semester Examinations 2026",
+      "examSessionCode": "MID-SEM-2026",
+      "items": [
+        {
+          "itemId": "item-bklt-32",
+          "itemCode": "BKLT-32",
+          "itemName": "Main 32-Page Barcoded Exam Answer Booklet",
+          "requestedQuantity": 1000,
+          "dispatchedQuantity": 1000,
+          "barcodeRangeStart": "BKLT-2026-200001",
+          "barcodeRangeEnd": "BKLT-2026-201000"
+        },
+        {
+          "itemId": "item-bklt-08",
+          "itemCode": "BKLT-08",
+          "itemName": "8-Page Supplementary Answer Sheet",
+          "requestedQuantity": 500,
+          "dispatchedQuantity": 500,
+          "barcodeRangeStart": "SUPP-2026-100001",
+          "barcodeRangeEnd": "SUPP-2026-100500"
+        }
+      ],
+      "status": "FULFILLED",
+      "createdAt": "2026-10-15T05:39:36.533Z",
+      "updatedAt": "2026-10-15T05:39:36.551Z",
+      "hodApproval": {
+        "approvedBy": "Prof. S. R. Iyengar (Dean Academic Affairs)",
+        "approvedAt": "2026-10-15T05:39:36.538Z",
+        "remarks": "Candidate strength cross-verified. Approved."
+      },
+      "dispatchVoucher": {
+        "voucherNumber": "APEX-INDENT-DISP-2026-3527",
+        "dispatchedBy": "Mr. B. K. Joshi (Chief Storekeeper)",
+        "dispatchedAt": "2026-10-15T05:39:36.545Z",
+        "cryptographicSeal": "8e78404baa2cc125666cb1c6229dbfe529a61421ac1a6a92b4b132421760f965",
+        "gatePassNumber": "STORE-GP-2026-8426"
+      },
+      "fulfillmentAcknowledgement": {
+        "receivedBy": "Examination Superintendent",
+        "receivedAt": "2026-10-15T05:39:36.551Z",
+        "remarks": "All 1000 main and 500 supplementary booklets verified with intact seals."
+      }
+    },
     {
       "id": "indent-1792036322328",
       "indentNumber": "APEX-INDENT-2026-4970",
@@ -276,6 +326,26 @@
     }
   ],
   "movements": [
+    {
+      "id": "mov-1792042776545-795",
+      "itemId": "item-bklt-08",
+      "itemCode": "BKLT-08",
+      "transactionType": "INDENT_ISSUE",
+      "quantity": 500,
+      "balanceAfter": 26500,
+      "referenceDoc": "APEX-INDENT-DISP-2026-3527",
+      "timestamp": "2026-10-15T05:39:36.545Z"
+    },
+    {
+      "id": "mov-1792042776545-470",
+      "itemId": "item-bklt-32",
+      "itemCode": "BKLT-32",
+      "transactionType": "INDENT_ISSUE",
+      "quantity": 1000,
+      "balanceAfter": 42000,
+      "referenceDoc": "APEX-INDENT-DISP-2026-3527",
+      "timestamp": "2026-10-15T05:39:36.545Z"
+    },
     {
       "id": "mov-1792036322338-981",
       "itemId": "item-bklt-08",

@@ -98,6 +98,20 @@ export function InvigilationRosterView({ showToast, canEdit }: Props) {
     fetchRosters();
   }, []);
 
+  useEffect(() => {
+    if (!isModalOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setIsModalOpen(false);
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [isModalOpen]);
+
   const openAssignModal = (roster?: InvigilationRoster) => {
     if (roster) {
       setSelectedDuty(roster);
@@ -371,7 +385,15 @@ export function InvigilationRosterView({ showToast, canEdit }: Props) {
 
       {/* ASSIGN / SWAP DUTY MODAL */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-charcoal-950/70 backdrop-blur-xs">
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label={selectedDuty ? "Modify Invigilation Roster" : "Assign Faculty to Exam Hall"}
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setIsModalOpen(false);
+          }}
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-charcoal-950/70 backdrop-blur-xs"
+        >
           <div className="bg-white dark:bg-charcoal-900 border border-border dark:border-charcoal-800 rounded-3xl max-w-lg w-full p-6 shadow-2xl relative">
             <div className="flex items-center justify-between pb-4 border-b border-border/60 dark:border-charcoal-800">
               <div className="flex items-center gap-3">

@@ -178,6 +178,24 @@ export default function GrievancesPage() {
     fetchData();
   }, [selectedCategory]);
 
+  useEffect(() => {
+    const isAnyModalOpen = showFileModal || showResolveModal;
+    if (!isAnyModalOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setShowFileModal(false);
+        setShowResolveModal(false);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [showFileModal, showResolveModal]);
+
   const handleSubmitGrievance = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
@@ -318,7 +336,7 @@ export default function GrievancesPage() {
       )}
 
       {/* Tabs */}
-      <div className="flex border-b border-border dark:border-charcoal-800 space-x-2 overflow-x-auto pb-px">
+      <div className="flex border-b border-border dark:border-charcoal-800 space-x-2 overflow-x-auto no-scrollbar flex-nowrap pb-px">
         {[
           { id: "board", label: "Grievance Registry & Hearings", icon: Scale, count: summary?.activeGrievances },
           { id: "file", label: "File Grievance / Whistleblower", icon: FileText },
@@ -331,7 +349,7 @@ export default function GrievancesPage() {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id as any)}
-              className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-all whitespace-nowrap ${
+              className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-all whitespace-nowrap shrink-0 ${
                 isActive
                   ? "border-rose-primary text-rose-primary dark:text-rose-light dark:border-rose-light"
                   : "border-transparent text-charcoal-600 dark:text-ivory-400 hover:text-charcoal-900 dark:hover:text-white"
@@ -799,7 +817,15 @@ export default function GrievancesPage() {
 
       {/* RESOLUTION MODAL */}
       {showResolveModal && (
-        <div className="fixed inset-0 z-50 bg-charcoal-950/70 backdrop-blur-sm flex items-center justify-center p-4">
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Record Committee Action Taken Report"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setShowResolveModal(false);
+          }}
+          className="fixed inset-0 z-50 bg-charcoal-950/70 backdrop-blur-sm flex items-center justify-center p-4"
+        >
           <div className="bg-white dark:bg-charcoal-900 rounded-2xl max-w-md w-full p-6 border border-border dark:border-charcoal-800 shadow-2xl animate-in zoom-in-95 duration-200">
             <div className="flex items-center justify-between pb-3 border-b border-border dark:border-charcoal-800">
               <h3 className="font-bold text-base text-charcoal-900 dark:text-ivory-100">
@@ -855,6 +881,139 @@ export default function GrievancesPage() {
                   className="px-4 py-2 rounded-lg font-semibold bg-emerald-600 text-white hover:bg-emerald-700"
                 >
                   Confirm Resolution
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* NEW GRIEVANCE LODGE MODAL */}
+      {showFileModal && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Lodge New Grievance"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setShowFileModal(false);
+          }}
+          className="fixed inset-0 z-50 bg-charcoal-950/70 backdrop-blur-sm flex items-center justify-center p-4"
+        >
+          <div className="bg-white dark:bg-charcoal-900 rounded-2xl max-w-lg w-full p-6 border border-border dark:border-charcoal-800 shadow-2xl animate-in zoom-in-95 duration-200 max-h-[92vh] overflow-y-auto">
+            <div className="flex items-center justify-between pb-3 border-b border-border dark:border-charcoal-800">
+              <h3 className="font-bold text-base text-charcoal-900 dark:text-ivory-100">
+                Lodge Formal Grievance &amp; Redressal Petition
+              </h3>
+              <button
+                onClick={() => setShowFileModal(false)}
+                className="text-charcoal-500 hover:text-charcoal-900 text-sm font-bold"
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleSubmitGrievance} className="space-y-3.5 mt-4 text-xs">
+              <div>
+                <label className="block font-medium text-charcoal-700 dark:text-ivory-300 mb-1">
+                  Grievance Title *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={fileForm.title}
+                  onChange={(e) => setFileForm({ ...fileForm, title: e.target.value })}
+                  placeholder="Concise summary of the grievance..."
+                  className="w-full px-3 py-2 bg-ivory-50 dark:bg-charcoal-800 border rounded-lg"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block font-medium text-charcoal-700 dark:text-ivory-300 mb-1">
+                    Category *
+                  </label>
+                  <select
+                    value={fileForm.category}
+                    onChange={(e) => setFileForm({ ...fileForm, category: e.target.value })}
+                    className="w-full p-2 bg-ivory-50 dark:bg-charcoal-800 border rounded-lg"
+                  >
+                    <option value="ACADEMIC_EVALUATION">Academic Evaluation</option>
+                    <option value="INTERNAL_COMPLAINTS_ICC">ICC / POSH Cell</option>
+                    <option value="ANTI_RAGGING_SQUAD">Anti-Ragging Squad</option>
+                    <option value="HOSTEL_AMENITIES">Hostel Amenities</option>
+                    <option value="ADMIN_FINANCE">Administrative &amp; Finance</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block font-medium text-charcoal-700 dark:text-ivory-300 mb-1">
+                    Severity Level *
+                  </label>
+                  <select
+                    value={fileForm.severity}
+                    onChange={(e) => setFileForm({ ...fileForm, severity: e.target.value })}
+                    className="w-full p-2 bg-ivory-50 dark:bg-charcoal-800 border rounded-lg"
+                  >
+                    <option value="LOW">Low - Routine</option>
+                    <option value="MEDIUM">Medium - Standard Review</option>
+                    <option value="HIGH">High - Expedited</option>
+                    <option value="CRITICAL_EMERGENCY">Critical - Emergency</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="block font-medium text-charcoal-700 dark:text-ivory-300 mb-1">
+                  Respondent / Subject Name (Optional)
+                </label>
+                <input
+                  type="text"
+                  value={fileForm.respondentName}
+                  onChange={(e) => setFileForm({ ...fileForm, respondentName: e.target.value })}
+                  placeholder="Person, Department, or Faculty involved..."
+                  className="w-full px-3 py-2 bg-ivory-50 dark:bg-charcoal-800 border rounded-lg"
+                />
+              </div>
+
+              <div>
+                <label className="block font-medium text-charcoal-700 dark:text-ivory-300 mb-1">
+                  Detailed Statement of Grievance *
+                </label>
+                <textarea
+                  required
+                  rows={4}
+                  value={fileForm.description}
+                  onChange={(e) => setFileForm({ ...fileForm, description: e.target.value })}
+                  placeholder="Provide complete facts, dates, witnesses, and details for ombudsman review..."
+                  className="w-full p-2.5 bg-ivory-50 dark:bg-charcoal-800 border rounded-lg"
+                />
+              </div>
+
+              <div className="flex items-center gap-2 p-3 rounded-lg bg-ivory-50 dark:bg-charcoal-800 border border-border dark:border-charcoal-700">
+                <input
+                  type="checkbox"
+                  id="anonymousCheck"
+                  checked={fileForm.isAnonymous}
+                  onChange={(e) => setFileForm({ ...fileForm, isAnonymous: e.target.checked })}
+                  className="h-4 w-4 rounded text-rose-600"
+                />
+                <label htmlFor="anonymousCheck" className="text-xs text-charcoal-700 dark:text-ivory-300 font-medium">
+                  Submit with Whistleblower Identity Protection (Mask Name &amp; Roll Number)
+                </label>
+              </div>
+
+              <div className="pt-2 flex justify-end gap-2 border-t border-border dark:border-charcoal-800">
+                <button
+                  type="button"
+                  onClick={() => setShowFileModal(false)}
+                  className="px-3.5 py-2 rounded-lg font-medium bg-ivory-100 dark:bg-charcoal-800 hover:bg-ivory-200"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 rounded-lg font-semibold bg-rose-primary text-white hover:bg-rose-600"
+                >
+                  Submit Formal Petition
                 </button>
               </div>
             </form>

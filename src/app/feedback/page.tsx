@@ -404,10 +404,10 @@ export default function FeedbackPage() {
       </div>
 
       {/* Tabs */}
-      <div className="flex border-b border-slate-200 dark:border-slate-800">
+      <div className="flex border-b border-slate-200 dark:border-slate-800 overflow-x-auto no-scrollbar flex-nowrap pb-px">
         <button
           onClick={() => setActiveTab("faculty")}
-          className={`flex items-center gap-2 px-5 py-3 text-sm font-semibold border-b-2 transition-all ${
+          className={`flex items-center gap-2 px-5 py-3 text-sm font-semibold border-b-2 transition-all whitespace-nowrap shrink-0 ${
             activeTab === "faculty"
               ? "border-rose-600 text-rose-600 dark:text-rose-400"
               : "border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200"
@@ -418,7 +418,7 @@ export default function FeedbackPage() {
         </button>
         <button
           onClick={() => setActiveTab("responses")}
-          className={`flex items-center gap-2 px-5 py-3 text-sm font-semibold border-b-2 transition-all ${
+          className={`flex items-center gap-2 px-5 py-3 text-sm font-semibold border-b-2 transition-all whitespace-nowrap shrink-0 ${
             activeTab === "responses"
               ? "border-rose-600 text-rose-600 dark:text-rose-400"
               : "border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200"

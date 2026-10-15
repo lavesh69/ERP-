@@ -94,6 +94,10 @@ export function BoSGovernanceView() {
   }, []);
 
   useEffect(() => {
+    if (!showCreateModal && !showAddModModal) return;
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         setShowCreateModal(false);
@@ -101,8 +105,11 @@ export function BoSGovernanceView() {
       }
     };
     window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, []);
+    return () => {
+      document.body.style.overflow = originalOverflow;
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [showCreateModal, showAddModModal]);
 
   const handleCreateProposal = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -521,6 +528,9 @@ export function BoSGovernanceView() {
       {/* MODAL 1: CONVENE BOARD OF STUDIES */}
       {showCreateModal && (
         <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Convene Department Board of Studies (BoS)"
           onClick={(e) => {
             if (e.target === e.currentTarget) setShowCreateModal(false);
           }}
@@ -641,6 +651,9 @@ export function BoSGovernanceView() {
       {/* MODAL 2: ADD COURSE MODIFICATION */}
       {showAddModModal && selectedProposal && (
         <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Add Curricular Modification"
           onClick={(e) => {
             if (e.target === e.currentTarget) setShowAddModModal(false);
           }}

@@ -79,6 +79,25 @@ export function RevaluationPortalView() {
     fetchApplications();
   }, []);
 
+  useEffect(() => {
+    const isAnyModalOpen = isApplyModalOpen || isAssignModalOpen || isEvalModalOpen;
+    if (!isAnyModalOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setIsApplyModalOpen(false);
+        setIsAssignModalOpen(false);
+        setIsEvalModalOpen(false);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [isApplyModalOpen, isAssignModalOpen, isEvalModalOpen]);
+
   const handleApply = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
@@ -453,7 +472,15 @@ export function RevaluationPortalView() {
 
       {/* Apply Modal */}
       {isApplyModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Apply for Revaluation / Photocopy"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setIsApplyModalOpen(false);
+          }}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+        >
           <div className="bg-white dark:bg-charcoal-900 rounded-2xl max-w-md w-full p-6 shadow-xl border border-border dark:border-charcoal-800 space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-border/80 dark:border-charcoal-800">
               <h3 className="text-sm font-bold text-charcoal-900 dark:text-ivory-100">
@@ -547,7 +574,15 @@ export function RevaluationPortalView() {
 
       {/* Assign Examiner Modal */}
       {isAssignModalOpen && selectedApp && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Assign External Blind Examiner"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setIsAssignModalOpen(false);
+          }}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+        >
           <div className="bg-white dark:bg-charcoal-900 rounded-2xl max-w-md w-full p-6 shadow-xl border border-border dark:border-charcoal-800 space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-border/80 dark:border-charcoal-800">
               <h3 className="text-sm font-bold text-charcoal-900 dark:text-ivory-100">
@@ -600,7 +635,15 @@ export function RevaluationPortalView() {
 
       {/* Evaluate Score Modal */}
       {isEvalModalOpen && selectedApp && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Record Revaluation Scrutiny Score"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setIsEvalModalOpen(false);
+          }}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+        >
           <div className="bg-white dark:bg-charcoal-900 rounded-2xl max-w-md w-full p-6 shadow-xl border border-border dark:border-charcoal-800 space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-border/80 dark:border-charcoal-800">
               <h3 className="text-sm font-bold text-charcoal-900 dark:text-ivory-100">

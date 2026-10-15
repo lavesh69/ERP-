@@ -310,11 +310,11 @@ export default function ResearchPage() {
 
         {/* View Switcher & Search Bar */}
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 glass-panel p-4 rounded-3xl shadow-soft">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar flex-nowrap w-full sm:w-auto pb-1 sm:pb-0">
             <button
               type="button"
               onClick={() => setActiveTab("projects")}
-              className={`px-4 py-2 rounded-2xl text-xs font-bold transition-all cursor-pointer ${
+              className={`px-4 py-2 rounded-2xl text-xs font-bold transition-all whitespace-nowrap shrink-0 cursor-pointer ${
                 activeTab === "projects"
                   ? "bg-rose-primary text-white shadow-xs"
                   : "bg-surface-soft dark:bg-charcoal-800 text-charcoal-700 dark:text-charcoal-300 hover:bg-rose-container"
@@ -325,7 +325,7 @@ export default function ResearchPage() {
             <button
               type="button"
               onClick={() => setActiveTab("publications")}
-              className={`px-4 py-2 rounded-2xl text-xs font-bold transition-all cursor-pointer ${
+              className={`px-4 py-2 rounded-2xl text-xs font-bold transition-all whitespace-nowrap shrink-0 cursor-pointer ${
                 activeTab === "publications"
                   ? "bg-rose-primary text-white shadow-xs"
                   : "bg-surface-soft dark:bg-charcoal-800 text-charcoal-700 dark:text-charcoal-300 hover:bg-rose-container"
@@ -336,7 +336,7 @@ export default function ResearchPage() {
             <button
               type="button"
               onClick={() => setActiveTab("ethics")}
-              className={`px-4 py-2 rounded-2xl text-xs font-bold transition-all cursor-pointer ${
+              className={`px-4 py-2 rounded-2xl text-xs font-bold transition-all whitespace-nowrap shrink-0 cursor-pointer ${
                 activeTab === "ethics"
                   ? "bg-rose-primary text-white shadow-xs"
                   : "bg-surface-soft dark:bg-charcoal-800 text-charcoal-700 dark:text-charcoal-300 hover:bg-rose-container"
@@ -347,7 +347,7 @@ export default function ResearchPage() {
             <button
               type="button"
               onClick={() => setActiveTab("cif")}
-              className={`px-4 py-2 rounded-2xl text-xs font-bold transition-all cursor-pointer ${
+              className={`px-4 py-2 rounded-2xl text-xs font-bold transition-all whitespace-nowrap shrink-0 cursor-pointer ${
                 activeTab === "cif"
                   ? "bg-rose-primary text-white shadow-xs"
                   : "bg-surface-soft dark:bg-charcoal-800 text-charcoal-700 dark:text-charcoal-300 hover:bg-rose-container"

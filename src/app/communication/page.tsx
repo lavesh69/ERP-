@@ -558,10 +558,10 @@ export default function CommunicationPage() {
         )}
 
         {/* Tab Navigation */}
-        <div className="flex items-center gap-2 border-b border-border dark:border-charcoal-800 pb-2">
+        <div className="flex items-center gap-2 border-b border-border dark:border-charcoal-800 pb-2 overflow-x-auto no-scrollbar flex-nowrap">
           <button
             onClick={() => setActiveTab("CIRCULARS")}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${
+            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 whitespace-nowrap shrink-0 ${
               activeTab === "CIRCULARS"
                 ? "bg-rose-primary text-white shadow-sm"
                 : "text-charcoal-600 dark:text-charcoal-400 hover:text-charcoal-900 dark:hover:text-ivory-100 hover:bg-surface-soft dark:hover:bg-charcoal-800"
@@ -576,7 +576,7 @@ export default function CommunicationPage() {
 
           <button
             onClick={() => setActiveTab("EMERGENCY")}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${
+            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 whitespace-nowrap shrink-0 ${
               activeTab === "EMERGENCY"
                 ? "bg-academic-danger text-white shadow-sm"
                 : "text-charcoal-600 dark:text-charcoal-400 hover:text-charcoal-900 dark:hover:text-ivory-100 hover:bg-surface-soft dark:hover:bg-charcoal-800"
@@ -593,7 +593,7 @@ export default function CommunicationPage() {
 
           <button
             onClick={() => setActiveTab("INQUIRIES")}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${
+            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 whitespace-nowrap shrink-0 ${
               activeTab === "INQUIRIES"
                 ? "bg-indigo-600 text-white shadow-sm"
                 : "text-charcoal-600 dark:text-charcoal-400 hover:text-charcoal-900 dark:hover:text-ivory-100 hover:bg-surface-soft dark:hover:bg-charcoal-800"
@@ -608,7 +608,7 @@ export default function CommunicationPage() {
 
           <button
             onClick={() => setActiveTab("OUTBOX")}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${
+            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 whitespace-nowrap shrink-0 ${
               activeTab === "OUTBOX"
                 ? "bg-rose-primary text-white shadow-sm"
                 : "text-charcoal-600 dark:text-charcoal-400 hover:text-charcoal-900 dark:hover:text-ivory-100 hover:bg-surface-soft dark:hover:bg-charcoal-800"

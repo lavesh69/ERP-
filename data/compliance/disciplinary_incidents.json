@@ -1,5 +1,38 @@
 [
   {
+    "id": "INC-MV93ZZPJ",
+    "incidentNumber": "DISC-2026-8016",
+    "category": "CAMPUS_MISCONDUCT",
+    "reportedBy": "Campus Vigilance Officer",
+    "respondentStudentId": "STD-2024-009",
+    "respondentRollNumber": "2024-CS-009",
+    "respondentName": "Devansh Patel",
+    "incidentDate": "2026-10-14",
+    "location": "Academic Block 4 Corridor",
+    "description": "Unauthorized assembly and curfew defiance",
+    "evidenceFiles": [],
+    "severity": "MEDIUM",
+    "status": "ORDER_EXECUTED",
+    "showCauseNotice": {
+      "noticeNumber": "APEX-SCN-2026-6A4EB7",
+      "issuedAt": "2026-10-15T05:39:36.217Z",
+      "replyDeadlineHours": 72,
+      "chargeSheet": "Show cause within 72 hours why disciplinary fine should not be levied for campus misconduct."
+    },
+    "studentDefense": {
+      "submittedAt": "2026-10-15T05:39:36.237Z",
+      "explanationText": "I was returning laboratory equipment with instructor permission."
+    },
+    "disciplinaryOrder": {
+      "orderNumber": "APEX-PROCTOR-ORDER-E290A91F",
+      "verdict": "DISCIPLINARY_FINE",
+      "penaltyFineInr": 1500,
+      "orderSeal": "APEX-PROCTOR-SEAL-23E7F3745A8B990F",
+      "chiefProctorSignatory": "Prof. M. S. Ranganathan (Chief Proctor)",
+      "issuedAt": "2026-10-15T05:39:36.256Z"
+    }
+  },
+  {
     "id": "INC-MV905NO0",
     "incidentNumber": "DISC-2026-8015",
     "category": "CAMPUS_MISCONDUCT",

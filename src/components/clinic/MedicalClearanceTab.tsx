@@ -48,6 +48,28 @@ export default function MedicalClearanceTab() {
   // Passport modal
   const [viewingPassport, setViewingPassport] = useState<StudentHealthPassport | null>(null);
 
+  const isAnyModalOpen = !!(targetStudentForVaccine || targetStudentForCert || viewingPassport);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setTargetStudentForVaccine(null);
+        setTargetStudentForCert(null);
+        setViewingPassport(null);
+      }
+    };
+    if (isAnyModalOpen) {
+      document.body.style.overflow = "hidden";
+      window.addEventListener("keydown", handleKeyDown);
+    } else {
+      document.body.style.overflow = "unset";
+    }
+    return () => {
+      document.body.style.overflow = "unset";
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isAnyModalOpen]);
+
   const fetchPassports = async () => {
     try {
       setLoading(true);
@@ -351,7 +373,15 @@ export default function MedicalClearanceTab() {
 
       {/* Modal: Record Immunization Dose */}
       {targetStudentForVaccine && (
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Record Immunization Dose"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setTargetStudentForVaccine(null);
+          }}
+          className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4"
+        >
           <div className="bg-white dark:bg-slate-900 rounded-2xl max-w-md w-full p-6 border border-slate-200 dark:border-slate-800 shadow-2xl animate-in zoom-in-95 duration-200 space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800">
               <div className="flex items-center gap-2">
@@ -423,7 +453,15 @@ export default function MedicalClearanceTab() {
 
       {/* Modal: Certify Medical Fitness */}
       {targetStudentForCert && (
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Issue Statutory Medical Fitness Clearance"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setTargetStudentForCert(null);
+          }}
+          className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4"
+        >
           <div className="bg-white dark:bg-slate-900 rounded-2xl max-w-lg w-full p-6 border border-slate-200 dark:border-slate-800 shadow-2xl animate-in zoom-in-95 duration-200 space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800">
               <div className="flex items-center gap-2">
@@ -509,7 +547,15 @@ export default function MedicalClearanceTab() {
 
       {/* Modal: Official Student Health Passport Card */}
       {viewingPassport && (
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Institutional Health Passport"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setViewingPassport(null);
+          }}
+          className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4"
+        >
           <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-xl w-full p-8 border border-slate-200 dark:border-slate-800 shadow-2xl animate-in zoom-in-95 duration-200 space-y-6">
             <div className="flex items-center justify-between pb-4 border-b border-slate-200 dark:border-slate-800">
               <div className="flex items-center gap-3">

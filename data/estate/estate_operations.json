@@ -63,6 +63,53 @@
   ],
   "workOrders": [
     {
+      "id": "wo-1792042776558",
+      "workOrderNumber": "APEX-ESTATE-WO-2026-1224",
+      "discipline": "ELECTRICAL",
+      "priority": "CRITICAL_EMERGENCY",
+      "slaHours": 2,
+      "location": "Server Room B - High Performance Computing Cluster",
+      "issueTitle": "Precision AC Compressor Power Feed Tripping Breaker",
+      "issueDescription": "Server room ambient temperature rising rapidly due to cooling power failure.",
+      "requesterId": "sys-admin-01",
+      "requesterName": "Er. Amitava Sen",
+      "requesterDepartment": "Central Computing Center",
+      "status": "CLOSED",
+      "createdAt": "2026-10-15T05:39:36.558Z",
+      "updatedAt": "2026-10-15T05:39:36.584Z",
+      "assignedEngineer": {
+        "engineerName": "Er. Pradeep Nair (JE Electrical)",
+        "engineerRole": "Junior Engineer (Electrical & Substations)",
+        "assignedAt": "2026-10-15T05:39:36.566Z",
+        "targetResolutionDate": "2026-10-15T07:39:36.566Z",
+        "estimatedMaterialCost": 4000
+      },
+      "materialsBOQ": [
+        {
+          "materialName": "63A 3-Phase MCCB Breaker",
+          "quantity": 1,
+          "cost": 2800
+        },
+        {
+          "materialName": "Copper Busbar Clamp",
+          "quantity": 2,
+          "cost": 700
+        }
+      ],
+      "completionDetails": {
+        "completedAt": "2026-10-15T05:39:36.577Z",
+        "actualCost": 3500,
+        "engineerNotes": "Replaced 63A breaker and tightened busbar connection. Temperature stabilized at 19C.",
+        "completionCertificateNumber": "APEX-ESTATE-CERT-2026-5997",
+        "cryptographicSeal": "734ca732238bc052087b192f52f92a70226dbc1a1c852c769fa26f124bcd47ee"
+      },
+      "userClosureRating": {
+        "ratingStars": 5,
+        "satisfactionFeedback": "Fast response within SLA. Prevented server cluster thermal shutdown.",
+        "closedAt": "2026-10-15T05:39:36.584Z"
+      }
+    },
+    {
       "id": "wo-1792036322349",
       "workOrderNumber": "APEX-ESTATE-WO-2026-2120",
       "discipline": "ELECTRICAL",

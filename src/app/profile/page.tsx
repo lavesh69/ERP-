@@ -555,7 +555,7 @@ export default function ProfileHubPage() {
               <button
                 type="button"
                 onClick={() => handleViewModeChange("micro")}
-                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap shrink-0 cursor-pointer ${
                   profileViewMode === "micro"
                     ? "bg-gradient-to-r from-rose-primary to-rose-hover text-white shadow-md shadow-rose-primary/25 scale-[1.02]"
                     : "text-charcoal-600 dark:text-charcoal-400 hover:text-charcoal-900 dark:hover:text-ivory-100"
@@ -568,7 +568,7 @@ export default function ProfileHubPage() {
               <button
                 type="button"
                 onClick={() => handleViewModeChange("macro")}
-                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap shrink-0 cursor-pointer ${
                   profileViewMode === "macro"
                     ? "bg-gradient-to-r from-rose-primary to-rose-hover text-white shadow-md shadow-rose-primary/25 scale-[1.02]"
                     : "text-charcoal-600 dark:text-charcoal-400 hover:text-charcoal-900 dark:hover:text-ivory-100"
@@ -1182,11 +1182,11 @@ export default function ProfileHubPage() {
             {profileViewMode === "macro" && (
               <div className="space-y-6 animate-in fade-in slide-in-from-bottom-3 duration-300">
                 {/* Navigation Tabs */}
-                <div className="flex rounded-2xl bg-white dark:bg-charcoal-900 p-1.5 border border-border dark:border-charcoal-800 shadow-soft max-w-md">
+                <div className="flex rounded-2xl bg-white dark:bg-charcoal-900 p-1.5 border border-border dark:border-charcoal-800 shadow-soft max-w-md overflow-x-auto no-scrollbar flex-nowrap">
                   <button
                     type="button"
                     onClick={() => setActiveTab("personal")}
-                    className={`flex-1 py-2.5 text-xs font-bold rounded-xl transition-all cursor-pointer flex items-center justify-center gap-2 ${
+                    className={`flex-1 py-2.5 px-3 text-xs font-bold rounded-xl transition-all cursor-pointer flex items-center justify-center gap-2 whitespace-nowrap shrink-0 ${
                       activeTab === "personal"
                         ? "bg-rose-primary text-white shadow-md shadow-rose-primary/25"
                         : "text-charcoal-600 dark:text-charcoal-400 hover:text-charcoal-900 dark:hover:text-ivory-100"
@@ -1199,7 +1199,7 @@ export default function ProfileHubPage() {
                   <button
                     type="button"
                     onClick={() => setActiveTab("academic")}
-                    className={`flex-1 py-2.5 text-xs font-bold rounded-xl transition-all cursor-pointer flex items-center justify-center gap-2 ${
+                    className={`flex-1 py-2.5 px-3 text-xs font-bold rounded-xl transition-all cursor-pointer flex items-center justify-center gap-2 whitespace-nowrap shrink-0 ${
                       activeTab === "academic"
                         ? "bg-rose-primary text-white shadow-md shadow-rose-primary/25"
                         : "text-charcoal-600 dark:text-charcoal-400 hover:text-charcoal-900 dark:hover:text-ivory-100"
@@ -1212,7 +1212,7 @@ export default function ProfileHubPage() {
                   <button
                     type="button"
                     onClick={() => setActiveTab("security")}
-                    className={`flex-1 py-2.5 text-xs font-bold rounded-xl transition-all cursor-pointer flex items-center justify-center gap-2 ${
+                    className={`flex-1 py-2.5 px-3 text-xs font-bold rounded-xl transition-all cursor-pointer flex items-center justify-center gap-2 whitespace-nowrap shrink-0 ${
                       activeTab === "security"
                         ? "bg-rose-primary text-white shadow-md shadow-rose-primary/25"
                         : "text-charcoal-600 dark:text-charcoal-400 hover:text-charcoal-900 dark:hover:text-ivory-100"

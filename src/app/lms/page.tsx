@@ -473,10 +473,10 @@ Verification Code: APX-LMS-2026-${Date.now()}
         </div>
 
         {/* LMS Mode Navigation Switcher */}
-        <div className="flex items-center gap-1.5 p-1 bg-ivory-100 dark:bg-charcoal-950/80 rounded-2xl border border-border dark:border-charcoal-800 max-w-full overflow-x-auto">
+        <div className="flex items-center gap-1.5 p-1 bg-ivory-100 dark:bg-charcoal-950/80 rounded-2xl border border-border dark:border-charcoal-800 max-w-full overflow-x-auto no-scrollbar flex-nowrap">
           <button
             onClick={() => setLmsViewMode("courseware")}
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all whitespace-nowrap cursor-pointer ${
+            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all whitespace-nowrap shrink-0 cursor-pointer ${
               lmsViewMode === "courseware"
                 ? "bg-white dark:bg-charcoal-800 text-charcoal-900 dark:text-ivory-100 shadow-sm"
                 : "text-charcoal-600 dark:text-charcoal-400 hover:text-charcoal-900 dark:hover:text-ivory-100"
@@ -488,7 +488,7 @@ Verification Code: APX-LMS-2026-${Date.now()}
 
           <button
             onClick={() => setLmsViewMode("cbcs-electives")}
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all whitespace-nowrap cursor-pointer ${
+            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all whitespace-nowrap shrink-0 cursor-pointer ${
               lmsViewMode === "cbcs-electives"
                 ? "bg-white dark:bg-charcoal-800 text-charcoal-900 dark:text-ivory-100 shadow-sm"
                 : "text-charcoal-600 dark:text-charcoal-400 hover:text-charcoal-900 dark:hover:text-ivory-100"
@@ -500,7 +500,7 @@ Verification Code: APX-LMS-2026-${Date.now()}
 
           <button
             onClick={() => setLmsViewMode("bos-curriculum")}
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all whitespace-nowrap cursor-pointer ${
+            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all whitespace-nowrap shrink-0 cursor-pointer ${
               lmsViewMode === "bos-curriculum"
                 ? "bg-white dark:bg-charcoal-800 text-charcoal-900 dark:text-ivory-100 shadow-sm"
                 : "text-charcoal-600 dark:text-charcoal-400 hover:text-charcoal-900 dark:hover:text-ivory-100"

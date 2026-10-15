@@ -423,10 +423,10 @@ export default function SecurityPage() {
       </div>
 
       {/* Tabs Navigation */}
-      <div className="flex border-b border-slate-200 dark:border-slate-800 gap-6">
+      <div className="flex border-b border-slate-200 dark:border-slate-800 gap-6 overflow-x-auto no-scrollbar flex-nowrap pb-px">
         <button
           onClick={() => setActiveTab("passes")}
-          className={`pb-3 text-sm font-semibold border-b-2 transition-all flex items-center gap-2 ${
+          className={`pb-3 text-sm font-semibold border-b-2 transition-all flex items-center gap-2 whitespace-nowrap shrink-0 ${
             activeTab === "passes"
               ? "border-emerald-600 text-emerald-600 dark:text-emerald-400"
               : "border-transparent text-slate-500 hover:text-slate-900 dark:hover:text-slate-200"
@@ -438,7 +438,7 @@ export default function SecurityPage() {
 
         <button
           onClick={() => setActiveTab("gates")}
-          className={`pb-3 text-sm font-semibold border-b-2 transition-all flex items-center gap-2 ${
+          className={`pb-3 text-sm font-semibold border-b-2 transition-all flex items-center gap-2 whitespace-nowrap shrink-0 ${
             activeTab === "gates"
               ? "border-emerald-600 text-emerald-600 dark:text-emerald-400"
               : "border-transparent text-slate-500 hover:text-slate-900 dark:hover:text-slate-200"

@@ -69,6 +69,28 @@ export default function HostelAssetAuditTab() {
     fetchInspections();
   }, []);
 
+  const isAnyModalOpen = !!(targetInspection || viewingVoucher || showMoveInModal);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setTargetInspection(null);
+        setViewingVoucher(null);
+        setShowMoveInModal(false);
+      }
+    };
+    if (isAnyModalOpen) {
+      document.body.style.overflow = "hidden";
+      window.addEventListener("keydown", handleKeyDown);
+    } else {
+      document.body.style.overflow = "unset";
+    }
+    return () => {
+      document.body.style.overflow = "unset";
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isAnyModalOpen]);
+
   const handleOpenAuditModal = (record: RoomInspectionRecord) => {
     setTargetInspection(record);
     setAuditAssets(
@@ -352,7 +374,15 @@ export default function HostelAssetAuditTab() {
 
       {/* Modal: Move-Out Joint Inspection Audit */}
       {targetInspection && (
-        <div className="fixed inset-0 z-50 bg-charcoal-950/70 backdrop-blur-sm flex items-center justify-center p-4">
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Hostel Room Move-Out Inventory Inspection"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setTargetInspection(null);
+          }}
+          className="fixed inset-0 z-50 bg-charcoal-950/70 backdrop-blur-sm flex items-center justify-center p-4"
+        >
           <div className="bg-white dark:bg-charcoal-900 rounded-3xl max-w-2xl w-full p-6 border border-border dark:border-charcoal-800 shadow-2xl animate-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-border dark:border-charcoal-800">
               <div className="flex items-center gap-2">
@@ -484,7 +514,15 @@ export default function HostelAssetAuditTab() {
 
       {/* Modal: Official Clearance Voucher */}
       {viewingVoucher && (
-        <div className="fixed inset-0 z-50 bg-charcoal-950/70 backdrop-blur-sm flex items-center justify-center p-4">
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Hostel Clearance and Deposit Refund Voucher"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setViewingVoucher(null);
+          }}
+          className="fixed inset-0 z-50 bg-charcoal-950/70 backdrop-blur-sm flex items-center justify-center p-4"
+        >
           <div className="bg-white dark:bg-charcoal-900 rounded-3xl max-w-xl w-full p-8 border border-border dark:border-charcoal-800 shadow-2xl animate-in zoom-in-95 duration-200 space-y-6">
             <div className="text-center space-y-1 pb-4 border-b border-border dark:border-charcoal-800">
               <div className="inline-flex p-3 rounded-2xl bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 mb-2">
@@ -556,7 +594,15 @@ export default function HostelAssetAuditTab() {
 
       {/* Modal: Register Move-In Baseline */}
       {showMoveInModal && (
-        <div className="fixed inset-0 z-50 bg-charcoal-950/70 backdrop-blur-sm flex items-center justify-center p-4">
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Register Room Move-In Baseline"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setShowMoveInModal(false);
+          }}
+          className="fixed inset-0 z-50 bg-charcoal-950/70 backdrop-blur-sm flex items-center justify-center p-4"
+        >
           <div className="bg-white dark:bg-charcoal-900 rounded-2xl max-w-md w-full p-6 border border-border dark:border-charcoal-800 shadow-2xl animate-in zoom-in-95 duration-200 space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-border dark:border-charcoal-800">
               <div className="flex items-center gap-2">

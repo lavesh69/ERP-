@@ -111,6 +111,20 @@ export function CBCSElectiveChoiceView({ showToast, currentUser }: Props) {
     fetchElectiveData();
   }, []);
 
+  useEffect(() => {
+    if (!receiptModal) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setReceiptModal(null);
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [receiptModal]);
+
   const calculateTotalCredits = () => {
     const baseCoreCredits = 14; // Mandatory core subjects
     const c1 = electives.find((e) => e.code === choice1)?.credits || 0;
@@ -529,7 +543,15 @@ export function CBCSElectiveChoiceView({ showToast, currentUser }: Props) {
 
       {/* CONFIRMATION REGISTRATION SLIP MODAL */}
       {receiptModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-charcoal-950/70 backdrop-blur-xs">
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Official Course Enrollment Acknowledgment Slip"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setReceiptModal(null);
+          }}
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-charcoal-950/70 backdrop-blur-xs"
+        >
           <div className="bg-white dark:bg-charcoal-900 border border-border dark:border-charcoal-800 rounded-3xl max-w-lg w-full p-6 shadow-2xl relative overflow-hidden">
             <div className="flex items-center justify-between pb-4 border-b border-border/60 dark:border-charcoal-800">
               <div className="flex items-center gap-3">

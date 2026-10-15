@@ -133,6 +133,24 @@ export default function EventsPage() {
     fetchData();
   }, []);
 
+  useEffect(() => {
+    const isAnyModalOpen = showModal || !!selectedBookingDossier;
+    if (!isAnyModalOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setShowModal(false);
+        setSelectedBookingDossier(null);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [showModal, selectedBookingDossier]);
+
   const handleCreateBooking = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
@@ -382,10 +400,10 @@ export default function EventsPage() {
       </div>
 
       {/* Tabs Navigation */}
-      <div className="flex border-b border-slate-200 dark:border-slate-800 gap-6">
+      <div className="flex border-b border-slate-200 dark:border-slate-800 gap-6 overflow-x-auto no-scrollbar flex-nowrap">
         <button
           onClick={() => setActiveTab("bookings")}
-          className={`pb-3 text-sm font-semibold border-b-2 transition-all flex items-center gap-2 ${
+          className={`pb-3 text-sm font-semibold border-b-2 transition-all flex items-center gap-2 whitespace-nowrap shrink-0 ${
             activeTab === "bookings"
               ? "border-indigo-600 text-indigo-600 dark:text-indigo-400"
               : "border-transparent text-slate-500 hover:text-slate-900 dark:hover:text-slate-200"
@@ -397,7 +415,7 @@ export default function EventsPage() {
 
         <button
           onClick={() => setActiveTab("venues")}
-          className={`pb-3 text-sm font-semibold border-b-2 transition-all flex items-center gap-2 ${
+          className={`pb-3 text-sm font-semibold border-b-2 transition-all flex items-center gap-2 whitespace-nowrap shrink-0 ${
             activeTab === "venues"
               ? "border-indigo-600 text-indigo-600 dark:text-indigo-400"
               : "border-transparent text-slate-500 hover:text-slate-900 dark:hover:text-slate-200"
@@ -409,7 +427,7 @@ export default function EventsPage() {
 
         <button
           onClick={() => setActiveTab("calendar")}
-          className={`pb-3 text-sm font-semibold border-b-2 transition-all flex items-center gap-2 ${
+          className={`pb-3 text-sm font-semibold border-b-2 transition-all flex items-center gap-2 whitespace-nowrap shrink-0 ${
             activeTab === "calendar"
               ? "border-indigo-600 text-indigo-600 dark:text-indigo-400"
               : "border-transparent text-slate-500 hover:text-slate-900 dark:hover:text-slate-200"
@@ -832,7 +850,15 @@ export default function EventsPage() {
           bookingForm.timeSlot
         );
         return (
-          <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-label="Book Campus Facility or Auditorium"
+            onClick={(e) => {
+              if (e.target === e.currentTarget) setShowModal(false);
+            }}
+            className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4"
+          >
             <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl max-w-lg w-full p-6 shadow-xl space-y-4 max-h-[90vh] overflow-y-auto">
               <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
                 <CalendarDays className="w-5 h-5 text-indigo-600" />
@@ -990,7 +1016,15 @@ export default function EventsPage() {
 
       {/* Booking Dossier Inspection Modal */}
       {selectedBookingDossier && (
-        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Facility Reservation Dossier"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setSelectedBookingDossier(null);
+          }}
+          className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4"
+        >
           <div className="bg-white dark:bg-slate-900 rounded-2xl max-w-lg w-full p-6 border border-slate-200 dark:border-slate-800 shadow-2xl space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800">
               <div>

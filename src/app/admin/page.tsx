@@ -754,7 +754,7 @@ export default function SuperAdminPage() {
         </div>
 
         {/* Tab Switcher */}
-        <div className="flex items-center gap-2 border-b border-border dark:border-charcoal-800 pb-2 overflow-x-auto">
+        <div className="flex items-center gap-2 border-b border-border dark:border-charcoal-800 pb-2 overflow-x-auto no-scrollbar flex-nowrap">
           {[
             { id: "tenants", label: "Institutions & Campuses", icon: Building2 },
             { id: "users", label: "User Accounts & RBAC", icon: Users },
@@ -770,7 +770,7 @@ export default function SuperAdminPage() {
               <button
                 key={tab.id}
                 onClick={() => handleTabChange(tab.id as any)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap shrink-0 ${
                   activeTab === tab.id
                     ? "bg-rose-primary text-white shadow-sm"
                     : "bg-white dark:bg-charcoal-800 text-charcoal-600 dark:text-ivory-200 hover:bg-ivory-100 border border-border dark:border-charcoal-700"

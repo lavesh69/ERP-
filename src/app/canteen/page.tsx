@@ -79,6 +79,20 @@ export default function CanteenPage() {
     fetchData();
   }, []);
 
+  useEffect(() => {
+    if (!showTopUpModal) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setShowTopUpModal(false);
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [showTopUpModal]);
+
   const handleAddToCart = (itemId: string) => {
     setCart((prev) => ({
       ...prev,
@@ -270,7 +284,7 @@ export default function CanteenPage() {
         </div>
 
         {/* Tab Navigation */}
-        <div className="flex items-center gap-2 border-b border-border dark:border-charcoal-700 pb-2 overflow-x-auto">
+        <div className="flex items-center gap-2 border-b border-border dark:border-charcoal-700 pb-2 overflow-x-auto no-scrollbar flex-nowrap">
           {[
             { id: "menu", label: "Live Menu & Order POS", icon: UtensilsCrossed },
             { id: "orders", label: "Order Tokens & Pickup Board", icon: Receipt },
@@ -282,7 +296,7 @@ export default function CanteenPage() {
               <button
                 key={t.id}
                 onClick={() => setActiveTab(t.id as any)}
-                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs transition-all whitespace-nowrap ${
+                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs transition-all whitespace-nowrap shrink-0 ${
                   isActive
                     ? "bg-amber-500 text-charcoal-950 shadow-sm"
                     : "bg-white dark:bg-charcoal-800 text-charcoal-700 dark:text-charcoal-300 hover:bg-surface-soft border border-border dark:border-charcoal-700"
@@ -722,7 +736,15 @@ export default function CanteenPage() {
 
         {/* Top Up Modal */}
         {showTopUpModal && (
-          <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-label="Top Up RFID Meal Card"
+            onClick={(e) => {
+              if (e.target === e.currentTarget) setShowTopUpModal(false);
+            }}
+            className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4"
+          >
             <div className="bg-white dark:bg-charcoal-900 rounded-3xl border border-border dark:border-charcoal-800 max-w-md w-full p-6 shadow-2xl animate-in zoom-in-95 duration-200">
               <div className="flex items-center justify-between pb-4 border-b border-border dark:border-charcoal-800">
                 <div className="flex items-center gap-2">

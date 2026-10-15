@@ -289,6 +289,31 @@ export default function EmergencyPage() {
     fetchData();
   }, []);
 
+  useEffect(() => {
+    const isAnyModalOpen =
+      showBroadcastModal ||
+      Boolean(selectedAlertDossier) ||
+      Boolean(selectedMusterDossier);
+    if (!isAnyModalOpen) return;
+
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setShowBroadcastModal(false);
+        setSelectedAlertDossier(null);
+        setSelectedMusterDossier(null);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.body.style.overflow = originalOverflow;
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [showBroadcastModal, selectedAlertDossier, selectedMusterDossier]);
+
   const handleBroadcast = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
@@ -533,10 +558,10 @@ export default function EmergencyPage() {
       </div>
 
       {/* Tabs */}
-      <div className="flex border-b border-slate-200 dark:border-slate-800">
+      <div className="flex border-b border-slate-200 dark:border-slate-800 overflow-x-auto no-scrollbar flex-nowrap">
         <button
           onClick={() => setActiveTab("alerts")}
-          className={`flex items-center gap-2 px-5 py-3 text-sm font-semibold border-b-2 transition-all ${
+          className={`flex items-center gap-2 px-5 py-3 text-sm font-semibold border-b-2 transition-all whitespace-nowrap shrink-0 ${
             activeTab === "alerts"
               ? "border-red-600 text-red-600 dark:text-red-400"
               : "border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200"
@@ -547,7 +572,7 @@ export default function EmergencyPage() {
         </button>
         <button
           onClick={() => setActiveTab("muster")}
-          className={`flex items-center gap-2 px-5 py-3 text-sm font-semibold border-b-2 transition-all ${
+          className={`flex items-center gap-2 px-5 py-3 text-sm font-semibold border-b-2 transition-all whitespace-nowrap shrink-0 ${
             activeTab === "muster"
               ? "border-red-600 text-red-600 dark:text-red-400"
               : "border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200"
@@ -558,7 +583,7 @@ export default function EmergencyPage() {
         </button>
         <button
           onClick={() => setActiveTab("siren")}
-          className={`flex items-center gap-2 px-5 py-3 text-sm font-semibold border-b-2 transition-all ${
+          className={`flex items-center gap-2 px-5 py-3 text-sm font-semibold border-b-2 transition-all whitespace-nowrap shrink-0 ${
             activeTab === "siren"
               ? "border-red-600 text-red-600 dark:text-red-400"
               : "border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200"
@@ -1034,7 +1059,15 @@ export default function EmergencyPage() {
         </div>
       )}
       {showBroadcastModal && (
-        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Dispatch Campus Emergency Alert"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setShowBroadcastModal(false);
+          }}
+          className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4"
+        >
           <div className="bg-white dark:bg-slate-900 rounded-2xl border border-red-200 dark:border-red-900 p-6 max-w-lg w-full space-y-4 shadow-2xl">
             <div className="flex justify-between items-center border-b border-slate-200 dark:border-slate-800 pb-3">
               <div className="flex items-center gap-2 text-red-600">
@@ -1155,7 +1188,15 @@ export default function EmergencyPage() {
 
       {/* Emergency Incident & Clery Act Dossier Modal */}
       {selectedAlertDossier && (
-        <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto animate-in fade-in duration-200">
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Emergency Incident Operations Brief"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setSelectedAlertDossier(null);
+          }}
+          className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto animate-in fade-in duration-200"
+        >
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl max-w-xl w-full p-6 shadow-2xl space-y-5 my-8">
             <div className="flex items-start justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
               <div className="flex items-center gap-3">
@@ -1312,7 +1353,15 @@ export default function EmergencyPage() {
 
       {/* Muster Point Inspection Modal */}
       {selectedMusterDossier && (
-        <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto animate-in fade-in duration-200">
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Designated Safety Muster Point Inspection"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setSelectedMusterDossier(null);
+          }}
+          className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto animate-in fade-in duration-200"
+        >
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-5 my-8">
             <div className="flex items-start justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
               <div className="flex items-center gap-3">

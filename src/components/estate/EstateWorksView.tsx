@@ -91,6 +91,11 @@ export default function EstateWorksView() {
   }, []);
 
   useEffect(() => {
+    const isAnyModalOpen = showOrderModal || showAssignModal || showCompleteModal || showRatingModal;
+    if (!isAnyModalOpen) return;
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         setShowOrderModal(false);
@@ -100,8 +105,11 @@ export default function EstateWorksView() {
       }
     };
     window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, []);
+    return () => {
+      document.body.style.overflow = originalOverflow;
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [showOrderModal, showAssignModal, showCompleteModal, showRatingModal]);
 
   const submitOrder = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -340,10 +348,10 @@ export default function EstateWorksView() {
       )}
 
       {/* Tabs */}
-      <div className="flex border-b border-slate-800 gap-6">
+      <div className="flex border-b border-slate-800 gap-6 overflow-x-auto no-scrollbar flex-nowrap">
         <button
           onClick={() => setActiveTab("orders")}
-          className={`pb-3 font-semibold text-sm transition-colors border-b-2 ${
+          className={`pb-3 font-semibold text-sm transition-colors border-b-2 whitespace-nowrap shrink-0 ${
             activeTab === "orders"
               ? "border-emerald-500 text-emerald-400"
               : "border-transparent text-slate-400 hover:text-slate-200"
@@ -353,7 +361,7 @@ export default function EstateWorksView() {
         </button>
         <button
           onClick={() => setActiveTab("assets")}
-          className={`pb-3 font-semibold text-sm transition-colors border-b-2 ${
+          className={`pb-3 font-semibold text-sm transition-colors border-b-2 whitespace-nowrap shrink-0 ${
             activeTab === "assets"
               ? "border-emerald-500 text-emerald-400"
               : "border-transparent text-slate-400 hover:text-slate-200"
@@ -548,6 +556,9 @@ export default function EstateWorksView() {
       {/* Modal 1: Raise Work Order */}
       {showOrderModal && (
         <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Raise Maintenance Work Order"
           onClick={(e) => {
             if (e.target === e.currentTarget) setShowOrderModal(false);
           }}
@@ -647,6 +658,9 @@ export default function EstateWorksView() {
       {/* Modal 2: Assign Engineer */}
       {showAssignModal && selectedOrderForAssign && (
         <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Assign Junior Engineer"
           onClick={(e) => {
             if (e.target === e.currentTarget) setShowAssignModal(false);
           }}
@@ -713,6 +727,9 @@ export default function EstateWorksView() {
       {/* Modal 3: Certify Completion */}
       {showCompleteModal && selectedOrderForComplete && (
         <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Certify Work Completion"
           onClick={(e) => {
             if (e.target === e.currentTarget) setShowCompleteModal(false);
           }}
@@ -769,6 +786,9 @@ export default function EstateWorksView() {
       {/* Modal 4: Rate & Close */}
       {showRatingModal && selectedOrderForRating && (
         <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Requester Satisfaction Sign-Off"
           onClick={(e) => {
             if (e.target === e.currentTarget) setShowRatingModal(false);
           }}

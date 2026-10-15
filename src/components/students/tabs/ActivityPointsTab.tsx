@@ -41,6 +41,20 @@ export function ActivityPointsTab({ studentId, studentName }: ActivityPointsTabP
     fetchPoints();
   }, [studentId]);
 
+  useEffect(() => {
+    if (!showClaimModal) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setShowClaimModal(false);
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [showClaimModal]);
+
   const handleSubmitClaim = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
@@ -255,7 +269,15 @@ export function ActivityPointsTab({ studentId, studentName }: ActivityPointsTabP
 
       {/* Claim Submission Modal */}
       {showClaimModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 z-50">
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Submit AICTE Activity Point Claim"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setShowClaimModal(false);
+          }}
+          className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 z-50"
+        >
           <div className="bg-white dark:bg-charcoal-800 rounded-2xl border border-border dark:border-charcoal-700 shadow-2xl max-w-lg w-full p-6 flex flex-col gap-4">
             <h3 className="text-base font-display font-bold text-charcoal-900 dark:text-ivory-100">
               Submit AICTE Activity Point Claim

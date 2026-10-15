@@ -1,5 +1,24 @@
 [
   {
+    "id": "SSR-2026-8764",
+    "requestType": "BONAFIDE_CERTIFICATE",
+    "institutionId": "inst-apex-01",
+    "userId": "usr-admin-01",
+    "userName": "provost.evans@classroom.edu",
+    "userRole": "SUPER_ADMIN",
+    "userIdentifier": "CS2026-0042",
+    "purpose": "Passport office institutional bonafide proof letter",
+    "urgency": "HIGH",
+    "slaHours": 24,
+    "status": "COMPLETED",
+    "verificationToken": "APEX-DOC-6580DC7E0D7CC773",
+    "createdAt": "2026-10-15T05:39:35.288Z",
+    "updatedAt": "2026-10-15T05:39:35.321Z",
+    "resolutionRemarks": "Digital Bonafide letter generated and sealed with Registrar cryptographic signature.",
+    "resolvedAt": "2026-10-15T05:39:35.321Z",
+    "digitalCertificateDocUrl": "/api/documents/download?id=doc-SSR-2026-8764"
+  },
+  {
     "id": "SSR-2026-5351",
     "requestType": "BONAFIDE_CERTIFICATE",
     "institutionId": "inst-apex-01",

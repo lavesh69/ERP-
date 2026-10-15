@@ -212,6 +212,34 @@ ${awardList}
     fetchData();
   }, []);
 
+  useEffect(() => {
+    const isAnyModalOpen =
+      showRegModal ||
+      Boolean(selectedCandidateDossier) ||
+      showNadModal ||
+      Boolean(showAdmitPassModal && selectedCandidateForPass);
+    if (!isAnyModalOpen) return;
+
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setShowRegModal(false);
+        setSelectedCandidateDossier(null);
+        setShowNadModal(false);
+        setShowAdmitPassModal(false);
+        setSelectedCandidateForPass(null);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.body.style.overflow = originalOverflow;
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [showRegModal, selectedCandidateDossier, showNadModal, showAdmitPassModal, selectedCandidateForPass]);
+
   const handleToggleClearance = async (candidateId: string, department: string, currentVal: boolean) => {
     try {
       const res = await fetch("/api/convocation", {
@@ -409,10 +437,10 @@ ${awardList}
       </div>
 
       {/* Tabs */}
-      <div className="flex border-b border-slate-200 dark:border-slate-800">
+      <div className="flex border-b border-slate-200 dark:border-slate-800 overflow-x-auto no-scrollbar flex-nowrap">
         <button
           onClick={() => setActiveTab("clearance")}
-          className={`flex items-center gap-2 px-5 py-3 text-sm font-semibold border-b-2 transition-all ${
+          className={`flex items-center gap-2 px-5 py-3 text-sm font-semibold border-b-2 transition-all whitespace-nowrap shrink-0 ${
             activeTab === "clearance"
               ? "border-amber-600 text-amber-600 dark:text-amber-400"
               : "border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200"
@@ -423,7 +451,7 @@ ${awardList}
         </button>
         <button
           onClick={() => setActiveTab("ceremony")}
-          className={`flex items-center gap-2 px-5 py-3 text-sm font-semibold border-b-2 transition-all ${
+          className={`flex items-center gap-2 px-5 py-3 text-sm font-semibold border-b-2 transition-all whitespace-nowrap shrink-0 ${
             activeTab === "ceremony"
               ? "border-amber-600 text-amber-600 dark:text-amber-400"
               : "border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200"
@@ -434,7 +462,7 @@ ${awardList}
         </button>
         <button
           onClick={() => setActiveTab("medals")}
-          className={`flex items-center gap-2 px-5 py-3 text-sm font-semibold border-b-2 transition-all ${
+          className={`flex items-center gap-2 px-5 py-3 text-sm font-semibold border-b-2 transition-all whitespace-nowrap shrink-0 ${
             activeTab === "medals"
               ? "border-amber-600 text-amber-600 dark:text-amber-400"
               : "border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200"
@@ -789,7 +817,15 @@ ${awardList}
 
       {/* Registration Modal */}
       {showRegModal && selectedCandidate && (
-        <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Convocation Ceremony Registration"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setShowRegModal(false);
+          }}
+          className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4"
+        >
           <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 max-w-md w-full space-y-4 shadow-xl">
             <div className="flex justify-between items-center border-b border-slate-200 dark:border-slate-800 pb-3">
               <h2 className="text-lg font-bold text-slate-900 dark:text-white">
@@ -882,7 +918,15 @@ ${awardList}
 
       {/* Convocation Degree & Clearance Dossier Modal */}
       {selectedCandidateDossier && (
-        <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto animate-in fade-in duration-200">
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Degree & Statutory Clearance Dossier"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setSelectedCandidateDossier(null);
+          }}
+          className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto animate-in fade-in duration-200"
+        >
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl max-w-xl w-full p-6 shadow-2xl space-y-5 my-8">
             <div className="flex items-start justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
               <div className="flex items-center gap-3">
@@ -1104,7 +1148,15 @@ ${awardList}
 
       {/* DigiLocker / NAD XML Payload Exporter Modal */}
       {showNadModal && (
-        <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto animate-in fade-in duration-200">
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="National Academic Depository Awards XML Payload"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setShowNadModal(false);
+          }}
+          className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto animate-in fade-in duration-200"
+        >
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl max-w-2xl w-full p-6 shadow-2xl space-y-4 my-8">
             <div className="flex items-start justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
               <div className="flex items-center gap-3">
@@ -1182,7 +1234,18 @@ ${awardList}
 
       {/* Official Convocation Hall Admit Card & Robe Pass Printable Modal */}
       {showAdmitPassModal && selectedCandidateForPass && (
-        <div className="fixed inset-0 z-50 bg-slate-950/75 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto animate-in fade-in duration-200">
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Official Ceremony Credential & Robe Pass"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setShowAdmitPassModal(false);
+              setSelectedCandidateForPass(null);
+            }
+          }}
+          className="fixed inset-0 z-50 bg-slate-950/75 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto animate-in fade-in duration-200"
+        >
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl max-w-2xl w-full p-6 sm:p-8 shadow-2xl space-y-6 my-8 print:border-none print:shadow-none print:p-2 print:m-0 print:max-w-none">
             {/* Top Toolbar (hidden during print) */}
             <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800 print:hidden">

@@ -160,6 +160,25 @@ export default function ClubsPage() {
     fetchData();
   }, []);
 
+  useEffect(() => {
+    const isAnyModalOpen = showModal || !!selectedClaimDossier || showHonoursCertModal;
+    if (!isAnyModalOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setShowModal(false);
+        setSelectedClaimDossier(null);
+        setShowHonoursCertModal(false);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [showModal, selectedClaimDossier, showHonoursCertModal]);
+
   const handleSubmitClaim = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
@@ -462,10 +481,10 @@ export default function ClubsPage() {
       </div>
 
       {/* Tabs Navigation */}
-      <div className="flex border-b border-slate-200 dark:border-slate-800 gap-6">
+      <div className="flex border-b border-slate-200 dark:border-slate-800 gap-6 overflow-x-auto no-scrollbar flex-nowrap">
         <button
           onClick={() => setActiveTab("portfolio")}
-          className={`pb-3 text-sm font-semibold border-b-2 transition-all flex items-center gap-2 ${
+          className={`pb-3 text-sm font-semibold border-b-2 transition-all flex items-center gap-2 whitespace-nowrap shrink-0 ${
             activeTab === "portfolio"
               ? "border-amber-600 text-amber-600 dark:text-amber-400"
               : "border-transparent text-slate-500 hover:text-slate-900 dark:hover:text-slate-200"
@@ -477,7 +496,7 @@ export default function ClubsPage() {
 
         <button
           onClick={() => setActiveTab("directory")}
-          className={`pb-3 text-sm font-semibold border-b-2 transition-all flex items-center gap-2 ${
+          className={`pb-3 text-sm font-semibold border-b-2 transition-all flex items-center gap-2 whitespace-nowrap shrink-0 ${
             activeTab === "directory"
               ? "border-amber-600 text-amber-600 dark:text-amber-400"
               : "border-transparent text-slate-500 hover:text-slate-900 dark:hover:text-slate-200"
@@ -489,7 +508,7 @@ export default function ClubsPage() {
 
         <button
           onClick={() => setActiveTab("verify")}
-          className={`pb-3 text-sm font-semibold border-b-2 transition-all flex items-center gap-2 ${
+          className={`pb-3 text-sm font-semibold border-b-2 transition-all flex items-center gap-2 whitespace-nowrap shrink-0 ${
             activeTab === "verify"
               ? "border-amber-600 text-amber-600 dark:text-amber-400"
               : "border-transparent text-slate-500 hover:text-slate-900 dark:hover:text-slate-200"
@@ -813,7 +832,15 @@ export default function ClubsPage() {
 
       {/* Submit Claim Modal */}
       {showModal && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Claim Co-Curricular Activity Points"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setShowModal(false);
+          }}
+          className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4"
+        >
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl max-w-lg w-full p-6 shadow-xl space-y-4 max-h-[90vh] overflow-y-auto">
             <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
               <Award className="w-5 h-5 text-amber-600" />
@@ -979,7 +1006,15 @@ export default function ClubsPage() {
 
       {/* Claim Evidence Dossier Modal */}
       {selectedClaimDossier && (
-        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Co-Curricular Claim Dossier"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setSelectedClaimDossier(null);
+          }}
+          className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4"
+        >
           <div className="bg-white dark:bg-slate-900 rounded-2xl max-w-lg w-full p-6 border border-slate-200 dark:border-slate-800 shadow-2xl space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800">
               <div>
@@ -1132,7 +1167,15 @@ export default function ClubsPage() {
 
       {/* Official Honours Certificate & Co-Curricular Transcript Modal */}
       {showHonoursCertModal && (
-        <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto animate-in fade-in duration-200">
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Official Honours Certificate and Co-Curricular Transcript"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setShowHonoursCertModal(false);
+          }}
+          className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto animate-in fade-in duration-200"
+        >
           <div className="bg-white dark:bg-slate-900 border-2 border-amber-400/80 dark:border-amber-600/80 rounded-3xl max-w-2xl w-full p-8 shadow-2xl space-y-6 my-8 relative text-slate-900 dark:text-white">
             {/* Ambient Watermark Seal */}
             <div className="absolute top-6 right-8 text-amber-500/20 dark:text-amber-400/10 pointer-events-none select-none">

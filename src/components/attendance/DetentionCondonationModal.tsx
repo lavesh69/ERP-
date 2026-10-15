@@ -102,6 +102,27 @@ export function DetentionCondonationModal({
     }
   }, [isOpen]);
 
+  useEffect(() => {
+    if (!isOpen) return;
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        if (selectedStudent) {
+          setSelectedStudent(null);
+        } else {
+          onClose();
+        }
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.body.style.overflow = originalOverflow;
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isOpen, selectedStudent, onClose]);
+
   if (!isOpen) return null;
 
   const handleApplyCondonation = async (e: React.FormEvent) => {
@@ -172,7 +193,15 @@ export function DetentionCondonationModal({
   });
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-charcoal-950/75 backdrop-blur-xs overflow-y-auto">
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-label="Attendance Shortfall & Statutory Medical Condonation"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-charcoal-950/75 backdrop-blur-xs overflow-y-auto"
+    >
       <div className="bg-white dark:bg-charcoal-900 border border-border dark:border-charcoal-800 rounded-3xl max-w-4xl w-full p-6 shadow-2xl relative my-8 max-h-[90vh] flex flex-col justify-between">
         {/* Header */}
         <div>
@@ -427,7 +456,15 @@ export function DetentionCondonationModal({
 
         {/* APPLY CONDONATION SUB-MODAL */}
         {selectedStudent && (
-          <div className="fixed inset-0 z-60 flex items-center justify-center p-4 bg-charcoal-950/80 backdrop-blur-xs">
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-label="Grant Medical Condonation Waiver"
+            onClick={(e) => {
+              if (e.target === e.currentTarget) setSelectedStudent(null);
+            }}
+            className="fixed inset-0 z-60 flex items-center justify-center p-4 bg-charcoal-950/80 backdrop-blur-xs"
+          >
             <div className="bg-white dark:bg-charcoal-900 border border-border dark:border-charcoal-800 rounded-3xl max-w-md w-full p-6 shadow-2xl relative">
               <div className="flex items-center justify-between pb-3 border-b border-border/60 dark:border-charcoal-800">
                 <div className="flex items-center gap-2.5">

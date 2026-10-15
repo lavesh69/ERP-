@@ -254,10 +254,10 @@ export default function CareersPage() {
         </div>
 
         {/* Sub-Navigation Tabs */}
-        <div className="flex items-center gap-2 border-b border-border dark:border-charcoal-700 pb-2">
+        <div className="flex items-center gap-2 border-b border-border dark:border-charcoal-700 pb-2 overflow-x-auto no-scrollbar flex-nowrap">
           <button
             onClick={() => setActiveTab("drives")}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${
+            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 whitespace-nowrap shrink-0 ${
               activeTab === "drives"
                 ? "bg-rose-primary text-white shadow-sm"
                 : "bg-surface-soft dark:bg-charcoal-800 text-charcoal-700 dark:text-charcoal-300 hover:bg-rose-container"
@@ -268,7 +268,7 @@ export default function CareersPage() {
           </button>
           <button
             onClick={() => setActiveTab("internships")}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${
+            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 whitespace-nowrap shrink-0 ${
               activeTab === "internships"
                 ? "bg-rose-primary text-white shadow-sm"
                 : "bg-surface-soft dark:bg-charcoal-800 text-charcoal-700 dark:text-charcoal-300 hover:bg-rose-container"

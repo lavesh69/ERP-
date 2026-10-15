@@ -99,6 +99,10 @@ export function GuestHouseView() {
   }, []);
 
   useEffect(() => {
+    if (!showReqModal && !showDiningModal) return;
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         setShowReqModal(false);
@@ -106,8 +110,11 @@ export function GuestHouseView() {
       }
     };
     window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, []);
+    return () => {
+      document.body.style.overflow = originalOverflow;
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [showReqModal, showDiningModal]);
 
   const handleRequestBooking = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -633,6 +640,9 @@ export function GuestHouseView() {
       {/* MODAL 1: REQUEST SUITE REQUISITION */}
       {showReqModal && (
         <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Guest House Suite Requisition"
           onClick={(e) => {
             if (e.target === e.currentTarget) setShowReqModal(false);
           }}
@@ -785,6 +795,9 @@ export function GuestHouseView() {
       {/* MODAL 2: ADD DINING CHARGE */}
       {showDiningModal && selectedBooking && (
         <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Add Guest Dining Charge"
           onClick={(e) => {
             if (e.target === e.currentTarget) setShowDiningModal(false);
           }}

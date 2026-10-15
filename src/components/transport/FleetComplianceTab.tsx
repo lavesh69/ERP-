@@ -68,6 +68,28 @@ export default function FleetComplianceTab() {
     fetchRecords();
   }, []);
 
+  const isAnyModalOpen = !!(targetVehicleForCert || targetVehicleForUpdate || viewingCertificate);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setTargetVehicleForCert(null);
+        setTargetVehicleForUpdate(null);
+        setViewingCertificate(null);
+      }
+    };
+    if (isAnyModalOpen) {
+      document.body.style.overflow = "hidden";
+      window.addEventListener("keydown", handleKeyDown);
+    } else {
+      document.body.style.overflow = "unset";
+    }
+    return () => {
+      document.body.style.overflow = "unset";
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isAnyModalOpen]);
+
   const handleInspectAndCertify = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!targetVehicleForCert) return;
@@ -355,7 +377,15 @@ export default function FleetComplianceTab() {
 
       {/* Modal: Roadworthiness Safety Audit & Seal */}
       {targetVehicleForCert && (
-        <div className="fixed inset-0 z-50 bg-charcoal-950/70 backdrop-blur-sm flex items-center justify-center p-4">
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Conduct Roadworthiness & Safety Inspection"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setTargetVehicleForCert(null);
+          }}
+          className="fixed inset-0 z-50 bg-charcoal-950/70 backdrop-blur-sm flex items-center justify-center p-4"
+        >
           <div className="bg-white dark:bg-charcoal-900 rounded-3xl max-w-lg w-full p-6 border border-border dark:border-charcoal-800 shadow-2xl animate-in zoom-in-95 duration-200 space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-border dark:border-charcoal-800">
               <div className="flex items-center gap-2">
@@ -427,7 +457,15 @@ export default function FleetComplianceTab() {
 
       {/* Modal: Update Certificates & Expiry */}
       {targetVehicleForUpdate && (
-        <div className="fixed inset-0 z-50 bg-charcoal-950/70 backdrop-blur-sm flex items-center justify-center p-4">
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Update RTO & Insurance Documents"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setTargetVehicleForUpdate(null);
+          }}
+          className="fixed inset-0 z-50 bg-charcoal-950/70 backdrop-blur-sm flex items-center justify-center p-4"
+        >
           <div className="bg-white dark:bg-charcoal-900 rounded-3xl max-w-lg w-full p-6 border border-border dark:border-charcoal-800 shadow-2xl animate-in zoom-in-95 duration-200 space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-border dark:border-charcoal-800">
               <div className="flex items-center gap-2">
@@ -527,7 +565,15 @@ export default function FleetComplianceTab() {
 
       {/* Modal: Official Roadworthiness Certificate */}
       {viewingCertificate && (
-        <div className="fixed inset-0 z-50 bg-charcoal-950/70 backdrop-blur-sm flex items-center justify-center p-4">
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Fleet Roadworthiness and Regulatory Compliance Certificate"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setViewingCertificate(null);
+          }}
+          className="fixed inset-0 z-50 bg-charcoal-950/70 backdrop-blur-sm flex items-center justify-center p-4"
+        >
           <div className="bg-white dark:bg-charcoal-900 rounded-3xl max-w-xl w-full p-8 border border-border dark:border-charcoal-800 shadow-2xl animate-in zoom-in-95 duration-200 space-y-6">
             <div className="text-center space-y-1 pb-4 border-b border-border dark:border-charcoal-800">
               <div className="inline-flex p-3 rounded-2xl bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 mb-2">

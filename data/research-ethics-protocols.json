@@ -1,5 +1,31 @@
 [
   {
+    "id": "IRB-2026-024",
+    "title": "Non-Invasive Optical Biosensing for Continuous Blood Glucose Monitoring",
+    "principalInvestigator": "Dr. Vikram Seth",
+    "piEmail": "v.seth@apex.edu",
+    "department": "Biomedical Engineering & Medicine",
+    "riskTier": "EXPEDITED",
+    "studyType": "HUMAN_SUBJECTS",
+    "vulnerablePopulationsInvolved": false,
+    "dataPrivacyProtocol": "De-identified optical PPG sensor streams stored with salt hash encryption",
+    "status": "APPROVED",
+    "submittedAt": "2026-10-15T05:39:35.971Z",
+    "boardVotes": [
+      {
+        "memberName": "Dr. Robert Vance, MD",
+        "role": "CHAIRPERSON",
+        "decision": "APPROVE",
+        "remarks": "Expedited protocol satisfies all clinical safety requirements.",
+        "votedAt": "2026-10-15T05:39:36.007Z"
+      }
+    ],
+    "adverseReportingOfficer": "Office of Research Safety & Human Subject Protection",
+    "reviewedAt": "2026-10-15T05:39:36.007Z",
+    "ethicsClearanceSeal": "APEX-IRB-SEAL-BF2DF7D59A2C7260",
+    "validUntil": "2027-10-15T05:39:36.007Z"
+  },
+  {
     "id": "IRB-2026-023",
     "title": "Non-Invasive Optical Biosensing for Continuous Blood Glucose Monitoring",
     "principalInvestigator": "Dr. Vikram Seth",

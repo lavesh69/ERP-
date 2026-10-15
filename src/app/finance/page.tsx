@@ -458,7 +458,7 @@ export default function FinancePage() {
         </div>
 
         {/* Enterprise Navigation Tabs */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar">
+        <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar flex-nowrap">
           {[
             { id: "ledgers", label: "Student Accounts & Ledgers", icon: CreditCard },
             { id: "structures", label: "Fee Structures & Quotas", icon: Layers },
@@ -475,7 +475,7 @@ export default function FinancePage() {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as any)}
-                className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer ${
+                className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap shrink-0 cursor-pointer ${
                   isActive
                     ? "bg-rose-primary text-white shadow-sm shadow-rose-primary/20"
                     : "bg-white dark:bg-charcoal-800 text-charcoal-700 dark:text-charcoal-300 hover:bg-rose-container hover:text-rose-primary border border-border dark:border-charcoal-700"

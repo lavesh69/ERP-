@@ -214,6 +214,24 @@ export default function HostelPage() {
     fetchData();
   }, []);
 
+  useEffect(() => {
+    const isAnyModalOpen = showPassModal || showAllocateModal;
+    if (!isAnyModalOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setShowPassModal(false);
+        setShowAllocateModal(false);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [showPassModal, showAllocateModal]);
+
   const handleCreatePass = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
@@ -451,7 +469,7 @@ export default function HostelPage() {
       )}
 
       {/* Navigation Tabs */}
-      <div className="flex border-b border-border dark:border-charcoal-800 space-x-2 overflow-x-auto pb-px">
+      <div className="flex border-b border-border dark:border-charcoal-800 space-x-2 overflow-x-auto no-scrollbar flex-nowrap pb-px">
         {[
           { id: "matrix", label: "Room Matrix & Layout", icon: Building },
           { id: "allocations", label: "Bed Allocation Registry", icon: Bed },
@@ -467,7 +485,7 @@ export default function HostelPage() {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id as any)}
-              className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-all whitespace-nowrap ${
+              className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-all whitespace-nowrap shrink-0 ${
                 isActive
                   ? "border-rose-primary text-rose-primary dark:text-rose-light dark:border-rose-light"
                   : "border-transparent text-charcoal-600 dark:text-ivory-400 hover:text-charcoal-900 dark:hover:text-white"
@@ -1183,7 +1201,15 @@ export default function HostelPage() {
 
       {/* MODAL: Request Outpass */}
       {showPassModal && (
-        <div className="fixed inset-0 z-50 bg-charcoal-950/70 backdrop-blur-sm flex items-center justify-center p-4">
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="New Hostel Leave & Outpass Application"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setShowPassModal(false);
+          }}
+          className="fixed inset-0 z-50 bg-charcoal-950/70 backdrop-blur-sm flex items-center justify-center p-4"
+        >
           <div className="bg-white dark:bg-charcoal-900 rounded-2xl max-w-lg w-full p-6 border border-border dark:border-charcoal-800 shadow-2xl animate-in zoom-in-95 duration-200">
             <div className="flex items-center justify-between pb-3 border-b border-border dark:border-charcoal-800">
               <h3 className="font-bold text-base text-charcoal-900 dark:text-ivory-100">
@@ -1313,7 +1339,15 @@ export default function HostelPage() {
 
       {/* MODAL: Allocate Bed */}
       {showAllocateModal && (
-        <div className="fixed inset-0 z-50 bg-charcoal-950/70 backdrop-blur-sm flex items-center justify-center p-4">
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Allocate Bed to Student"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setShowAllocateModal(false);
+          }}
+          className="fixed inset-0 z-50 bg-charcoal-950/70 backdrop-blur-sm flex items-center justify-center p-4"
+        >
           <div className="bg-white dark:bg-charcoal-900 rounded-2xl max-w-lg w-full p-6 border border-border dark:border-charcoal-800 shadow-2xl animate-in zoom-in-95 duration-200">
             <div className="flex items-center justify-between pb-3 border-b border-border dark:border-charcoal-800">
               <h3 className="font-bold text-base text-charcoal-900 dark:text-ivory-100">

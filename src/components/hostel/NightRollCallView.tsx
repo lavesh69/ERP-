@@ -84,6 +84,20 @@ export function NightRollCallView({ blocks, currentUser, showToast }: Props) {
     fetchNightRollCall(selectedBlockId);
   }, [selectedBlockId]);
 
+  useEffect(() => {
+    if (!isSosModalOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setIsSosModalOpen(false);
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [isSosModalOpen]);
+
   const updateResidentStatus = (
     roll: string,
     newStatus: "IN_ROOM" | "PERMITTED_LATE_PASS" | "UNAUTHORIZED_ABSENT" | "HOME_LEAVE"
@@ -396,7 +410,15 @@ export function NightRollCallView({ blocks, currentUser, showToast }: Props) {
 
       {/* SOS MODAL */}
       {isSosModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-charcoal-950/75 backdrop-blur-xs">
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Dispatch Unauthorized Night-Out Alert"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setIsSosModalOpen(false);
+          }}
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-charcoal-950/75 backdrop-blur-xs"
+        >
           <div className="bg-white dark:bg-charcoal-900 border border-rose-500/30 rounded-3xl max-w-md w-full p-6 shadow-2xl relative">
             <div className="flex items-center justify-between pb-3 border-b border-border/60 dark:border-charcoal-800">
               <div className="flex items-center gap-2.5 text-rose-600">

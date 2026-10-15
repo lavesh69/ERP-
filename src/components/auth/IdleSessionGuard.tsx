@@ -48,6 +48,16 @@ export default function IdleSessionGuard() {
     };
   }, [isPublicRoute, isWarningVisible]);
 
+  // Lock body scroll when warning is visible
+  useEffect(() => {
+    if (!isWarningVisible) return;
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = originalOverflow;
+    };
+  }, [isWarningVisible]);
+
   // Countdown effect when warning is visible
   useEffect(() => {
     if (!isWarningVisible) return;
@@ -77,7 +87,12 @@ export default function IdleSessionGuard() {
   if (!isWarningVisible) return null;
 
   return (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-charcoal-950/80 backdrop-blur-sm px-4">
+    <div
+      role="alertdialog"
+      aria-modal="true"
+      aria-label="Session Expiring Soon"
+      className="fixed inset-0 z-[9999] flex items-center justify-center bg-charcoal-950/80 backdrop-blur-sm px-4"
+    >
       <div className="bg-white dark:bg-charcoal-900 rounded-2xl shadow-xl w-full max-w-md p-6 border border-border dark:border-charcoal-700 animate-in fade-in zoom-in duration-300">
         <div className="flex flex-col items-center text-center">
           <div className="h-12 w-12 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center mb-4 text-amber-600 dark:text-amber-500">

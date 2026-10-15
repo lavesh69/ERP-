@@ -331,6 +331,25 @@ export default function ClinicPage() {
     fetchData();
   }, []);
 
+  useEffect(() => {
+    const isAnyModalOpen = showModal || !!selectedConsultation || !!selectedMedicalCard;
+    if (!isAnyModalOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setShowModal(false);
+        setSelectedConsultation(null);
+        setSelectedMedicalCard(null);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [showModal, selectedConsultation, selectedMedicalCard]);
+
   const handleCreateConsultation = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
@@ -553,10 +572,10 @@ export default function ClinicPage() {
       </div>
 
       {/* Tabs Navigation */}
-      <div className="flex border-b border-slate-200 dark:border-slate-800 gap-6">
+      <div className="flex border-b border-slate-200 dark:border-slate-800 gap-6 overflow-x-auto no-scrollbar flex-nowrap">
         <button
           onClick={() => setActiveTab("consultations")}
-          className={`pb-3 text-sm font-semibold border-b-2 transition-all flex items-center gap-2 ${
+          className={`pb-3 text-sm font-semibold border-b-2 transition-all flex items-center gap-2 whitespace-nowrap shrink-0 ${
             activeTab === "consultations"
               ? "border-rose-600 text-rose-600 dark:text-rose-400"
               : "border-transparent text-slate-500 hover:text-slate-900 dark:hover:text-slate-200"
@@ -568,7 +587,7 @@ export default function ClinicPage() {
 
         <button
           onClick={() => setActiveTab("beds")}
-          className={`pb-3 text-sm font-semibold border-b-2 transition-all flex items-center gap-2 ${
+          className={`pb-3 text-sm font-semibold border-b-2 transition-all flex items-center gap-2 whitespace-nowrap shrink-0 ${
             activeTab === "beds"
               ? "border-rose-600 text-rose-600 dark:text-rose-400"
               : "border-transparent text-slate-500 hover:text-slate-900 dark:hover:text-slate-200"
@@ -580,7 +599,7 @@ export default function ClinicPage() {
 
         <button
           onClick={() => setActiveTab("profiles")}
-          className={`pb-3 text-sm font-semibold border-b-2 transition-all flex items-center gap-2 ${
+          className={`pb-3 text-sm font-semibold border-b-2 transition-all flex items-center gap-2 whitespace-nowrap shrink-0 ${
             activeTab === "profiles"
               ? "border-rose-600 text-rose-600 dark:text-rose-400"
               : "border-transparent text-slate-500 hover:text-slate-900 dark:hover:text-slate-200"
@@ -592,7 +611,7 @@ export default function ClinicPage() {
 
         <button
           onClick={() => setActiveTab("triage")}
-          className={`pb-3 text-sm font-semibold border-b-2 transition-all flex items-center gap-2 ${
+          className={`pb-3 text-sm font-semibold border-b-2 transition-all flex items-center gap-2 whitespace-nowrap shrink-0 ${
             activeTab === "triage"
               ? "border-rose-600 text-rose-600 dark:text-rose-400"
               : "border-transparent text-slate-500 hover:text-slate-900 dark:hover:text-slate-200"
@@ -604,7 +623,7 @@ export default function ClinicPage() {
 
         <button
           onClick={() => setActiveTab("pharmacy")}
-          className={`pb-3 text-sm font-semibold border-b-2 transition-all flex items-center gap-2 ${
+          className={`pb-3 text-sm font-semibold border-b-2 transition-all flex items-center gap-2 whitespace-nowrap shrink-0 ${
             activeTab === "pharmacy"
               ? "border-rose-600 text-rose-600 dark:text-rose-400"
               : "border-transparent text-slate-500 hover:text-slate-900 dark:hover:text-slate-200"
@@ -621,7 +640,7 @@ export default function ClinicPage() {
 
         <button
           onClick={() => setActiveTab("clearance")}
-          className={`pb-3 text-sm font-semibold border-b-2 transition-all flex items-center gap-2 ${
+          className={`pb-3 text-sm font-semibold border-b-2 transition-all flex items-center gap-2 whitespace-nowrap shrink-0 ${
             activeTab === "clearance"
               ? "border-rose-600 text-rose-600 dark:text-rose-400"
               : "border-transparent text-slate-500 hover:text-slate-900 dark:hover:text-slate-200"
@@ -1149,7 +1168,15 @@ export default function ClinicPage() {
 
       {/* Log Consultation Modal */}
       {showModal && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Log Outpatient Consultation"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setShowModal(false);
+          }}
+          className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4"
+        >
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl max-w-lg w-full p-6 shadow-xl space-y-4 max-h-[90vh] overflow-y-auto">
             <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
               <Stethoscope className="w-5 h-5 text-rose-600" />
@@ -1308,7 +1335,15 @@ export default function ClinicPage() {
 
       {/* Case Slip Modal */}
       {selectedConsultation && (
-        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Outpatient Consultation Record"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setSelectedConsultation(null);
+          }}
+          className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4"
+        >
           <div className="bg-white dark:bg-slate-900 rounded-2xl max-w-lg w-full p-6 border border-slate-200 dark:border-slate-800 shadow-2xl space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800">
               <div>
@@ -1474,7 +1509,15 @@ export default function ClinicPage() {
 
       {/* Emergency Medical ID Card Modal */}
       {selectedMedicalCard && (
-        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Digital Emergency Health ID Card"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setSelectedMedicalCard(null);
+          }}
+          className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4"
+        >
           <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-md w-full border-2 border-rose-300 dark:border-rose-900/60 shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
             {/* ID Card Top Header */}
             <div className="bg-gradient-to-r from-rose-600 to-rose-800 text-white p-4 flex items-center justify-between">

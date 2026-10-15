@@ -372,10 +372,10 @@ TOTAL,Composite Institutional NIRF Score,1.00,82.04,82.04,"Projected National Ra
       </div>
 
       {/* Tabs Navigation */}
-      <div className="flex border-b border-slate-200 dark:border-slate-800 gap-6">
+      <div className="flex border-b border-slate-200 dark:border-slate-800 gap-6 overflow-x-auto no-scrollbar flex-nowrap">
         <button
           onClick={() => setActiveTab("criteria")}
-          className={`pb-3 text-sm font-semibold border-b-2 transition-all flex items-center gap-2 ${
+          className={`pb-3 text-sm font-semibold border-b-2 transition-all flex items-center gap-2 whitespace-nowrap shrink-0 ${
             activeTab === "criteria"
               ? "border-blue-600 text-blue-600 dark:text-blue-400"
               : "border-transparent text-slate-500 hover:text-slate-900 dark:hover:text-slate-200"
@@ -387,7 +387,7 @@ TOTAL,Composite Institutional NIRF Score,1.00,82.04,82.04,"Projected National Ra
 
         <button
           onClick={() => setActiveTab("ratios")}
-          className={`pb-3 text-sm font-semibold border-b-2 transition-all flex items-center gap-2 ${
+          className={`pb-3 text-sm font-semibold border-b-2 transition-all flex items-center gap-2 whitespace-nowrap shrink-0 ${
             activeTab === "ratios"
               ? "border-blue-600 text-blue-600 dark:text-blue-400"
               : "border-transparent text-slate-500 hover:text-slate-900 dark:hover:text-slate-200"
@@ -399,7 +399,7 @@ TOTAL,Composite Institutional NIRF Score,1.00,82.04,82.04,"Projected National Ra
 
         <button
           onClick={() => setActiveTab("dossier")}
-          className={`pb-3 text-sm font-semibold border-b-2 transition-all flex items-center gap-2 ${
+          className={`pb-3 text-sm font-semibold border-b-2 transition-all flex items-center gap-2 whitespace-nowrap shrink-0 ${
             activeTab === "dossier"
               ? "border-blue-600 text-blue-600 dark:text-blue-400"
               : "border-transparent text-slate-500 hover:text-slate-900 dark:hover:text-slate-200"
@@ -411,7 +411,7 @@ TOTAL,Composite Institutional NIRF Score,1.00,82.04,82.04,"Projected National Ra
 
         <button
           onClick={() => setActiveTab("dvv")}
-          className={`pb-3 text-sm font-semibold border-b-2 transition-all flex items-center gap-2 ${
+          className={`pb-3 text-sm font-semibold border-b-2 transition-all flex items-center gap-2 whitespace-nowrap shrink-0 ${
             activeTab === "dvv"
               ? "border-blue-600 text-blue-600 dark:text-blue-400"
               : "border-transparent text-slate-500 hover:text-slate-900 dark:hover:text-slate-200"
@@ -423,7 +423,7 @@ TOTAL,Composite Institutional NIRF Score,1.00,82.04,82.04,"Projected National Ra
 
         <button
           onClick={() => setActiveTab("nirf")}
-          className={`pb-3 text-sm font-semibold border-b-2 transition-all flex items-center gap-2 ${
+          className={`pb-3 text-sm font-semibold border-b-2 transition-all flex items-center gap-2 whitespace-nowrap shrink-0 ${
             activeTab === "nirf"
               ? "border-blue-600 text-blue-600 dark:text-blue-400"
               : "border-transparent text-slate-500 hover:text-slate-900 dark:hover:text-slate-200"

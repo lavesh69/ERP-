@@ -1,5 +1,55 @@
 [
   {
+    "id": "INT-MV93ZZUE",
+    "applicationNo": "APEX-INT-2026-1012",
+    "studentId": "STD-2025-001",
+    "rollNumber": "2025-CS-101",
+    "studentName": "Aarav Sharma",
+    "department": "Computer Science & Engineering",
+    "currentSemester": 6,
+    "academicYear": "2026-2027",
+    "companyName": "Google Cloud India",
+    "companyAddress": "RMZ Infinity, Bengaluru, Karnataka",
+    "companyWebsite": "https://cloud.google.com",
+    "industrySupervisorName": "K. Narayanan (Staff SRE)",
+    "industrySupervisorEmail": "knarayanan@google.com",
+    "industrySupervisorPhone": "+91 90000 00000",
+    "internshipRole": "Cloud Infrastructure Engineering Intern",
+    "stipendInrPerMonth": 75000,
+    "startDate": "2026-06-01",
+    "endDate": "2026-08-15",
+    "durationWeeks": 10,
+    "mode": "HYBRID",
+    "facultyMentorName": "Dr. Arvind Swaminathan",
+    "nocStatus": "CREDITS_AWARDED",
+    "logbookEntries": [
+      {
+        "weekNumber": 1,
+        "startDate": "2026-06-01",
+        "endDate": "2026-06-07",
+        "tasksCompleted": "Configured Terraform IaC clusters and authored automated gRPC load tests.",
+        "hoursWorked": 40,
+        "verifiedByMentor": true,
+        "mentorFeedback": "Work verified and approved by faculty mentor."
+      }
+    ],
+    "createdAt": "2026-10-15T05:39:36.374Z",
+    "updatedAt": "2026-10-15T05:39:36.484Z",
+    "nocCertificateNumber": "APEX-NOC-2026-1F3E5F",
+    "nocIssuedAt": "2026-10-15T05:39:36.426Z",
+    "authorizedSignatory": "Prof. S. K. Bose (Dean, Corporate Relations & Placements)",
+    "evaluation": {
+      "industryMentorScore": 48,
+      "facultyVivaScore": 47,
+      "totalScore": 95,
+      "grade": "O",
+      "academicCreditsAwarded": 4,
+      "evaluatedAt": "2026-10-15T05:39:36.484Z",
+      "evaluatorSignatory": "Prof. S. K. Bose & Department Viva Evaluation Committee"
+    },
+    "completionSeal": "APEX-INTERN-SEAL-AD8E1CE25F90C799"
+  },
+  {
     "id": "INT-MV905NS3",
     "applicationNo": "APEX-INT-2026-1011",
     "studentId": "STD-2025-001",

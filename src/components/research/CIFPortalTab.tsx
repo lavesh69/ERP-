@@ -89,6 +89,10 @@ export default function CIFPortalTab() {
   }, []);
 
   useEffect(() => {
+    if (!showBookingModal && !showCalibrationModal) return;
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         setShowBookingModal(false);
@@ -96,8 +100,11 @@ export default function CIFPortalTab() {
       }
     };
     window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, []);
+    return () => {
+      document.body.style.overflow = originalOverflow;
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [showBookingModal, showCalibrationModal]);
 
   const handleOpenBooking = (inst: any) => {
     setSelectedInstrument(inst);
@@ -335,10 +342,10 @@ export default function CIFPortalTab() {
       )}
 
       {/* Sub Tabs */}
-      <div className="flex border-b border-slate-800 gap-6">
+      <div className="flex border-b border-slate-800 gap-6 overflow-x-auto no-scrollbar flex-nowrap">
         <button
           onClick={() => setActiveSubTab("catalog")}
-          className={`pb-3 font-semibold text-sm transition-colors border-b-2 ${
+          className={`pb-3 font-semibold text-sm transition-colors border-b-2 whitespace-nowrap shrink-0 ${
             activeSubTab === "catalog"
               ? "border-indigo-500 text-indigo-400"
               : "border-transparent text-slate-400 hover:text-slate-200"
@@ -348,7 +355,7 @@ export default function CIFPortalTab() {
         </button>
         <button
           onClick={() => setActiveSubTab("bookings")}
-          className={`pb-3 font-semibold text-sm transition-colors border-b-2 ${
+          className={`pb-3 font-semibold text-sm transition-colors border-b-2 whitespace-nowrap shrink-0 ${
             activeSubTab === "bookings"
               ? "border-indigo-500 text-indigo-400"
               : "border-transparent text-slate-400 hover:text-slate-200"
@@ -358,7 +365,7 @@ export default function CIFPortalTab() {
         </button>
         <button
           onClick={() => setActiveSubTab("calibrations")}
-          className={`pb-3 font-semibold text-sm transition-colors border-b-2 ${
+          className={`pb-3 font-semibold text-sm transition-colors border-b-2 whitespace-nowrap shrink-0 ${
             activeSubTab === "calibrations"
               ? "border-indigo-500 text-indigo-400"
               : "border-transparent text-slate-400 hover:text-slate-200"
@@ -580,6 +587,9 @@ export default function CIFPortalTab() {
       {/* Slot Booking Modal */}
       {showBookingModal && selectedInstrument && (
         <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Book CIF Beam Time Slot"
           onClick={(e) => {
             if (e.target === e.currentTarget) setShowBookingModal(false);
           }}
@@ -767,6 +777,9 @@ export default function CIFPortalTab() {
       {/* Log Calibration Modal */}
       {showCalibrationModal && (
         <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Log Instrument Calibration"
           onClick={(e) => {
             if (e.target === e.currentTarget) setShowCalibrationModal(false);
           }}

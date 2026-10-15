@@ -176,6 +176,23 @@ export default function ProjectorModeModal({
     }
   };
 
+  useEffect(() => {
+    if (!isOpen) return;
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && !document.fullscreenElement) {
+        onClose();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.body.style.overflow = originalOverflow;
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isOpen, onClose]);
+
   if (!isOpen) return null;
 
   const percentage = enrolledCount > 0 ? Math.round((presentCount / enrolledCount) * 100) : 0;
@@ -184,6 +201,9 @@ export default function ProjectorModeModal({
   return (
     <div
       ref={containerRef}
+      role="dialog"
+      aria-modal="true"
+      aria-label="Classroom Projector Mode Attendance Broadcast"
       className="fixed inset-0 z-50 bg-slate-950 text-white flex flex-col justify-between overflow-hidden select-none animate-in fade-in duration-300"
     >
       {/* Top Header Bar */}

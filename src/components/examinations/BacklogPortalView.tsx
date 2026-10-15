@@ -93,6 +93,20 @@ export function BacklogPortalView({ showToast, canEdit, isStudent }: Props) {
     fetchBacklogs();
   }, []);
 
+  useEffect(() => {
+    if (!selectedAdmitCard) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setSelectedAdmitCard(null);
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [selectedAdmitCard]);
+
   const handleRegisterSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedCourseCode) {
@@ -412,7 +426,15 @@ export function BacklogPortalView({ showToast, canEdit, isStudent }: Props) {
 
       {/* ADMIT CARD MODAL */}
       {selectedAdmitCard && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-charcoal-950/70 backdrop-blur-xs">
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Supplementary Examination Admit Card"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setSelectedAdmitCard(null);
+          }}
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-charcoal-950/70 backdrop-blur-xs"
+        >
           <div className="bg-white dark:bg-charcoal-900 border border-border dark:border-charcoal-800 rounded-3xl max-w-lg w-full p-6 shadow-2xl relative overflow-hidden">
             {/* Header */}
             <div className="flex items-center justify-between pb-4 border-b border-border/60 dark:border-charcoal-800">

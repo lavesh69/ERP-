@@ -124,6 +124,26 @@ export default function AlumniPage() {
     fetchAlumni();
   }, []);
 
+  useEffect(() => {
+    const isAnyModalOpen = showMentorModal || !!selectedAlumniDossier || showRegisterModal || !!givingModalCampaign;
+    if (!isAnyModalOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setShowMentorModal(false);
+        setSelectedAlumniDossier(null);
+        setShowRegisterModal(false);
+        setGivingModalCampaign(null);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [showMentorModal, selectedAlumniDossier, showRegisterModal, givingModalCampaign]);
+
   const handleVerifyCredential = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
@@ -349,7 +369,7 @@ export default function AlumniPage() {
       )}
 
       {/* Navigation Tabs */}
-      <div className="flex border-b border-border dark:border-charcoal-800 space-x-2 overflow-x-auto pb-px">
+      <div className="flex border-b border-border dark:border-charcoal-800 space-x-2 overflow-x-auto no-scrollbar flex-nowrap pb-px">
         {[
           { id: "directory", label: "Alumni Directory & Network", icon: Users },
           { id: "mentorship", label: "Industry Mentorship Connect", icon: GraduationCap },
@@ -362,7 +382,7 @@ export default function AlumniPage() {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id as any)}
-              className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-all whitespace-nowrap ${
+              className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-all whitespace-nowrap shrink-0 ${
                 isActive
                   ? "border-rose-primary text-rose-primary dark:text-rose-light dark:border-rose-light"
                   : "border-transparent text-charcoal-600 dark:text-ivory-400 hover:text-charcoal-900 dark:hover:text-white"
@@ -739,7 +759,15 @@ export default function AlumniPage() {
 
       {/* MODAL: Mentorship Request */}
       {showMentorModal && (
-        <div className="fixed inset-0 z-50 bg-charcoal-950/70 backdrop-blur-sm flex items-center justify-center p-4">
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Request Mentorship Session"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setShowMentorModal(false);
+          }}
+          className="fixed inset-0 z-50 bg-charcoal-950/70 backdrop-blur-sm flex items-center justify-center p-4"
+        >
           <div className="bg-white dark:bg-charcoal-900 rounded-2xl max-w-md w-full p-6 border border-border dark:border-charcoal-800 shadow-2xl animate-in zoom-in-95 duration-200">
             <div className="flex items-center justify-between pb-3 border-b border-border dark:border-charcoal-800">
               <h3 className="font-bold text-base text-charcoal-900 dark:text-ivory-100">
@@ -845,7 +873,15 @@ export default function AlumniPage() {
 
       {/* MODAL: Alumni Profile Dossier */}
       {selectedAlumniDossier && (
-        <div className="fixed inset-0 z-50 bg-charcoal-950/70 backdrop-blur-sm flex items-center justify-center p-4">
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Alumni Profile Dossier"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setSelectedAlumniDossier(null);
+          }}
+          className="fixed inset-0 z-50 bg-charcoal-950/70 backdrop-blur-sm flex items-center justify-center p-4"
+        >
           <div className="bg-white dark:bg-charcoal-900 rounded-2xl max-w-lg w-full p-6 border border-border dark:border-charcoal-800 shadow-2xl space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-border dark:border-charcoal-800">
               <div className="flex items-center gap-3">
@@ -993,7 +1029,15 @@ export default function AlumniPage() {
 
       {/* MODAL: Register New Alumni */}
       {showRegisterModal && (
-        <div className="fixed inset-0 z-50 bg-charcoal-950/70 backdrop-blur-sm flex items-center justify-center p-4">
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Register as Graduate Alumni"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setShowRegisterModal(false);
+          }}
+          className="fixed inset-0 z-50 bg-charcoal-950/70 backdrop-blur-sm flex items-center justify-center p-4"
+        >
           <div className="bg-white dark:bg-charcoal-900 rounded-2xl max-w-lg w-full p-6 border border-border dark:border-charcoal-800 shadow-2xl space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-border dark:border-charcoal-800">
               <div className="flex items-center gap-2">
@@ -1162,7 +1206,15 @@ export default function AlumniPage() {
 
       {/* MODAL: INSTITUTIONAL GIVING & ENDOWMENT GATEWAY */}
       {givingModalCampaign && (
-        <div className="fixed inset-0 z-50 bg-charcoal-950/70 backdrop-blur-sm flex items-center justify-center p-4">
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Institutional Giving & Endowment Gateway"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setGivingModalCampaign(null);
+          }}
+          className="fixed inset-0 z-50 bg-charcoal-950/70 backdrop-blur-sm flex items-center justify-center p-4"
+        >
           <div className="bg-white dark:bg-charcoal-900 rounded-2xl max-w-lg w-full p-6 border border-border dark:border-charcoal-800 shadow-2xl animate-in zoom-in-95 duration-200 max-h-[92vh] overflow-y-auto">
             <div className="flex items-start justify-between pb-3 border-b border-border dark:border-charcoal-800">
               <div>

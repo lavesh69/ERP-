@@ -98,6 +98,25 @@ export function BRSView({ showToast, onReconciliationComplete }: BRSViewProps) {
 
   // MT940 / ISO 20022 Parser State
   const [isMt940ModalOpen, setIsMt940ModalOpen] = useState(false);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && isMt940ModalOpen) {
+        setIsMt940ModalOpen(false);
+      }
+    };
+    if (isMt940ModalOpen) {
+      document.body.style.overflow = "hidden";
+      window.addEventListener("keydown", handleKeyDown);
+    } else {
+      document.body.style.overflow = "unset";
+    }
+    return () => {
+      document.body.style.overflow = "unset";
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isMt940ModalOpen]);
+
   const [mt940Text, setMt940Text] = useState(`:20:APEX-BANK-STMT-2026
 :25:9182374619001/USD
 :28C:00142/001
@@ -302,7 +321,15 @@ export function BRSView({ showToast, onReconciliationComplete }: BRSViewProps) {
 
       {/* MT940 / ISO 20022 Parser Modal */}
       {isMt940ModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="MT940 and ISO 20022 Bank Statement Parser"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setIsMt940ModalOpen(false);
+          }}
+          className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4"
+        >
           <div className="bg-white dark:bg-charcoal-900 border border-border dark:border-charcoal-800 rounded-2xl max-w-xl w-full p-6 shadow-2xl space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-border dark:border-charcoal-800">
               <div className="flex items-center gap-2.5">

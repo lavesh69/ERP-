@@ -105,6 +105,28 @@ export default function MessRebateTab() {
     fetchRecords();
   }, []);
 
+  const isAnyModalOpen = showApplyModal || showReviewModal || showGenerateTokenModal;
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setShowApplyModal(false);
+        setShowReviewModal(false);
+        setShowGenerateTokenModal(false);
+      }
+    };
+    if (isAnyModalOpen) {
+      document.body.style.overflow = "hidden";
+      window.addEventListener("keydown", handleKeyDown);
+    } else {
+      document.body.style.overflow = "unset";
+    }
+    return () => {
+      document.body.style.overflow = "unset";
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isAnyModalOpen]);
+
   const handleApplyRebate = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
@@ -609,7 +631,15 @@ export default function MessRebateTab() {
 
       {/* MODAL 1: APPLY FOR MESS REBATE */}
       {showApplyModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Apply for Hostel Mess Diet Rebate"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setShowApplyModal(false);
+          }}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4"
+        >
           <div className="bg-neutral-900 rounded-2xl border border-neutral-800 max-w-lg w-full p-6 space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-bold text-white flex items-center gap-2">
@@ -762,7 +792,15 @@ export default function MessRebateTab() {
 
       {/* MODAL 2: WARDEN REVIEW REBATE */}
       {showReviewModal && selectedRebate && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Warden Endorsement and Token Suspension"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setShowReviewModal(false);
+          }}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4"
+        >
           <div className="bg-neutral-900 rounded-2xl border border-neutral-800 max-w-lg w-full p-6 space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-bold text-white flex items-center gap-2">
@@ -848,7 +886,15 @@ export default function MessRebateTab() {
 
       {/* MODAL 3: GENERATE DAILY MEAL TOKEN */}
       {showGenerateTokenModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Generate Daily Meal Dining Token"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setShowGenerateTokenModal(false);
+          }}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4"
+        >
           <div className="bg-neutral-900 rounded-2xl border border-neutral-800 max-w-lg w-full p-6 space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-bold text-white flex items-center gap-2">

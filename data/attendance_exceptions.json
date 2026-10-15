@@ -7,8 +7,8 @@
     "sessionId": "sess-test-01",
     "reason": "Bluetooth payload RSSI -98 dBm below threshold or beacon ID invalid",
     "severity": "P2_MEDIUM",
-    "id": "exc-1792036319624-mps76",
-    "timestamp": "2026-10-15T03:51:59.624Z"
+    "id": "exc-1792042773648-p8ag2",
+    "timestamp": "2026-10-15T05:39:33.648Z"
   },
   {
     "category": "OUTSIDE_GEOFENCE",
@@ -18,8 +18,8 @@
     "sessionId": "sess-test-01",
     "reason": "Reported coordinates are 2450m outside designated lecture perimeter",
     "severity": "P1_HIGH",
-    "id": "exc-1792036319619-08m3l",
-    "timestamp": "2026-10-15T03:51:59.619Z"
+    "id": "exc-1792042773641-27ah2",
+    "timestamp": "2026-10-15T05:39:33.642Z"
   },
   {
     "category": "REPLAY_ATTEMPT",
@@ -29,8 +29,8 @@
     "sessionId": "sess-test-01",
     "reason": "Token nonce has already been claimed by another student session",
     "severity": "P0_CRITICAL",
-    "id": "exc-1792036319613-omz4y",
-    "timestamp": "2026-10-15T03:51:59.613Z"
+    "id": "exc-1792042773635-ab0jd",
+    "timestamp": "2026-10-15T05:39:33.635Z"
   },
   {
     "category": "QR_FAILED",
@@ -40,7 +40,7 @@
     "sessionId": "sess-test-01",
     "reason": "Expired token HMAC timestamp signature mismatch",
     "severity": "P1_HIGH",
-    "id": "exc-1792036319607-ckaxd",
-    "timestamp": "2026-10-15T03:51:59.608Z"
+    "id": "exc-1792042773629-mo2z8",
+    "timestamp": "2026-10-15T05:39:33.629Z"
   }
 ]

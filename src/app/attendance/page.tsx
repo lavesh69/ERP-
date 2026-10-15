@@ -1223,7 +1223,7 @@ export default function AttendancePage() {
         )}
 
         {/* Academic Role Perspective Navigation */}
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 border-b border-border/60 dark:border-charcoal-800">
+        <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar flex-nowrap pb-1 border-b border-border/60 dark:border-charcoal-800">
           {[
             { id: "AUTO", label: `Current Role: ${currentRole}` },
             { id: "TEACHER", label: "👨‍🏫 Teacher Live Ops" },
@@ -1236,7 +1236,7 @@ export default function AttendancePage() {
             <button
               key={tab.id}
               onClick={() => setActivePerspective(tab.id)}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap shrink-0 ${
                 activePerspective === tab.id
                   ? "bg-rose-primary text-white shadow-xs"
                   : "bg-surface-soft dark:bg-charcoal-800/80 text-charcoal-600 dark:text-charcoal-300 hover:bg-ivory-200 dark:hover:bg-charcoal-700"
@@ -3685,7 +3685,7 @@ export default function AttendancePage() {
           </div>
 
           {/* Incident Category Filter Pills */}
-          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs">
+          <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar flex-nowrap pb-1 text-xs">
             {[
               { id: "ALL", label: `All Events (${exceptionsData.length})` },
               {
@@ -3712,7 +3712,7 @@ export default function AttendancePage() {
               <button
                 key={f.id}
                 onClick={() => setExceptionFilter(f.id)}
-                className={`px-3 py-1.5 rounded-xl font-semibold transition-all whitespace-nowrap text-[11px] ${
+                className={`px-3 py-1.5 rounded-xl font-semibold transition-all whitespace-nowrap shrink-0 text-[11px] ${
                   exceptionFilter === f.id
                     ? "bg-charcoal-900 dark:bg-white text-white dark:text-charcoal-900 shadow-xs"
                     : "bg-ivory-100 dark:bg-charcoal-800 text-charcoal-600 dark:text-charcoal-300 hover:bg-ivory-200 dark:hover:bg-charcoal-700"

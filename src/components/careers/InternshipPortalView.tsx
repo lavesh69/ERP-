@@ -111,6 +111,25 @@ export function InternshipPortalView() {
     fetchRecords();
   }, []);
 
+  useEffect(() => {
+    const isAnyModalOpen = showApplyModal || showLogbookModal || showEvalModal;
+    if (!isAnyModalOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setShowApplyModal(false);
+        setShowLogbookModal(false);
+        setShowEvalModal(false);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [showApplyModal, showLogbookModal, showEvalModal]);
+
   const handleApply = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
@@ -519,7 +538,15 @@ export function InternshipPortalView() {
 
       {/* MODAL 1: APPLY FOR INTERNSHIP */}
       {showApplyModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="NEP 2020 Industrial Internship Application"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setShowApplyModal(false);
+          }}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4"
+        >
           <div className="bg-neutral-900 rounded-2xl border border-neutral-800 max-w-lg w-full p-6 space-y-4 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-bold text-white flex items-center gap-2">
@@ -684,7 +711,15 @@ export function InternshipPortalView() {
 
       {/* MODAL 2: SUBMIT WEEKLY LOGBOOK */}
       {showLogbookModal && selectedApp && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Submit Weekly Training Logbook"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setShowLogbookModal(false);
+          }}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4"
+        >
           <div className="bg-neutral-900 rounded-2xl border border-neutral-800 max-w-lg w-full p-6 space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-bold text-white flex items-center gap-2">
@@ -761,7 +796,15 @@ export function InternshipPortalView() {
 
       {/* MODAL 3: FINALIZE EVALUATION & AWARD CREDITS */}
       {showEvalModal && selectedApp && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Internship Viva Voce & Academic Credit Award"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setShowEvalModal(false);
+          }}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4"
+        >
           <div className="bg-neutral-900 rounded-2xl border border-neutral-800 max-w-lg w-full p-6 space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-bold text-white flex items-center gap-2">

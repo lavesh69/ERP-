@@ -75,6 +75,28 @@ export default function EthicsClearanceTab() {
     fetchProtocols();
   }, []);
 
+  const isAnyModalOpen = !!(selectedProtocolForVote || certificateProtocol || showSubmitModal);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setSelectedProtocolForVote(null);
+        setCertificateProtocol(null);
+        setShowSubmitModal(false);
+      }
+    };
+    if (isAnyModalOpen) {
+      document.body.style.overflow = "hidden";
+      window.addEventListener("keydown", handleKeyDown);
+    } else {
+      document.body.style.overflow = "unset";
+    }
+    return () => {
+      document.body.style.overflow = "unset";
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isAnyModalOpen]);
+
   const handleCastVote = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedProtocolForVote) return;
@@ -365,7 +387,15 @@ export default function EthicsClearanceTab() {
 
       {/* Modal: Cast Board Vote */}
       {selectedProtocolForVote && (
-        <div className="fixed inset-0 z-50 bg-charcoal-950/70 backdrop-blur-sm flex items-center justify-center p-4">
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="IRB Ethics Board Deliberation Vote"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setSelectedProtocolForVote(null);
+          }}
+          className="fixed inset-0 z-50 bg-charcoal-950/70 backdrop-blur-sm flex items-center justify-center p-4"
+        >
           <div className="bg-white dark:bg-charcoal-900 rounded-2xl max-w-lg w-full p-6 border border-border dark:border-charcoal-800 shadow-2xl animate-in zoom-in-95 duration-200 space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-border dark:border-charcoal-800">
               <div className="flex items-center gap-2">
@@ -479,7 +509,15 @@ export default function EthicsClearanceTab() {
 
       {/* Modal: Official Clearance Certificate */}
       {certificateProtocol && (
-        <div className="fixed inset-0 z-50 bg-charcoal-950/70 backdrop-blur-sm flex items-center justify-center p-4">
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Institutional Review Board Clearance Certificate"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setCertificateProtocol(null);
+          }}
+          className="fixed inset-0 z-50 bg-charcoal-950/70 backdrop-blur-sm flex items-center justify-center p-4"
+        >
           <div className="bg-white dark:bg-charcoal-900 rounded-3xl max-w-xl w-full p-8 border border-border dark:border-charcoal-800 shadow-2xl animate-in zoom-in-95 duration-200 space-y-6">
             <div className="text-center space-y-1 pb-4 border-b border-border dark:border-charcoal-800">
               <div className="inline-flex p-3 rounded-2xl bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 mb-2">
@@ -555,7 +593,15 @@ export default function EthicsClearanceTab() {
 
       {/* Modal: Register Protocol */}
       {showSubmitModal && (
-        <div className="fixed inset-0 z-50 bg-charcoal-950/70 backdrop-blur-sm flex items-center justify-center p-4">
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Register Research Ethics Protocol"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setShowSubmitModal(false);
+          }}
+          className="fixed inset-0 z-50 bg-charcoal-950/70 backdrop-blur-sm flex items-center justify-center p-4"
+        >
           <div className="bg-white dark:bg-charcoal-900 rounded-2xl max-w-xl w-full p-6 border border-border dark:border-charcoal-800 shadow-2xl animate-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-border dark:border-charcoal-800">
               <div className="flex items-center gap-2">
