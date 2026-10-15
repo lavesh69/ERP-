@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { AppShell } from "@/components/layout/AppShell";
+import { Breadcrumbs } from "@/components/common/Breadcrumbs";
 import {
   MessageSquareHeart,
   Star,
@@ -279,42 +281,47 @@ export default function FeedbackPage() {
   };
 
   return (
-    <div className="p-6 max-w-7xl mx-auto space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
-        <div className="space-y-1">
-          <div className="flex items-center gap-3">
-            <div className="p-3 bg-rose-50 dark:bg-rose-950/50 rounded-xl text-rose-600 dark:text-rose-400">
-              <MessageSquareHeart className="w-6 h-6" />
-            </div>
+    <AppShell>
+      <Breadcrumbs />
+      <div className="space-y-6 animate-in fade-in duration-300">
+        {/* Top Banner */}
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-charcoal-900 via-rose-950 to-charcoal-900 text-white p-6 md:p-8 shadow-xl">
+          <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div>
-              <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
+              <div className="flex items-center gap-2 mb-2">
+                <span className="px-3 py-1 rounded-full text-xs font-semibold bg-rose-500/20 text-rose-200 border border-rose-400/30">
+                  Academic Quality Assurance & NAAC Criterion 1.4
+                </span>
+                <span className="px-3 py-1 rounded-full text-xs font-medium bg-emerald-500/20 text-emerald-200 border border-emerald-400/30">
+                  Continuous SET Active
+                </span>
+              </div>
+              <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-white">
                 Course Evaluation & 360 Faculty Feedback
               </h1>
-              <p className="text-sm text-slate-500 dark:text-slate-400">
-                Continuous Student Evaluation of Teaching (SET) & NAAC Criterion 1.4 Quality Analytics
+              <p className="text-sm md:text-base text-rose-100/80 mt-1 max-w-2xl">
+                Continuous Student Evaluation of Teaching (SET), 360-degree pedagogical analytics, anonymous sentiment tracking, and NAAC accreditation metrics.
               </p>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-3">
+              <button
+                onClick={handleExportCsv}
+                className="inline-flex items-center gap-2 px-3.5 py-2.5 rounded-xl font-medium text-sm bg-white/10 hover:bg-white/20 text-white border border-white/20 shadow-md transition-all active:scale-95"
+              >
+                <Download className="w-4 h-4" />
+                Export SET Dossier (CSV)
+              </button>
+              <button
+                onClick={() => setShowSurveyModal(true)}
+                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium text-sm bg-rose-primary hover:bg-rose-600 text-white shadow-md transition-all active:scale-95"
+              >
+                <PlusCircle className="w-4 h-4" />
+                Submit Course Evaluation
+              </button>
             </div>
           </div>
         </div>
-
-        <div className="flex flex-wrap items-center gap-3">
-          <button
-            onClick={handleExportCsv}
-            className="flex items-center gap-2 px-4 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl text-sm font-semibold transition-all border border-slate-200 dark:border-slate-700"
-          >
-            <Download className="w-4 h-4" />
-            Export SET Dossier (CSV)
-          </button>
-          <button
-            onClick={() => setShowSurveyModal(true)}
-            className="flex items-center gap-2 px-4 py-2.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-sm font-semibold transition-all shadow-sm shadow-rose-600/20"
-          >
-            <PlusCircle className="w-4 h-4" />
-            Submit Course Evaluation
-          </button>
-        </div>
-      </div>
 
       {message && (
         <div
@@ -1208,6 +1215,7 @@ export default function FeedbackPage() {
           </div>
         </div>
       )}
-    </div>
+      </div>
+    </AppShell>
   );
 }

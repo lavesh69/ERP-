@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { AppShell } from "@/components/layout/AppShell";
+import { Breadcrumbs } from "@/components/common/Breadcrumbs";
 import { useApp } from "@/context/AppContext";
 import {
   Boxes,
@@ -204,7 +206,9 @@ export default function InventoryPage() {
   };
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-300">
+    <AppShell>
+      <Breadcrumbs />
+      <div className="space-y-6 animate-in fade-in duration-300">
       {/* Top Banner */}
       <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-charcoal-900 via-rose-950 to-charcoal-900 text-white p-6 md:p-8 shadow-xl">
         <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
@@ -865,6 +869,7 @@ export default function InventoryPage() {
           </div>
         </div>
       )}
-    </div>
+      </div>
+    </AppShell>
   );
 }

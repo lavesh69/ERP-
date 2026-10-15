@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
+import { AppShell } from "@/components/layout/AppShell";
+import { Breadcrumbs } from "@/components/common/Breadcrumbs";
 import {
   AlertTriangle,
   Siren,
@@ -394,79 +396,84 @@ export default function EmergencyPage() {
   const activeAlert = alerts.find((a) => a.isActive);
 
   return (
-    <div className="p-6 max-w-7xl mx-auto space-y-6">
-      {/* Active Critical Incident Banner if Live */}
-      {activeAlert && (
-        <div className="bg-red-600 text-white p-6 rounded-2xl shadow-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4 animate-pulse">
-          <div className="space-y-1">
-            <div className="flex items-center gap-2">
-              <Siren className="w-6 h-6 animate-spin" />
-              <span className="font-mono text-xs uppercase tracking-widest font-black bg-red-800 px-2.5 py-0.5 rounded">
-                LIVE {activeAlert.severity}
-              </span>
-              <span className="font-mono text-xs text-red-200">{activeAlert.alertCode}</span>
+    <AppShell>
+      <Breadcrumbs />
+      <div className="space-y-6 animate-in fade-in duration-300">
+        {/* Active Critical Incident Banner if Live */}
+        {activeAlert && (
+          <div className="bg-red-600 text-white p-6 rounded-2xl shadow-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4 animate-pulse">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <Siren className="w-6 h-6 animate-spin" />
+                <span className="font-mono text-xs uppercase tracking-widest font-black bg-red-800 px-2.5 py-0.5 rounded">
+                  LIVE {activeAlert.severity}
+                </span>
+                <span className="font-mono text-xs text-red-200">{activeAlert.alertCode}</span>
+              </div>
+              <h2 className="text-xl font-black">{activeAlert.headline}</h2>
+              <p className="text-sm text-red-100">{activeAlert.instructions}</p>
             </div>
-            <h2 className="text-xl font-black">{activeAlert.headline}</h2>
-            <p className="text-sm text-red-100">{activeAlert.instructions}</p>
+            <button
+              onClick={() => handleResolveAlert(activeAlert.id)}
+              className="px-5 py-2.5 bg-white text-red-700 font-bold rounded-xl text-sm hover:bg-red-50 transition shadow"
+            >
+              Issue ALL CLEAR &amp; Deactivate
+            </button>
           </div>
-          <button
-            onClick={() => handleResolveAlert(activeAlert.id)}
-            className="px-5 py-2.5 bg-white text-red-700 font-bold rounded-xl text-sm hover:bg-red-50 transition shadow"
-          >
-            Issue ALL CLEAR &amp; Deactivate
-          </button>
-        </div>
-      )}
+        )}
 
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
-        <div className="space-y-1">
-          <div className="flex items-center gap-3">
-            <div className="p-3 bg-red-50 dark:bg-red-950/50 rounded-xl text-red-600 dark:text-red-400">
-              <Siren className="w-6 h-6" />
-            </div>
+        {/* Top Banner */}
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-charcoal-900 via-rose-950 to-charcoal-900 text-white p-6 md:p-8 shadow-xl">
+          <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div>
-              <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
+              <div className="flex items-center gap-2 mb-2">
+                <span className="px-3 py-1 rounded-full text-xs font-semibold bg-red-500/20 text-red-200 border border-red-400/30">
+                  Campus Crisis & Clery Act Safety Network
+                </span>
+                <span className="px-3 py-1 rounded-full text-xs font-medium bg-emerald-500/20 text-emerald-200 border border-emerald-400/30">
+                  EOC Operations Live
+                </span>
+              </div>
+              <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-white">
                 Campus Emergency Operations Center (EOC)
               </h1>
-              <p className="text-sm text-slate-500 dark:text-slate-400">
-                Clery Act Disaster Management, Multi-Channel Mass Broadcast & Evacuation Telemetry
+              <p className="text-sm md:text-base text-rose-100/80 mt-1 max-w-2xl">
+                Clery Act compliance, multi-channel mass emergency broadcasting, real-time muster assembly telemetry, and campus-wide disaster protocols.
               </p>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-3">
+              <button
+                onClick={() => {
+                  if (isSirenActive) stopSiren();
+                  else startSiren();
+                }}
+                className={`inline-flex items-center gap-2 px-3.5 py-2.5 rounded-xl font-medium text-sm transition-all border ${
+                  isSirenActive
+                    ? "bg-red-600 hover:bg-red-700 text-white animate-pulse border-red-700 shadow-lg shadow-red-600/40"
+                    : "bg-white/10 hover:bg-white/20 text-white border border-white/20 shadow-md active:scale-95"
+                }`}
+              >
+                {isSirenActive ? <VolumeX className="w-4 h-4 animate-spin" /> : <Volume2 className="w-4 h-4" />}
+                {isSirenActive ? "Silence Siren" : "Sound Siren Test"}
+              </button>
+              <button
+                onClick={handleExportCleryLogCsv}
+                className="inline-flex items-center gap-2 px-3.5 py-2.5 rounded-xl font-medium text-sm bg-white/10 hover:bg-white/20 text-white border border-white/20 shadow-md transition-all active:scale-95"
+              >
+                <Download className="w-4 h-4" />
+                Export Clery Log (CSV)
+              </button>
+              <button
+                onClick={() => setShowBroadcastModal(true)}
+                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium text-sm bg-red-600 hover:bg-red-700 text-white shadow-md shadow-red-600/30 transition-all active:scale-95 font-bold"
+              >
+                <Radio className="w-4 h-4" />
+                Initiate Broadcast
+              </button>
             </div>
           </div>
         </div>
-
-        <div className="flex flex-wrap items-center gap-3">
-          <button
-            onClick={() => {
-              if (isSirenActive) stopSiren();
-              else startSiren();
-            }}
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all border ${
-              isSirenActive
-                ? "bg-red-600 hover:bg-red-700 text-white animate-pulse border-red-700 shadow-lg shadow-red-600/40"
-                : "bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border-slate-200 dark:border-slate-700"
-            }`}
-          >
-            {isSirenActive ? <VolumeX className="w-4 h-4 animate-spin" /> : <Volume2 className="w-4 h-4" />}
-            {isSirenActive ? "Silence Campus Siren" : "Sound Siren Test"}
-          </button>
-          <button
-            onClick={handleExportCleryLogCsv}
-            className="flex items-center gap-2 px-4 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl text-sm font-semibold transition-all border border-slate-200 dark:border-slate-700"
-          >
-            <Download className="w-4 h-4" />
-            Export Clery Audit Log (CSV)
-          </button>
-          <button
-            onClick={() => setShowBroadcastModal(true)}
-            className="flex items-center gap-2 px-4 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-xl text-sm font-semibold transition-all shadow-sm shadow-red-600/30"
-          >
-            <Radio className="w-4 h-4" />
-            Broadcast Emergency SOS
-          </button>
-        </div>
-      </div>
 
       {message && (
         <div
@@ -1485,6 +1492,7 @@ export default function EmergencyPage() {
           </div>
         </div>
       )}
-    </div>
+      </div>
+    </AppShell>
   );
 }

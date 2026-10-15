@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { AppShell } from "@/components/layout/AppShell";
+import { Breadcrumbs } from "@/components/common/Breadcrumbs";
 import { useApp } from "@/context/AppContext";
 import {
   Building,
@@ -378,7 +380,9 @@ export default function HostelPage() {
   const filteredRooms = selectedBlockId === "all" ? rooms : rooms.filter((r) => r.blockId === selectedBlockId);
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-300">
+    <AppShell>
+      <Breadcrumbs />
+      <div className="space-y-6 animate-in fade-in duration-300">
       {/* Top Banner */}
       <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-rose-900 via-rose-800 to-charcoal-900 text-white p-6 md:p-8 shadow-xl">
         <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
@@ -1462,6 +1466,7 @@ export default function HostelPage() {
           </div>
         </div>
       )}
-    </div>
+      </div>
+    </AppShell>
   );
 }
