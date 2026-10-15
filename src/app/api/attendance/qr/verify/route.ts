@@ -46,8 +46,29 @@ export async function POST(req: NextRequest) {
         },
         include: { user: true },
       });
-    } else {
-      // If an admin or faculty tests scanning on behalf of a student, or in testing mode
+    } else if (userRole === "PARENT") {
+      const parentRecord = await prisma.parent.findFirst({
+        where: {
+          OR: [
+            { userId: auth.payload.userId },
+            { user: { email: auth.payload.email } },
+          ],
+        },
+        include: { students: true },
+      });
+      const allowedWardIds = parentRecord?.students.map((s) => s.studentId) || [];
+      const targetStudentId = body.studentId;
+      if (!targetStudentId || !allowedWardIds.includes(targetStudentId)) {
+        return NextResponse.json(
+          { error: "Forbidden: Parents can only verify attendance for their registered wards" },
+          { status: 403 }
+        );
+      }
+      student = await prisma.student.findUnique({
+        where: { id: targetStudentId },
+        include: { user: true },
+      });
+    } else if (["SUPER_ADMIN", "INSTITUTION_ADMIN", "FACULTY", "HOD", "PRINCIPAL", "CLASS_TEACHER"].includes(userRole)) {
       const targetStudentId = body.studentId;
       if (targetStudentId) {
         student = await prisma.student.findUnique({
@@ -59,6 +80,11 @@ export async function POST(req: NextRequest) {
           include: { user: true },
         });
       }
+    } else {
+      return NextResponse.json(
+        { error: "Forbidden: Your role is not authorized to verify attendance records" },
+        { status: 403 }
+      );
     }
 
     if (!student) {

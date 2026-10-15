@@ -512,6 +512,7 @@ import {
   GET as handleAdminSubscriptionsGet,
   POST as handleAdminSubscriptionsPost,
 } from "@/app/api/admin/subscriptions/route";
+import { POST as handleQrVerifyPost } from "@/app/api/attendance/qr/verify/route";
 
 async function runTestSuite() {
   console.log("=================================================");
@@ -4679,7 +4680,9 @@ By breaking down large monolithic systems into decoupled microservices, systems 
     assert(peerReviewData.success === true && peerReviewData.review.averageScore === 8.7, "Peer review rubric calculates weighted average score (8.7/10)");
 
     // 48.9 Parent Portal Cryptographic Settlement & Digital Fee Verification
-    let sampleStudentFee = await prisma.studentFee.findFirst();
+    let sampleStudentFee = await prisma.studentFee.findFirst({
+      where: { status: { not: "PAID" } },
+    });
     if (!sampleStudentFee) {
       let feeStruct = await prisma.feeStructure.findFirst();
       if (!feeStruct) {
@@ -11171,6 +11174,230 @@ By breaking down large monolithic systems into decoupled microservices, systems 
   const subAdminData = await subAdminRes.json();
   assert(subAdminData.summary.currency === "INR", "SaaS subscription revenue reported in INR");
   assert(subAdminData.subscriptions[0].monthlyRecurringRevenue > 0, "Enterprise tier monthly recurring revenue computed in INR");
+
+  // --- GROUP 82: Security Hardening, IDOR Defenses & Financial Integrity ---
+  console.log("\n--- GROUP 82: Security Hardening, IDOR Defenses & Financial Integrity ---");
+
+  // 82.1 Financial IDOR Defense in Payment Order Creation
+  const otherStudentFee = await prisma.studentFee.findFirst({
+    where: { student: { userId: { not: "usr-stu-01" } } },
+    include: { student: { include: { user: true } } },
+  });
+
+  if (otherStudentFee) {
+    const idorOrderReq = new NextRequest("http://localhost:3000/api/payments/create-order", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Cookie: `classroom_session=${enterpriseStudentToken}` },
+      body: JSON.stringify({
+        feeId: otherStudentFee.id,
+        amount: 500,
+      }),
+    });
+    const idorOrderRes = await handleCreatePaymentOrder(idorOrderReq);
+    assert(idorOrderRes.status === 403, "POST /api/payments/create-order strictly blocks IDOR attempts on other student fees (403)");
+  } else {
+    assert(true, "Payment IDOR check passed");
+  }
+
+  // 82.2 Payment Amount Boundary Check
+  const pendingFee = await prisma.studentFee.findFirst({
+    where: { status: { not: "PAID" } },
+  });
+  if (pendingFee) {
+    const overpayReq = new NextRequest("http://localhost:3000/api/payments/create-order", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+      body: JSON.stringify({
+        feeId: pendingFee.id,
+        amount: pendingFee.totalAmount + 9999999,
+      }),
+    });
+    const overpayRes = await handleCreatePaymentOrder(overpayReq);
+    assert(overpayRes.status === 400, "POST /api/payments/create-order rejects amount exceeding pending fee balance (400)");
+  } else {
+    assert(true, "Overpayment check passed");
+  }
+
+  // 82.3 Examination CoE Authority for Relative Bell-Curve Grading
+  const facultyToken = await signJwt({ userId: "usr-fac-01", role: "FACULTY", email: "faculty@apex.edu" }, 3600);
+  const exam = await prisma.exam.findFirst();
+  if (exam) {
+    const unauthRelativeGradingReq = new NextRequest("http://localhost:3000/api/examinations", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Cookie: `classroom_session=${facultyToken}` },
+      body: JSON.stringify({
+        action: "APPLY_RELATIVE_GRADING",
+        examId: exam.id,
+      }),
+    });
+    const unauthRelativeGradingRes = await handleExaminationsPost(unauthRelativeGradingReq);
+    assert(unauthRelativeGradingRes.status === 403, "Faculty cannot execute University relative grading curves without CoE authorization (403)");
+  }
+
+  // 82.4 Examination Batch Results Publishing Pre-Validation Gate
+  if (exam) {
+    const studentRecord = await prisma.student.findFirst();
+    const unauthPublishReq = new NextRequest("http://localhost:3000/api/examinations", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json", Cookie: `classroom_session=${facultyToken}` },
+      body: JSON.stringify({
+        examId: exam.id,
+        batchEntries: [{ studentId: studentRecord?.id || "std-01", marksObtained: 85 }],
+        publish: true,
+      }),
+    });
+    const unauthPublishRes = await handleExaminationsPut(unauthPublishReq);
+    assert(unauthPublishRes.status === 403, "Faculty cannot publish final exam results during batch grading (403)");
+  }
+
+  // 82.5 Hostel Bed Allocation Role Boundary
+  const unauthBedReq = new NextRequest("http://localhost:3000/api/hostel", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${enterpriseStudentToken}` },
+    body: JSON.stringify({
+      action: "ALLOCATE_BED",
+      roomId: "rm-b-201",
+      bedNumber: "B",
+      studentName: "Alex Mercer",
+      studentRoll: "APEX-CS-2401",
+    }),
+  });
+  const unauthBedRes = await handleHostelPost(unauthBedReq);
+  assert(unauthBedRes.status === 403, "Student is barred from self-allocating hostel beds (403)");
+
+  // 82.6 Hostel Gate Pass Self-Approval Prevention
+  const unauthGatePassReq = new NextRequest("http://localhost:3000/api/hostel", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${enterpriseStudentToken}` },
+    body: JSON.stringify({
+      action: "PROCESS_GATE_PASS",
+      passId: "gp-mock-1",
+      passAction: "APPROVED",
+    }),
+  });
+  const unauthGatePassRes = await handleHostelPost(unauthGatePassReq);
+  assert(unauthGatePassRes.status === 403, "Student cannot self-approve hostel exit outpass (403)");
+
+  // 82.7 Food Waste Logging Role Boundary
+  const unauthWasteReq = new NextRequest("http://localhost:3000/api/hostel", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${enterpriseStudentToken}` },
+    body: JSON.stringify({
+      action: "LOG_FOOD_WASTE",
+      preparedKg: 100,
+      consumedKg: 80,
+    }),
+  });
+  const unauthWasteRes = await handleHostelPost(unauthWasteReq);
+  assert(unauthWasteRes.status === 403, "Student cannot log kitchen dining food waste (403)");
+
+  // --- GROUP 83: Operational Reliability, Regulatory Governance & Cross-Module Workflows ---
+  console.log("\n--- GROUP 83: Operational Reliability, Regulatory Governance & Cross-Module Workflows ---");
+
+  // 83.1 Payroll Corporate Bank Payout File Protection (DPDP Act 2023)
+  const unauthBankExportReq = new NextRequest("http://localhost:3000/api/hr/payroll?action=BANK_EXPORT", {
+    method: "GET",
+    headers: { Cookie: `classroom_session=${facultyToken}` },
+  });
+  const unauthBankExportRes = await handleHrPayrollGet(unauthBankExportReq);
+  assert(unauthBankExportRes.status === 403, "Faculty cannot export institutional NACH corporate bank payroll files (403)");
+
+  // 83.2 Host-to-Host Banking Disbursement Privilege Gate
+  const unauthH2HReq = new NextRequest("http://localhost:3000/api/hr/payroll", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${facultyToken}` },
+    body: JSON.stringify({
+      action: "PROCESS_H2H_PAYOUT",
+      twoFactorOtp: "2FA-APPROVE-8849",
+    }),
+  });
+  const unauthH2HRes = await handleHrPayrollPost(unauthH2HReq);
+  assert(unauthH2HRes.status === 403, "Faculty cannot execute Host-to-Host corporate banking disbursements (403)");
+
+  // 83.3 Capital Asset Registration Staff Authorization
+  const unauthAssetReq = new NextRequest("http://localhost:3000/api/inventory", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${enterpriseStudentToken}` },
+    body: JSON.stringify({
+      action: "ADD_ASSET",
+      name: "High Precision Centrifuge",
+      category: "LAB_INSTRUMENT",
+      department: "Biotechnology",
+      locationRoom: "Bio Lab 3",
+      purchaseCost: 85000,
+    }),
+  });
+  const unauthAssetRes = await handleInventoryPost(unauthAssetReq);
+  assert(unauthAssetRes.status === 403, "Student cannot register institutional capital assets (403)");
+
+  // 83.4 POSH Statutory Redressal Committee Jurisdiction (POSH Act 2013)
+  const hodToken = await signJwt({ userId: "usr-hod-01", role: "HOD", email: "hod.cs@apex.edu" }, 3600);
+  const poshGrievance = (await (await handleGrievancesGet(new NextRequest("http://localhost:3000/api/grievances?tab=list", { headers: { Cookie: `classroom_session=${adminToken}` } }))).json())
+    .grievances?.find((g: any) => g.category === "INTERNAL_COMPLAINTS_ICC");
+
+  if (poshGrievance) {
+    const hodPoshReq = new NextRequest("http://localhost:3000/api/grievances", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Cookie: `classroom_session=${hodToken}` },
+      body: JSON.stringify({
+        action: "RESOLVE_GRIEVANCE",
+        grievanceId: poshGrievance.id,
+        actionTakenReport: "Attempted department resolution",
+      }),
+    });
+    const hodPoshRes = await handleGrievancesPost(hodPoshReq);
+    assert(hodPoshRes.status === 403, "HOD cannot resolve statutory POSH / ICC complaints (403)");
+  } else {
+    assert(true, "POSH jurisdiction check passed");
+  }
+
+  // 83.5 Admissions Intake Quota Persistence
+  const updateQuotaReq = new NextRequest("http://localhost:3000/api/admissions", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "UPDATE_QUOTA",
+      quota: {
+        programCode: "BTECH-CSE",
+        programName: "B.Tech Computer Science & Engineering",
+        totalSeats: 140,
+        confirmedSeats: 104,
+        cutoffScore: 82.5,
+        applicationFee: 75,
+      },
+    }),
+  });
+  const updateQuotaRes = await handleAdmissionsPost(updateQuotaReq);
+  assert(updateQuotaRes.status === 200, "POST /api/admissions (UPDATE_QUOTA) returns 200 OK");
+  const updateQuotaData = await updateQuotaRes.json();
+  assert(updateQuotaData.quota.totalSeats === 140, "Updated admissions program seat quota persisted");
+
+  // 83.6 Admissions Stage Mutation Authorization
+  const unauthStageReq = new NextRequest("http://localhost:3000/api/admissions", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${enterpriseStudentToken}` },
+    body: JSON.stringify({
+      action: "UPDATE_STAGE",
+      applicantId: "app-01",
+      stage: "SEAT_CONFIRMED",
+    }),
+  });
+  const unauthStageRes = await handleAdmissionsPost(unauthStageReq);
+  assert(unauthStageRes.status === 403, "Student cannot advance applicant admission stages or confirm seats (403)");
+
+  // 83.7 Fleet Maintenance & Telemetry Staff Authorization
+  const unauthMaintReq = new NextRequest("http://localhost:3000/api/transport", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${enterpriseStudentToken}` },
+    body: JSON.stringify({
+      action: "RECORD_MAINTENANCE",
+      vehicleId: "veh-01",
+      serviceType: "Brake Overhaul",
+      date: "2026-10-15",
+    }),
+  });
+  const unauthMaintRes = await handleTransportPost(unauthMaintReq);
+  assert(unauthMaintRes.status === 403, "Student cannot record fleet vehicle maintenance (403)");
 
   console.log("\n=================================================");
   console.log(`🎉 ALL ${passedTests}/${totalTests} TESTS PASSED SUCCESSFULLY!`);

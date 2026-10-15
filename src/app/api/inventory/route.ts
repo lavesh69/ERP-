@@ -46,6 +46,12 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
     const { action } = body;
+    const STAFF_INVENTORY_ROLES = ["SUPER_ADMIN", "INSTITUTION_ADMIN", "PRINCIPAL", "HOD", "ACCOUNTANT", "FACULTY", "HR_STAFF"];
+    if (["ADD_ASSET", "COMPLETE_WORK_ORDER"].includes(action)) {
+      if (!STAFF_INVENTORY_ROLES.includes(session.role)) {
+        return NextResponse.json({ error: "Forbidden: Only institutional staff can register assets or complete work orders" }, { status: 403 });
+      }
+    }
 
     if (action === "ADD_ASSET") {
       const { name, category, department, locationRoom, custodianFaculty, purchaseDate, purchaseCost, serialNumber, modelNumber } = body;

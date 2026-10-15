@@ -251,4 +251,16 @@ export const admissionsStore = {
     writeStore(store);
     return app;
   },
+
+  updateQuota(quota: ProgramQuota): ProgramQuota {
+    const store = readStore();
+    const idx = store.quotas.findIndex((q) => q.programCode === quota.programCode);
+    if (idx >= 0) {
+      store.quotas[idx] = { ...store.quotas[idx], ...quota };
+    } else {
+      store.quotas.push(quota);
+    }
+    writeStore(store);
+    return quota;
+  },
 };

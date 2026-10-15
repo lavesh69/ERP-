@@ -62,7 +62,7 @@ export default function AdmissionsPage() {
   const [showQuotaModal, setShowQuotaModal] = useState(false);
   const [editingQuota, setEditingQuota] = useState<any | null>(null);
 
-  const handleSaveQuota = (e: React.FormEvent) => {
+  const handleSaveQuota = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingQuota || !summary) return;
     const exists = summary.quotas.some((q) => q.programCode === editingQuota.programCode);
@@ -74,6 +74,20 @@ export default function AdmissionsPage() {
       quotas: updatedQuotas,
       totalSeatCapacity: updatedQuotas.reduce((acc, q) => acc + q.totalSeats, 0),
     });
+
+    try {
+      await fetch("/api/admissions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "UPDATE_QUOTA",
+          quota: editingQuota,
+        }),
+      });
+    } catch (err) {
+      console.warn("Could not persist quota update to backend", err);
+    }
+
     showToast(
       `Updated institutional intake quota for ${editingQuota.programName} (${editingQuota.programCode})!`,
       "success"

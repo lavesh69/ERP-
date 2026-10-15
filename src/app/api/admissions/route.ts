@@ -61,6 +61,11 @@ export async function POST(request: NextRequest) {
       if (!session) {
         return NextResponse.json({ error: "Administrative authentication required to update applicant stage" }, { status: 401 });
       }
+      const isStaffOrAdmin = ["SUPER_ADMIN", "INSTITUTION_ADMIN", "PRINCIPAL", "HOD", "ACCOUNTANT"].includes(session.role);
+      if (!isStaffOrAdmin) {
+        return NextResponse.json({ error: "Forbidden: Only admissions administrators can update applicant stages" }, { status: 403 });
+      }
+
       const { applicantId, stage, depositPaid } = body;
       if (!applicantId || !stage) {
         return NextResponse.json({ error: "Applicant ID and new stage are required" }, { status: 400 });
@@ -68,6 +73,22 @@ export async function POST(request: NextRequest) {
 
       const updated = admissionsStore.updateApplicantStage(applicantId, stage, depositPaid);
       return NextResponse.json({ success: true, message: `Application status updated to ${stage}`, applicant: updated });
+    }
+
+    if (action === "UPDATE_QUOTA") {
+      if (!session) {
+        return NextResponse.json({ error: "Administrative authentication required to update quotas" }, { status: 401 });
+      }
+      const isStaffOrAdmin = ["SUPER_ADMIN", "INSTITUTION_ADMIN", "PRINCIPAL", "HOD", "ACCOUNTANT"].includes(session.role);
+      if (!isStaffOrAdmin) {
+        return NextResponse.json({ error: "Forbidden: Only admissions administrators can modify intake quotas" }, { status: 403 });
+      }
+      const { quota } = body;
+      if (!quota || !quota.programCode) {
+        return NextResponse.json({ error: "Valid quota payload is required" }, { status: 400 });
+      }
+      const updated = admissionsStore.updateQuota(quota);
+      return NextResponse.json({ success: true, message: "Program quota updated and persisted", quota: updated });
     }
 
     if (action === "PROVISION_STUDENT") {

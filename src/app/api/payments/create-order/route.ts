@@ -29,12 +29,38 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Fee record not found" }, { status: 404 });
     }
 
+    // IDOR Protection: Students can only initiate payment orders for their own fee invoices
+    if (
+      session.role === "STUDENT" &&
+      fee.student.userId !== session.userId &&
+      fee.student.user?.email !== session.email
+    ) {
+      return NextResponse.json(
+        { error: "Forbidden: Cannot create payment orders for another student" },
+        { status: 403 }
+      );
+    }
+
+    const pendingBalance = Math.max(0, fee.totalAmount - fee.paidAmount - (fee.discountAmount || 0));
+    if (fee.status === "PAID" || pendingBalance <= 0) {
+      return NextResponse.json(
+        { error: "Fee is already fully settled. No pending balance remains." },
+        { status: 400 }
+      );
+    }
+    if (Number(amount) > pendingBalance) {
+      return NextResponse.json(
+        { error: `Payment amount (${amount}) exceeds pending fee balance of ${pendingBalance}` },
+        { status: 400 }
+      );
+    }
+
     const feeTitle = fee.feeStructure?.title || "Semester Tuition & Lab Fee";
 
     const order = await createPaymentOrder({
       feeId,
       amount: Number(amount),
-      currency: currency || "USD",
+      currency: currency || "INR",
       studentId: fee.studentId,
       studentEmail: fee.student.user?.email || session.email,
       feeTitle,

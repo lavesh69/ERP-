@@ -90,6 +90,14 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: "Grievance ID and Action Taken Report (ATR) are required" }, { status: 400 });
       }
 
+      const existing = grievancesStore.getGrievances().find((g) => g.id === grievanceId);
+      if (session.role === "HOD" && existing && (existing.category === "INTERNAL_COMPLAINTS_ICC" || (existing.category as string) === "POSH")) {
+        return NextResponse.json(
+          { error: "Forbidden: POSH statutory complaints can only be resolved by the Internal Complaints Committee (ICC) or Principal." },
+          { status: 403 }
+        );
+      }
+
       const resolved = grievancesStore.resolveGrievance(grievanceId, actionTakenReport, status || "RESOLVED");
       return NextResponse.json({ success: true, message: "Grievance marked as resolved with official ATR", grievance: resolved });
     }
@@ -104,6 +112,14 @@ export async function POST(request: NextRequest) {
       const { grievanceId, hearingDate, notes } = body;
       if (!grievanceId || !hearingDate) {
         return NextResponse.json({ error: "Grievance ID and Hearing Date are required" }, { status: 400 });
+      }
+
+      const existing = grievancesStore.getGrievances().find((g) => g.id === grievanceId);
+      if (session.role === "HOD" && existing && (existing.category === "INTERNAL_COMPLAINTS_ICC" || (existing.category as string) === "POSH")) {
+        return NextResponse.json(
+          { error: "Forbidden: POSH statutory hearings can only be convened by the Internal Complaints Committee (ICC) or Principal." },
+          { status: 403 }
+        );
       }
 
       const scheduled = grievancesStore.scheduleHearing(grievanceId, hearingDate, notes);

@@ -468,6 +468,13 @@ export async function POST(req: NextRequest) {
 
     // CoE Actions: APPLY_RELATIVE_GRADING
     if (action === "APPLY_RELATIVE_GRADING") {
+      if (!COE_ROLES.includes(auth.payload.role)) {
+        return NextResponse.json(
+          { error: "Forbidden: Only Controller of Examinations or Institutional Leadership can apply relative grading curves." },
+          { status: 403 }
+        );
+      }
+
       const { examId } = body;
       if (!examId) return NextResponse.json({ error: "examId is required" }, { status: 400 });
 
@@ -684,6 +691,16 @@ export async function PUT(req: NextRequest) {
 
     // 1. Batch Marks Submission (Roster Grading)
     if (Array.isArray(batchEntries) && batchEntries.length > 0) {
+      if (publish === true) {
+        const canPublish = COE_ROLES.includes(auth.payload.role) || auth.payload.role === "HOD";
+        if (!canPublish) {
+          return NextResponse.json(
+            { error: "Forbidden: Only Controller of Examinations, HOD, or Administrator can certify and publish final results." },
+            { status: 403 }
+          );
+        }
+      }
+
       const updatedResults = [];
       for (const entry of batchEntries) {
         if (!entry.studentId || entry.marksObtained === undefined || entry.marksObtained === "") continue;
@@ -721,13 +738,6 @@ export async function PUT(req: NextRequest) {
       }
 
       if (publish === true) {
-        const canPublish = COE_ROLES.includes(auth.payload.role) || auth.payload.role === "HOD";
-        if (!canPublish) {
-          return NextResponse.json(
-            { error: "Forbidden: Only Controller of Examinations, HOD, or Administrator can certify and publish final results." },
-            { status: 403 }
-          );
-        }
         await prisma.exam.update({
           where: { id: examId },
           data: { status: "PUBLISHED" },

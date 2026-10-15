@@ -24,6 +24,16 @@ export async function GET(req: NextRequest) {
     const staffEmail = searchParams.get("email") || auth.payload.email;
 
     // Sub-action 1: Export Corporate Bank NACH / NEFT Payout File
+    const LEADERSHIP_PAYROLL_ROLES: UserRole[] = ["SUPER_ADMIN", "INSTITUTION_ADMIN", "HR_STAFF", "ACCOUNTANT", "PRINCIPAL"];
+    if (["BANK_EXPORT", "EPFO_EXPORT", "NPS_SCF"].includes(action || "")) {
+      if (!LEADERSHIP_PAYROLL_ROLES.includes(auth.payload.role)) {
+        return NextResponse.json(
+          { error: "Forbidden: Corporate payroll and statutory social security exports require HR or Finance authorization" },
+          { status: 403 }
+        );
+      }
+    }
+
     if (action === "BANK_EXPORT") {
       const csvData = hrPayrollStore.generateBankPayoutCsv(period);
       return new NextResponse(csvData, {
@@ -545,6 +555,10 @@ export async function POST(req: NextRequest) {
 
     // 3. Host-to-Host (H2H) Corporate Banking Direct Payout (Maker-Checker 2FA)
     if (action === "PROCESS_H2H_PAYOUT") {
+      if (!isHrOrAdmin) {
+        return NextResponse.json({ error: "Forbidden: Only HR or Finance administrators can initiate Host-to-Host banking payouts" }, { status: 403 });
+      }
+
       const { twoFactorOtp, payPeriod, makerId, checkerId } = body;
       if (twoFactorOtp !== "2FA-APPROVE-8849") {
         return NextResponse.json({ error: "Invalid Maker-Checker dual-authorization OTP" }, { status: 400 });

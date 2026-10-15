@@ -74,6 +74,11 @@ export async function POST(request: NextRequest) {
     }
 
     if (action === "ALLOCATE_BED") {
+      const allowedRoles = ["SUPER_ADMIN", "INSTITUTION_ADMIN", "WARDEN", "PRINCIPAL"];
+      if (!allowedRoles.includes(session.role)) {
+        return NextResponse.json({ error: "Forbidden: Only Hostel Wardens or Administrators can allocate beds." }, { status: 403 });
+      }
+
       const { roomId, bedNumber, studentId, studentName, studentRoll, branch } = body;
       if (!roomId || !bedNumber || !studentName || !studentRoll) {
         return NextResponse.json({ error: "Missing required bed allocation fields" }, { status: 400 });
@@ -143,6 +148,11 @@ export async function POST(request: NextRequest) {
     }
 
     if (action === "PROCESS_GATE_PASS") {
+      const allowedRoles = ["SUPER_ADMIN", "INSTITUTION_ADMIN", "WARDEN", "PRINCIPAL"];
+      if (!allowedRoles.includes(session.role)) {
+        return NextResponse.json({ error: "Forbidden: Only Hostel Wardens or Administrators can approve or process gate passes." }, { status: 403 });
+      }
+
       const { passId, passAction, remarks } = body;
       if (!passId || !passAction) {
         return NextResponse.json({ error: "Pass ID and pass action are required" }, { status: 400 });
@@ -189,6 +199,11 @@ export async function POST(request: NextRequest) {
     }
 
     if (action === "LOG_FOOD_WASTE") {
+      const allowedRoles = ["SUPER_ADMIN", "INSTITUTION_ADMIN", "WARDEN", "PRINCIPAL", "FACULTY", "HR_STAFF"];
+      if (!allowedRoles.includes(session.role)) {
+        return NextResponse.json({ error: "Forbidden: Only mess supervisors, wardens, or administrators can log food surplus" }, { status: 403 });
+      }
+
       const { session: diningSession, preparedKg, consumedKg, residents } = body;
       const wasted = Math.max(0, Number(preparedKg) - Number(consumedKg));
       const log = hostelStore.recordFoodWaste({

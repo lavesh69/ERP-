@@ -47,10 +47,31 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { action } = body;
 
+    const TRANSPORT_STAFF_ROLES = ["SUPER_ADMIN", "INSTITUTION_ADMIN", "PRINCIPAL", "HOD", "ESTATE_OFFICER", "FACULTY", "HR_STAFF"];
+    if (["UPDATE_TELEMETRY", "RECORD_MAINTENANCE"].includes(action)) {
+      if (!TRANSPORT_STAFF_ROLES.includes(session.role)) {
+        return NextResponse.json({ error: "Forbidden: Only fleet managers or administrators can update telemetry or log maintenance" }, { status: 403 });
+      }
+    }
+
     if (action === "ISSUE_PASS") {
       const { studentId, studentName, studentRoll, routeId, stopName, feeAmount } = body;
       if (!studentName || !studentRoll || !routeId || !stopName) {
         return NextResponse.json({ error: "Missing required bus pass fields" }, { status: 400 });
+      }
+
+      if (session.role === "STUDENT") {
+        const student = await prisma.student.findFirst({
+          where: {
+            OR: [
+              { userId: session.userId },
+              { user: { email: session.email } },
+            ],
+          },
+        });
+        if (student && studentId && studentId !== student.id) {
+          return NextResponse.json({ error: "Forbidden: Students can only request bus passes for themselves" }, { status: 403 });
+        }
       }
 
       const pass = transportStore.issueBusPass({
