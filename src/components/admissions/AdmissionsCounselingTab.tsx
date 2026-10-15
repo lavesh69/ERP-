@@ -14,6 +14,7 @@ import {
   Building,
   GraduationCap,
   Sparkles,
+  X,
 } from "lucide-react";
 import {
   RankedApplicant,
@@ -417,9 +418,10 @@ export function AdmissionsCounselingTab() {
               </div>
               <button
                 onClick={() => setAllotmentOrder(null)}
-                className="text-charcoal-400 hover:text-charcoal-700 text-xs px-2 py-1"
+                className="p-1.5 text-charcoal-400 hover:text-charcoal-700 dark:hover:text-ivory-200 hover:bg-ivory-100 dark:hover:bg-charcoal-800 rounded-lg transition-colors"
+                aria-label="Close modal"
               >
-                ✕ Close
+                <X className="w-5 h-5" />
               </button>
             </div>
 

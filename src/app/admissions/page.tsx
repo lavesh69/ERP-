@@ -27,6 +27,7 @@ import {
   Square,
   ExternalLink,
   UserCheck,
+  X,
 } from "lucide-react";
 import AdmissionsCounselingTab from "@/components/admissions/AdmissionsCounselingTab";
 
@@ -150,6 +151,26 @@ export default function AdmissionsPage() {
   useEffect(() => {
     fetchData();
   }, [selectedStage]);
+
+  useEffect(() => {
+    const isAnyModalOpen = showAppModal || showOfferDispatchModal || showQuotaModal || !!selectedApplicantDossier;
+    if (!isAnyModalOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setShowAppModal(false);
+        setShowOfferDispatchModal(false);
+        setShowQuotaModal(false);
+        setSelectedApplicantDossier(null);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [showAppModal, showOfferDispatchModal, showQuotaModal, selectedApplicantDossier]);
 
   const handleRegisterApplicant = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -876,7 +897,15 @@ export default function AdmissionsPage() {
 
       {/* MODAL: New Applicant */}
       {showAppModal && (
-        <div className="fixed inset-0 z-50 bg-charcoal-950/70 backdrop-blur-sm flex items-center justify-center p-4">
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Register New Prospective Applicant"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setShowAppModal(false);
+          }}
+          className="fixed inset-0 z-50 bg-charcoal-950/70 backdrop-blur-sm flex items-center justify-center p-4"
+        >
           <div className="bg-white dark:bg-charcoal-900 rounded-2xl max-w-lg w-full p-6 border border-border dark:border-charcoal-800 shadow-2xl animate-in zoom-in-95 duration-200">
             <div className="flex items-center justify-between pb-3 border-b border-border dark:border-charcoal-800">
               <h3 className="font-bold text-base text-charcoal-900 dark:text-ivory-100">
@@ -884,9 +913,10 @@ export default function AdmissionsPage() {
               </h3>
               <button
                 onClick={() => setShowAppModal(false)}
-                className="text-charcoal-500 hover:text-charcoal-900 text-sm font-bold"
+                className="p-1.5 text-charcoal-400 hover:text-charcoal-700 dark:hover:text-ivory-200 hover:bg-ivory-100 dark:hover:bg-charcoal-800 rounded-lg transition-colors"
+                aria-label="Close modal"
               >
-                ✕
+                <X className="w-5 h-5" />
               </button>
             </div>
 
@@ -1001,8 +1031,16 @@ export default function AdmissionsPage() {
 
       {/* Applicant Dossier Inspection Modal */}
       {selectedApplicantDossier && (
-        <div className="fixed inset-0 z-50 bg-charcoal-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-charcoal-900 rounded-2xl border border-border dark:border-charcoal-800 p-6 max-w-2xl w-full shadow-2xl space-y-5">
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Applicant Dossier Inspection"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setSelectedApplicantDossier(null);
+          }}
+          className="fixed inset-0 z-50 bg-charcoal-900/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto"
+        >
+          <div className="bg-white dark:bg-charcoal-900 rounded-2xl border border-border dark:border-charcoal-800 p-6 max-w-2xl w-full shadow-2xl space-y-5 my-8">
             <div className="flex items-center justify-between pb-3 border-b border-border dark:border-charcoal-800">
               <div>
                 <span className="font-mono text-xs font-bold text-rose-primary dark:text-rose-light">
@@ -1017,9 +1055,10 @@ export default function AdmissionsPage() {
               </div>
               <button
                 onClick={() => setSelectedApplicantDossier(null)}
-                className="text-charcoal-400 hover:text-charcoal-600 dark:hover:text-ivory-200 p-1.5 rounded-lg text-sm font-bold"
+                className="p-1.5 text-charcoal-400 hover:text-charcoal-700 dark:hover:text-ivory-200 hover:bg-ivory-100 dark:hover:bg-charcoal-800 rounded-lg transition-colors"
+                aria-label="Close modal"
               >
-                ✕
+                <X className="w-5 h-5" />
               </button>
             </div>
 
@@ -1208,7 +1247,18 @@ export default function AdmissionsPage() {
 
       {/* Automated Email Offer Letter Dispatch Simulator Modal */}
       {showOfferDispatchModal && targetOfferApplicant && (
-        <div className="fixed inset-0 z-50 bg-charcoal-900/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Digital Offer Letter Dispatch Simulator"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setShowOfferDispatchModal(false);
+              setTargetOfferApplicant(null);
+            }
+          }}
+          className="fixed inset-0 z-50 bg-charcoal-900/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200"
+        >
           <div className="bg-white dark:bg-charcoal-900 rounded-2xl border border-border dark:border-charcoal-800 p-6 max-w-2xl w-full shadow-2xl space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-border dark:border-charcoal-800">
               <div className="flex items-center gap-2">
@@ -1229,9 +1279,10 @@ export default function AdmissionsPage() {
                   setShowOfferDispatchModal(false);
                   setTargetOfferApplicant(null);
                 }}
-                className="text-charcoal-400 hover:text-charcoal-600 dark:hover:text-ivory-200 p-1.5 rounded-lg text-sm font-bold"
+                className="p-1.5 text-charcoal-400 hover:text-charcoal-700 dark:hover:text-ivory-200 hover:bg-ivory-100 dark:hover:bg-charcoal-800 rounded-lg transition-colors"
+                aria-label="Close modal"
               >
-                ✕
+                <X className="w-5 h-5" />
               </button>
             </div>
 
@@ -1305,7 +1356,18 @@ export default function AdmissionsPage() {
 
       {/* Program Quota & Cutoff Adjustment Modal */}
       {showQuotaModal && editingQuota && (
-        <div className="fixed inset-0 z-50 bg-charcoal-900/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Adjust Program Intake Quota"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setShowQuotaModal(false);
+              setEditingQuota(null);
+            }
+          }}
+          className="fixed inset-0 z-50 bg-charcoal-900/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200"
+        >
           <div className="bg-white dark:bg-charcoal-900 rounded-2xl border border-border dark:border-charcoal-800 p-6 max-w-lg w-full shadow-2xl space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-border dark:border-charcoal-800">
               <div className="flex items-center gap-2">
@@ -1326,9 +1388,10 @@ export default function AdmissionsPage() {
                   setShowQuotaModal(false);
                   setEditingQuota(null);
                 }}
-                className="text-charcoal-400 hover:text-charcoal-600 dark:hover:text-ivory-200 p-1.5 rounded-lg text-sm font-bold"
+                className="p-1.5 text-charcoal-400 hover:text-charcoal-700 dark:hover:text-ivory-200 hover:bg-ivory-100 dark:hover:bg-charcoal-800 rounded-lg transition-colors"
+                aria-label="Close modal"
               >
-                ✕
+                <X className="w-5 h-5" />
               </button>
             </div>
 

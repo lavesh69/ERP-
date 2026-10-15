@@ -229,6 +229,25 @@ export default function FeedbackPage() {
     fetchData();
   }, []);
 
+  useEffect(() => {
+    const isAnyModalOpen = showSurveyModal || !!selectedFacultyDossier || !!selectedSurveyDossier;
+    if (!isAnyModalOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setShowSurveyModal(false);
+        setSelectedFacultyDossier(null);
+        setSelectedSurveyDossier(null);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [showSurveyModal, selectedFacultyDossier, selectedSurveyDossier]);
+
   const handleSubmitSurvey = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
@@ -781,7 +800,15 @@ export default function FeedbackPage() {
 
       {/* Survey Modal */}
       {showSurveyModal && (
-        <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Submit Course & Faculty Evaluation"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setShowSurveyModal(false);
+          }}
+          className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4"
+        >
           <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 max-w-lg w-full space-y-4 shadow-xl max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center border-b border-slate-200 dark:border-slate-800 pb-3">
               <h2 className="text-lg font-bold text-slate-900 dark:text-white">
@@ -789,9 +816,10 @@ export default function FeedbackPage() {
               </h2>
               <button
                 onClick={() => setShowSurveyModal(false)}
-                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+                aria-label="Close modal"
               >
-                ✕
+                <X className="w-5 h-5" />
               </button>
             </div>
 
@@ -806,7 +834,7 @@ export default function FeedbackPage() {
                     required
                     value={formData.courseCode}
                     onChange={(e) => setFormData({ ...formData, courseCode: e.target.value })}
-                    className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl"
+                    className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-rose-500 outline-none text-slate-900 dark:text-white"
                   />
                 </div>
                 <div>
@@ -818,7 +846,7 @@ export default function FeedbackPage() {
                     required
                     value={formData.facultyName}
                     onChange={(e) => setFormData({ ...formData, facultyName: e.target.value })}
-                    className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl"
+                    className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-rose-500 outline-none text-slate-900 dark:text-white"
                   />
                 </div>
               </div>
@@ -836,21 +864,24 @@ export default function FeedbackPage() {
                   { key: "ratingDoubtClearing", label: "Doubt Resolution & Office Hours" },
                   { key: "ratingCourseMaterial", label: "Quality of Slides, Notes & Lab Sheets" },
                 ].map(({ key, label }) => (
-                  <div key={key} className="flex justify-between items-center text-xs">
-                    <span className="text-slate-600 dark:text-slate-400">{label}</span>
-                    <select
-                      value={(formData as any)[key]}
-                      onChange={(e) =>
-                        setFormData({ ...formData, [key]: Number(e.target.value) })
-                      }
-                      className="px-2 py-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-lg font-semibold"
-                    >
-                      <option value={5}>5 - Excellent</option>
-                      <option value={4}>4 - Very Good</option>
-                      <option value={3}>3 - Good</option>
-                      <option value={2}>2 - Satisfactory</option>
-                      <option value={1}>1 - Needs Improvement</option>
-                    </select>
+                  <div key={key} className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 text-xs py-1">
+                    <span className="text-slate-600 dark:text-slate-400 font-medium">{label}</span>
+                    <div className="flex items-center gap-1">
+                      {[1, 2, 3, 4, 5].map((val) => (
+                        <button
+                          key={val}
+                          type="button"
+                          onClick={() => setFormData({ ...formData, [key]: val })}
+                          className={`w-7 h-7 rounded-lg font-bold text-xs transition-all flex items-center justify-center ${
+                            (formData as any)[key] === val
+                              ? "bg-rose-600 text-white shadow-sm shadow-rose-600/30 scale-105"
+                              : "bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:border-rose-400"
+                          }`}
+                        >
+                          {val}
+                        </button>
+                      ))}
+                    </div>
                   </div>
                 ))}
               </div>
@@ -864,7 +895,7 @@ export default function FeedbackPage() {
                   value={formData.qualitativeRemarks}
                   onChange={(e) => setFormData({ ...formData, qualitativeRemarks: e.target.value })}
                   placeholder="Share constructive feedback regarding teaching pace or lab assignments..."
-                  className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl"
+                  className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-rose-500 outline-none text-slate-900 dark:text-white"
                 />
               </div>
 
@@ -872,14 +903,14 @@ export default function FeedbackPage() {
                 <button
                   type="button"
                   onClick={() => setShowSurveyModal(false)}
-                  className="px-4 py-2 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-600 dark:text-slate-300"
+                  className="px-4 py-2 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="px-5 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl font-medium disabled:opacity-50"
+                  className="px-5 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl font-medium disabled:opacity-50 transition-colors shadow-sm"
                 >
                   {submitting ? "Submitting..." : "Submit Anonymous Evaluation"}
                 </button>
@@ -891,7 +922,15 @@ export default function FeedbackPage() {
 
       {/* Faculty FPI Evaluation Dossier Modal */}
       {selectedFacultyDossier && (
-        <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto animate-in fade-in duration-200">
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Faculty Performance Index Dossier"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setSelectedFacultyDossier(null);
+          }}
+          className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto animate-in fade-in duration-200"
+        >
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl max-w-xl w-full p-6 shadow-2xl space-y-5 my-8">
             <div className="flex items-start justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
               <div className="flex items-center gap-3">
@@ -1015,7 +1054,15 @@ export default function FeedbackPage() {
 
       {/* Anonymous Survey Record Slip Modal */}
       {selectedSurveyDossier && (
-        <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto animate-in fade-in duration-200">
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Course Evaluation Entry"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setSelectedSurveyDossier(null);
+          }}
+          className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto animate-in fade-in duration-200"
+        >
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-5 my-8">
             <div className="flex items-start justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
               <div className="flex items-center gap-3">

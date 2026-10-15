@@ -1283,9 +1283,10 @@ export default function TransportPage() {
               </h3>
               <button
                 onClick={() => setShowPassModal(false)}
-                className="text-charcoal-500 hover:text-charcoal-900 text-sm font-bold"
+                className="p-1.5 text-charcoal-400 hover:text-charcoal-700 dark:hover:text-ivory-200 hover:bg-ivory-100 dark:hover:bg-charcoal-800 rounded-lg transition-colors"
+                aria-label="Close modal"
               >
-                ✕
+                <X className="w-5 h-5" />
               </button>
             </div>
 
@@ -1388,9 +1389,10 @@ export default function TransportPage() {
               </h3>
               <button
                 onClick={() => setShowMaintModal(false)}
-                className="text-charcoal-500 hover:text-charcoal-900 text-sm font-bold"
+                className="p-1.5 text-charcoal-400 hover:text-charcoal-700 dark:hover:text-ivory-200 hover:bg-ivory-100 dark:hover:bg-charcoal-800 rounded-lg transition-colors"
+                aria-label="Close modal"
               >
-                ✕
+                <X className="w-5 h-5" />
               </button>
             </div>
 
