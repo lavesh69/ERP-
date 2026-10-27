@@ -556,17 +556,17 @@ export default function TransportPage() {
                     <Compass className="w-3.5 h-3.5 text-rose-400" />
                     <span>CORRIDOR: {currentRoute?.routeNumber}</span>
                   </div>
-                  <div className="hidden sm:flex items-center gap-1.5 px-3 py-1 bg-black/60 backdrop-blur-md rounded-xl border border-charcoal-700 font-mono text-[11px] text-emerald-400">
-                    <Radio className="w-3.5 h-3.5 animate-pulse" />
-                    <span>D-GPS ACCURACY ±1.5m</span>
+                  <div className="hidden sm:flex items-center gap-1.5 px-3 py-1 bg-black/60 backdrop-blur-md rounded-xl border border-charcoal-700 font-mono text-[11px] text-amber-300">
+                    <Radio className="w-3.5 h-3.5 animate-pulse text-amber-400" />
+                    <span>CORRIDOR SCHEMATIC (ESTIMATED SCHEDULE)</span>
                   </div>
                   <div className={`flex items-center gap-1.5 px-3 py-1 backdrop-blur-md rounded-xl border font-mono text-[11px] font-bold ${
                     isSimulating 
                       ? "bg-amber-950/60 border-amber-600/50 text-amber-300" 
-                      : "bg-blue-950/60 border-blue-600/50 text-blue-300"
+                      : "bg-charcoal-800/80 border-charcoal-700 text-ivory-300"
                   }`}>
                     <Activity className="w-3.5 h-3.5" />
-                    <span>{isSimulating ? "SIMULATION PLAYBACK" : "LIVE TELEMETRY SYNC"}</span>
+                    <span>{isSimulating ? "SIMULATION PLAYBACK" : "DISPATCH SCHEDULE VIEW"}</span>
                   </div>
                 </div>
 

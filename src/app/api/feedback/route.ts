@@ -14,13 +14,27 @@ export async function GET(request: NextRequest) {
     const facultyId = searchParams.get("facultyId") || undefined;
     const courseCode = searchParams.get("courseCode") || undefined;
 
+    const LEADERSHIP_ROLES = ["SUPER_ADMIN", "INSTITUTION_ADMIN", "PRINCIPAL", "DEAN", "HOD"];
+    const FACULTY_ROLES = ["FACULTY", "TEACHER", "INSTRUCTOR", ...LEADERSHIP_ROLES];
+
     if (tab === "faculty") {
+      if (!FACULTY_ROLES.includes(session.role)) {
+        return NextResponse.json({ error: "Forbidden: Only faculty and academic leadership can view faculty performance indices" }, { status: 403 });
+      }
       const facultyIndices = feedbackStore.getAllFacultyIndices();
       return NextResponse.json({ success: true, facultyIndices });
     }
 
     if (tab === "responses") {
-      const responses = feedbackStore.getResponses(facultyId, courseCode);
+      if (!FACULTY_ROLES.includes(session.role)) {
+        return NextResponse.json({ error: "Forbidden: Only instructors and academic leadership can review evaluation responses" }, { status: 403 });
+      }
+      // Non-leadership faculty can only see evaluations directed to themselves
+      let targetFacultyId = facultyId;
+      if (!LEADERSHIP_ROLES.includes(session.role)) {
+        targetFacultyId = session.userId || session.id;
+      }
+      const responses = feedbackStore.getResponses(targetFacultyId, courseCode, true);
       return NextResponse.json({ success: true, responses });
     }
 
@@ -73,6 +87,8 @@ export async function POST(request: NextRequest) {
         ratingDoubtClearing: Number(ratingDoubtClearing),
         ratingCourseMaterial: Number(ratingCourseMaterial),
         qualitativeRemarks,
+        studentId: session.userId || session.id || session.email,
+        studentHash: session.id || session.userId,
       });
 
       return NextResponse.json({

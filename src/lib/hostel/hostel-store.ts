@@ -486,6 +486,17 @@ export const hostelStore = {
     const room = store.rooms.find((r) => r.id === params.roomId);
     if (!room) throw new Error("Specified room could not be found.");
 
+    const alreadyAllocated = store.rooms.some((r) =>
+      r.beds.some(
+        (b) =>
+          b.isOccupied &&
+          (b.studentRoll === params.studentRoll || (params.studentId && b.studentId === params.studentId))
+      )
+    );
+    if (alreadyAllocated) {
+      throw new Error(`Conflict: Student ${params.studentRoll} is already allocated a hostel bed.`);
+    }
+
     const bed = room.beds.find((b) => b.bedNumber === params.bedNumber);
     if (!bed) throw new Error(`Bed ${params.bedNumber} does not exist in room ${room.roomNumber}.`);
     if (bed.isOccupied) throw new Error(`Bed ${params.bedNumber} is already occupied by ${bed.studentName}.`);
@@ -577,6 +588,30 @@ export const hostelStore = {
 
     writeStore(store);
     return { success: true, planName: plan.name };
+  },
+
+  claimMessRebate(studentRoll: string, leaveDays: number) {
+    if (leaveDays < 3) {
+      throw new Error("Mess rebate requires a minimum of 3 consecutive sanctioned leave days.");
+    }
+    const store = readStore();
+    const sub = store.subscriptions.find((s) => s.studentRoll === studentRoll);
+    if (!sub) {
+      throw new Error(`Active mess subscription not found for roll number ${studentRoll}.`);
+    }
+    const plan = store.messPlans.find((p) => p.id === sub.planId);
+    const monthlyFee = plan ? plan.monthlyFee : 260;
+    const rebateAmount = calculateMessRebate(monthlyFee, leaveDays);
+
+    sub.rebateDaysCount = (sub.rebateDaysCount || 0) + leaveDays;
+    writeStore(store);
+    return {
+      success: true,
+      studentRoll,
+      leaveDays,
+      rebateAmount,
+      updatedRebateDays: sub.rebateDaysCount,
+    };
   },
 
   getNightRollCall(blockId?: string) {

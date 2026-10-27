@@ -12,13 +12,16 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const tab = searchParams.get("tab") || "summary";
     const category = searchParams.get("category") || undefined;
+    const ticketNo = searchParams.get("ticketNo") || undefined;
 
     const GRIEVANCE_ADMIN_ROLES = ["SUPER_ADMIN", "INSTITUTION_ADMIN", "PRINCIPAL", "HOD"];
     const isLeadership = GRIEVANCE_ADMIN_ROLES.includes(session.role);
 
     if (tab === "list") {
       let list = grievancesStore.getGrievances(category);
-      if (!isLeadership) {
+      if (ticketNo) {
+        list = list.filter((g: any) => g.grievanceTicketNo.toLowerCase() === ticketNo.toLowerCase());
+      } else if (!isLeadership) {
         list = list.filter(
           (g: any) =>
             (session.studentId && g.grievantRollOrId === session.studentId) ||
@@ -27,8 +30,21 @@ export async function GET(request: NextRequest) {
             (session.name && g.grievantName?.toLowerCase() === session.name?.toLowerCase())
         );
       } else if (session.role === "HOD") {
-        list = list.filter((g: any) => g.category !== "POSH" && g.category !== "SEXUAL_HARASSMENT");
+        list = list.filter((g: any) => g.category !== "POSH" && g.category !== "SEXUAL_HARASSMENT" && g.category !== "INTERNAL_COMPLAINTS_ICC");
       }
+
+      // Strict anonymity enforcement on response serialization
+      list = list.map((g: any) => {
+        if (g.isAnonymous) {
+          const { grievantRollOrId, ...rest } = g;
+          return {
+            ...rest,
+            grievantName: "Anonymous Complainant",
+          };
+        }
+        return g;
+      });
+
       return NextResponse.json({ success: true, grievances: list });
     }
 
@@ -86,8 +102,8 @@ export async function POST(request: NextRequest) {
         );
       }
       const { grievanceId, actionTakenReport, status } = body;
-      if (!grievanceId || !actionTakenReport) {
-        return NextResponse.json({ error: "Grievance ID and Action Taken Report (ATR) are required" }, { status: 400 });
+      if (!grievanceId || !actionTakenReport || actionTakenReport.trim().length < 10) {
+        return NextResponse.json({ error: "Grievance ID and detailed Action Taken Report (ATR, minimum 10 characters) are required" }, { status: 400 });
       }
 
       const existing = grievancesStore.getGrievances().find((g) => g.id === grievanceId);

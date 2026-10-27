@@ -54,13 +54,13 @@ export default function InventoryPage() {
   const [assetForm, setAssetForm] = useState({
     name: "",
     category: "IT_COMPUTING",
-    department: "Computer Science & Engineering",
-    locationRoom: "Advanced Computing Lab",
-    custodianFaculty: currentUser?.fullName || "Dr. Alan Turing",
+    department: "",
+    locationRoom: "",
+    custodianFaculty: currentUser?.fullName || "",
     purchaseDate: new Date().toISOString().split("T")[0],
-    purchaseCost: 5000,
-    serialNumber: "SN-2026-X99",
-    modelNumber: "PRO-MODEL",
+    purchaseCost: "" as any,
+    serialNumber: "",
+    modelNumber: "",
   });
 
   // New Work Order Modal
@@ -69,8 +69,8 @@ export default function InventoryPage() {
     assetId: "",
     reportedIssue: "",
     priority: "MEDIUM",
-    assignedTechnician: "Campus Facility Maintenance Team",
-    estimatedCost: 150,
+    assignedTechnician: "",
+    estimatedCost: "" as any,
   });
 
   const fetchData = async () => {

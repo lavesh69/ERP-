@@ -207,8 +207,22 @@ import { StatutorySocialSecurityEngine } from "@/lib/hr/statutory-social-securit
 import { FacultyWorkloadHonorariumEngine } from "@/lib/hr/faculty-workload-honorarium-engine";
 import { LifecycleOperationsEngine } from "@/lib/hr/lifecycle-operations-engine";
 import { FacultyAcademicEngine } from "@/lib/faculty/faculty-academic-engine";
-import { GET as handleAlumniDirectoryGet } from "@/app/api/alumni/directory/route";
+import { GET as handleAlumniDirectoryGet, POST as handleAlumniDirectoryPost } from "@/app/api/alumni/directory/route";
 import { POST as handleAlumniVerificationPost } from "@/app/api/alumni/verification/route";
+import { GET as handleAlumniMentorshipGet, POST as handleAlumniMentorshipPost } from "@/app/api/alumni/mentorship/route";
+import { GET as handleAlumniGivingGet, POST as handleAlumniGivingPost } from "@/app/api/alumni/giving/route";
+import { alumniStore } from "@/lib/alumni/alumni-store";
+import { checkMentorshipSlotAvailability, validateAlumniProfile, validateDonation } from "@/lib/alumni/alumni-engine";
+import { deriveFeedbackSentiment } from "@/lib/feedback/feedback-engine";
+import { feedbackStore } from "@/lib/feedback/feedback-store";
+import { hostelStore } from "@/lib/hostel/hostel-store";
+import { transportStore } from "@/lib/transport/transport-store";
+import { grievancesStore } from "@/lib/grievances/grievances-store";
+import { admissionsStore } from "@/lib/admissions/admissions-store";
+import { validateStageTransition } from "@/lib/admissions/admissions-engine";
+import { emergencyStore } from "@/lib/emergency/emergency-store";
+import { incubationStore } from "@/lib/incubation/incubation-store";
+import { calculateCapTableDilution, validateIncubationStageTransition } from "@/lib/incubation/incubation-engine";
 import { GET as handleClinicGet, POST as handleClinicPost } from "@/app/api/clinic/route";
 import { checkTriageUrgency } from "@/lib/clinic/clinic-engine";
 import { clinicStore } from "@/lib/clinic/clinic-store";
@@ -11771,6 +11785,416 @@ By breaking down large monolithic systems into decoupled microservices, systems 
   assert(refundRes.status === 200, "POST /api/finance/refunds REQUEST_REFUND returns 200 OK");
   const refundData = await refundRes.json();
   assert(refundData.message.includes("₹500"), "Refund voucher creation confirmation message confirms amount in INR (₹500)");
+
+  console.log("\n--- GROUP 86: Existing Modules Completion & Rigorous Verification ---");
+
+  // 86.1 Module 1: Feedback & Faculty Evaluation
+  const emptyRemarksSentiment = deriveFeedbackSentiment("", 4.8);
+  assert(emptyRemarksSentiment.isScoreInferred === true, "Sentiment for empty remarks is marked as score-inferred");
+  assert(emptyRemarksSentiment.hasWrittenFeedback === false, "Sentiment correctly flags absence of qualitative written remarks");
+  assert(emptyRemarksSentiment.label.includes("Score-Derived"), "Empty remarks sentiment label does not misrepresent score as qualitative sentiment");
+
+  const writtenSentiment = deriveFeedbackSentiment("Superb coverage of Raft consensus and practical labs on Kubernetes.", 4.8);
+  assert(writtenSentiment.isScoreInferred === false, "Sentiment for written text is not marked as score-inferred");
+  assert(writtenSentiment.hasWrittenFeedback === true, "Sentiment correctly confirms presence of written feedback");
+
+  // Feedback Duplicate Prevention
+  const g86StudentId = "stu-test-duplicate-01";
+  const firstSurvey = feedbackStore.submitSurvey({
+    courseCode: "CS999",
+    facultyId: "fac-test-01",
+    semester: 6,
+    ratingPedagogy: 5,
+    ratingSyllabus: 5,
+    ratingPunctuality: 5,
+    ratingDoubtClearing: 5,
+    ratingCourseMaterial: 5,
+    studentId: g86StudentId,
+  });
+  assert(firstSurvey.courseCode === "CS999", "First survey submission succeeds");
+
+  let duplicateSurveyThrew = false;
+  try {
+    feedbackStore.submitSurvey({
+      courseCode: "CS999",
+      facultyId: "fac-test-01",
+      semester: 6,
+      ratingPedagogy: 4,
+      ratingSyllabus: 4,
+      ratingPunctuality: 4,
+      ratingDoubtClearing: 4,
+      ratingCourseMaterial: 4,
+      studentId: g86StudentId,
+    });
+  } catch (err: any) {
+    duplicateSurveyThrew = true;
+    assert(err.message.includes("Duplicate submission detected"), "Duplicate survey submission triggers clear duplicate error");
+  }
+  assert(duplicateSurveyThrew === true, "Submitting duplicate survey for same student/course/semester is strictly blocked");
+
+  // Feedback RBAC: Student cannot read faculty performance indices
+  const studentFeedbackReq = new NextRequest("http://localhost:3000/api/feedback?tab=faculty", {
+    method: "GET",
+    headers: { Cookie: `classroom_session=${enterpriseStudentToken}` },
+  });
+  const studentFeedbackRes = await handleFeedbackGet(studentFeedbackReq);
+  assert(studentFeedbackRes.status === 403, "Student caller attempting to access faculty performance indices is barred (403 Forbidden)");
+
+  // 86.2 Module 2: Hostel & Dormitory Management
+  // Dual Bed Allocation Conflict Detection
+  let bedConflictThrew = false;
+  try {
+    // Alex Mercer already has bed in A-101
+    hostelStore.allocateBed({
+      roomId: "rm-b-201",
+      bedNumber: "B",
+      studentId: "stu-alex-01",
+      studentName: "Alex Mercer",
+      studentRoll: "CS2026-001",
+      branch: "Computer Science",
+    });
+  } catch (err: any) {
+    bedConflictThrew = true;
+    assert(err.message.includes("already allocated a hostel bed"), "Bed allocation conflict error identifies existing bed assignment");
+  }
+  assert(bedConflictThrew === true, "Dual bed allocation for the same student across hostel blocks is prevented");
+
+  // Mess Rebate Calculation & Sanctioned Leave Policy
+  const calculatedRebate = calculateMessRebate(300, 5); // 300 / 30 = 10/day * 5 days * 0.7 = 35
+  assert(calculatedRebate === 35, "UGC 70% per-diem mess rebate calculated accurately for 5 leave days (35)");
+  assert(calculateMessRebate(300, 2) === 0, "Leaves under 3-day minimum threshold receive 0 rebate credit");
+
+  let shortLeaveRebateThrew = false;
+  try {
+    hostelStore.claimMessRebate("CS2026-001", 2);
+  } catch (err: any) {
+    shortLeaveRebateThrew = true;
+    assert(err.message.includes("minimum of 3 consecutive"), "Claiming rebate for < 3 days is rejected");
+  }
+  assert(shortLeaveRebateThrew === true, "Hostel store enforces 3-day statutory minimum on mess rebate claims");
+
+  // 86.3 Module 3: Transport & Fleet Management
+  // Duplicate Bus Pass & Positive Fee Validation
+  let invalidFeePassThrew = false;
+  try {
+    transportStore.issueBusPass({
+      studentId: "stu-test-pass-01",
+      studentName: "Test Student",
+      studentRoll: "STU-PASS-99",
+      routeId: "rt-01",
+      stopName: "Union Square Metro",
+      feeAmount: -100,
+    });
+  } catch (err: any) {
+    invalidFeePassThrew = true;
+    assert(err.message.includes("positive"), "Negative or zero bus pass fee is rejected");
+  }
+  assert(invalidFeePassThrew === true, "Bus pass issuance requires positive fee amount");
+
+  // Invalid Stop Validation
+  let invalidStopThrew = false;
+  try {
+    transportStore.issueBusPass({
+      studentId: "stu-test-pass-01",
+      studentName: "Test Student",
+      studentRoll: "STU-PASS-99",
+      routeId: "rt-01",
+      stopName: "Non-Existent Imaginary Station",
+      feeAmount: 450,
+    });
+  } catch (err: any) {
+    invalidStopThrew = true;
+    assert(err.message.includes("not a designated stop"), "Invalid stop rejection confirmed");
+  }
+  assert(invalidStopThrew === true, "Bus pass issuance rejects non-designated route stops");
+
+  const g86Pass = transportStore.issueBusPass({
+    studentId: "stu-test-pass-01",
+    studentName: "Test Student",
+    studentRoll: "STU-PASS-99",
+    routeId: "rt-01",
+    stopName: "Union Square Metro",
+    feeAmount: 450,
+  });
+  assert(g86Pass.status === "ACTIVE", "Valid transit pass issued successfully");
+
+  // Re-issuing / renewal updates the student's existing pass
+  const renewedPass = transportStore.issueBusPass({
+    studentId: "stu-test-pass-01",
+    studentName: "Test Student",
+    studentRoll: "STU-PASS-99",
+    routeId: "rt-01",
+    stopName: "Kendall Square Tech Hub",
+    feeAmount: 500,
+  });
+  assert(renewedPass.id === g86Pass.id, "Pass re-issue/renewal safely updates existing pass record without creating duplicate active records");
+  assert(renewedPass.stopName === "Kendall Square Tech Hub", "Pass stop updated upon renewal");
+
+  // Maintenance Record Validation
+  let invalidMaintCostThrew = false;
+  try {
+    transportStore.addMaintenanceRecord({
+      vehicleId: "veh-01",
+      vehicleCode: "BUS-01",
+      serviceType: "Oil Change",
+      date: "2026-10-10",
+      odometerKm: 50000,
+      cost: -50,
+      workshopName: "Central Garage",
+      notes: "Test",
+    });
+  } catch (err: any) {
+    invalidMaintCostThrew = true;
+  }
+  assert(invalidMaintCostThrew === true, "Negative maintenance service cost is rejected");
+
+  // 86.4 Module 4: Grievance Redressal & Statutory Ombudsman
+  // Anonymous Identity Protection
+  const anonGrievance = grievancesStore.createGrievance({
+    title: "Anonymous Safety Hazard in Chemistry Lab B",
+    description: "Emergency eye-wash station has insufficient water pressure.",
+    category: "CAMPUS_INFRASTRUCTURE",
+    severity: "HIGH",
+    isAnonymous: true,
+    grievantName: "Secret Student",
+    grievantRollOrId: "SECRET-ROLL-007",
+  });
+  assert(anonGrievance.isAnonymous === true, "Grievance registered with anonymous flag");
+  assert(anonGrievance.grievantName === undefined, "Anonymous grievance strips complainant name from record");
+  assert(anonGrievance.grievantRollOrId === undefined, "Anonymous grievance strips roll identifier from record");
+
+  // Anonymity in API response
+  const adminGrievanceReq = new NextRequest(`http://localhost:3000/api/grievances?tab=list&ticketNo=${anonGrievance.grievanceTicketNo}`, {
+    method: "GET",
+    headers: { Cookie: `classroom_session=${adminToken}` },
+  });
+  const adminGrievanceRes = await handleGrievancesGet(adminGrievanceReq);
+  const adminGrievanceData = await adminGrievanceRes.json();
+  const returnedGrievance = adminGrievanceData.grievances[0];
+  assert(returnedGrievance.grievantName === "Anonymous Complainant", "API response masks anonymous complainant name as 'Anonymous Complainant'");
+  assert(returnedGrievance.grievantRollOrId === undefined, "API response completely omits roll ID for anonymous grievance");
+
+  // Resolution ATR Length & Double-Resolution Protection
+  let shortAtrThrew = false;
+  try {
+    grievancesStore.resolveGrievance(anonGrievance.id, "Fixed");
+  } catch (err: any) {
+    shortAtrThrew = true;
+    assert(err.message.includes("at least 10 characters"), "ATR must be at least 10 characters");
+  }
+  assert(shortAtrThrew === true, "Insufficient ATR remarks (< 10 chars) rejected on grievance resolution");
+
+  const resolvedAnon = grievancesStore.resolveGrievance(anonGrievance.id, "Eye-wash station plumbing pressure regulator replaced and certified operational.");
+  assert(resolvedAnon.status === "RESOLVED", "Grievance marked RESOLVED with compliant ATR");
+
+  let doubleResolveThrew = false;
+  try {
+    grievancesStore.resolveGrievance(anonGrievance.id, "Second resolution attempt");
+  } catch (err: any) {
+    doubleResolveThrew = true;
+    assert(err.message.includes("already been resolved"), "Double resolution blocked with clear error");
+  }
+  assert(doubleResolveThrew === true, "Attempting to resolve an already resolved grievance is prevented");
+
+  // 86.5 Module 5: Campus Asset & Facility Inventory
+  // Positive Purchase Cost & Unique Tag
+  let zeroCostAssetThrew = false;
+  try {
+    inventoryStore.addAsset({
+      name: "Test Defective Multimeter",
+      category: "LAB_INSTRUMENTATION",
+      department: "Physics",
+      locationRoom: "Room 101",
+      purchaseCost: 0,
+    });
+  } catch (err: any) {
+    zeroCostAssetThrew = true;
+    assert(err.message.includes("Valid positive purchase cost"), "Purchase cost <= 0 rejected");
+  }
+  assert(zeroCostAssetThrew === true, "Asset registration strictly requires positive purchase cost (> 0)");
+
+  const newAsset = inventoryStore.addAsset({
+    name: "Oscilloscope 100MHz Dual Channel",
+    category: "LAB_INSTRUMENTATION",
+    department: "Electronics & Communication",
+    locationRoom: "Signals Lab 202",
+    purchaseCost: 45000,
+    assetTag: "AST-TEST-UNIQUE-01",
+  });
+  assert(newAsset.assetTag === "AST-TEST-UNIQUE-01", "Asset registered with unique asset tag");
+
+  let duplicateTagThrew = false;
+  try {
+    inventoryStore.addAsset({
+      name: "Duplicate Oscilloscope",
+      category: "LAB_INSTRUMENTATION",
+      department: "Electronics",
+      locationRoom: "Room 202",
+      purchaseCost: 45000,
+      assetTag: "AST-TEST-UNIQUE-01",
+    });
+  } catch (err: any) {
+    duplicateTagThrew = true;
+    assert(err.message.includes("already exists in registry"), "Duplicate asset tag error surfaced");
+  }
+  assert(duplicateTagThrew === true, "Asset registration blocks duplicate asset tags");
+
+  // Consumable stock deduction validation
+  let negativeDeductThrew = false;
+  try {
+    inventoryStore.deductConsumable("MAT-PLA-01", -5);
+  } catch (err: any) {
+    negativeDeductThrew = true;
+  }
+  assert(negativeDeductThrew === true, "Consumable stock deduction rejects non-positive quantities");
+
+  // 86.6 Module 6: Admissions & Student Enrollment
+  // Strict Academic Scores Validation without Fake Defaults
+  const invalidGpaReq = new NextRequest("http://localhost:3000/api/admissions", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      action: "SUBMIT_APPLICATION",
+      fullName: "Pooja Hegde",
+      email: "pooja.hegde@applicant.org",
+      phone: "+1 555-901-2233",
+      programCode: "BTECH-CSE",
+      // highSchoolGpa and entranceExamScore missing
+    }),
+  });
+  const invalidGpaRes = await handleAdmissionsPost(invalidGpaReq);
+  assert(invalidGpaRes.status === 400, "POST /api/admissions rejects applicant with missing academic scores (400 Bad Request)");
+
+  // Pipeline Stage Progression Validation
+  assert(validateStageTransition("APPLICATION_SUBMITTED", "MERIT_SHORTLISTED").isValid === true, "APPLICATION_SUBMITTED -> MERIT_SHORTLISTED transition is permitted");
+  assert(validateStageTransition("APPLICATION_SUBMITTED", "ENROLLED").isValid === false, "Direct jump from APPLICATION_SUBMITTED to ENROLLED is illegal and blocked");
+
+  // 86.7 Module 7: Campus Emergency Operations Center (EOC)
+  // Drill vs Active Life-Safety Categorization & Tamper-Evident Hash
+  const testDrillAlert = emergencyStore.broadcastAlert({
+    category: "DRILL_SIMULATION",
+    severity: "CAMPUS_ALL_CLEAR",
+    headline: "Scheduled Annual Earthquake Evacuation Exercise",
+    instructions: "Drop, cover, and hold on. Proceed to designated outdoor muster zones when bells chime.",
+    affectedZones: ["Central Academic Block"],
+    dispatchedChannels: ["CAMPUS_SIRENS", "MOBILE_APP_PUSH"],
+    initiatedBy: "Chief Safety Warden",
+  });
+  assert(testDrillAlert.category === "DRILL_SIMULATION", "Emergency alert registered under DRILL_SIMULATION category");
+  assert(testDrillAlert.cryptographicBroadcastSeal.startsWith("EOC-ALERT-"), "Emergency alert stamped with cryptographic Clery seal");
+
+  const resolvedDrill = emergencyStore.resolveAlert(testDrillAlert.id, "Earthquake drill completed with 100% headcount verified.");
+  assert(resolvedDrill.isActive === false, "Resolved alert has isActive set to false");
+
+  // 86.8 Module 8: Alumni Network, Mentorship & Giving
+  // Persistent Alumni Store & Registration
+  const testAlumnus = alumniStore.registerAlumnus({
+    fullName: "Aakash Banerjee",
+    graduationBatch: 2021,
+    degree: "B.Tech in Information Technology",
+    currentCompany: "Microsoft Azure",
+    jobTitle: "Senior Cloud Architect",
+    location: "Hyderabad, India",
+    isAvailableForMentorship: true,
+    mentorTopics: ["Kubernetes", "Azure Cloud Architecture", "Tech Leadership"],
+  });
+  assert(testAlumnus.fullName === "Aakash Banerjee", "Alumni registered in persistent alumni store");
+  const queriedAlumni = alumniStore.getAlumni({ company: "Microsoft" });
+  assert(queriedAlumni.length > 0, "Alumni directory query finds newly registered alumnus by employer");
+
+  // Mentorship Slot Double-Booking Prevention
+  const firstBooking = alumniStore.bookMentorshipSession({
+    mentorId: testAlumnus.id,
+    mentorName: testAlumnus.fullName,
+    studentId: "stu-booking-01",
+    studentName: "Aarav Sharma",
+    studentRoll: "CS2026-101",
+    topic: "Cloud Career Guidance",
+    date: "2026-11-20",
+    slotTime: "17:00 - 17:45 IST",
+  });
+  assert(firstBooking.status === "CONFIRMED", "First mentorship booking confirmed");
+
+  let mentorConflictThrew = false;
+  try {
+    alumniStore.bookMentorshipSession({
+      mentorId: testAlumnus.id,
+      mentorName: testAlumnus.fullName,
+      studentId: "stu-booking-02",
+      studentName: "Diya Roy",
+      studentRoll: "CS2026-102",
+      topic: "System Design Prep",
+      date: "2026-11-20",
+      slotTime: "17:00 - 17:45 IST", // Same date and time slot
+    });
+  } catch (err: any) {
+    mentorConflictThrew = true;
+    assert(err.message.includes("Slot conflict"), "Mentorship booking collision identified");
+  }
+  assert(mentorConflictThrew === true, "Alumni mentorship booking strictly prevents scheduling collisions");
+
+  // Degree Verification without Fake Seals
+  const seededStudentForVerif = await prisma.student.findFirst({
+    include: { user: true, program: { include: { department: true } } },
+  });
+  const g86Roll = seededStudentForVerif ? seededStudentForVerif.rollNumber : "2024-CSE-042";
+  const studentVerifyReq = new NextRequest("http://localhost:3000/api/alumni/verification", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ rollNumber: g86Roll }),
+  });
+  const studentVerifyRes = await handleAlumniVerificationPost(studentVerifyReq);
+  const studentVerifyData = await studentVerifyRes.json();
+  assert(studentVerifyData.success === true, "Degree verification endpoint returns 200 with verification dossier");
+  assert(studentVerifyData.result.verified === true, "Verification query confirms student record in university registry");
+  assert(studentVerifyData.result.isDegreeConferred === false, "Enrolled non-graduated student isDegreeConferred is FALSE");
+  assert(studentVerifyData.result.alumnus.degreeStatus === "ENROLLED_ACTIVE", "Current enrollment status reflects ENROLLED_ACTIVE rather than fabricated CONFERRED");
+  assert(studentVerifyData.result.cryptographicProof?.registrarDigitalStamp === undefined, "Fabricated registrar digital stamp completely eliminated");
+
+  // Alumni Giving & Campaign Update
+  const testDonation = alumniStore.recordDonation({
+    campaignId: "camp-01",
+    donorName: "Aakash Banerjee",
+    amount: 10000,
+    isAnonymous: false,
+    paymentMethod: "UPI Gateway",
+  });
+  assert(testDonation.amount === 10000, "Donation recorded with exact contribution amount");
+  assert(testDonation.receiptNo.startsWith("REC-APEX-"), "Official endowment receipt issued with genuine reference number");
+
+  // 86.9 Module 9: University Incubation Center & Venture Accelerator
+  // Venture Registration with 0 Grant and 0% Equity Support
+  const zeroGrantVenture = incubationStore.registerStartup({
+    startupName: "OpenSource EduCore",
+    founderName: "Nikhil Joshi",
+    founderRollOrStaffId: "STU-OPEN-01",
+    founderRole: "STUDENT",
+    sector: "EDTECH",
+    pitchDeckSummary: "Completely open-source collaborative education engine for rural schools.",
+    seedGrantDisbursed: 0,
+    universityEquityPercentage: 0,
+    labDesksAllocated: 0,
+  });
+  assert(zeroGrantVenture.seedGrantDisbursed === 0, "Seed grant disbursed accurately persists 0 without defaulting to 15000");
+  assert(zeroGrantVenture.universityEquityPercentage === 0, "University equity accurately persists 0% without defaulting to 2.0%");
+  assert(zeroGrantVenture.labDesksAllocated === 0, "Lab desks allocated accurately persists 0 without defaulting to 2");
+
+  // Incubation Stage Transition Validation
+  assert(validateIncubationStageTransition("PRE_INCUBATION", "INCUBATED_PROTOTYPE").isValid === true, "PRE_INCUBATION -> INCUBATED_PROTOTYPE transition is valid");
+  assert(validateIncubationStageTransition("PRE_INCUBATION", "GRADUATED_VENTURE").isValid === false, "Skipping directly from PRE_INCUBATION to GRADUATED_VENTURE is illegal and blocked");
+
+  // Cap-Table Dilution Arithmetic
+  const existingStakeholders = [
+    { stakeholder: "Founders", percentage: 95.0 },
+    { stakeholder: "University Incubator", percentage: 5.0 },
+  ];
+  const dilutionResult = calculateCapTableDilution(4000000, 1000000, existingStakeholders); // 4M pre-money + 1M investment = 5M post-money (20% investor)
+  assert(dilutionResult.postMoneyValuation === 5000000, "Post-money valuation is accurately $5,000,000");
+  assert(dilutionResult.investorEquityPercentage === 20.0, "New investor round takes exactly 20.0% equity");
+  const founderEquity = dilutionResult.dilutedCapTable.find((s) => s.stakeholder === "Founders")?.postRoundPercentage;
+  const universityEquity = dilutionResult.dilutedCapTable.find((s) => s.stakeholder === "University Incubator")?.postRoundPercentage;
+  assert(founderEquity === 76.0, "Founder equity diluted proportionally to 76.0% (95% * 0.8)");
+  assert(universityEquity === 4.0, "University equity diluted proportionally to 4.0% (5% * 0.8)");
 
   console.log("\n=================================================");
   console.log(`🎉 ALL ${passedTests}/${totalTests} TESTS PASSED SUCCESSFULLY!`);

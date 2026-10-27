@@ -31,6 +31,8 @@ export interface SurveyResponse {
   overallScore: number;          // Computed average (out of 5.0)
   qualitativeRemarks?: string;
   isAnonymized: boolean;
+  studentId?: string;
+  studentHash?: string;
   submittedAt: string;
 }
 
@@ -141,3 +143,63 @@ export function validateSurveySubmission(data: Partial<SurveyResponse>): { isVal
     errors,
   };
 }
+
+/**
+ * Derives sentiment analysis strictly distinguishing inferred quantitative score
+ * from genuine qualitative student feedback remarks.
+ */
+export function deriveFeedbackSentiment(remarks?: string, score?: number) {
+  const hasText = Boolean(remarks && remarks.trim().length > 0);
+
+  if (!hasText) {
+    const baseline = score || 3.0;
+    const tone = baseline >= 4.0 ? "QUANTITATIVE_HIGH" : baseline <= 2.5 ? "QUANTITATIVE_LOW" : "NEUTRAL";
+    return {
+      polarity: baseline >= 4.0 ? 0.75 : baseline <= 2.5 ? -0.65 : 0.0,
+      label: "Score-Derived (No Written Remarks)",
+      tone,
+      isScoreInferred: true,
+      hasWrittenFeedback: false,
+      description: "Quantitative score baseline only. No qualitative written comments were provided by the respondent.",
+    };
+  }
+
+  const text = (remarks || "").toLowerCase();
+  const positiveWords = ["excellent", "great", "amazing", "inspiring", "clear", "helpful", "best", "engaging", "patient", "supportive", "thorough", "outstanding", "good", "well", "superb", "brilliant"];
+  const negativeWords = ["poor", "slow", "fast", "unclear", "difficult", "late", "boring", "confusing", "hard", "disorganized", "tough", "harsh", "unfair", "missing", "delay", "struggle"];
+
+  let posCount = 0;
+  let negCount = 0;
+
+  for (const word of positiveWords) {
+    if (text.includes(word)) posCount++;
+  }
+  for (const word of negativeWords) {
+    if (text.includes(word)) negCount++;
+  }
+
+  let rawPolarity = (posCount - negCount) / Math.max(1, posCount + negCount);
+  if (posCount === 0 && negCount === 0) {
+    rawPolarity = score ? (score - 3) / 2 : 0;
+  }
+
+  let label = "Constructive Neutral";
+  let tone = "NEUTRAL";
+  if (rawPolarity > 0.3) {
+    label = "Positive Experience";
+    tone = "HIGHLY_FAVORABLE";
+  } else if (rawPolarity < -0.3) {
+    label = "Pedagogical Concern";
+    tone = "ACTION_REQUIRED";
+  }
+
+  return {
+    polarity: Math.round(rawPolarity * 100) / 100,
+    label,
+    tone,
+    isScoreInferred: false,
+    hasWrittenFeedback: true,
+    description: `Analyzed from student's written response (${posCount} positive markers, ${negCount} critical markers).`,
+  };
+}
+

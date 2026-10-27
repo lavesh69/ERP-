@@ -182,6 +182,17 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ message: "Mess subscription updated successfully", ...res });
     }
 
+    if (action === "CLAIM_MESS_REBATE") {
+      const { studentRoll, leaveDays } = body;
+      const targetRoll = studentRoll || (session as any)?.studentRollNumber || session.email?.split("@")[0] || "STU-2026";
+      const days = Number(leaveDays);
+      if (!days || days < 3) {
+        return NextResponse.json({ error: "Mess rebate requires at least 3 sanctioned leave days" }, { status: 400 });
+      }
+      const rebate = hostelStore.claimMessRebate(targetRoll, days);
+      return NextResponse.json({ success: true, message: `Mess rebate of ₹${rebate.rebateAmount} credited for ${days} sanctioned leave days.`, rebate });
+    }
+
     if (action === "PUNCH_MEAL") {
       const { studentRoll, studentName, plan, mealType, lane } = body;
       const punch = hostelStore.recordMealPunch({

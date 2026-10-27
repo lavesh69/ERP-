@@ -5,6 +5,7 @@ import {
   IncubationStage,
   calculateIncubationPortfolioMetrics,
   validateStartupApplication,
+  validateIncubationStageTransition,
 } from "./incubation-engine";
 
 const DATA_DIR = path.join(process.cwd(), "data", "incubation");
@@ -133,11 +134,21 @@ export const incubationStore = {
       sector: payload.sector || "AI_ML",
       stage: payload.stage || "INCUBATED_PROTOTYPE",
       pitchDeckSummary: payload.pitchDeckSummary!,
-      seedGrantDisbursed: Number(payload.seedGrantDisbursed) || 15000,
-      universityEquityPercentage: Number(payload.universityEquityPercentage) || 2.0,
-      externalFundingRaised: Number(payload.externalFundingRaised) || 0,
-      patentsFiled: Number(payload.patentsFiled) || 0,
-      labDesksAllocated: Number(payload.labDesksAllocated) || 2,
+      seedGrantDisbursed: payload.seedGrantDisbursed !== undefined && !isNaN(Number(payload.seedGrantDisbursed))
+        ? Math.max(0, Number(payload.seedGrantDisbursed))
+        : 0,
+      universityEquityPercentage: payload.universityEquityPercentage !== undefined && !isNaN(Number(payload.universityEquityPercentage))
+        ? Math.max(0, Number(payload.universityEquityPercentage))
+        : 0,
+      externalFundingRaised: payload.externalFundingRaised !== undefined && !isNaN(Number(payload.externalFundingRaised))
+        ? Math.max(0, Number(payload.externalFundingRaised))
+        : 0,
+      patentsFiled: payload.patentsFiled !== undefined && !isNaN(Number(payload.patentsFiled))
+        ? Math.max(0, Number(payload.patentsFiled))
+        : 0,
+      labDesksAllocated: payload.labDesksAllocated !== undefined && !isNaN(Number(payload.labDesksAllocated))
+        ? Math.max(0, Number(payload.labDesksAllocated))
+        : 1,
       mentorName: payload.mentorName || "Center Director & EIR",
       status: "ACTIVE",
       incubatedDate: new Date().toISOString(),
@@ -159,9 +170,15 @@ export const incubationStore = {
       throw new Error(`Startup venture with id ${id} not found`);
     }
 
+    const check = validateIncubationStageTransition(startup.stage, stage);
+    if (!check.isValid) {
+      throw new Error(check.reason || `Invalid transition from ${startup.stage} to ${stage}`);
+    }
+
     startup.stage = stage;
-    if (fundingDelta?.seed !== undefined) startup.seedGrantDisbursed = fundingDelta.seed;
-    if (fundingDelta?.external !== undefined) startup.externalFundingRaised = fundingDelta.external;
+    if (fundingDelta?.seed !== undefined) startup.seedGrantDisbursed = Math.max(0, fundingDelta.seed);
+    if (fundingDelta?.external !== undefined) startup.externalFundingRaised = Math.max(0, fundingDelta.external);
+    if (stage === "GRADUATED_VENTURE") startup.status = "GRADUATED";
 
     writeStore(store);
     return startup;

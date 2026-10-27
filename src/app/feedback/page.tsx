@@ -65,27 +65,30 @@ function analyzeSentiment(remarks?: string, score?: number) {
     if (score && score >= 4.0) {
       return {
         polarity: 0.75,
-        label: "Delighted",
-        tone: "HIGHLY_FAVORABLE",
+        label: "Score-Derived High (No Written Feedback)",
+        tone: "QUANTITATIVE_HIGH",
         bg: "bg-emerald-50 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800",
-        description: "Standard satisfaction score indicates strong learner sentiment.",
+        description: "Rating derived strictly from quantitative Likert score (≥ 4.0). No qualitative student remarks were submitted.",
+        isScoreInferred: true,
       };
     }
     if (score && score <= 2.5) {
       return {
         polarity: -0.65,
-        label: "Critical Concern",
+        label: "Score-Derived Low (No Written Feedback)",
         tone: "ACTION_REQUIRED",
         bg: "bg-rose-50 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300 border-rose-200 dark:border-rose-800",
-        description: "Low quantitative rating flagged for pedagogical review.",
+        description: "Low quantitative rating baseline (≤ 2.5) flagged for review. No qualitative student remarks were provided.",
+        isScoreInferred: true,
       };
     }
     return {
       polarity: 0.05,
-      label: "Neutral",
+      label: "Score-Derived Baseline (No Remarks)",
       tone: "NEUTRAL",
       bg: "bg-ivory-50 text-charcoal-700 dark:bg-charcoal-800 dark:text-ivory-300 border-border dark:border-charcoal-700",
-      description: "Balanced feedback baseline.",
+      description: "Neutral quantitative rating baseline. No qualitative written comments were provided by the respondent.",
+      isScoreInferred: true,
     };
   }
 

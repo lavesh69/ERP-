@@ -60,9 +60,9 @@ export async function POST(request: NextRequest) {
         sector,
         stage,
         pitchDeckSummary,
-        seedGrantDisbursed: Number(seedGrantDisbursed) || 15000,
-        universityEquityPercentage: Number(universityEquityPercentage) || 2.0,
-        labDesksAllocated: Number(labDesksAllocated) || 2,
+        seedGrantDisbursed: seedGrantDisbursed !== undefined ? Number(seedGrantDisbursed) : 0,
+        universityEquityPercentage: universityEquityPercentage !== undefined ? Number(universityEquityPercentage) : 0,
+        labDesksAllocated: labDesksAllocated !== undefined ? Number(labDesksAllocated) : 1,
         mentorName,
       });
 

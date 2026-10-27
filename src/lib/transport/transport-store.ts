@@ -296,8 +296,35 @@ export const transportStore = {
     const route = store.routes.find((r) => r.id === params.routeId);
     if (!route) throw new Error("Target route not found.");
 
+    if (params.feeAmount !== undefined && params.feeAmount <= 0) {
+      throw new Error("Bus pass fee amount must be positive.");
+    }
+
+    const stopExists = route.stops.some(
+      (s) => s.stopName.toLowerCase() === params.stopName.toLowerCase()
+    );
+    if (!stopExists) {
+      throw new Error(`Stop '${params.stopName}' is not a designated stop on route ${route.routeNumber}.`);
+    }
+
     const validUntil = "2027-05-31";
     const fingerprint = generateBusPassFingerprint(params.studentRoll, route.routeNumber, validUntil);
+
+    const existingPass = store.passes.find(
+      (p) =>
+        p.studentRoll === params.studentRoll &&
+        p.routeId === route.id &&
+        p.status === "ACTIVE"
+    );
+    if (existingPass) {
+      existingPass.stopName = params.stopName;
+      existingPass.feeAmount = params.feeAmount !== undefined ? params.feeAmount : existingPass.feeAmount;
+      existingPass.validUntil = validUntil;
+      existingPass.qrCodeFingerprint = fingerprint;
+      existingPass.issuedAt = new Date().toISOString();
+      writeStore(store);
+      return existingPass;
+    }
 
     const newPass: StudentBusPass = {
       id: `pass-${Date.now()}`,
@@ -311,7 +338,7 @@ export const transportStore = {
       academicYear: "2026-2027",
       validUntil,
       status: "ACTIVE",
-      feeAmount: params.feeAmount || 450,
+      feeAmount: params.feeAmount !== undefined ? params.feeAmount : 450,
       feeStatus: "PAID",
       qrCodeFingerprint: fingerprint,
       issuedAt: new Date().toISOString(),
@@ -339,11 +366,26 @@ export const transportStore = {
 
   addMaintenanceRecord(record: Omit<FleetMaintenanceRecord, "id">) {
     const store = readStore();
+    const veh = store.vehicles.find((v) => v.id === record.vehicleId);
+    if (!veh) throw new Error(`Vehicle with ID ${record.vehicleId} not found in fleet.`);
+
+    if (record.cost < 0) {
+      throw new Error("Maintenance service cost cannot be negative.");
+    }
+    if (record.odometerKm < 0) {
+      throw new Error("Odometer reading cannot be negative.");
+    }
+
     const newRecord: FleetMaintenanceRecord = {
       id: `maint-${Date.now()}`,
       ...record,
     };
     store.maintenance.unshift(newRecord);
+
+    if (record.serviceType.toLowerCase().includes("repair") || record.serviceType.toLowerCase().includes("overhaul")) {
+      veh.status = "MAINTENANCE";
+    }
+
     writeStore(store);
     return newRecord;
   },

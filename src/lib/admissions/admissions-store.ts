@@ -11,6 +11,7 @@ import {
   calculateCompositeScore,
   checkAdmissionEligibility,
   validateApplicantInput,
+  validateStageTransition,
 } from "./admissions-engine";
 
 const DATA_DIR = path.join(process.cwd(), "data", "admissions");
@@ -201,8 +202,8 @@ export const admissionsStore = {
 
     const store = readStore();
     const quota = store.quotas.find((q) => q.programCode === lead.programCode);
-    const gpa = lead.highSchoolGpa || 3.5;
-    const entrance = lead.entranceExamScore || 1350;
+    const gpa = Number(lead.highSchoolGpa);
+    const entrance = Number(lead.entranceExamScore);
     const composite = calculateCompositeScore(gpa, entrance);
 
     const newLead: ApplicantLead = {
@@ -238,6 +239,11 @@ export const admissionsStore = {
     const store = readStore();
     const app = store.applicants.find((a) => a.id === applicantId);
     if (!app) throw new Error("Applicant record not found.");
+
+    const transitionCheck = validateStageTransition(app.stage, stage);
+    if (!transitionCheck.isValid) {
+      throw new Error(transitionCheck.reason || `Invalid transition from ${app.stage} to ${stage}`);
+    }
 
     app.stage = stage;
     if (depositPaid !== undefined) {

@@ -240,6 +240,12 @@ export const grievancesStore = {
     const store = readStore();
     const g = store.grievances.find((item) => item.id === id);
     if (!g) throw new Error("Grievance ticket not found.");
+    if (g.status === "RESOLVED") {
+      throw new Error(`Grievance ticket ${g.grievanceTicketNo} has already been resolved.`);
+    }
+    if (!actionTakenReport || actionTakenReport.trim().length < 10) {
+      throw new Error("Action Taken Report (ATR) must be at least 10 characters detailing resolution actions.");
+    }
 
     g.status = status;
     g.actionTakenReport = actionTakenReport;

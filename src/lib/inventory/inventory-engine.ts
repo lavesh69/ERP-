@@ -116,8 +116,8 @@ export function validateAssetRegistration(asset: Partial<CampusAsset>): { isVali
   if (!asset.locationRoom || asset.locationRoom.trim().length === 0) {
     errors.push("Designated physical location / room is required.");
   }
-  if (typeof asset.purchaseCost !== "number" || asset.purchaseCost < 0) {
-    errors.push("Valid positive purchase cost is required.");
+  if (typeof asset.purchaseCost !== "number" || isNaN(asset.purchaseCost) || asset.purchaseCost <= 0) {
+    errors.push("Valid positive purchase cost (> 0) is required.");
   }
   return {
     isValid: errors.length === 0,

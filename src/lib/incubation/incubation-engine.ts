@@ -104,8 +104,95 @@ export function validateStartupApplication(data: Partial<IncubatedStartup>): {
     errors.push("Problem statement and pitch deck summary must be at least 15 characters");
   }
 
+  if (
+    data.universityEquityPercentage !== undefined &&
+    (isNaN(Number(data.universityEquityPercentage)) ||
+      Number(data.universityEquityPercentage) < 0 ||
+      Number(data.universityEquityPercentage) > 100)
+  ) {
+    errors.push("University equity percentage must be between 0.0% and 100.0%");
+  }
+
+  if (
+    data.seedGrantDisbursed !== undefined &&
+    (isNaN(Number(data.seedGrantDisbursed)) || Number(data.seedGrantDisbursed) < 0)
+  ) {
+    errors.push("Seed grant disbursed cannot be negative");
+  }
+
+  if (
+    data.labDesksAllocated !== undefined &&
+    (isNaN(Number(data.labDesksAllocated)) || Number(data.labDesksAllocated) < 0)
+  ) {
+    errors.push("Lab desks allocated cannot be negative");
+  }
+
   return {
     isValid: errors.length === 0,
     errors,
+  };
+}
+
+/**
+ * Validates formal venture progression through incubation stages
+ */
+export function validateIncubationStageTransition(
+  currentStage: IncubationStage,
+  nextStage: IncubationStage
+): { isValid: boolean; reason?: string } {
+  if (currentStage === nextStage) return { isValid: true };
+
+  const validTransitions: Record<IncubationStage, IncubationStage[]> = {
+    PRE_INCUBATION: ["INCUBATED_PROTOTYPE"],
+    INCUBATED_PROTOTYPE: ["SEED_FUNDED", "GRADUATED_VENTURE"],
+    SEED_FUNDED: ["ACCELERATOR_GROWTH", "GRADUATED_VENTURE"],
+    ACCELERATOR_GROWTH: ["GRADUATED_VENTURE"],
+    GRADUATED_VENTURE: [],
+  };
+
+  const allowed = validTransitions[currentStage] || [];
+  if (!allowed.includes(nextStage)) {
+    return {
+      isValid: false,
+      reason: `Illegal venture stage transition: Cannot progress startup from '${currentStage}' to '${nextStage}'.`,
+    };
+  }
+  return { isValid: true };
+}
+
+/**
+ * Computes post-round dilution for university cap table
+ */
+export function calculateCapTableDilution(
+  preMoneyValuation: number,
+  investmentAmount: number,
+  existingStakeholders: { stakeholder: string; percentage: number }[]
+): {
+  postMoneyValuation: number;
+  investorEquityPercentage: number;
+  dilutedCapTable: { stakeholder: string; postRoundPercentage: number }[];
+} {
+  if (preMoneyValuation <= 0 || investmentAmount <= 0) {
+    throw new Error("Pre-money valuation and investment amount must be positive.");
+  }
+
+  const postMoneyValuation = preMoneyValuation + investmentAmount;
+  const investorEquity = Math.round((investmentAmount / postMoneyValuation) * 10000) / 100;
+  const retentionFactor = preMoneyValuation / postMoneyValuation;
+
+  const dilutedCapTable = existingStakeholders.map((s) => ({
+    stakeholder: s.stakeholder,
+    postRoundPercentage: Math.round(s.percentage * retentionFactor * 100) / 100,
+  }));
+
+  dilutedCapTable.push({
+    stakeholder: "New Investor Round",
+    postRoundPercentage: investorEquity,
+  });
+
+  return {
+    postMoneyValuation,
+    investorEquityPercentage: investorEquity,
+    dilutedCapTable,
   };
 }

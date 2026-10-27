@@ -1,77 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getOptionalSession } from "@/lib/auth/admin-guard";
 import { logger } from "@/lib/logging/logger";
-
-interface AlumniProfile {
-  id: string;
-  fullName: string;
-  graduationBatch: number;
-  degree: string;
-  currentCompany: string;
-  jobTitle: string;
-  location: string;
-  isAvailableForMentorship: boolean;
-  mentorTopics: string[];
-  linkedinUrl: string;
-}
-
-const SAMPLE_ALUMNI: AlumniProfile[] = [
-  {
-    id: "alm-01",
-    fullName: "Rohan Varma",
-    graduationBatch: 2023,
-    degree: "B.Tech in Computer Science",
-    currentCompany: "Stripe",
-    jobTitle: "Senior Systems Engineer",
-    location: "San Francisco, CA",
-    isAvailableForMentorship: true,
-    mentorTopics: ["Distributed Systems", "FAANG Mock Interviews", "US Masters Advice"],
-    linkedinUrl: "https://linkedin.com/in/rohan-varma",
-  },
-  {
-    id: "alm-02",
-    fullName: "Priya Nair",
-    graduationBatch: 2024,
-    degree: "B.Tech in Artificial Intelligence",
-    currentCompany: "Google DeepMind",
-    jobTitle: "Research Engineer",
-    location: "London, UK",
-    isAvailableForMentorship: true,
-    mentorTopics: ["AI/ML Research", "Publishing NeurIPS papers", "Scholarships"],
-    linkedinUrl: "https://linkedin.com/in/priya-nair",
-  },
-  {
-    id: "alm-03",
-    fullName: "Karan Johar",
-    graduationBatch: 2022,
-    degree: "B.Tech in Mechanical",
-    currentCompany: "Tesla Motors",
-    jobTitle: "Thermal Systems Architect",
-    location: "Austin, TX",
-    isAvailableForMentorship: false,
-    mentorTopics: ["Hardware & EV Systems"],
-    linkedinUrl: "https://linkedin.com/in/karan-johar",
-  },
-];
+import { alumniStore } from "@/lib/alumni/alumni-store";
 
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
-    const company = searchParams.get("company");
-    const batch = searchParams.get("batch");
+    const company = searchParams.get("company") || undefined;
+    const batch = searchParams.get("batch") ? Number(searchParams.get("batch")) : undefined;
     const mentorshipOnly = searchParams.get("mentorshipOnly") === "true";
 
-    let list = [...SAMPLE_ALUMNI];
-
-    if (company) {
-      list = list.filter((a) => a.currentCompany.toLowerCase().includes(company.toLowerCase()));
-    }
-    if (batch) {
-      list = list.filter((a) => a.graduationBatch === Number(batch));
-    }
-    if (mentorshipOnly) {
-      list = list.filter((a) => a.isAvailableForMentorship);
-    }
+    const list = alumniStore.getAlumni({
+      company,
+      batch,
+      mentorshipOnly,
+    });
 
     return NextResponse.json({
       success: true,
@@ -81,6 +24,40 @@ export async function GET(req: NextRequest) {
     });
   } catch (error: any) {
     logger.error("Alumni directory GET error", error);
-    return NextResponse.json({ error: "Failed to fetch alumni directory" }, { status: 500 });
+    return NextResponse.json({ error: error.message || "Failed to fetch alumni directory" }, { status: 500 });
+  }
+}
+
+export async function POST(req: NextRequest) {
+  try {
+    const session = await getOptionalSession(req);
+    if (!session) {
+      return NextResponse.json({ error: "Authentication required to register in alumni directory" }, { status: 401 });
+    }
+
+    const body = await req.json();
+    const { fullName, graduationBatch, degree, currentCompany, jobTitle, location, isAvailableForMentorship, mentorTopics, linkedinUrl } = body;
+
+    const alumnus = alumniStore.registerAlumnus({
+      fullName: fullName || session.fullName,
+      graduationBatch: Number(graduationBatch),
+      degree,
+      currentCompany,
+      jobTitle,
+      location,
+      isAvailableForMentorship: Boolean(isAvailableForMentorship),
+      mentorTopics: Array.isArray(mentorTopics) ? mentorTopics : typeof mentorTopics === "string" ? mentorTopics.split(",").map((s: string) => s.trim()) : undefined,
+      linkedinUrl,
+      email: session.email,
+    });
+
+    return NextResponse.json({
+      success: true,
+      message: "Alumni profile registered successfully in the university network",
+      alumnus,
+    }, { status: 201 });
+  } catch (error: any) {
+    logger.error("Alumni registration POST error", error);
+    return NextResponse.json({ error: error.message || "Failed to register alumni profile" }, { status: 400 });
   }
 }

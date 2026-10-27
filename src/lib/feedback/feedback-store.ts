@@ -129,13 +129,21 @@ export const feedbackStore = {
     };
   },
 
-  getResponses(facultyId?: string, courseCode?: string) {
+  getResponses(facultyId?: string, courseCode?: string, scrubStudentId: boolean = true) {
     const store = readStore();
-    return store.responses.filter((r) => {
-      if (facultyId && r.facultyId !== facultyId) return false;
-      if (courseCode && r.courseCode !== courseCode) return false;
-      return true;
-    });
+    return store.responses
+      .filter((r) => {
+        if (facultyId && r.facultyId !== facultyId) return false;
+        if (courseCode && r.courseCode !== courseCode) return false;
+        return true;
+      })
+      .map((r) => {
+        if (scrubStudentId) {
+          const { studentId, studentHash, ...rest } = r;
+          return rest as SurveyResponse;
+        }
+        return r;
+      });
   },
 
   getAllFacultyIndices(): FacultyPerformanceIndex[] {
@@ -165,6 +173,23 @@ export const feedbackStore = {
     }
 
     const store = readStore();
+    const sem = payload.semester || 5;
+    const studentIdentifier = payload.studentId || payload.studentHash;
+
+    if (studentIdentifier) {
+      const existing = store.responses.find(
+        (r) =>
+          (r.studentId === studentIdentifier || r.studentHash === studentIdentifier) &&
+          r.courseCode.toLowerCase() === (payload.courseCode || "").toLowerCase() &&
+          r.semester === sem
+      );
+      if (existing) {
+        throw new Error(
+          `Duplicate submission detected: You have already submitted an evaluation for course ${payload.courseCode} in Semester ${sem}.`
+        );
+      }
+    }
+
     const overallScore =
       Math.round(
         ((payload.ratingPedagogy! +
@@ -185,7 +210,7 @@ export const feedbackStore = {
       facultyId: payload.facultyId!,
       facultyName: payload.facultyName || "Faculty Instructor",
       departmentCode: payload.departmentCode || "CSE",
-      semester: payload.semester || 5,
+      semester: sem,
       academicYear: payload.academicYear || "2025-2026",
       ratingPedagogy: payload.ratingPedagogy!,
       ratingSyllabus: payload.ratingSyllabus!,
@@ -195,6 +220,8 @@ export const feedbackStore = {
       overallScore,
       qualitativeRemarks: payload.qualitativeRemarks,
       isAnonymized: true,
+      studentId: payload.studentId,
+      studentHash: payload.studentHash,
       submittedAt: new Date().toISOString(),
     };
 

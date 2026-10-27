@@ -40,13 +40,20 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: "Full name, email, and target program are required" }, { status: 400 });
       }
 
+      if (highSchoolGpa === undefined || isNaN(Number(highSchoolGpa)) || Number(highSchoolGpa) < 0) {
+        return NextResponse.json({ error: "Valid non-negative high school GPA / percentage is required" }, { status: 400 });
+      }
+      if (entranceExamScore === undefined || isNaN(Number(entranceExamScore)) || Number(entranceExamScore) < 0) {
+        return NextResponse.json({ error: "Valid non-negative entrance examination score is required" }, { status: 400 });
+      }
+
       const applicant = admissionsStore.createApplicant({
         fullName,
         email,
         phone,
         programCode,
-        highSchoolGpa: Number(highSchoolGpa) || 3.5,
-        entranceExamScore: Number(entranceExamScore) || 1350,
+        highSchoolGpa: Number(highSchoolGpa),
+        entranceExamScore: Number(entranceExamScore),
         source: source || "WEBSITE",
       });
 

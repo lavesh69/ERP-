@@ -46,12 +46,12 @@ export default function AlumniPage() {
   const [donationAmount, setDonationAmount] = useState<number>(2500);
   const [customDonationAmount, setCustomDonationAmount] = useState<string>("");
   const [donorPan, setDonorPan] = useState("");
-  const [donorName, setDonorName] = useState(currentUser?.fullName || "Distinguished Alumnus");
+  const [donorName, setDonorName] = useState(currentUser?.fullName || "");
   const [isAnonymousDonor, setIsAnonymousDonor] = useState(false);
   const [donationSuccessReceipt, setDonationSuccessReceipt] = useState<any | null>(null);
 
   // Degree Verification Form
-  const [verifyRoll, setVerifyRoll] = useState("CS2026-001");
+  const [verifyRoll, setVerifyRoll] = useState("");
   const [verifyResult, setVerifyResult] = useState<any>(null);
   const [verifying, setVerifying] = useState(false);
 
@@ -59,62 +59,41 @@ export default function AlumniPage() {
   const [showMentorModal, setShowMentorModal] = useState(false);
   const [selectedMentor, setSelectedMentor] = useState<any>(null);
   const [mentorTopic, setMentorTopic] = useState("");
-  const [mentorDate, setMentorDate] = useState("2026-11-15");
-  const [mentorSlot, setMentorSlot] = useState("16:00 - 16:45 IST");
+  const [mentorDate, setMentorDate] = useState("");
+  const [mentorSlot, setMentorSlot] = useState("");
   const [mentorFormat, setMentorFormat] = useState("1:1 Video Mentorship (Google Meet)");
 
   // Register Alumni Form
   const [showRegisterModal, setShowRegisterModal] = useState(false);
   const [registerForm, setRegisterForm] = useState({
     fullName: "",
-    graduationBatch: 2024,
-    degree: "B.Tech Computer Science",
+    graduationBatch: new Date().getFullYear(),
+    degree: "",
     currentCompany: "",
     jobTitle: "",
-    location: "Bengaluru, India",
+    location: "",
     isAvailableForMentorship: true,
-    mentorshipDomains: "Cloud Architecture, Career Guidance",
-    linkedinUrl: "https://linkedin.com/in/",
+    mentorshipDomains: "",
+    linkedinUrl: "",
   });
 
   // Giving Campaigns
-  const [campaigns, setCampaigns] = useState([
-    {
-      id: "camp-01",
-      title: "Dean's Merit Scholarship Endowment Fund",
-      target: 250000,
-      raised: 184500,
-      donorsCount: 312,
-      category: "Student Financial Aid",
-      deadline: "2026-12-31",
-    },
-    {
-      id: "camp-02",
-      title: "High Performance AI & Quantum Compute Cluster",
-      target: 500000,
-      raised: 412000,
-      donorsCount: 148,
-      category: "Research Infrastructure",
-      deadline: "2026-11-30",
-    },
-    {
-      id: "camp-03",
-      title: "Olympic Standard Student Gymnasium & Athletics Pavillion",
-      target: 150000,
-      raised: 92400,
-      donorsCount: 220,
-      category: "Campus Sports",
-      deadline: "2027-03-31",
-    },
-  ]);
+  const [campaigns, setCampaigns] = useState<any[]>([]);
 
   const fetchAlumni = async () => {
     try {
       setLoading(true);
-      const res = await fetch("/api/alumni/directory");
-      if (res.ok) {
-        const data = await res.json();
+      const [dirRes, giveRes] = await Promise.all([
+        fetch("/api/alumni/directory"),
+        fetch("/api/alumni/giving"),
+      ]);
+      if (dirRes.ok) {
+        const data = await dirRes.json();
         setAlumni(data.alumni || []);
+      }
+      if (giveRes.ok) {
+        const gData = await giveRes.json();
+        setCampaigns(gData.campaigns || []);
       }
     } catch (err) {
       console.error("Failed to load alumni directory", err);
@@ -166,49 +145,76 @@ export default function AlumniPage() {
     }
   };
 
-  const handleSendMentorRequest = (e: React.FormEvent) => {
+  const handleSendMentorRequest = async (e: React.FormEvent) => {
     e.preventDefault();
-    const meetLink = `https://meet.apex.edu/alumni-${Math.random().toString(36).substring(2, 7)}`;
-    showToast(
-      `1:1 Mentorship session confirmed with ${selectedMentor?.fullName} on ${mentorDate} at ${mentorSlot}! Meeting Link: ${meetLink}`,
-      "success"
-    );
-    setShowMentorModal(false);
-    setMentorTopic("");
+    if (!mentorDate || !mentorSlot) {
+      showToast("Please specify both a date and time slot for mentorship.", "warning");
+      return;
+    }
+    try {
+      const res = await fetch("/api/alumni/mentorship", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          mentorId: selectedMentor?.id,
+          mentorName: selectedMentor?.fullName,
+          topic: mentorTopic,
+          date: mentorDate,
+          slotTime: mentorSlot,
+          meetingFormat: mentorFormat,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        showToast(data.error || "Failed to book mentorship session.", "error");
+        return;
+      }
+      showToast(
+        data.message || `Mentorship session confirmed with ${selectedMentor?.fullName} on ${mentorDate}!`,
+        "success"
+      );
+      setShowMentorModal(false);
+      setMentorTopic("");
+      setMentorDate("");
+      setMentorSlot("");
+    } catch (err: any) {
+      showToast(err.message || "Network error booking mentorship", "error");
+    }
   };
 
-  const handleRegisterAlumni = (e: React.FormEvent) => {
+  const handleRegisterAlumni = async (e: React.FormEvent) => {
     e.preventDefault();
-    const newAlumnus = {
-      id: `alm-${Date.now().toString().slice(-4)}`,
-      fullName: registerForm.fullName,
-      graduationBatch: Number(registerForm.graduationBatch),
-      degree: registerForm.degree,
-      currentCompany: registerForm.currentCompany,
-      jobTitle: registerForm.jobTitle,
-      location: registerForm.location,
-      isAvailableForMentorship: registerForm.isAvailableForMentorship,
-      mentorshipDomains: registerForm.mentorshipDomains.split(",").map((s) => s.trim()),
-      mentorTopics: registerForm.mentorshipDomains.split(",").map((s) => s.trim()),
-      linkedinUrl: registerForm.linkedinUrl,
-    };
-    setAlumni([newAlumnus, ...alumni]);
-    showToast(
-      `Congratulations! ${registerForm.fullName} has been officially registered in the Institutional Alumni Directory.`,
-      "success"
-    );
-    setShowRegisterModal(false);
-    setRegisterForm({
-      fullName: "",
-      graduationBatch: 2024,
-      degree: "B.Tech Computer Science",
-      currentCompany: "",
-      jobTitle: "",
-      location: "Bengaluru, India",
-      isAvailableForMentorship: true,
-      mentorshipDomains: "Cloud Architecture, Career Guidance",
-      linkedinUrl: "https://linkedin.com/in/",
-    });
+    try {
+      const res = await fetch("/api/alumni/directory", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...registerForm,
+          mentorTopics: registerForm.mentorshipDomains ? registerForm.mentorshipDomains.split(",").map((s) => s.trim()) : [],
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        showToast(data.error || "Failed to register alumni profile.", "error");
+        return;
+      }
+      showToast(data.message || "Alumni profile registered successfully!", "success");
+      setShowRegisterModal(false);
+      fetchAlumni();
+      setRegisterForm({
+        fullName: "",
+        graduationBatch: new Date().getFullYear(),
+        degree: "",
+        currentCompany: "",
+        jobTitle: "",
+        location: "",
+        isAvailableForMentorship: true,
+        mentorshipDomains: "",
+        linkedinUrl: "",
+      });
+    } catch (err: any) {
+      showToast(err.message || "Error submitting alumni registration", "error");
+    }
   };
 
   const handlePledgeDonation = (campaign: any) => {
@@ -218,36 +224,44 @@ export default function AlumniPage() {
     setDonationSuccessReceipt(null);
   };
 
-  const handleExecuteDonation = (e: React.FormEvent) => {
+  const handleExecuteDonation = async (e: React.FormEvent) => {
     e.preventDefault();
     const finalAmount = customDonationAmount ? Number(customDonationAmount) : donationAmount;
     if (!finalAmount || finalAmount <= 0) return;
 
-    // Update campaign in state
-    setCampaigns((prev) =>
-      prev.map((c) =>
-        c.id === givingModalCampaign?.id
-          ? { ...c, raised: c.raised + finalAmount, donorsCount: c.donorsCount + 1 }
-          : c
-      )
-    );
+    try {
+      const res = await fetch("/api/alumni/giving", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          campaignId: givingModalCampaign?.id,
+          amount: finalAmount,
+          donorName,
+          donorPan,
+          isAnonymous: isAnonymousDonor,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        showToast(data.error || "Failed to process endowment gift.", "error");
+        return;
+      }
 
-    const receipt = {
-      receiptNo: `ENDOW-80G-${Date.now().toString().slice(-6)}`,
-      date: new Date().toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" }),
-      campaignTitle: givingModalCampaign?.title,
-      donorName: isAnonymousDonor ? "Anonymous Benefactor" : donorName,
-      pan: donorPan ? donorPan.toUpperCase() : "INSTITUTIONAL_TRUST",
-      amount: finalAmount,
-      taxDeductibleEligible: "Official Donation Receipt Issued by Apex Institutional Trust (Reg No. TRUST/BLR/2026/80G)",
-      exemptionNumber: "APEX-TRUST-80G-VERIFIED",
-    };
-
-    setDonationSuccessReceipt(receipt);
-    showToast(
-      `Endowment gift of ₹${finalAmount.toLocaleString("en-IN")} successfully processed for "${givingModalCampaign?.title}"!`,
-      "success"
-    );
+      setDonationSuccessReceipt({
+        receiptNo: data.donation?.receiptNo || `ENDOW-80G-${Date.now().toString().slice(-6)}`,
+        date: new Date().toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" }),
+        campaignTitle: givingModalCampaign?.title,
+        donorName: isAnonymousDonor ? "Anonymous Benefactor" : donorName,
+        pan: donorPan ? donorPan.toUpperCase() : "INSTITUTIONAL_TRUST",
+        amount: finalAmount,
+        taxDeductibleEligible: "Official Donation Receipt Issued by Apex Institutional Trust (Reg No. TRUST/BLR/2026/80G)",
+        exemptionNumber: "APEX-TRUST-80G-VERIFIED",
+      });
+      showToast(data.message || `Endowment gift of ₹${finalAmount.toLocaleString("en-IN")} confirmed!`, "success");
+      fetchAlumni();
+    } catch (err: any) {
+      showToast(err.message || "Error processing donation", "error");
+    }
   };
 
   const handleExportAlumniCsv = () => {

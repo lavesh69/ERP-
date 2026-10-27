@@ -92,10 +92,47 @@ export function validateApplicantInput(data: Partial<ApplicantLead>): { isValid:
   if (!data.programCode) {
     errors.push("Target degree program is required.");
   }
+  if (data.highSchoolGpa === undefined || isNaN(Number(data.highSchoolGpa)) || Number(data.highSchoolGpa) < 0 || Number(data.highSchoolGpa) > 100) {
+    errors.push("High school GPA / percentage must be a valid number between 0 and 100 (or 0.0 to 4.0 scale).");
+  }
+  if (data.entranceExamScore === undefined || isNaN(Number(data.entranceExamScore)) || Number(data.entranceExamScore) < 0) {
+    errors.push("Valid non-negative entrance examination score is required.");
+  }
   return {
     isValid: errors.length === 0,
     errors,
   };
+}
+
+/**
+ * Validates progression through the official university enrollment lifecycle
+ */
+export function validateStageTransition(
+  currentStage: AdmissionStage,
+  nextStage: AdmissionStage
+): { isValid: boolean; reason?: string } {
+  if (currentStage === nextStage) return { isValid: true };
+  if (nextStage === "REJECTED") return { isValid: true };
+
+  const validTransitions: Record<AdmissionStage, AdmissionStage[]> = {
+    INQUIRY: ["APPLICATION_SUBMITTED", "REJECTED"],
+    APPLICATION_SUBMITTED: ["DOCUMENTS_VERIFIED", "MERIT_SHORTLISTED", "REJECTED"],
+    DOCUMENTS_VERIFIED: ["MERIT_SHORTLISTED", "OFFER_EXTENDED", "REJECTED"],
+    MERIT_SHORTLISTED: ["OFFER_EXTENDED", "REJECTED"],
+    OFFER_EXTENDED: ["SEAT_CONFIRMED", "REJECTED"],
+    SEAT_CONFIRMED: ["ENROLLED", "REJECTED"],
+    ENROLLED: [],
+    REJECTED: ["APPLICATION_SUBMITTED"], // Appeal reactivation
+  };
+
+  const allowed = validTransitions[currentStage] || [];
+  if (!allowed.includes(nextStage)) {
+    return {
+      isValid: false,
+      reason: `Illegal admission pipeline progression: Cannot transition applicant from '${currentStage}' to '${nextStage}'.`,
+    };
+  }
+  return { isValid: true };
 }
 
 export const calculateCompositeMeritScore = calculateCompositeScore;

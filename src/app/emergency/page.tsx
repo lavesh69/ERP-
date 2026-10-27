@@ -648,7 +648,16 @@ export default function EmergencyPage() {
               }`}
             >
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 flex-wrap">
+                  {al.category === "DRILL_SIMULATION" ? (
+                    <span className="px-2.5 py-0.5 rounded-md text-[11px] font-black uppercase tracking-wider bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 border border-amber-300 dark:border-amber-700">
+                      DRILL / SIMULATION
+                    </span>
+                  ) : (
+                    <span className="px-2.5 py-0.5 rounded-md text-[11px] font-black uppercase tracking-wider bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300 border border-red-300 dark:border-red-700">
+                      LIVE EMERGENCY BROADCAST
+                    </span>
+                  )}
                   <span
                     className={`px-2.5 py-1 rounded-lg text-xs font-bold uppercase ${
                       al.severity === "CRITICAL_EVACUATION"

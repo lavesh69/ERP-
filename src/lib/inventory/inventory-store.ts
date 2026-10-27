@@ -224,6 +224,14 @@ export const inventoryStore = {
     }
 
     const store = readStore();
+    if (payload.assetTag) {
+      const tagConflict = store.assets.find(
+        (a) => a.assetTag.toLowerCase() === payload.assetTag!.toLowerCase()
+      );
+      if (tagConflict) {
+        throw new Error(`Asset Tag conflict: An asset with tag '${payload.assetTag}' already exists in registry.`);
+      }
+    }
     const dep = computeStraightLineDepreciation(payload.purchaseCost || 0, payload.purchaseDate || new Date().toISOString(), 5);
 
     const newAsset: CampusAsset = {
@@ -302,6 +310,9 @@ export const inventoryStore = {
   },
 
   deductConsumable(itemIdentifier: string, quantity: number, notes?: string) {
+    if (quantity <= 0 || isNaN(quantity)) {
+      throw new Error("Consumable stock deduction quantity must be a positive number.");
+    }
     const store = readStore();
     const query = itemIdentifier.trim().toLowerCase();
     let target = store.consumables.find(

@@ -41,8 +41,12 @@ export async function POST(req: NextRequest) {
       .slice(0, 16)
       .toUpperCase();
 
+    const isGraduated = student.status === "GRADUATED";
+
     const result = {
       verified: true,
+      isDegreeConferred: isGraduated,
+      enrollmentStatus: student.status,
       institution: "Apex University of Science & Technology",
       alumnus: {
         name: `${student.user.firstName} ${student.user.lastName}`,
@@ -52,12 +56,19 @@ export async function POST(req: NextRequest) {
         department: student.program.department.name,
         cumulativeGpa: student.cgpa,
         academicStanding: student.cgpa >= 3.5 ? "FIRST_CLASS_WITH_DISTINCTION" : "FIRST_CLASS",
-        degreeStatus: student.status === "GRADUATED" ? "CONFERRED" : "ENROLLED_ACTIVE",
+        degreeStatus: isGraduated ? "CONFERRED" : "ENROLLED_ACTIVE",
       },
       cryptographicProof: {
         certificateReference: `DEG-APEX-${verificationHash}`,
-        registrarDigitalStamp: "SEAL_VERIFIED_REGISTRAR_APEX_2026",
+        verificationMethod: "INSTITUTIONAL_REGISTRY_HASH",
         timestamp: new Date().toISOString(),
+      },
+      verificationAudit: {
+        registryQueryReference: `REG-VERIFY-${verificationHash}`,
+        statusNote: isGraduated
+          ? "Degree conferral confirmed by institutional registry records."
+          : "Student is actively enrolled in good academic standing; degree conferral pending graduation.",
+        verifiedAt: new Date().toISOString(),
       },
       verifiedForAgency: verificationAgency || "Corporate Background Verification Partner",
     };
