@@ -128,7 +128,16 @@ export const incubationStore = {
       (s) => s.startupName.toLowerCase() === payload.startupName!.trim().toLowerCase()
     );
     if (duplicate) {
-      throw new Error(`A venture named '${payload.startupName}' is already registered in the university incubator.`);
+      if (payload.founderRollOrStaffId && duplicate.founderRollOrStaffId !== payload.founderRollOrStaffId) {
+        throw new Error(`A venture named '${payload.startupName}' is already registered in the university incubator.`);
+      }
+      if (!payload.founderRollOrStaffId) {
+        throw new Error(`A venture named '${payload.startupName}' is already registered in the university incubator.`);
+      }
+      // Idempotently update existing venture if re-registered by same founder
+      Object.assign(duplicate, payload);
+      writeStore(store);
+      return duplicate;
     }
 
     const newStartup: IncubatedStartup = {
