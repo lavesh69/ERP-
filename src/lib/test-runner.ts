@@ -12334,6 +12334,177 @@ By breaking down large monolithic systems into decoupled microservices, systems 
   const isSafetyGuardFunctional = true;
   assert(isSafetyGuardFunctional === true, "Seed script has production safety guard to prevent accidental data destruction");
 
+  // --- GROUP 88: Comprehensive 9-Module Full-Stack Audit, Capacity Controls & Lifecycle Validation ---
+  console.log("\n--- GROUP 88: Comprehensive 9-Module Full-Stack Audit & Capacity Controls ---");
+
+  // 1. Hostel: Vacate Bed & Idempotency
+  const roomToVacate = hostelStore.getRooms().find((r) => r.beds.some((b) => b.isOccupied));
+  const occupiedBed = roomToVacate?.beds.find((b) => b.isOccupied);
+  if (roomToVacate && occupiedBed) {
+    const vacateReq = new NextRequest("http://localhost:3000/api/hostel", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+      body: JSON.stringify({
+        action: "VACATE_BED",
+        roomId: roomToVacate.id,
+        bedNumber: occupiedBed.bedNumber,
+      }),
+    });
+    const vacateRes = await handleHostelPost(vacateReq);
+    assert(vacateRes.status === 200, "POST /api/hostel (VACATE_BED) returns 200 OK");
+    const vacateData = await vacateRes.json();
+    assert(vacateData.room != null, "Hostel bed vacated and returned to room inventory");
+
+    // Vacating an already vacant bed should throw
+    let vacateVacantThrew = false;
+    try {
+      hostelStore.vacateBed({ roomId: roomToVacate.id, bedNumber: occupiedBed.bedNumber });
+    } catch (vErr: any) {
+      vacateVacantThrew = true;
+      assert(vErr.message.includes("already vacant"), "Vacating already vacant bed triggers clear error");
+    }
+    assert(vacateVacantThrew === true, "Hostel store prevents duplicate vacation of vacant bed");
+  }
+
+  // 2. Transport: Fleet Registration & Passenger Overcapacity Defense
+  const testRegNum = `MA-TEST-${Date.now().toString().slice(-4)}`;
+  const regVehReq = new NextRequest("http://localhost:3000/api/transport", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "REGISTER_VEHICLE",
+      registrationNumber: testRegNum,
+      vehicleCode: `BUS-T${Date.now().toString().slice(-3)}`,
+      capacity: 40,
+      fuelType: "ELECTRIC",
+      driverName: "Chief Driver Anderson",
+    }),
+  });
+  const regVehRes = await handleTransportPost(regVehReq);
+  assert(regVehRes.status === 201, "POST /api/transport (REGISTER_VEHICLE) registers vehicle with 201 Created");
+  const regVehData = await regVehRes.json();
+  assert(regVehData.vehicle?.id != null, "New vehicle saved to transport fleet inventory");
+
+  // Attempting telemetry update exceeding certified passenger capacity (45 > 40)
+  let overCapacityThrew = false;
+  try {
+    transportStore.updateVehicleTelemetry(regVehData.vehicle.id, { currentPassengers: 45 });
+  } catch (capErr: any) {
+    overCapacityThrew = true;
+    assert(capErr.message.includes("cannot exceed vehicle certified capacity"), "Overcapacity passenger telemetry rejected");
+  }
+  assert(overCapacityThrew === true, "Transport engine strictly enforces vehicle passenger capacity limit");
+
+  // 3. Grievances: Statutory Committee Assignment
+  const grievanceForAssign = grievancesStore.createGrievance({
+    title: "Laboratory Fume Hood Maintenance Audit",
+    description: "Ventilation duct vibration requires physical inspection by campus engineering team.",
+    category: "CAMPUS_INFRASTRUCTURE",
+    severity: "MEDIUM",
+    isAnonymous: false,
+    grievantRole: "STUDENT",
+    grievantName: "Audit Student",
+    grievantRollOrId: "STU-AUDIT-01",
+  });
+  const assignCommReq = new NextRequest("http://localhost:3000/api/grievances", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "ASSIGN_COMMITTEE",
+      grievanceId: grievanceForAssign.id,
+      committeeName: "Campus Engineering & Safety Directorate",
+      notes: "Forwarded for priority mechanical inspection.",
+    }),
+  });
+  const assignCommRes = await handleGrievancesPost(assignCommReq);
+  assert(assignCommRes.status === 200, "POST /api/grievances (ASSIGN_COMMITTEE) returns 200 OK");
+  const assignCommData = await assignCommRes.json();
+  assert(assignCommData.grievance.status === "COMMITTEE_ASSIGNED", "Grievance status transitions to COMMITTEE_ASSIGNED");
+  assert(assignCommData.grievance.committeeName === "Campus Engineering & Safety Directorate", "Grievance committee assigned accurately");
+
+  // 4. Admissions: Intake Quota Validation
+  let invalidQuotaThrew = false;
+  try {
+    admissionsStore.updateQuota({
+      programCode: "prog-cs-01",
+      programName: "B.Tech Computer Science & Engineering",
+      totalSeats: 0,
+      confirmedSeats: 0,
+      cutoffScore: 85,
+      applicationFee: 100,
+    });
+  } catch (qErr: any) {
+    invalidQuotaThrew = true;
+    assert(qErr.message.includes("Total intake seats must be a positive integer"), "Zero or negative quota seats rejected");
+  }
+  assert(invalidQuotaThrew === true, "Admissions store enforces positive intake seat capacity");
+
+  // 5. Emergency: Muster Point Headcount Validation
+  let negativeMusterThrew = false;
+  try {
+    emergencyStore.updateMusterPoint("mp-01", -50, "SAFE_ASSEMBLED");
+  } catch (mErr: any) {
+    negativeMusterThrew = true;
+    assert(mErr.message.includes("must be a non-negative number"), "Negative muster headcount rejected");
+  }
+  assert(negativeMusterThrew === true, "Emergency store strictly rejects negative muster evacuee counts");
+
+  const validMusterReq = new NextRequest("http://localhost:3000/api/emergency", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "UPDATE_MUSTER",
+      id: "mp-01",
+      count: 920,
+      status: "SAFE_ASSEMBLED",
+    }),
+  });
+  const validMusterRes = await handleEmergencyPost(validMusterReq);
+  assert(validMusterRes.status === 200, "POST /api/emergency (UPDATE_MUSTER) returns 200 OK");
+  const validMusterData = await validMusterRes.json();
+  assert(validMusterData.point.currentEvacueesCount === 920, "Muster point evacuee headcount updated accurately");
+
+  // 6. Alumni: Non-numeric / Invalid Giving Amount Rejection
+  const invalidDonationReq = new NextRequest("http://localhost:3000/api/alumni/giving", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      campaignId: "camp-01",
+      amount: "not-a-number",
+      donorName: "Test Alumnus",
+    }),
+  });
+  const invalidDonationRes = await handleAlumniGivingPost(invalidDonationReq);
+  assert(invalidDonationRes.status === 400, "POST /api/alumni/giving rejects non-numeric contribution amount with 400 Bad Request");
+
+  // 7. Incubation: Duplicate Venture Name & Mentor Assignment
+  let duplicateVentureThrew = false;
+  try {
+    incubationStore.registerStartup({
+      startupName: "NeuroPulse BioTech", // Already in DEFAULT_STARTUPS
+      founderName: "Duplicate Founder",
+      pitchDeckSummary: "A duplicate healthtech idea.",
+    });
+  } catch (vErr: any) {
+    duplicateVentureThrew = true;
+    assert(vErr.message.includes("already registered in the university incubator"), "Duplicate venture name rejected");
+  }
+  assert(duplicateVentureThrew === true, "Incubation store prevents duplicate startup venture registrations");
+
+  const assignMentorReq = new NextRequest("http://localhost:3000/api/incubation", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "ASSIGN_MENTOR",
+      id: "st-03",
+      mentorName: "Dr. Evelyn Vance (Senior Partner)",
+    }),
+  });
+  const assignMentorRes = await handleIncubationPost(assignMentorReq);
+  assert(assignMentorRes.status === 200, "POST /api/incubation (ASSIGN_MENTOR) returns 200 OK");
+  const assignMentorData = await assignMentorRes.json();
+  assert(assignMentorData.venture.mentorName === "Dr. Evelyn Vance (Senior Partner)", "Mentor assigned to venture successfully");
+
   console.log("\n=================================================");
   console.log(`🎉 ALL ${passedTests}/${totalTests} TESTS PASSED SUCCESSFULLY!`);
   console.log("=================================================\n");

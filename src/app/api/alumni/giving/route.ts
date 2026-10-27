@@ -19,7 +19,8 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const { campaignId, donorName, donorEmail, donorPan, amount, isAnonymous, paymentMethod } = body;
 
-    if (!campaignId || !amount || Number(amount) <= 0) {
+    const numAmount = Number(amount);
+    if (!campaignId || isNaN(numAmount) || numAmount <= 0) {
       return NextResponse.json({ error: "Campaign ID and positive contribution amount are required" }, { status: 400 });
     }
 
@@ -28,7 +29,7 @@ export async function POST(req: NextRequest) {
       donorName: donorName || session?.fullName || "Distinguished Alumnus",
       donorEmail: donorEmail || session?.email,
       donorPan,
-      amount: Number(amount),
+      amount: numAmount,
       isAnonymous: Boolean(isAnonymous),
       paymentMethod,
     });

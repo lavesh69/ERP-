@@ -149,6 +149,16 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: true, message: "Maintenance service logged successfully", record: rec });
     }
 
+    if (action === "REGISTER_VEHICLE") {
+      const allowedRoles = ["SUPER_ADMIN", "INSTITUTION_ADMIN", "TRANSPORT_MANAGER", "OPERATIONS_STAFF"];
+      if (!allowedRoles.includes(session.role)) {
+        return NextResponse.json({ error: "Forbidden: Only transport administrators can register new fleet vehicles" }, { status: 403 });
+      }
+
+      const vehicle = transportStore.registerVehicle(body);
+      return NextResponse.json({ success: true, message: `Vehicle ${vehicle.vehicleCode} (${vehicle.registrationNumber}) registered successfully`, vehicle }, { status: 201 });
+    }
+
     return NextResponse.json({ error: `Unknown action: ${action}` }, { status: 400 });
   } catch (error: any) {
     console.error("[Transport API Error POST]:", error);

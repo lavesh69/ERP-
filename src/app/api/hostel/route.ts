@@ -129,6 +129,21 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ message: `Bed ${bedNumber} allocated successfully`, ...result });
     }
 
+    if (action === "VACATE_BED") {
+      const allowedRoles = ["SUPER_ADMIN", "INSTITUTION_ADMIN", "WARDEN", "PRINCIPAL"];
+      if (!allowedRoles.includes(session.role)) {
+        return NextResponse.json({ error: "Forbidden: Only wardens or administrators can vacate hostel beds" }, { status: 403 });
+      }
+
+      const { roomId, bedNumber, studentRoll } = body;
+      if (!studentRoll && (!roomId || !bedNumber)) {
+        return NextResponse.json({ error: "studentRoll or both roomId and bedNumber are required to vacate bed" }, { status: 400 });
+      }
+
+      const result = hostelStore.vacateBed({ roomId, bedNumber, studentRoll });
+      return NextResponse.json({ message: "Hostel bed vacated and returned to available inventory", ...result });
+    }
+
     if (action === "REQUEST_GATE_PASS") {
       const pass = hostelStore.createGatePass({
         studentId: body.studentId || session.id,

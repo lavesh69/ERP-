@@ -267,4 +267,23 @@ export const grievancesStore = {
     writeStore(store);
     return g;
   },
+
+  assignCommittee(id: string, committeeName: string, notes?: string) {
+    const store = readStore();
+    const g = store.grievances.find((item) => item.id === id);
+    if (!g) throw new Error("Grievance ticket not found.");
+    if (g.status === "RESOLVED" || g.status === "DISMISSED") {
+      throw new Error(`Cannot reassign committee on a ${g.status.toLowerCase()} grievance ticket.`);
+    }
+    if (!committeeName || committeeName.trim().length === 0) {
+      throw new Error("Target committee or ombudsman officer name is required.");
+    }
+    g.committeeName = committeeName.trim();
+    g.status = "COMMITTEE_ASSIGNED";
+    if (notes) {
+      g.actionTakenReport = (g.actionTakenReport ? g.actionTakenReport + "\n" : "") + `[Assigned to ${committeeName}]: ${notes}`;
+    }
+    writeStore(store);
+    return g;
+  },
 };

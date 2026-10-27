@@ -359,9 +359,65 @@ export const transportStore = {
     const veh = store.vehicles.find((v) => v.id === vehicleId);
     if (!veh) throw new Error("Vehicle not found.");
 
+    if (updates.currentPassengers !== undefined) {
+      if (updates.currentPassengers < 0) {
+        throw new Error("Passenger count cannot be negative.");
+      }
+      if (updates.currentPassengers > veh.capacity) {
+        throw new Error(`Passenger count (${updates.currentPassengers}) cannot exceed vehicle certified capacity (${veh.capacity}).`);
+      }
+    }
+
     Object.assign(veh, updates);
     writeStore(store);
     return veh;
+  },
+
+  registerVehicle(payload: Partial<TransportVehicle>) {
+    if (!payload.registrationNumber || !payload.vehicleCode) {
+      throw new Error("Vehicle registration number and vehicle code are required.");
+    }
+    const cap = Number(payload.capacity);
+    if (!cap || isNaN(cap) || cap <= 0) {
+      throw new Error("Vehicle passenger capacity must be a positive number.");
+    }
+
+    const store = readStore();
+    const duplicate = store.vehicles.find(
+      (v) =>
+        v.registrationNumber.toLowerCase() === payload.registrationNumber!.toLowerCase() ||
+        v.vehicleCode.toLowerCase() === payload.vehicleCode!.toLowerCase()
+    );
+    if (duplicate) {
+      throw new Error(`Vehicle with registration '${payload.registrationNumber}' or code '${payload.vehicleCode}' already exists.`);
+    }
+
+    const newVehicle: TransportVehicle = {
+      id: `veh-${Date.now()}`,
+      registrationNumber: payload.registrationNumber.toUpperCase(),
+      vehicleCode: payload.vehicleCode.toUpperCase(),
+      type: payload.type || "BUS",
+      capacity: cap,
+      currentPassengers: 0,
+      fuelType: payload.fuelType || "DIESEL",
+      driverName: payload.driverName || "Designated Driver",
+      driverPhone: payload.driverPhone || "+1 (555) 000-0000",
+      driverLicense: payload.driverLicense || "CDL-PENDING",
+      attendantName: payload.attendantName || "Designated Conductor/Attendant",
+      attendantPhone: payload.attendantPhone || "+1 (555) 000-0001",
+      status: "ON_CAMPUS",
+      speedKmH: 0,
+      gpsLat: 42.3601,
+      gpsLng: -71.0589,
+      batteryOrFuelLevel: 100,
+      nextFcDate: payload.nextFcDate || "2027-12-31",
+      insuranceExpiry: payload.insuranceExpiry || "2027-12-31",
+      pucExpiry: payload.pucExpiry || "2027-12-31",
+    };
+
+    store.vehicles.push(newVehicle);
+    writeStore(store);
+    return newVehicle;
   },
 
   addMaintenanceRecord(record: Omit<FleetMaintenanceRecord, "id">) {

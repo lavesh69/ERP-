@@ -142,6 +142,22 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: true, message: "Committee hearing scheduled", grievance: scheduled });
     }
 
+    if (action === "ASSIGN_COMMITTEE") {
+      if (!GRIEVANCE_ADMIN_ROLES.includes(session.role)) {
+        return NextResponse.json(
+          { error: "Forbidden: Assigning grievances to statutory committees requires administrative authority" },
+          { status: 403 }
+        );
+      }
+      const { grievanceId, committeeName, notes } = body;
+      if (!grievanceId || !committeeName) {
+        return NextResponse.json({ error: "Grievance ID and target Committee Name are required" }, { status: 400 });
+      }
+
+      const assigned = grievancesStore.assignCommittee(grievanceId, committeeName, notes);
+      return NextResponse.json({ success: true, message: `Grievance successfully assigned to ${committeeName}`, grievance: assigned });
+    }
+
     return NextResponse.json({ error: `Unknown action: ${action}` }, { status: 400 });
   } catch (error: any) {
     console.error("[Grievances API Error POST]:", error);

@@ -245,6 +245,19 @@ export const admissionsStore = {
       throw new Error(transitionCheck.reason || `Invalid transition from ${app.stage} to ${stage}`);
     }
 
+    const wasAlreadyConfirmed = app.stage === "SEAT_CONFIRMED" || app.stage === "ENROLLED";
+    const isNowConfirming = stage === "SEAT_CONFIRMED" || stage === "ENROLLED" || depositPaid === true;
+
+    if (!wasAlreadyConfirmed && isNowConfirming) {
+      const quota = store.quotas.find((q) => q.programCode === app.programCode);
+      if (quota) {
+        if (quota.confirmedSeats >= quota.totalSeats) {
+          throw new Error(`Quota capacity exceeded: All ${quota.totalSeats} seats for program ${quota.programName} (${quota.programCode}) are already confirmed.`);
+        }
+        quota.confirmedSeats += 1;
+      }
+    }
+
     app.stage = stage;
     if (depositPaid !== undefined) {
       app.seatDepositPaid = depositPaid;
@@ -259,10 +272,21 @@ export const admissionsStore = {
   },
 
   updateQuota(quota: ProgramQuota): ProgramQuota {
+    if (!quota.totalSeats || quota.totalSeats <= 0) {
+      throw new Error("Total intake seats must be a positive integer.");
+    }
+    if (quota.cutoffScore !== undefined && (quota.cutoffScore < 0 || quota.cutoffScore > 100)) {
+      throw new Error("Cutoff score must be between 0 and 100.");
+    }
+
     const store = readStore();
     const idx = store.quotas.findIndex((q) => q.programCode === quota.programCode);
     if (idx >= 0) {
-      store.quotas[idx] = { ...store.quotas[idx], ...quota };
+      const existing = store.quotas[idx];
+      if (quota.totalSeats < existing.confirmedSeats) {
+        throw new Error(`Cannot reduce total seats (${quota.totalSeats}) below already confirmed enrollments (${existing.confirmedSeats}).`);
+      }
+      store.quotas[idx] = { ...existing, ...quota };
     } else {
       store.quotas.push(quota);
     }

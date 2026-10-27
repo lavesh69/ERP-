@@ -522,6 +522,56 @@ export const hostelStore = {
     return { success: true, room, bed };
   },
 
+  vacateBed(params: { roomId?: string; bedNumber?: string; studentRoll?: string }) {
+    const store = readStore();
+    let targetRoom: HostelRoom | undefined;
+    let targetBed: HostelBed | undefined;
+
+    if (params.studentRoll) {
+      targetRoom = store.rooms.find((r) => r.beds.some((b) => b.isOccupied && b.studentRoll === params.studentRoll));
+      if (targetRoom) {
+        targetBed = targetRoom.beds.find((b) => b.isOccupied && b.studentRoll === params.studentRoll);
+      }
+    } else if (params.roomId && params.bedNumber) {
+      targetRoom = store.rooms.find((r) => r.id === params.roomId);
+      if (targetRoom) {
+        targetBed = targetRoom.beds.find((b) => b.bedNumber === params.bedNumber);
+      }
+    }
+
+    if (!targetRoom || !targetBed) {
+      throw new Error("Specified room or resident bed allocation could not be found.");
+    }
+
+    if (!targetBed.isOccupied) {
+      throw new Error(`Bed ${targetBed.bedNumber} in room ${targetRoom.roomNumber} is already vacant.`);
+    }
+
+    const vacatedStudent = {
+      roll: targetBed.studentRoll,
+      name: targetBed.studentName,
+    };
+
+    targetBed.isOccupied = false;
+    delete targetBed.studentId;
+    delete targetBed.studentName;
+    delete targetBed.studentRoll;
+    delete targetBed.branch;
+    delete targetBed.allocatedDate;
+    delete targetBed.feeStatus;
+
+    targetRoom.occupiedCount = targetRoom.beds.filter((b) => b.isOccupied).length;
+    targetRoom.status = determineRoomStatus(targetRoom.beds, targetRoom.capacity);
+
+    const block = store.blocks.find((b) => b.id === targetRoom!.blockId);
+    if (block && block.occupiedBeds > 0) {
+      block.occupiedBeds -= 1;
+    }
+
+    writeStore(store);
+    return { success: true, room: targetRoom, vacatedStudent };
+  },
+
   createGatePass(payload: Partial<GatePass>) {
     const validation = validateGatePassRequest(payload);
     if (!validation.isValid) {

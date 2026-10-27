@@ -99,6 +99,28 @@ export async function POST(request: NextRequest) {
       });
     }
 
+    if (action === "ASSIGN_MENTOR") {
+      const INCUBATION_STAFF_ROLES = ["SUPER_ADMIN", "INSTITUTION_ADMIN", "PRINCIPAL", "DEAN", "HOD", "FACULTY", "RESEARCH_COORDINATOR"];
+      if (!INCUBATION_STAFF_ROLES.includes(session.role)) {
+        return NextResponse.json(
+          { error: "Forbidden: Only incubation coordinators and administrators can assign venture mentors" },
+          { status: 403 }
+        );
+      }
+
+      const { id, mentorName } = body;
+      if (!id || !mentorName) {
+        return NextResponse.json({ error: "Venture ID and mentorName are required" }, { status: 400 });
+      }
+
+      const updated = incubationStore.assignMentor(id, mentorName);
+      return NextResponse.json({
+        success: true,
+        message: `Assigned mentor ${mentorName} to venture ${updated.startupName}`,
+        venture: updated,
+      });
+    }
+
     return NextResponse.json({ error: `Unknown action: ${action}` }, { status: 400 });
   } catch (error: any) {
     console.error("[Incubation API Error POST]:", error);

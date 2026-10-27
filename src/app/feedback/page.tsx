@@ -570,13 +570,21 @@ export default function FeedbackPage() {
           }).length === 0 && (
             <div className="col-span-1 md:col-span-2">
               <EmptyState
-                icon={Search}
-                title="No Faculty Feedback Records"
-                description={`No faculty index matches query "${searchQuery}" and department "${selectedDept}".`}
-                actionLabel="Reset Filters"
+                icon={currentRole === "STUDENT" ? ShieldCheck : Search}
+                title={currentRole === "STUDENT" ? "Faculty Performance Indices Confidential" : "No Faculty Feedback Records"}
+                description={
+                  currentRole === "STUDENT"
+                    ? "Institutional faculty performance ratings and appraisal analytics are restricted to academic leadership. As a student, please click below to submit anonymous feedback for your enrolled courses."
+                    : `No faculty index matches query "${searchQuery}" and department "${selectedDept}".`
+                }
+                actionLabel={currentRole === "STUDENT" ? "Submit Course Evaluation" : "Reset Filters"}
                 onAction={() => {
-                  setSearchQuery("");
-                  setSelectedDept("ALL");
+                  if (currentRole === "STUDENT") {
+                    setShowSurveyModal(true);
+                  } else {
+                    setSearchQuery("");
+                    setSelectedDept("ALL");
+                  }
                 }}
               />
             </div>

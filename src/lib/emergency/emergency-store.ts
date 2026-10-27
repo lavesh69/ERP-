@@ -182,7 +182,11 @@ export const emergencyStore = {
       throw new Error(`Muster point ${id} not found`);
     }
 
-    point.currentEvacueesCount = count;
+    if (typeof count !== "number" || isNaN(count) || count < 0) {
+      throw new Error("Muster point evacuee headcount must be a non-negative number.");
+    }
+
+    point.currentEvacueesCount = Math.round(count);
     point.status = status;
     writeStore(store);
     return point;

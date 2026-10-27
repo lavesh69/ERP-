@@ -124,6 +124,13 @@ export const incubationStore = {
     }
 
     const store = readStore();
+    const duplicate = store.startups.find(
+      (s) => s.startupName.toLowerCase() === payload.startupName!.trim().toLowerCase()
+    );
+    if (duplicate) {
+      throw new Error(`A venture named '${payload.startupName}' is already registered in the university incubator.`);
+    }
+
     const newStartup: IncubatedStartup = {
       id: `st-${Date.now()}`,
       companyRef: `VENT-2026-${Math.floor(100 + Math.random() * 900)}`,
@@ -180,6 +187,20 @@ export const incubationStore = {
     if (fundingDelta?.external !== undefined) startup.externalFundingRaised = Math.max(0, fundingDelta.external);
     if (stage === "GRADUATED_VENTURE") startup.status = "GRADUATED";
 
+    writeStore(store);
+    return startup;
+  },
+
+  assignMentor(id: string, mentorName: string): IncubatedStartup {
+    if (!mentorName || mentorName.trim().length === 0) {
+      throw new Error("Mentor name is required.");
+    }
+    const store = readStore();
+    const startup = store.startups.find((s) => s.id === id);
+    if (!startup) {
+      throw new Error(`Startup venture with id ${id} not found`);
+    }
+    startup.mentorName = mentorName.trim();
     writeStore(store);
     return startup;
   },
