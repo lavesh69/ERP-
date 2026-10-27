@@ -295,6 +295,10 @@ export const inventoryStore = {
     const order = store.workOrders.find((w) => w.id === orderId);
     if (!order) throw new Error("Work order not found.");
 
+    if (typeof actualCost !== "number" || isNaN(actualCost) || actualCost < 0) {
+      throw new Error("Actual maintenance cost must be a non-negative number.");
+    }
+
     order.status = "COMPLETED";
     order.actualCost = actualCost;
     order.completedDate = new Date().toISOString();

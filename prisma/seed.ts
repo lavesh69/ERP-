@@ -18,6 +18,16 @@ function hashPassword(password: string): Promise<string> {
 }
 
 async function main() {
+  // Production Safety Guard: Prevent accidental data destruction on production databases
+  const isProduction = process.env.NODE_ENV === "production";
+  const databaseUrl = process.env.DATABASE_URL || "";
+  const isCloudDb = databaseUrl.includes("neon.tech") || databaseUrl.includes("supabase.co") || databaseUrl.includes("aws.");
+  if ((isProduction || isCloudDb) && !process.env.ALLOW_PRODUCTION_SEED) {
+    console.error("❌ FATAL: Database destructive seeding is strictly barred against production/cloud databases to prevent accidental data loss.");
+    console.error("   To bypass deliberately, you must explicitly set ALLOW_PRODUCTION_SEED=true in your environment.");
+    process.exit(1);
+  }
+
   console.log("🌱 Starting CLASSROOM ERP database seeding...");
 
   // Clean existing tables

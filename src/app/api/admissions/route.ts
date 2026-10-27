@@ -163,6 +163,31 @@ export async function POST(request: NextRequest) {
         });
       }
 
+      // Cross-Module Integration: Initialize student tuition fee ledger
+      try {
+        const existingFee = await prisma.studentFee.findFirst({
+          where: { studentId: student.id },
+        });
+        if (!existingFee) {
+          const defaultFeeStructure = await prisma.feeStructure.findFirst();
+          if (defaultFeeStructure) {
+            await prisma.studentFee.create({
+              data: {
+                studentId: student.id,
+                feeStructureId: defaultFeeStructure.id,
+                totalAmount: defaultFeeStructure.totalAmount,
+                paidAmount: applicant.seatDepositPaid ? (applicant.depositAmount || 1000) : 0,
+                discountAmount: 0,
+                status: applicant.seatDepositPaid ? "PARTIAL" : "PENDING",
+                dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+              },
+            });
+          }
+        }
+      } catch (feeErr) {
+        console.warn("[Admissions-Finance Link Warning]:", feeErr);
+      }
+
       return NextResponse.json({
         success: true,
         message: `Student successfully provisioned and enrolled into SIS (Roll No: ${student.rollNumber})`,
