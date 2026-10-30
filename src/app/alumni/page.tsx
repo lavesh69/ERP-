@@ -298,81 +298,120 @@ export default function AlumniPage() {
     <AppShell>
       <Breadcrumbs />
       <div className="space-y-6 animate-in fade-in duration-300">
-      {/* Top Banner */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-charcoal-900 via-rose-950 to-charcoal-900 text-white p-6 md:p-8 shadow-xl">
-        <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+      {/* Top Banner - Academic OS Native Glassmorphism */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 glass-panel p-6 rounded-2xl shadow-soft">
+        <div className="flex items-center gap-3">
+          <div className="h-12 w-12 rounded-xl bg-rose-primary text-white flex items-center justify-center shadow-md shadow-rose-primary/20 shrink-0">
+            <GraduationCap className="h-6 w-6" />
+          </div>
           <div>
-            <div className="flex items-center gap-2 mb-2">
-              <span className="px-3 py-1 rounded-full text-xs font-semibold bg-rose-500/20 text-rose-200 border border-rose-400/30">
-                Alumni Relations & Institutional Advancement
+            <div className="flex items-center gap-2 mb-1">
+              <span className="badge-subtle bg-rose-container/60 dark:bg-rose-dark/30 text-rose-primary dark:text-rose-accent">
+                Alumni Advancement
               </span>
-              <span className="px-3 py-1 rounded-full text-xs font-medium bg-emerald-500/20 text-emerald-200 border border-emerald-400/30">
+              <span className="badge-subtle bg-emerald-500/10 text-emerald-700 dark:text-emerald-300">
                 Global Network Active
               </span>
             </div>
-            <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-white">
+            <h1 className="text-xl font-display font-bold text-charcoal-900 dark:text-ivory-100">
               Alumni Network, Mentorship & Giving
             </h1>
-            <p className="text-sm md:text-base text-rose-100/80 mt-1 max-w-2xl">
+            <p className="text-xs text-charcoal-600 dark:text-charcoal-400">
               Lifelong graduate network, 1-on-1 industry mentorship matching, degree verification gateway, and institutional endowments.
             </p>
           </div>
-          <div className="flex flex-wrap items-center gap-3">
-            <button
-              onClick={handleExportAlumniCsv}
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium text-sm bg-white/10 hover:bg-white/20 text-white border border-white/20 shadow-sm transition-all active:scale-95"
-            >
-              <Download className="w-4 h-4" />
-              Export Directory (CSV)
-            </button>
-            <button
-              onClick={() => setShowRegisterModal(true)}
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium text-sm bg-rose-primary hover:bg-rose-600 text-white shadow-md transition-all active:scale-95"
-            >
-              <PlusCircle className="w-4 h-4" />
-              Register as Alumni
-            </button>
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            onClick={handleExportAlumniCsv}
+            className="btn-ghost text-xs flex items-center gap-1.5"
+          >
+            <Download className="w-3.5 h-3.5" />
+            Export Directory
+          </button>
+          <button
+            onClick={() => setShowRegisterModal(true)}
+            className="btn-primary text-xs flex items-center gap-1.5"
+          >
+            <PlusCircle className="w-3.5 h-3.5" />
+            Register as Alumni
+          </button>
+        </div>
+      </div>
+
+      {/* 4-Card KPI Telemetry Strip */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="glass-panel glass-card-hover p-4 sm:p-5 rounded-2xl shadow-soft flex items-center justify-between">
+          <div>
+            <p className="text-[10px] sm:text-[11px] font-bold tracking-wider uppercase text-charcoal-500 dark:text-charcoal-400">
+              Graduates in Directory
+            </p>
+            <h3 className="text-2xl sm:text-3xl font-display font-bold text-charcoal-900 dark:text-ivory-100 mt-1">
+              {alumni.length > 0 ? `${alumni.length}+ Alumni` : "1,420+ Alumni"}
+            </h3>
+            <span className="badge-subtle bg-surface-soft text-charcoal-600 dark:text-charcoal-300 mt-1 inline-block">
+              Spanning 34 Countries
+            </span>
+          </div>
+          <div className="h-10 w-10 rounded-xl bg-rose-container text-rose-primary flex items-center justify-center shrink-0">
+            <Users className="h-5 w-5" />
           </div>
         </div>
 
-        {/* Live Metrics */}
-        {loading ? (
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-6 pt-6 border-t border-rose-900/50">
-            <SkeletonCard />
-            <SkeletonCard />
-            <SkeletonCard />
-            <SkeletonCard />
+        <div className="glass-panel glass-card-hover p-4 sm:p-5 rounded-2xl shadow-soft flex items-center justify-between">
+          <div>
+            <p className="text-[10px] sm:text-[11px] font-bold tracking-wider uppercase text-charcoal-500 dark:text-charcoal-400">
+              Active Industry Mentors
+            </p>
+            <h3 className="text-2xl sm:text-3xl font-display font-bold text-emerald-600 dark:text-emerald-400 mt-1">
+              {alumni.filter(a => a.isAvailableForMentorship).length > 0 ? `${alumni.filter(a => a.isAvailableForMentorship).length} Mentors` : "285 Mentors"}
+            </h3>
+            <span className="badge-subtle bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 mt-1 inline-block">
+              FAANG, Research & Startups
+            </span>
           </div>
-        ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-6 pt-6 border-t border-rose-900/50">
-            <div>
-              <p className="text-xs text-rose-200 uppercase tracking-wider font-semibold">Graduates in Directory</p>
-              <p className="text-xl md:text-2xl font-bold mt-1">1,420+ Alumni</p>
-              <p className="text-xs text-rose-300 mt-0.5">Spanning 34 Countries</p>
-            </div>
-            <div>
-              <p className="text-xs text-rose-200 uppercase tracking-wider font-semibold">Active Industry Mentors</p>
-              <p className="text-xl md:text-2xl font-bold mt-1 text-emerald-300">285 Mentors</p>
-              <p className="text-xs text-rose-300 mt-0.5">FAANG, Research & Startups</p>
-            </div>
-            <div>
-              <p className="text-xs text-rose-200 uppercase tracking-wider font-semibold">Endowment Raised</p>
-              <p className="text-xl md:text-2xl font-bold mt-1 text-amber-300">
-                ₹{campaigns.reduce((acc, c) => acc + c.raised, 0).toLocaleString("en-IN")}
-              </p>
-              <p className="text-xs text-rose-300 mt-0.5">Campaigns 2026-27</p>
-            </div>
-            <div>
-              <p className="text-xs text-rose-200 uppercase tracking-wider font-semibold">Degree Verification</p>
-              <p className="text-xl md:text-2xl font-bold mt-1 text-cyan-300">Instant Online</p>
-              <p className="text-xs text-rose-300 mt-0.5">Cryptographic SHA-256 Proof</p>
-            </div>
+          <div className="h-10 w-10 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center shrink-0">
+            <GraduationCap className="h-5 w-5" />
           </div>
-        )}
+        </div>
+
+        <div className="glass-panel glass-card-hover p-4 sm:p-5 rounded-2xl shadow-soft flex items-center justify-between">
+          <div>
+            <p className="text-[10px] sm:text-[11px] font-bold tracking-wider uppercase text-charcoal-500 dark:text-charcoal-400">
+              Endowment Raised
+            </p>
+            <h3 className="text-2xl sm:text-3xl font-display font-bold text-amber-600 dark:text-amber-400 mt-1">
+              ₹{campaigns.reduce((acc, c) => acc + (c.raised || 0), 0).toLocaleString("en-IN")}
+            </h3>
+            <span className="badge-subtle bg-amber-500/10 text-amber-700 dark:text-amber-300 mt-1 inline-block">
+              Campaigns 2026-27
+            </span>
+          </div>
+          <div className="h-10 w-10 rounded-xl bg-amber-500/10 text-amber-600 flex items-center justify-center shrink-0">
+            <Heart className="h-5 w-5" />
+          </div>
+        </div>
+
+        <div className="glass-panel glass-card-hover p-4 sm:p-5 rounded-2xl shadow-soft flex items-center justify-between">
+          <div>
+            <p className="text-[10px] sm:text-[11px] font-bold tracking-wider uppercase text-charcoal-500 dark:text-charcoal-400">
+              Degree Verification
+            </p>
+            <h3 className="text-2xl sm:text-3xl font-display font-bold text-sky-600 dark:text-sky-400 mt-1">
+              Instant Online
+            </h3>
+            <span className="badge-subtle bg-sky-500/10 text-sky-700 dark:text-sky-300 mt-1 inline-block">
+              Cryptographic SHA-256 Proof
+            </span>
+          </div>
+          <div className="h-10 w-10 rounded-xl bg-sky-500/10 text-sky-600 flex items-center justify-center shrink-0">
+            <ShieldCheck className="h-5 w-5" />
+          </div>
+        </div>
       </div>
 
-      {/* Navigation Tabs */}
-      <div className="flex border-b border-border dark:border-charcoal-800 space-x-2 overflow-x-auto no-scrollbar flex-nowrap pb-px">
+      {/* Navigation Tabs - Clean Unified Pills Strip */}
+      <div className="flex items-center gap-1.5 p-1.5 rounded-2xl bg-surface-soft/60 dark:bg-charcoal-900 border border-border/80 dark:border-charcoal-800 overflow-x-auto no-scrollbar">
         {[
           { id: "directory", label: "Alumni Directory & Network", icon: Users },
           { id: "mentorship", label: "Industry Mentorship Connect", icon: GraduationCap },
@@ -385,13 +424,13 @@ export default function AlumniPage() {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id as any)}
-              className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-all whitespace-nowrap shrink-0 ${
+              className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all whitespace-nowrap shrink-0 ${
                 isActive
-                  ? "border-rose-primary text-rose-primary dark:text-rose-light dark:border-rose-light"
-                  : "border-transparent text-charcoal-600 dark:text-ivory-400 hover:text-charcoal-900 dark:hover:text-white"
+                  ? "bg-white dark:bg-charcoal-800 text-charcoal-900 dark:text-ivory-100 shadow-sm border border-border/50 dark:border-charcoal-700"
+                  : "text-charcoal-600 dark:text-charcoal-400 hover:text-charcoal-900 dark:hover:text-ivory-100"
               }`}
             >
-              <Icon className="w-4 h-4" />
+              <Icon className={`w-4 h-4 ${isActive ? "text-rose-primary dark:text-rose-accent" : "text-charcoal-500 dark:text-charcoal-400"}`} />
               <span>{tab.label}</span>
             </button>
           );

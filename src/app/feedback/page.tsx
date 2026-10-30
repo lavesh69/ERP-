@@ -289,42 +289,45 @@ export default function FeedbackPage() {
     <AppShell>
       <Breadcrumbs />
       <div className="space-y-6 animate-in fade-in duration-300">
-        {/* Top Banner */}
-        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-charcoal-900 via-rose-950 to-charcoal-900 text-white p-6 md:p-8 shadow-xl">
-          <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        {/* Header - Unified Classroom Academic OS Design */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 glass-panel p-6 rounded-2xl shadow-soft">
+          <div className="flex items-center gap-3">
+            <div className="h-12 w-12 rounded-xl bg-rose-primary text-white flex items-center justify-center shadow-md shadow-rose-primary/20 shrink-0">
+              <MessageSquareHeart className="h-6 w-6" />
+            </div>
             <div>
-              <div className="flex items-center gap-2 mb-2">
-                <span className="px-3 py-1 rounded-full text-xs font-semibold bg-rose-500/20 text-rose-200 border border-rose-400/30">
+              <div className="flex items-center gap-2 mb-1">
+                <span className="badge-subtle bg-rose-container/60 dark:bg-rose-dark/30 text-rose-primary dark:text-rose-accent">
                   Academic Quality Assurance &amp; NAAC Criterion 1.4
                 </span>
-                <span className="px-3 py-1 rounded-full text-xs font-medium bg-emerald-500/20 text-emerald-200 border border-emerald-400/30">
+                <span className="badge-subtle bg-emerald-500/10 text-emerald-700 dark:text-emerald-300">
                   Continuous SET Active
                 </span>
               </div>
-              <h1 className="text-2xl md:text-3xl font-display font-bold tracking-tight text-white">
+              <h1 className="text-xl font-display font-bold text-charcoal-900 dark:text-ivory-100">
                 Course Evaluation &amp; 360 Faculty Feedback
               </h1>
-              <p className="text-sm md:text-base text-rose-100/80 mt-1 max-w-2xl">
+              <p className="text-xs text-charcoal-600 dark:text-charcoal-400">
                 Continuous Student Evaluation of Teaching (SET), 360-degree pedagogical analytics, anonymous sentiment tracking, and NAAC accreditation metrics.
               </p>
             </div>
+          </div>
 
-            <div className="flex flex-wrap items-center gap-3">
-              <button
-                onClick={handleExportCsv}
-                className="inline-flex items-center gap-2 px-3.5 py-2.5 rounded-xl font-medium text-sm bg-white/10 hover:bg-white/20 text-white border border-white/20 shadow-md transition-all active:scale-95"
-              >
-                <Download className="w-4 h-4" />
-                Export SET Dossier (CSV)
-              </button>
-              <button
-                onClick={() => setShowSurveyModal(true)}
-                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium text-sm bg-rose-primary hover:bg-rose-primary/90 text-white shadow-md btn-primary-glow transition-all active:scale-95"
-              >
-                <PlusCircle className="w-4 h-4" />
-                Submit Course Evaluation
-              </button>
-            </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              onClick={handleExportCsv}
+              className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-ivory-100 dark:bg-charcoal-800 hover:bg-rose-container dark:hover:bg-charcoal-700 text-charcoal-800 dark:text-ivory-200 text-xs font-bold border border-border dark:border-charcoal-700 transition-all shadow-xs"
+            >
+              <Download className="w-4 h-4 text-charcoal-600 dark:text-charcoal-400" />
+              <span>Export SET Dossier (CSV)</span>
+            </button>
+            <button
+              onClick={() => setShowSurveyModal(true)}
+              className="btn-primary-glow flex items-center gap-2 px-4 py-2 rounded-xl bg-rose-primary hover:bg-rose-dark active:scale-[0.98] text-white text-xs font-bold shadow-sm transition-all"
+            >
+              <PlusCircle className="w-4 h-4" />
+              <span>Submit Course Evaluation</span>
+            </button>
           </div>
         </div>
 

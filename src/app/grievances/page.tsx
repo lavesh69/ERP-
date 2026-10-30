@@ -6,6 +6,7 @@ import { Breadcrumbs } from "@/components/common/Breadcrumbs";
 import { useApp } from "@/context/AppContext";
 import {
   ShieldAlert,
+  ShieldCheck,
   Scale,
   FileText,
   Clock,
@@ -256,103 +257,152 @@ export default function GrievancesPage() {
     <AppShell>
       <Breadcrumbs />
       <div className="space-y-6 animate-in fade-in duration-300">
-      {/* Top Banner */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-charcoal-900 via-rose-950 to-charcoal-900 text-white p-6 md:p-8 shadow-xl">
-        <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-          <div>
-            <div className="flex items-center gap-2 mb-2">
-              <span className="px-3 py-1 rounded-full text-xs font-semibold bg-rose-500/20 text-rose-200 border border-rose-400/30">
-                UGC & AICTE Statutory Cell
-              </span>
-              <span className="px-3 py-1 rounded-full text-xs font-medium bg-emerald-500/20 text-emerald-200 border border-emerald-400/30">
-                24/7 Anti-Ragging Protected
-              </span>
+        {/* Header - Unified Classroom Academic OS Design */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 glass-panel p-6 rounded-2xl shadow-soft">
+          <div className="flex items-center gap-3">
+            <div className="h-12 w-12 rounded-xl bg-rose-primary text-white flex items-center justify-center shadow-md shadow-rose-primary/20 shrink-0">
+              <Scale className="h-6 w-6" />
             </div>
-            <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-white">
-              Grievance Redressal & Statutory Ombudsman
-            </h1>
-            <p className="text-sm md:text-base text-rose-100/80 mt-1 max-w-2xl">
-              Confidential dispute mediation, internal complaints committee (ICC/POSH), anti-ragging squad oversight, and legally bound SLA turnaround.
-            </p>
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <span className="badge-subtle bg-rose-container/60 dark:bg-rose-dark/30 text-rose-primary dark:text-rose-accent">
+                  UGC & AICTE Statutory Cell
+                </span>
+                <span className="badge-subtle bg-emerald-500/10 text-emerald-700 dark:text-emerald-300">
+                  24/7 Anti-Ragging Protected
+                </span>
+              </div>
+              <h1 className="text-xl font-display font-bold text-charcoal-900 dark:text-ivory-100">
+                Grievance Redressal & Statutory Ombudsman
+              </h1>
+              <p className="text-xs text-charcoal-600 dark:text-charcoal-400">
+                Confidential dispute mediation, internal complaints committee (ICC/POSH), anti-ragging squad oversight, and legally bound SLA turnaround.
+              </p>
+            </div>
           </div>
-          <div className="flex flex-wrap items-center gap-3">
+
+          <div className="flex flex-wrap items-center gap-2">
             <button
               onClick={() => setShowFileModal(true)}
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium text-sm bg-rose-primary hover:bg-rose-600 text-white shadow-md transition-all active:scale-95"
+              className="btn-primary-glow flex items-center gap-2 px-4 py-2 rounded-xl bg-rose-primary hover:bg-rose-dark active:scale-[0.98] text-white text-xs font-bold shadow-sm transition-all"
             >
               <PlusCircle className="w-4 h-4" />
-              Lodge New Grievance
+              <span>Lodge New Grievance</span>
             </button>
           </div>
         </div>
 
-        {/* Live Metrics */}
+        {/* 4-Card KPI Telemetry Strip */}
         {loading ? (
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-6 pt-6 border-t border-rose-900/50">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <SkeletonCard />
             <SkeletonCard />
             <SkeletonCard />
             <SkeletonCard />
           </div>
         ) : summary && (
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-6 pt-6 border-t border-rose-900/50">
-            <div>
-              <p className="text-xs text-rose-200 uppercase tracking-wider font-semibold">Total Cases Filed</p>
-              <p className="text-xl md:text-2xl font-bold mt-1">{summary.totalGrievances}</p>
-              <p className="text-xs text-rose-300 mt-0.5">{summary.activeGrievances} Active • {summary.resolvedGrievances} Resolved</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="glass-panel glass-card-hover p-4 sm:p-5 rounded-2xl shadow-soft flex items-center justify-between">
+              <div>
+                <p className="text-[10px] sm:text-[11px] font-bold tracking-wider uppercase text-charcoal-500 dark:text-charcoal-400">
+                  Total Cases Filed
+                </p>
+                <h3 className="text-2xl sm:text-3xl font-display font-bold text-charcoal-900 dark:text-ivory-100 mt-1">
+                  {summary.totalGrievances}
+                </h3>
+                <span className="badge-subtle bg-rose-container/60 dark:bg-rose-dark/30 text-rose-primary dark:text-rose-accent mt-1 inline-block">
+                  {summary.activeGrievances} Active • {summary.resolvedGrievances} Resolved
+                </span>
+              </div>
+              <div className="h-10 w-10 rounded-xl bg-rose-container dark:bg-rose-dark/30 text-rose-primary dark:text-rose-accent flex items-center justify-center shrink-0">
+                <FileText className="h-5 w-5" />
+              </div>
             </div>
-            <div>
-              <p className="text-xs text-rose-200 uppercase tracking-wider font-semibold">Disposal Rate</p>
-              <p className="text-xl md:text-2xl font-bold mt-1 text-emerald-300">{summary.disposalRate}%</p>
-              <p className="text-xs text-rose-300 mt-0.5">Statutory Standard ≥ 90%</p>
+
+            <div className="glass-panel glass-card-hover p-4 sm:p-5 rounded-2xl shadow-soft flex items-center justify-between">
+              <div>
+                <p className="text-[10px] sm:text-[11px] font-bold tracking-wider uppercase text-charcoal-500 dark:text-charcoal-400">
+                  Disposal Rate
+                </p>
+                <h3 className="text-2xl sm:text-3xl font-display font-bold text-emerald-600 dark:text-emerald-400 mt-1">
+                  {summary.disposalRate}%
+                </h3>
+                <span className="badge-subtle bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 mt-1 inline-block">
+                  Statutory Standard ≥ 90%
+                </span>
+              </div>
+              <div className="h-10 w-10 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+                <Award className="h-5 w-5" />
+              </div>
             </div>
-            <div>
-              <p className="text-xs text-rose-200 uppercase tracking-wider font-semibold">Avg Turnaround</p>
-              <p className="text-xl md:text-2xl font-bold mt-1 text-cyan-300">{summary.averageResolutionDays} Days</p>
-              <p className="text-xs text-rose-300 mt-0.5">Prompt Inquiry Closure</p>
+
+            <div className="glass-panel glass-card-hover p-4 sm:p-5 rounded-2xl shadow-soft flex items-center justify-between">
+              <div>
+                <p className="text-[10px] sm:text-[11px] font-bold tracking-wider uppercase text-charcoal-500 dark:text-charcoal-400">
+                  Avg Turnaround
+                </p>
+                <h3 className="text-2xl sm:text-3xl font-display font-bold text-cyan-600 dark:text-cyan-400 mt-1">
+                  {summary.averageResolutionDays} Days
+                </h3>
+                <span className="badge-subtle bg-cyan-500/10 text-cyan-700 dark:text-cyan-300 mt-1 inline-block">
+                  Prompt Inquiry Closure
+                </span>
+              </div>
+              <div className="h-10 w-10 rounded-xl bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 flex items-center justify-center shrink-0">
+                <Clock className="h-5 w-5" />
+              </div>
             </div>
-            <div>
-              <p className="text-xs text-rose-200 uppercase tracking-wider font-semibold">SLA Breaches</p>
-              <p className="text-xl md:text-2xl font-bold mt-1 text-emerald-400">
-                {summary.slaBreachedCount === 0 ? "Zero Breaches" : `${summary.slaBreachedCount} Delayed`}
-              </p>
-              <p className="text-xs text-rose-300 mt-0.5">Strict Regulatory Adherence</p>
+
+            <div className="glass-panel glass-card-hover p-4 sm:p-5 rounded-2xl shadow-soft flex items-center justify-between">
+              <div>
+                <p className="text-[10px] sm:text-[11px] font-bold tracking-wider uppercase text-charcoal-500 dark:text-charcoal-400">
+                  SLA Breaches
+                </p>
+                <h3 className="text-2xl sm:text-3xl font-display font-bold text-emerald-600 dark:text-emerald-400 mt-1">
+                  {summary.slaBreachedCount === 0 ? "0 Breaches" : `${summary.slaBreachedCount} Delayed`}
+                </h3>
+                <span className="badge-subtle bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 mt-1 inline-block">
+                  Strict Regulatory Adherence
+                </span>
+              </div>
+              <div className="h-10 w-10 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+                <ShieldCheck className="h-5 w-5" />
+              </div>
             </div>
           </div>
         )}
-      </div>
 
-      {/* Tabs */}
-      <div className="flex border-b border-border dark:border-charcoal-800 space-x-2 overflow-x-auto no-scrollbar flex-nowrap pb-px">
-        {[
-          { id: "board", label: "Grievance Registry & Hearings", icon: Scale, count: summary?.activeGrievances },
-          { id: "file", label: "File Grievance / Whistleblower", icon: FileText },
-          { id: "committees", label: "Statutory Committees", icon: ShieldAlert },
-          { id: "compliance", label: "Statutory Compliance Audit", icon: Award },
-        ].map((tab) => {
-          const Icon = tab.icon;
-          const isActive = activeTab === tab.id;
-          return (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id as any)}
-              className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-all whitespace-nowrap shrink-0 ${
-                isActive
-                  ? "border-rose-primary text-rose-primary dark:text-rose-light dark:border-rose-light"
-                  : "border-transparent text-charcoal-600 dark:text-ivory-400 hover:text-charcoal-900 dark:hover:text-white"
-              }`}
-            >
-              <Icon className="w-4 h-4" />
-              <span>{tab.label}</span>
-              {typeof tab.count === "number" && tab.count > 0 && (
-                <span className="px-1.5 py-0.5 rounded-full text-xs font-bold bg-rose-100 dark:bg-rose-900/60 text-rose-700 dark:text-rose-300">
-                  {tab.count}
-                </span>
-              )}
-            </button>
-          );
-        })}
-      </div>
+        {/* Navigation Tabs - Clean Unified Pills Strip */}
+        <div className="flex items-center gap-1.5 p-1.5 rounded-2xl bg-surface-soft/60 dark:bg-charcoal-900 border border-border/80 dark:border-charcoal-800 overflow-x-auto no-scrollbar">
+          {[
+            { id: "board", label: "Grievance Registry & Hearings", icon: Scale, count: summary?.activeGrievances },
+            { id: "file", label: "File Grievance / Whistleblower", icon: FileText },
+            { id: "committees", label: "Statutory Committees", icon: ShieldAlert },
+            { id: "compliance", label: "Statutory Compliance Audit", icon: Award },
+          ].map((tab) => {
+            const Icon = tab.icon;
+            const isActive = activeTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id as any)}
+                className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all whitespace-nowrap shrink-0 ${
+                  isActive
+                    ? "bg-white dark:bg-charcoal-800 text-charcoal-900 dark:text-ivory-100 shadow-sm border border-border/50 dark:border-charcoal-700"
+                    : "text-charcoal-600 dark:text-charcoal-400 hover:text-charcoal-900 dark:hover:text-ivory-100"
+                }`}
+              >
+                <Icon className={`w-4 h-4 ${isActive ? "text-rose-primary dark:text-rose-accent" : "text-charcoal-500 dark:text-charcoal-400"}`} />
+                <span>{tab.label}</span>
+                {typeof tab.count === "number" && tab.count > 0 && (
+                  <span className="px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-container text-rose-primary dark:bg-rose-dark/40 dark:text-rose-accent">
+                    {tab.count}
+                  </span>
+                )}
+              </button>
+            );
+          })}
+        </div>
 
       {/* TAB 1: GRIEVANCE BOARD */}
       {activeTab === "board" && (

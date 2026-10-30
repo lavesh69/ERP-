@@ -427,13 +427,16 @@ export default function EmergencyPage() {
           </div>
         )}
 
-        {/* Top Banner */}
-        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-charcoal-900 via-rose-950 to-charcoal-900 text-white p-6 md:p-8 shadow-xl">
-          <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        {/* Top Banner - Academic OS Native Glassmorphism */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 glass-panel p-6 rounded-2xl shadow-soft">
+          <div className="flex items-center gap-3">
+            <div className="h-12 w-12 rounded-xl bg-rose-primary text-white flex items-center justify-center shadow-md shadow-rose-primary/20 shrink-0">
+              <Siren className="h-6 w-6" />
+            </div>
             <div>
-              <div className="flex items-center gap-2 mb-2 flex-wrap">
-                <span className="px-3 py-1 rounded-full text-xs font-semibold bg-red-500/20 text-red-200 border border-red-400/30">
-                  Campus Crisis & Clery Act Safety Network
+              <div className="flex items-center gap-2 mb-1 flex-wrap">
+                <span className="badge-subtle bg-rose-container/60 dark:bg-rose-dark/30 text-rose-primary dark:text-rose-accent">
+                  EOC Command
                 </span>
                 <button
                   type="button"
@@ -447,181 +450,197 @@ export default function EmergencyPage() {
                       nextMode === "LIVE_CRISIS" ? "error" : "info"
                     );
                   }}
-                  className={`px-3 py-1 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 border ${
+                  className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold transition-all flex items-center gap-1.5 border ${
                     operationalMode === "LIVE_CRISIS"
-                      ? "bg-red-600 text-white border-red-400 shadow-md animate-pulse"
-                      : "bg-amber-500/20 text-amber-200 border-amber-400/40 hover:bg-amber-500/30"
+                      ? "bg-red-600 text-white border-red-500 shadow-sm animate-pulse"
+                      : "bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/30 hover:bg-amber-500/20"
                   }`}
                 >
-                  <ShieldAlert className="w-3.5 h-3.5" />
+                  <ShieldAlert className="w-3 h-3" />
                   {operationalMode === "LIVE_CRISIS"
                     ? "OPERATIONAL CRISIS MODE (LIVE)"
                     : "DRILL SIMULATION MODE"}
                 </button>
               </div>
-              <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-white">
+              <h1 className="text-xl font-display font-bold text-charcoal-900 dark:text-ivory-100">
                 Campus Emergency Operations Center (EOC)
               </h1>
-              <p className="text-sm md:text-base text-rose-100/80 mt-1 max-w-2xl">
+              <p className="text-xs text-charcoal-600 dark:text-charcoal-400">
                 Clery Act compliance, multi-channel mass emergency broadcasting, real-time muster assembly telemetry, and campus-wide disaster protocols.
               </p>
             </div>
+          </div>
 
-            <div className="flex flex-wrap items-center gap-3">
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              onClick={() => {
+                if (isSirenActive) stopSiren();
+                else startSiren();
+              }}
+              className={`btn-ghost text-xs flex items-center gap-1.5 ${
+                isSirenActive ? "bg-red-600 text-white animate-pulse" : ""
+              }`}
+            >
+              {isSirenActive ? <VolumeX className="w-3.5 h-3.5 animate-spin" /> : <Volume2 className="w-3.5 h-3.5" />}
+              {isSirenActive ? "Silence Siren" : "Siren Test"}
+            </button>
+            <button
+              onClick={handleExportCleryLogCsv}
+              className="btn-ghost text-xs flex items-center gap-1.5"
+            >
+              <Download className="w-3.5 h-3.5" />
+              Export Clery Log
+            </button>
+            <button
+              onClick={() => setShowBroadcastModal(true)}
+              className="btn-primary text-xs flex items-center gap-1.5 font-bold"
+            >
+              <Radio className="w-3.5 h-3.5" />
+              Initiate Broadcast
+            </button>
+          </div>
+        </div>
+
+        {/* 4-Card KPI Telemetry Strip */}
+        {loading && !summary ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <SkeletonCard />
+            <SkeletonCard />
+            <SkeletonCard />
+            <SkeletonCard />
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="glass-panel glass-card-hover p-4 sm:p-5 rounded-2xl shadow-soft flex items-center justify-between">
+              <div>
+                <p className="text-[10px] sm:text-[11px] font-bold tracking-wider uppercase text-charcoal-500 dark:text-charcoal-400">
+                  Active Threat Level
+                </p>
+                <h3 className={`text-2xl sm:text-3xl font-display font-bold mt-1 ${activeAlert ? "text-red-600 dark:text-red-400" : "text-emerald-600 dark:text-emerald-400"}`}>
+                  {activeAlert ? "CRITICAL" : "NORMAL"}
+                </h3>
+                <span className="badge-subtle bg-surface-soft text-charcoal-600 dark:text-charcoal-300 mt-1 inline-block">
+                  24/7 Security Shield
+                </span>
+              </div>
+              <div className="h-10 w-10 rounded-xl bg-rose-container text-rose-primary flex items-center justify-center shrink-0">
+                <ShieldAlert className="h-5 w-5" />
+              </div>
+            </div>
+
+            <div className="glass-panel glass-card-hover p-4 sm:p-5 rounded-2xl shadow-soft flex items-center justify-between">
+              <div>
+                <p className="text-[10px] sm:text-[11px] font-bold tracking-wider uppercase text-charcoal-500 dark:text-charcoal-400">
+                  Muster Accountability
+                </p>
+                <h3 className="text-2xl sm:text-3xl font-display font-bold text-charcoal-900 dark:text-ivory-100 mt-1">
+                  {`${summary?.totalAccountedPercentage || 100}%`}
+                </h3>
+                <span className="badge-subtle bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 mt-1 inline-block">
+                  {summary?.totalEvacuatedCount || 1770} Accounted For
+                </span>
+              </div>
+              <div className="h-10 w-10 rounded-xl bg-indigo-500/10 text-indigo-600 flex items-center justify-center shrink-0">
+                <Users className="h-5 w-5" />
+              </div>
+            </div>
+
+            <div className="glass-panel glass-card-hover p-4 sm:p-5 rounded-2xl shadow-soft flex items-center justify-between">
+              <div>
+                <p className="text-[10px] sm:text-[11px] font-bold tracking-wider uppercase text-charcoal-500 dark:text-charcoal-400">
+                  Muster Stations
+                </p>
+                <h3 className="text-2xl sm:text-3xl font-display font-bold text-charcoal-900 dark:text-ivory-100 mt-1">
+                  {`${summary?.safePointsCount || 3} / ${summary?.totalMusterPoints || 3}`}
+                </h3>
+                <span className="badge-subtle bg-surface-soft text-charcoal-600 dark:text-charcoal-300 mt-1 inline-block">
+                  Wardens On Active Duty
+                </span>
+              </div>
+              <div className="h-10 w-10 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center shrink-0">
+                <CheckCircle2 className="h-5 w-5" />
+              </div>
+            </div>
+
+            <div className="glass-panel glass-card-hover p-4 sm:p-5 rounded-2xl shadow-soft flex items-center justify-between">
+              <div>
+                <p className="text-[10px] sm:text-[11px] font-bold tracking-wider uppercase text-charcoal-500 dark:text-charcoal-400">
+                  Broadcast Gateways
+                </p>
+                <h3 className="text-2xl sm:text-3xl font-display font-bold text-charcoal-900 dark:text-ivory-100 mt-1">
+                  5 Channels
+                </h3>
+                <span className="badge-subtle bg-amber-500/10 text-amber-700 dark:text-amber-300 mt-1 inline-block">
+                  Sirens, SMS, Push, PA, Email
+                </span>
+              </div>
+              <div className="h-10 w-10 rounded-xl bg-amber-500/10 text-amber-600 flex items-center justify-center shrink-0">
+                <Radio className="h-5 w-5" />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Navigation Tabs - Clean Unified Pills Strip */}
+        <div className="flex items-center gap-1.5 p-1.5 rounded-2xl bg-surface-soft/60 dark:bg-charcoal-900 border border-border/80 dark:border-charcoal-800 overflow-x-auto no-scrollbar">
+          {[
+            { id: "alerts", label: "Emergency Alert Dispatches", icon: Radio, count: alerts.length },
+            { id: "muster", label: "Muster Point Assembly & Wardens", icon: Users, count: musterPoints.length },
+            { id: "siren", label: "Campus Siren & PA Synthesizer", icon: Siren, isPulsing: isSirenActive },
+          ].map((tab) => {
+            const Icon = tab.icon;
+            const isActive = activeTab === tab.id;
+            return (
               <button
-                onClick={() => {
-                  if (isSirenActive) stopSiren();
-                  else startSiren();
-                }}
-                className={`inline-flex items-center gap-2 px-3.5 py-2.5 rounded-xl font-medium text-sm transition-all border ${
-                  isSirenActive
-                    ? "bg-red-600 hover:bg-red-700 text-white animate-pulse border-red-700 shadow-lg shadow-red-600/40"
-                    : "bg-white/10 hover:bg-white/20 text-white border border-white/20 shadow-md active:scale-95"
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id as any)}
+                className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all whitespace-nowrap shrink-0 ${
+                  isActive
+                    ? "bg-white dark:bg-charcoal-800 text-charcoal-900 dark:text-ivory-100 shadow-sm border border-border/50 dark:border-charcoal-700"
+                    : "text-charcoal-600 dark:text-charcoal-400 hover:text-charcoal-900 dark:hover:text-ivory-100"
                 }`}
               >
-                {isSirenActive ? <VolumeX className="w-4 h-4 animate-spin" /> : <Volume2 className="w-4 h-4" />}
-                {isSirenActive ? "Silence Siren" : "Sound Siren Test"}
+                <Icon className={`w-4 h-4 ${isActive ? "text-rose-primary dark:text-rose-accent" : "text-charcoal-500 dark:text-charcoal-400"}`} />
+                <span>{tab.label}</span>
+                {typeof tab.count === "number" && tab.count > 0 && (
+                  <span className="px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-container text-rose-primary dark:bg-rose-dark/40 dark:text-rose-accent">
+                    {tab.count}
+                  </span>
+                )}
+                {tab.isPulsing && <span className="w-2 h-2 rounded-full bg-red-500 animate-ping ml-0.5" />}
               </button>
-              <button
-                onClick={handleExportCleryLogCsv}
-                className="inline-flex items-center gap-2 px-3.5 py-2.5 rounded-xl font-medium text-sm bg-white/10 hover:bg-white/20 text-white border border-white/20 shadow-md transition-all active:scale-95"
-              >
-                <Download className="w-4 h-4" />
-                Export Clery Log (CSV)
-              </button>
-              <button
-                onClick={() => setShowBroadcastModal(true)}
-                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium text-sm bg-red-600 hover:bg-red-700 text-white shadow-md shadow-red-600/30 transition-all active:scale-95 font-bold"
-              >
-                <Radio className="w-4 h-4" />
-                Initiate Broadcast
-              </button>
-            </div>
-          </div>
+            );
+          })}
         </div>
 
-      {/* KPI Cards */}
-      {loading && !summary ? (
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <SkeletonCard />
-          <SkeletonCard />
-          <SkeletonCard />
-          <SkeletonCard />
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div className="bg-white dark:bg-charcoal-900 p-5 rounded-2xl border border-border dark:border-charcoal-800 shadow-sm">
-            <div className="flex items-center justify-between text-charcoal-500 dark:text-charcoal-400 mb-2">
-              <span className="text-xs font-semibold uppercase tracking-wider">Active Threat Level</span>
-              <ShieldAlert className="w-4 h-4 text-emerald-500" />
-            </div>
-            <div className="text-2xl font-bold text-charcoal-900 dark:text-ivory-100">
-              {activeAlert ? "CRITICAL ALERT" : "NORMAL (GREEN)"}
-            </div>
-            <p className="text-xs text-charcoal-400 mt-1">24/7 Perimeter Surveillance</p>
+        {/* Search & Category Filter Toolbar */}
+        <div className="flex flex-col sm:flex-row gap-3 items-center justify-between bg-white dark:bg-charcoal-900 p-4 rounded-xl border border-border dark:border-charcoal-800">
+          <div className="relative w-full sm:w-96">
+            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-charcoal-400" />
+            <input
+              type="text"
+              placeholder="Search alerts, zones, incident codes..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-9 pr-4 py-2 bg-ivory-50 dark:bg-charcoal-800 border border-border dark:border-charcoal-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-red-500 text-charcoal-900 dark:text-ivory-100"
+            />
           </div>
-
-          <div className="bg-white dark:bg-charcoal-900 p-5 rounded-2xl border border-border dark:border-charcoal-800 shadow-sm">
-            <div className="flex items-center justify-between text-charcoal-500 dark:text-charcoal-400 mb-2">
-              <span className="text-xs font-semibold uppercase tracking-wider">Muster Accountability</span>
-              <Users className="w-4 h-4 text-indigo-500" />
-            </div>
-            <div className="text-2xl font-bold text-charcoal-900 dark:text-ivory-100">
-              {`${summary?.totalAccountedPercentage || 100}%`}
-            </div>
-            <p className="text-xs text-emerald-600 dark:text-emerald-400 mt-1 font-medium">
-              {summary?.totalEvacuatedCount || 1770} Persons Accounted For
-            </p>
-          </div>
-
-          <div className="bg-white dark:bg-charcoal-900 p-5 rounded-2xl border border-border dark:border-charcoal-800 shadow-sm">
-            <div className="flex items-center justify-between text-charcoal-500 dark:text-charcoal-400 mb-2">
-              <span className="text-xs font-semibold uppercase tracking-wider">Muster Points</span>
-              <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-            </div>
-            <div className="text-2xl font-bold text-charcoal-900 dark:text-ivory-100">
-              {`${summary?.safePointsCount || 3} / ${summary?.totalMusterPoints || 3}`}
-            </div>
-            <p className="text-xs text-charcoal-400 mt-1">Wardens On Active Duty</p>
-          </div>
-
-          <div className="bg-white dark:bg-charcoal-900 p-5 rounded-2xl border border-border dark:border-charcoal-800 shadow-sm">
-            <div className="flex items-center justify-between text-charcoal-500 dark:text-charcoal-400 mb-2">
-              <span className="text-xs font-semibold uppercase tracking-wider">Multi-Channel Gateways</span>
-              <Volume2 className="w-4 h-4 text-amber-500" />
-            </div>
-            <div className="text-2xl font-bold text-charcoal-900 dark:text-ivory-100">5 Gateways Active</div>
-            <p className="text-xs text-charcoal-400 mt-1">Sirens, SMS, Push, PA, Email</p>
+          <div className="flex items-center gap-2 w-full sm:w-auto">
+            <span className="text-xs font-semibold text-charcoal-500 uppercase tracking-wider">Category:</span>
+            <select
+              value={filterCategory}
+              onChange={(e) => setFilterCategory(e.target.value)}
+              className="px-3 py-2 bg-ivory-50 dark:bg-charcoal-800 border border-border dark:border-charcoal-700 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-red-500 text-charcoal-900 dark:text-ivory-100"
+            >
+              <option value="ALL">All Categories</option>
+              <option value="FIRE_EVACUATION">Fire Evacuation</option>
+              <option value="SEVERE_WEATHER_ALERT">Severe Weather</option>
+              <option value="CAMPUS_SECURITY_LOCKDOWN">Security Lockdown</option>
+              <option value="MEDICAL_HAZARD">Medical / Hazmat</option>
+              <option value="DRILL_SIMULATION">Safety Drills</option>
+            </select>
           </div>
         </div>
-      )}
-
-      {/* Search & Category Filter Toolbar */}
-      <div className="flex flex-col sm:flex-row gap-3 items-center justify-between bg-white dark:bg-charcoal-900 p-4 rounded-xl border border-border dark:border-charcoal-800">
-        <div className="relative w-full sm:w-96">
-          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-charcoal-400" />
-          <input
-            type="text"
-            placeholder="Search alerts, zones, incident codes..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 bg-ivory-50 dark:bg-charcoal-800 border border-border dark:border-charcoal-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-red-500 text-charcoal-900 dark:text-ivory-100"
-          />
-        </div>
-        <div className="flex items-center gap-2 w-full sm:w-auto">
-          <span className="text-xs font-semibold text-charcoal-500 uppercase tracking-wider">Category:</span>
-          <select
-            value={filterCategory}
-            onChange={(e) => setFilterCategory(e.target.value)}
-            className="px-3 py-2 bg-ivory-50 dark:bg-charcoal-800 border border-border dark:border-charcoal-700 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-red-500 text-charcoal-900 dark:text-ivory-100"
-          >
-            <option value="ALL">All Categories</option>
-            <option value="FIRE_EVACUATION">Fire Evacuation</option>
-            <option value="SEVERE_WEATHER_ALERT">Severe Weather</option>
-            <option value="CAMPUS_SECURITY_LOCKDOWN">Security Lockdown</option>
-            <option value="MEDICAL_HAZARD">Medical / Hazmat</option>
-            <option value="DRILL_SIMULATION">Safety Drills</option>
-          </select>
-        </div>
-      </div>
-
-      {/* Tabs */}
-      <div className="flex border-b border-border dark:border-charcoal-800 overflow-x-auto no-scrollbar flex-nowrap">
-        <button
-          onClick={() => setActiveTab("alerts")}
-          className={`flex items-center gap-2 px-5 py-3 text-sm font-semibold border-b-2 transition-all whitespace-nowrap shrink-0 ${
-            activeTab === "alerts"
-              ? "border-red-600 text-red-600 dark:text-red-400"
-              : "border-transparent text-charcoal-500 hover:text-charcoal-800 dark:hover:text-ivory-200"
-          }`}
-        >
-          <Radio className="w-4 h-4" />
-          Emergency Alert Dispatches ({alerts.length})
-        </button>
-        <button
-          onClick={() => setActiveTab("muster")}
-          className={`flex items-center gap-2 px-5 py-3 text-sm font-semibold border-b-2 transition-all whitespace-nowrap shrink-0 ${
-            activeTab === "muster"
-              ? "border-red-600 text-red-600 dark:text-red-400"
-              : "border-transparent text-charcoal-500 hover:text-charcoal-800 dark:hover:text-ivory-200"
-          }`}
-        >
-          <Users className="w-4 h-4" />
-          Muster Point Assembly &amp; Wardens ({musterPoints.length})
-        </button>
-        <button
-          onClick={() => setActiveTab("siren")}
-          className={`flex items-center gap-2 px-5 py-3 text-sm font-semibold border-b-2 transition-all whitespace-nowrap shrink-0 ${
-            activeTab === "siren"
-              ? "border-red-600 text-red-600 dark:text-red-400"
-              : "border-transparent text-charcoal-500 hover:text-charcoal-800 dark:hover:text-ivory-200"
-          }`}
-        >
-          <Siren className="w-4 h-4" />
-          Campus Siren &amp; PA Synthesizer
-          {isSirenActive && <span className="w-2 h-2 rounded-full bg-red-500 animate-ping ml-1" />}
-        </button>
-      </div>
 
       {/* Tab 1: Alerts History */}
       {activeTab === "alerts" && (

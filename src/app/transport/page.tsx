@@ -229,117 +229,168 @@ export default function TransportPage() {
     <AppShell>
       <Breadcrumbs />
       <div className="space-y-6 animate-in fade-in duration-300">
-      {/* Top Banner */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-charcoal-900 via-rose-950 to-charcoal-900 text-white p-6 md:p-8 shadow-xl">
-        <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-          <div>
-            <div className="flex items-center gap-2 mb-2">
-              <span className="px-3 py-1 rounded-full text-xs font-semibold bg-rose-500/20 text-rose-200 border border-rose-400/30">
-                Fleet Logistics & Transit ERP
-              </span>
-              <span className="px-3 py-1 rounded-full text-xs font-medium bg-emerald-500/20 text-emerald-200 border border-emerald-400/30">
-                GPS Telemetry Online
-              </span>
+        {/* Header - Unified Classroom Academic OS Design */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 glass-panel p-6 rounded-2xl shadow-soft">
+          <div className="flex items-center gap-3">
+            <div className="h-12 w-12 rounded-xl bg-rose-primary text-white flex items-center justify-center shadow-md shadow-rose-primary/20 shrink-0">
+              <Bus className="h-6 w-6" />
             </div>
-            <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-white">
-              Transport & Fleet Management
-            </h1>
-            <p className="text-sm md:text-base text-rose-100/80 mt-1 max-w-2xl">
-              Real-time campus transit telemetry, morning/evening route coordination, digital cryptographic bus passes, and vehicular safety audits.
-            </p>
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <span className="badge-subtle bg-rose-container/60 dark:bg-rose-dark/30 text-rose-primary dark:text-rose-accent">
+                  Fleet Logistics & Transit ERP
+                </span>
+                <span className="badge-subtle bg-emerald-500/10 text-emerald-700 dark:text-emerald-300">
+                  GPS Telemetry Online
+                </span>
+              </div>
+              <h1 className="text-xl font-display font-bold text-charcoal-900 dark:text-ivory-100">
+                Transport & Fleet Management
+              </h1>
+              <p className="text-xs text-charcoal-600 dark:text-charcoal-400">
+                Real-time campus transit telemetry, morning/evening route coordination, digital cryptographic bus passes, and vehicular safety audits.
+              </p>
+            </div>
           </div>
-          <div className="flex flex-wrap items-center gap-3">
+
+          <div className="flex flex-wrap items-center gap-2">
             <button
               onClick={handleExportTransportCsv}
-              className="inline-flex items-center gap-2 px-3.5 py-2.5 rounded-xl font-medium text-sm bg-white/10 hover:bg-white/20 text-white border border-white/20 shadow-md transition-all active:scale-95"
+              className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-ivory-100 dark:bg-charcoal-800 hover:bg-rose-container dark:hover:bg-charcoal-700 text-charcoal-800 dark:text-ivory-200 text-xs font-bold border border-border dark:border-charcoal-700 transition-all shadow-xs"
             >
-              <Download className="w-4 h-4" />
-              Export Manifest (CSV)
+              <Download className="w-4 h-4 text-charcoal-600 dark:text-charcoal-400" />
+              <span>Export Manifest (CSV)</span>
             </button>
             <button
               onClick={() => setShowPassModal(true)}
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium text-sm bg-rose-primary hover:bg-rose-600 text-white shadow-md transition-all active:scale-95"
+              className="btn-primary-glow flex items-center gap-2 px-4 py-2 rounded-xl bg-rose-primary hover:bg-rose-dark active:scale-[0.98] text-white text-xs font-bold shadow-sm transition-all"
             >
               <PlusCircle className="w-4 h-4" />
-              Issue Bus Pass
+              <span>Issue Bus Pass</span>
             </button>
             <button
               onClick={() => setShowMaintModal(true)}
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium text-sm bg-white/10 hover:bg-white/20 text-white border border-white/20 shadow-md transition-all active:scale-95"
+              className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-ivory-100 dark:bg-charcoal-800 hover:bg-rose-container dark:hover:bg-charcoal-700 text-charcoal-800 dark:text-ivory-200 text-xs font-bold border border-border dark:border-charcoal-700 transition-all shadow-xs"
             >
-              <Wrench className="w-4 h-4" />
-              Log Maintenance
+              <Wrench className="w-4 h-4 text-rose-primary dark:text-rose-accent" />
+              <span>Log Maintenance</span>
             </button>
           </div>
         </div>
 
-        {/* Live Metrics Ribbon */}
+        {/* 4-Card KPI Telemetry Strip */}
         {loading ? (
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-6 pt-6 border-t border-rose-900/50">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <SkeletonCard />
             <SkeletonCard />
             <SkeletonCard />
             <SkeletonCard />
           </div>
         ) : summary && (
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-6 pt-6 border-t border-rose-900/50">
-            <div>
-              <p className="text-xs text-rose-200 uppercase tracking-wider font-semibold">Active Fleet</p>
-              <p className="text-xl md:text-2xl font-bold mt-1">{summary.totalVehicles} Vehicles</p>
-              <p className="text-xs text-rose-300 mt-0.5">{summary.activeEnRoute} En Route • {summary.onCampus} On Campus</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="glass-panel glass-card-hover p-4 sm:p-5 rounded-2xl shadow-soft flex items-center justify-between">
+              <div>
+                <p className="text-[10px] sm:text-[11px] font-bold tracking-wider uppercase text-charcoal-500 dark:text-charcoal-400">
+                  Active Fleet
+                </p>
+                <h3 className="text-2xl sm:text-3xl font-display font-bold text-charcoal-900 dark:text-ivory-100 mt-1">
+                  {summary.totalVehicles} Vehicles
+                </h3>
+                <span className="badge-subtle bg-rose-container/60 dark:bg-rose-dark/30 text-rose-primary dark:text-rose-accent mt-1 inline-block">
+                  {summary.activeEnRoute} En Route • {summary.onCampus} On Campus
+                </span>
+              </div>
+              <div className="h-10 w-10 rounded-xl bg-rose-container dark:bg-rose-dark/30 text-rose-primary dark:text-rose-accent flex items-center justify-center shrink-0">
+                <Bus className="h-5 w-5" />
+              </div>
             </div>
-            <div>
-              <p className="text-xs text-rose-200 uppercase tracking-wider font-semibold">Transit Routes</p>
-              <p className="text-xl md:text-2xl font-bold mt-1 text-emerald-300">{summary.totalRoutes} Active Corridors</p>
-              <p className="text-xs text-rose-300 mt-0.5">Connecting Greater Metro Area</p>
+
+            <div className="glass-panel glass-card-hover p-4 sm:p-5 rounded-2xl shadow-soft flex items-center justify-between">
+              <div>
+                <p className="text-[10px] sm:text-[11px] font-bold tracking-wider uppercase text-charcoal-500 dark:text-charcoal-400">
+                  Transit Routes
+                </p>
+                <h3 className="text-2xl sm:text-3xl font-display font-bold text-emerald-600 dark:text-emerald-400 mt-1">
+                  {summary.totalRoutes} Corridors
+                </h3>
+                <span className="badge-subtle bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 mt-1 inline-block">
+                  Connecting Greater Metro Area
+                </span>
+              </div>
+              <div className="h-10 w-10 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+                <Navigation className="h-5 w-5" />
+              </div>
             </div>
-            <div>
-              <p className="text-xs text-rose-200 uppercase tracking-wider font-semibold">Fleet Utilization</p>
-              <p className="text-xl md:text-2xl font-bold mt-1 text-amber-300">{summary.fleetOccupancyRate}%</p>
-              <p className="text-xs text-rose-300 mt-0.5">{summary.currentPassengers} / {summary.totalCapacity} Seated</p>
+
+            <div className="glass-panel glass-card-hover p-4 sm:p-5 rounded-2xl shadow-soft flex items-center justify-between">
+              <div>
+                <p className="text-[10px] sm:text-[11px] font-bold tracking-wider uppercase text-charcoal-500 dark:text-charcoal-400">
+                  Fleet Utilization
+                </p>
+                <h3 className="text-2xl sm:text-3xl font-display font-bold text-amber-600 dark:text-amber-400 mt-1">
+                  {summary.fleetOccupancyRate}%
+                </h3>
+                <span className="badge-subtle bg-amber-500/10 text-amber-700 dark:text-amber-300 mt-1 inline-block">
+                  {summary.currentPassengers} / {summary.totalCapacity} Seated
+                </span>
+              </div>
+              <div className="h-10 w-10 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+                <Users className="h-5 w-5" />
+              </div>
             </div>
-            <div>
-              <p className="text-xs text-rose-200 uppercase tracking-wider font-semibold">Issued Bus Passes</p>
-              <p className="text-xl md:text-2xl font-bold mt-1 text-cyan-300">{summary.activeBusPasses}</p>
-              <p className="text-xs text-rose-300 mt-0.5">Verified Digital Passes</p>
+
+            <div className="glass-panel glass-card-hover p-4 sm:p-5 rounded-2xl shadow-soft flex items-center justify-between">
+              <div>
+                <p className="text-[10px] sm:text-[11px] font-bold tracking-wider uppercase text-charcoal-500 dark:text-charcoal-400">
+                  Issued Bus Passes
+                </p>
+                <h3 className="text-2xl sm:text-3xl font-display font-bold text-cyan-600 dark:text-cyan-400 mt-1">
+                  {summary.activeBusPasses}
+                </h3>
+                <span className="badge-subtle bg-cyan-500/10 text-cyan-700 dark:text-cyan-300 mt-1 inline-block">
+                  Verified Digital Passes
+                </span>
+              </div>
+              <div className="h-10 w-10 rounded-xl bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 flex items-center justify-center shrink-0">
+                <CreditCard className="h-5 w-5" />
+              </div>
             </div>
           </div>
         )}
-      </div>
 
-      {/* Navigation Tabs */}
-      <div className="flex border-b border-border dark:border-charcoal-800 space-x-2 overflow-x-auto no-scrollbar flex-nowrap pb-px">
-        {[
-          { id: "fleet", label: "Fleet & GPS Telemetry", icon: Bus },
-          { id: "map", label: "Live Transit Route Map", icon: MapPin },
-          { id: "routes", label: "Routes & Schedules", icon: Navigation },
-          { id: "passes", label: "Digital Bus Passes", icon: CreditCard, count: summary?.activeBusPasses },
-          { id: "maintenance", label: "Vehicle Safety & Service", icon: Wrench },
-          { id: "compliance", label: "Regulatory & Driver Safety", icon: ShieldCheck },
-        ].map((tab) => {
-          const Icon = tab.icon;
-          const isActive = activeTab === tab.id;
-          return (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id as any)}
-              className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-all whitespace-nowrap shrink-0 ${
-                isActive
-                  ? "border-rose-primary text-rose-primary dark:text-rose-light dark:border-rose-light"
-                  : "border-transparent text-charcoal-600 dark:text-ivory-400 hover:text-charcoal-900 dark:hover:text-white"
-              }`}
-            >
-              <Icon className="w-4 h-4" />
-              <span>{tab.label}</span>
-              {typeof tab.count === "number" && tab.count > 0 && (
-                <span className="px-1.5 py-0.5 rounded-full text-xs font-bold bg-rose-100 dark:bg-rose-900/60 text-rose-700 dark:text-rose-300">
-                  {tab.count}
-                </span>
-              )}
-            </button>
-          );
-        })}
-      </div>
+        {/* Navigation Tabs - Clean Unified Pills Strip */}
+        <div className="flex items-center gap-1.5 p-1.5 rounded-2xl bg-surface-soft/60 dark:bg-charcoal-900 border border-border/80 dark:border-charcoal-800 overflow-x-auto no-scrollbar">
+          {[
+            { id: "fleet", label: "Fleet & GPS Telemetry", icon: Bus },
+            { id: "map", label: "Live Transit Route Map", icon: MapPin },
+            { id: "routes", label: "Routes & Schedules", icon: Navigation },
+            { id: "passes", label: "Digital Bus Passes", icon: CreditCard, count: summary?.activeBusPasses },
+            { id: "maintenance", label: "Vehicle Safety & Service", icon: Wrench },
+            { id: "compliance", label: "Regulatory & Driver Safety", icon: ShieldCheck },
+          ].map((tab) => {
+            const Icon = tab.icon;
+            const isActive = activeTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id as any)}
+                className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all whitespace-nowrap shrink-0 ${
+                  isActive
+                    ? "bg-white dark:bg-charcoal-800 text-charcoal-900 dark:text-ivory-100 shadow-sm border border-border/50 dark:border-charcoal-700"
+                    : "text-charcoal-600 dark:text-charcoal-400 hover:text-charcoal-900 dark:hover:text-ivory-100"
+                }`}
+              >
+                <Icon className={`w-4 h-4 ${isActive ? "text-rose-primary dark:text-rose-accent" : "text-charcoal-500 dark:text-charcoal-400"}`} />
+                <span>{tab.label}</span>
+                {typeof tab.count === "number" && tab.count > 0 && (
+                  <span className="px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-container text-rose-primary dark:bg-rose-dark/40 dark:text-rose-accent">
+                    {tab.count}
+                  </span>
+                )}
+              </button>
+            );
+          })}
+        </div>
 
       {/* TAB 1: FLEET & TELEMETRY */}
       {activeTab === "fleet" && (

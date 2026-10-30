@@ -374,111 +374,162 @@ export default function HostelPage() {
     <AppShell>
       <Breadcrumbs />
       <div className="space-y-6 animate-in fade-in duration-300">
-      {/* Top Banner */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-rose-900 via-rose-800 to-charcoal-900 text-white p-6 md:p-8 shadow-xl">
-        <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-          <div>
-            <div className="flex items-center gap-2 mb-2">
-              <span className="px-3 py-1 rounded-full text-xs font-semibold bg-rose-500/20 text-rose-200 border border-rose-400/30">
-                Residence Life & Housing ERP
-              </span>
-              <span className="px-3 py-1 rounded-full text-xs font-medium bg-emerald-500/20 text-emerald-200 border border-emerald-400/30">
-                Active Term 2026-27
-              </span>
+        {/* Header - Unified Classroom Academic OS Design */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 glass-panel p-6 rounded-2xl shadow-soft">
+          <div className="flex items-center gap-3">
+            <div className="h-12 w-12 rounded-xl bg-rose-primary text-white flex items-center justify-center shadow-md shadow-rose-primary/20 shrink-0">
+              <Bed className="h-6 w-6" />
             </div>
-            <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-white">
-              Hostel & Dormitory Management
-            </h1>
-            <p className="text-sm md:text-base text-rose-100/80 mt-1 max-w-2xl">
-              Real-time room matrix, bi-directional warden gate pass approval, biometric mess subscriptions, and residential welfare oversight.
-            </p>
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <span className="badge-subtle bg-rose-container/60 dark:bg-rose-dark/30 text-rose-primary dark:text-rose-accent">
+                  Residence Life & Housing ERP
+                </span>
+                <span className="badge-subtle bg-emerald-500/10 text-emerald-700 dark:text-emerald-300">
+                  Active Term 2026-27
+                </span>
+              </div>
+              <h1 className="text-xl font-display font-bold text-charcoal-900 dark:text-ivory-100">
+                Hostel & Dormitory Management
+              </h1>
+              <p className="text-xs text-charcoal-600 dark:text-charcoal-400">
+                Real-time room matrix, bi-directional warden gate pass approval, biometric mess subscriptions, and residential welfare oversight.
+              </p>
+            </div>
           </div>
-          <div className="flex flex-wrap items-center gap-3">
+
+          <div className="flex flex-wrap items-center gap-2">
             <button
               onClick={() => setShowPassModal(true)}
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium text-sm bg-white text-rose-900 hover:bg-rose-50 shadow-md transition-all active:scale-95"
+              className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-ivory-100 dark:bg-charcoal-800 hover:bg-rose-container dark:hover:bg-charcoal-700 text-charcoal-800 dark:text-ivory-200 text-xs font-bold border border-border dark:border-charcoal-700 transition-all shadow-xs"
             >
-              <Send className="w-4 h-4" />
-              Request Outpass
+              <Send className="w-4 h-4 text-rose-primary dark:text-rose-accent" />
+              <span>Request Outpass</span>
             </button>
             <button
               onClick={() => setShowAllocateModal(true)}
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium text-sm bg-rose-700 hover:bg-rose-600 text-white border border-rose-500/30 shadow-md transition-all active:scale-95"
+              className="btn-primary-glow flex items-center gap-2 px-4 py-2 rounded-xl bg-rose-primary hover:bg-rose-dark active:scale-[0.98] text-white text-xs font-bold shadow-sm transition-all"
             >
               <PlusCircle className="w-4 h-4" />
-              Allocate Bed
+              <span>Allocate Bed</span>
             </button>
           </div>
         </div>
 
-        {/* Live Metrics Ribbons */}
+        {/* 4-Card KPI Telemetry Strip - Matching Main App Design */}
         {loading ? (
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-6 pt-6 border-t border-rose-700/50">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <SkeletonCard />
             <SkeletonCard />
             <SkeletonCard />
             <SkeletonCard />
           </div>
         ) : summary && (
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-6 pt-6 border-t border-rose-700/50">
-            <div>
-              <p className="text-xs text-rose-200 uppercase tracking-wider font-semibold">Total Capacity</p>
-              <p className="text-xl md:text-2xl font-bold mt-1">{summary.totalBeds} Beds</p>
-              <p className="text-xs text-rose-300 mt-0.5">{summary.totalRooms} Rooms across {summary.totalBlocks} Blocks</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="glass-panel glass-card-hover p-4 sm:p-5 rounded-2xl shadow-soft flex items-center justify-between">
+              <div>
+                <p className="text-[10px] sm:text-[11px] font-bold tracking-wider uppercase text-charcoal-500 dark:text-charcoal-400">
+                  Total Capacity
+                </p>
+                <h3 className="text-2xl sm:text-3xl font-display font-bold text-charcoal-900 dark:text-ivory-100 mt-1">
+                  {summary.totalBeds} Beds
+                </h3>
+                <span className="badge-subtle bg-rose-container/60 dark:bg-rose-dark/30 text-rose-primary dark:text-rose-accent mt-1 inline-block">
+                  {summary.totalRooms} Rooms • {summary.totalBlocks} Blocks
+                </span>
+              </div>
+              <div className="h-10 w-10 rounded-xl bg-rose-container dark:bg-rose-dark/30 text-rose-primary dark:text-rose-accent flex items-center justify-center shrink-0">
+                <Building className="h-5 w-5" />
+              </div>
             </div>
-            <div>
-              <p className="text-xs text-rose-200 uppercase tracking-wider font-semibold">Occupancy Rate</p>
-              <p className="text-xl md:text-2xl font-bold mt-1 text-emerald-300">{summary.occupancyRate}%</p>
-              <p className="text-xs text-rose-300 mt-0.5">{summary.occupiedBeds} Occupied / {summary.availableBeds} Vacant</p>
+
+            <div className="glass-panel glass-card-hover p-4 sm:p-5 rounded-2xl shadow-soft flex items-center justify-between">
+              <div>
+                <p className="text-[10px] sm:text-[11px] font-bold tracking-wider uppercase text-charcoal-500 dark:text-charcoal-400">
+                  Occupancy Rate
+                </p>
+                <h3 className="text-2xl sm:text-3xl font-display font-bold text-emerald-600 dark:text-emerald-400 mt-1">
+                  {summary.occupancyRate}%
+                </h3>
+                <span className="badge-subtle bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 mt-1 inline-block">
+                  {summary.occupiedBeds} Occupied / {summary.availableBeds} Vacant
+                </span>
+              </div>
+              <div className="h-10 w-10 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+                <Bed className="h-5 w-5" />
+              </div>
             </div>
-            <div>
-              <p className="text-xs text-rose-200 uppercase tracking-wider font-semibold">Pending Outpasses</p>
-              <p className="text-xl md:text-2xl font-bold mt-1 text-amber-300">{summary.pendingGatePasses}</p>
-              <p className="text-xs text-rose-300 mt-0.5">Awaiting Warden Clearance</p>
+
+            <div className="glass-panel glass-card-hover p-4 sm:p-5 rounded-2xl shadow-soft flex items-center justify-between">
+              <div>
+                <p className="text-[10px] sm:text-[11px] font-bold tracking-wider uppercase text-charcoal-500 dark:text-charcoal-400">
+                  Pending Outpasses
+                </p>
+                <h3 className="text-2xl sm:text-3xl font-display font-bold text-amber-600 dark:text-amber-400 mt-1">
+                  {summary.pendingGatePasses}
+                </h3>
+                <span className="badge-subtle bg-amber-500/10 text-amber-700 dark:text-amber-300 mt-1 inline-block">
+                  Awaiting Warden Clearance
+                </span>
+              </div>
+              <div className="h-10 w-10 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+                <Clock className="h-5 w-5" />
+              </div>
             </div>
-            <div>
-              <p className="text-xs text-rose-200 uppercase tracking-wider font-semibold">Mess Dining</p>
-              <p className="text-xl md:text-2xl font-bold mt-1 text-cyan-300">{summary.activeMessSubscribers}</p>
-              <p className="text-xs text-rose-300 mt-0.5">Active Meal Subscriptions</p>
+
+            <div className="glass-panel glass-card-hover p-4 sm:p-5 rounded-2xl shadow-soft flex items-center justify-between">
+              <div>
+                <p className="text-[10px] sm:text-[11px] font-bold tracking-wider uppercase text-charcoal-500 dark:text-charcoal-400">
+                  Mess Dining
+                </p>
+                <h3 className="text-2xl sm:text-3xl font-display font-bold text-cyan-600 dark:text-cyan-400 mt-1">
+                  {summary.activeMessSubscribers}
+                </h3>
+                <span className="badge-subtle bg-cyan-500/10 text-cyan-700 dark:text-cyan-300 mt-1 inline-block">
+                  Active Meal Subscriptions
+                </span>
+              </div>
+              <div className="h-10 w-10 rounded-xl bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 flex items-center justify-center shrink-0">
+                <Utensils className="h-5 w-5" />
+              </div>
             </div>
           </div>
         )}
-      </div>
 
-      {/* Navigation Tabs */}
-      <div className="flex border-b border-border dark:border-charcoal-800 space-x-2 overflow-x-auto no-scrollbar flex-nowrap pb-px">
-        {[
-          { id: "matrix", label: "Room Matrix & Layout", icon: Building },
-          { id: "allocations", label: "Bed Allocation Registry", icon: Bed },
-          { id: "gatepass", label: "Gate Pass & Night Outpass", icon: Clock, count: summary?.pendingGatePasses },
-          { id: "mess", label: "Dining & Mess Management", icon: Utensils },
-          { id: "mess-rebate", label: "Mess Diet Rebates & Meal Tokens", icon: Receipt },
-          { id: "night-rollcall", label: "Night Curfew Roll-Call (21:30)", icon: Moon },
-          { id: "asset-audit", label: "Room Inventory & Deposit Clearance", icon: Wrench },
-        ].map((tab) => {
-          const Icon = tab.icon;
-          const isActive = activeTab === tab.id;
-          return (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id as any)}
-              className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-all whitespace-nowrap shrink-0 ${
-                isActive
-                  ? "border-rose-primary text-rose-primary dark:text-rose-light dark:border-rose-light"
-                  : "border-transparent text-charcoal-600 dark:text-ivory-400 hover:text-charcoal-900 dark:hover:text-white"
-              }`}
-            >
-              <Icon className="w-4 h-4" />
-              <span>{tab.label}</span>
-              {typeof tab.count === "number" && tab.count > 0 && (
-                <span className="px-1.5 py-0.5 rounded-full text-xs font-bold bg-rose-100 dark:bg-rose-900/60 text-rose-700 dark:text-rose-300">
-                  {tab.count}
-                </span>
-              )}
-            </button>
-          );
-        })}
-      </div>
+        {/* Navigation Tabs - Clean Unified Pills Strip */}
+        <div className="flex items-center gap-1.5 p-1.5 rounded-2xl bg-surface-soft/60 dark:bg-charcoal-900 border border-border/80 dark:border-charcoal-800 overflow-x-auto no-scrollbar">
+          {[
+            { id: "matrix", label: "Room Matrix & Layout", icon: Building },
+            { id: "allocations", label: "Bed Allocation Registry", icon: Bed },
+            { id: "gatepass", label: "Gate Pass & Night Outpass", icon: Clock, count: summary?.pendingGatePasses },
+            { id: "mess", label: "Dining & Mess Management", icon: Utensils },
+            { id: "mess-rebate", label: "Mess Diet Rebates & Meal Tokens", icon: Receipt },
+            { id: "night-rollcall", label: "Night Curfew Roll-Call (21:30)", icon: Moon },
+            { id: "asset-audit", label: "Room Inventory & Deposit Clearance", icon: Wrench },
+          ].map((tab) => {
+            const Icon = tab.icon;
+            const isActive = activeTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id as any)}
+                className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all whitespace-nowrap shrink-0 ${
+                  isActive
+                    ? "bg-white dark:bg-charcoal-800 text-charcoal-900 dark:text-ivory-100 shadow-sm border border-border/50 dark:border-charcoal-700"
+                    : "text-charcoal-600 dark:text-charcoal-400 hover:text-charcoal-900 dark:hover:text-ivory-100"
+                }`}
+              >
+                <Icon className={`w-4 h-4 ${isActive ? "text-rose-primary dark:text-rose-accent" : "text-charcoal-500 dark:text-charcoal-400"}`} />
+                <span>{tab.label}</span>
+                {typeof tab.count === "number" && tab.count > 0 && (
+                  <span className="px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-container text-rose-primary dark:bg-rose-dark/40 dark:text-rose-accent">
+                    {tab.count}
+                  </span>
+                )}
+              </button>
+            );
+          })}
+        </div>
 
       {/* TAB 1: ROOM MATRIX & LAYOUT */}
       {activeTab === "matrix" && (

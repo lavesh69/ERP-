@@ -228,181 +228,202 @@ export default function IncubationPage() {
     <AppShell>
       <Breadcrumbs />
       <div className="space-y-6 animate-in fade-in duration-300">
-        {/* Top Banner */}
-        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-charcoal-900 via-rose-950 to-charcoal-900 text-white p-6 md:p-8 shadow-xl">
-          <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        {/* Top Banner - Academic OS Native Glassmorphism */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 glass-panel p-6 rounded-2xl shadow-soft">
+          <div className="flex items-center gap-3">
+            <div className="h-12 w-12 rounded-xl bg-rose-primary text-white flex items-center justify-center shadow-md shadow-rose-primary/20 shrink-0">
+              <Rocket className="h-6 w-6" />
+            </div>
             <div>
-              <div className="flex items-center gap-2 mb-2">
-                <span className="px-3 py-1 rounded-full text-xs font-semibold bg-violet-500/20 text-violet-200 border border-violet-400/30">
-                  AIC &amp; Venture Accelerator
+              <div className="flex items-center gap-2 mb-1">
+                <span className="badge-subtle bg-rose-container/60 dark:bg-rose-dark/30 text-rose-primary dark:text-rose-accent">
+                  AIC & Venture Accelerator
                 </span>
-                <span className="px-3 py-1 rounded-full text-xs font-medium bg-emerald-500/20 text-emerald-200 border border-emerald-400/30">
+                <span className="badge-subtle bg-emerald-500/10 text-emerald-700 dark:text-emerald-300">
                   Cohort 2026-27 Active
                 </span>
               </div>
-              <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-white">
-                University Incubation Center &amp; Venture Accelerator
+              <h1 className="text-xl font-display font-bold text-charcoal-900 dark:text-ivory-100">
+                University Incubation Center & Venture Accelerator
               </h1>
-              <p className="text-sm md:text-base text-rose-100/80 mt-1 max-w-2xl">
-                Atal Incubation Center (AIC), Student Ventures, Seed Capital &amp; Technology Transfer Office
+              <p className="text-xs text-charcoal-600 dark:text-charcoal-400">
+                Atal Incubation Center (AIC), Student Ventures, Seed Capital & Technology Transfer Office
               </p>
             </div>
+          </div>
 
-            <div className="flex flex-wrap items-center gap-3">
-              <button
-                onClick={handleExportIncubationCsv}
-                className="inline-flex items-center gap-2 px-3.5 py-2.5 rounded-xl font-medium text-sm bg-white/10 hover:bg-white/20 text-white border border-white/20 shadow-md transition-all active:scale-95"
-              >
-                <Download className="w-4 h-4" />
-                Export Portfolio (CSV)
-              </button>
-              <button
-                onClick={() => setShowModal(true)}
-                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium text-sm bg-violet-600 hover:bg-violet-700 text-white shadow-md shadow-violet-600/30 transition-all active:scale-95 font-bold"
-              >
-                <PlusCircle className="w-4 h-4" />
-                Onboard Startup Venture
-              </button>
-            </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              onClick={handleExportIncubationCsv}
+              className="btn-ghost text-xs flex items-center gap-1.5"
+            >
+              <Download className="w-3.5 h-3.5" />
+              Export Portfolio
+            </button>
+            <button
+              onClick={() => setShowModal(true)}
+              className="btn-primary text-xs flex items-center gap-1.5"
+            >
+              <PlusCircle className="w-3.5 h-3.5" />
+              Onboard Startup
+            </button>
           </div>
         </div>
 
-        {/* KPI Cards */}
+        {/* 4-Card KPI Telemetry Strip */}
         {loading ? (
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <SkeletonCard />
             <SkeletonCard />
             <SkeletonCard />
             <SkeletonCard />
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div className="bg-white dark:bg-charcoal-900 p-5 rounded-2xl border border-border dark:border-charcoal-800 shadow-sm">
-              <div className="flex items-center justify-between text-charcoal-500 dark:text-charcoal-400 mb-2">
-                <span className="text-xs font-semibold uppercase tracking-wider">Incubated Startups</span>
-                <Rocket className="w-4 h-4 text-violet-500" />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="glass-panel glass-card-hover p-4 sm:p-5 rounded-2xl shadow-soft flex items-center justify-between">
+              <div>
+                <p className="text-[10px] sm:text-[11px] font-bold tracking-wider uppercase text-charcoal-500 dark:text-charcoal-400">
+                  Incubated Startups
+                </p>
+                <h3 className="text-2xl sm:text-3xl font-display font-bold text-charcoal-900 dark:text-ivory-100 mt-1">
+                  {summary?.totalVentures || 0}
+                </h3>
+                <span className="badge-subtle bg-surface-soft text-charcoal-600 dark:text-charcoal-300 mt-1 inline-block">
+                  {summary?.activeVentures || 0} Active in Cohort
+                </span>
               </div>
-              <div className="text-2xl font-bold text-charcoal-900 dark:text-ivory-100">
-                {summary?.totalVentures || 0}
+              <div className="h-10 w-10 rounded-xl bg-rose-container text-rose-primary flex items-center justify-center shrink-0">
+                <Rocket className="h-5 w-5" />
               </div>
-              <p className="text-xs text-charcoal-400 mt-1">{summary?.activeVentures || 0} Currently Active in Cohort</p>
             </div>
 
-            <div className="bg-white dark:bg-charcoal-900 p-5 rounded-2xl border border-border dark:border-charcoal-800 shadow-sm">
-              <div className="flex items-center justify-between text-charcoal-500 dark:text-charcoal-400 mb-2">
-                <span className="text-xs font-semibold uppercase tracking-wider">Seed Grants Disbursed</span>
-                <DollarSign className="w-4 h-4 text-emerald-500" />
+            <div className="glass-panel glass-card-hover p-4 sm:p-5 rounded-2xl shadow-soft flex items-center justify-between">
+              <div>
+                <p className="text-[10px] sm:text-[11px] font-bold tracking-wider uppercase text-charcoal-500 dark:text-charcoal-400">
+                  Seed Grants Disbursed
+                </p>
+                <h3 className="text-2xl sm:text-3xl font-display font-bold text-emerald-600 dark:text-emerald-400 mt-1">
+                  ₹{(summary?.totalSeedCapitalDisbursed || 0).toLocaleString("en-IN")}
+                </h3>
+                <span className="badge-subtle bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 mt-1 inline-block">
+                  University Venture Fund
+                </span>
               </div>
-              <div className="text-2xl font-bold text-charcoal-900 dark:text-ivory-100">
-                ₹{(summary?.totalSeedCapitalDisbursed || 0).toLocaleString("en-IN")}
+              <div className="h-10 w-10 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center shrink-0">
+                <DollarSign className="h-5 w-5" />
               </div>
-              <p className="text-xs text-emerald-600 dark:text-emerald-400 mt-1 font-medium">University Venture Fund</p>
             </div>
 
-            <div className="bg-white dark:bg-charcoal-900 p-5 rounded-2xl border border-border dark:border-charcoal-800 shadow-sm">
-              <div className="flex items-center justify-between text-charcoal-500 dark:text-charcoal-400 mb-2">
-                <span className="text-xs font-semibold uppercase tracking-wider">External Capital Raised</span>
-                <TrendingUp className="w-4 h-4 text-indigo-500" />
+            <div className="glass-panel glass-card-hover p-4 sm:p-5 rounded-2xl shadow-soft flex items-center justify-between">
+              <div>
+                <p className="text-[10px] sm:text-[11px] font-bold tracking-wider uppercase text-charcoal-500 dark:text-charcoal-400">
+                  External Capital Raised
+                </p>
+                <h3 className="text-2xl sm:text-3xl font-display font-bold text-indigo-600 dark:text-indigo-400 mt-1">
+                  ₹{(summary?.totalExternalFundingRaised || 0).toLocaleString("en-IN")}
+                </h3>
+                <span className="badge-subtle bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 mt-1 inline-block">
+                  VC & Angel Syndicates
+                </span>
               </div>
-              <div className="text-2xl font-bold text-charcoal-900 dark:text-ivory-100">
-                ₹{(summary?.totalExternalFundingRaised || 0).toLocaleString("en-IN")}
+              <div className="h-10 w-10 rounded-xl bg-indigo-500/10 text-indigo-600 flex items-center justify-center shrink-0">
+                <TrendingUp className="h-5 w-5" />
               </div>
-              <p className="text-xs text-charcoal-400 mt-1">VC & Angel Syndicates</p>
             </div>
 
-            <div className="bg-white dark:bg-charcoal-900 p-5 rounded-2xl border border-border dark:border-charcoal-800 shadow-sm">
-              <div className="flex items-center justify-between text-charcoal-500 dark:text-charcoal-400 mb-2">
-                <span className="text-xs font-semibold uppercase tracking-wider">Patents & IP Filed</span>
-                <Lightbulb className="w-4 h-4 text-amber-500" />
+            <div className="glass-panel glass-card-hover p-4 sm:p-5 rounded-2xl shadow-soft flex items-center justify-between">
+              <div>
+                <p className="text-[10px] sm:text-[11px] font-bold tracking-wider uppercase text-charcoal-500 dark:text-charcoal-400">
+                  Patents & IP Filed
+                </p>
+                <h3 className="text-2xl sm:text-3xl font-display font-bold text-amber-600 dark:text-amber-400 mt-1">
+                  {summary?.totalPatentsFiled || 0}
+                </h3>
+                <span className="badge-subtle bg-amber-500/10 text-amber-700 dark:text-amber-300 mt-1 inline-block">
+                  Tech Transfer Office (TTO)
+                </span>
               </div>
-              <div className="text-2xl font-bold text-charcoal-900 dark:text-ivory-100">
-                {summary?.totalPatentsFiled || 0}
+              <div className="h-10 w-10 rounded-xl bg-amber-500/10 text-amber-600 flex items-center justify-center shrink-0">
+                <Lightbulb className="h-5 w-5" />
               </div>
-              <p className="text-xs text-charcoal-400 mt-1">Tech Transfer Office (TTO)</p>
             </div>
           </div>
         )}
 
-      {/* Search & Sector Filter Toolbar */}
-      <div className="flex flex-col sm:flex-row gap-3 items-center justify-between bg-white dark:bg-charcoal-900 p-4 rounded-xl border border-border dark:border-charcoal-800">
-        <div className="relative w-full sm:w-96">
-          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-charcoal-400" />
-          <input
-            type="text"
-            placeholder="Search startups, founders, technologies..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 bg-ivory-50 dark:bg-charcoal-800 border border-border dark:border-charcoal-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-violet-500 text-charcoal-900 dark:text-ivory-100"
-          />
+        {/* Navigation Tabs - Clean Unified Pills Strip */}
+        <div className="flex items-center gap-1.5 p-1.5 rounded-2xl bg-surface-soft/60 dark:bg-charcoal-900 border border-border/80 dark:border-charcoal-800 overflow-x-auto no-scrollbar">
+          {[
+            { id: "ventures", label: "Active Startup Ventures", icon: Rocket, count: startups.length },
+            { id: "portfolio", label: "Portfolio Valuation & Cap-Table", icon: TrendingUp },
+            { id: "investor", label: "Angel & VC Investor Scorecard", icon: Award },
+          ].map((tab) => {
+            const Icon = tab.icon;
+            const isActive = activeTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id as any)}
+                className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all whitespace-nowrap shrink-0 ${
+                  isActive
+                    ? "bg-white dark:bg-charcoal-800 text-charcoal-900 dark:text-ivory-100 shadow-sm border border-border/50 dark:border-charcoal-700"
+                    : "text-charcoal-600 dark:text-charcoal-400 hover:text-charcoal-900 dark:hover:text-ivory-100"
+                }`}
+              >
+                <Icon className={`w-4 h-4 ${isActive ? "text-rose-primary dark:text-rose-accent" : "text-charcoal-500 dark:text-charcoal-400"}`} />
+                <span>{tab.label}</span>
+                {typeof tab.count === "number" && tab.count > 0 && (
+                  <span className="px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-container text-rose-primary dark:bg-rose-dark/40 dark:text-rose-accent">
+                    {tab.count}
+                  </span>
+                )}
+              </button>
+            );
+          })}
         </div>
-        <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
-          <span className="text-xs font-semibold text-charcoal-500 uppercase tracking-wider">Sector:</span>
-          <select
-            value={filterSector}
-            onChange={(e) => setFilterSector(e.target.value)}
-            className="px-3 py-2 bg-ivory-50 dark:bg-charcoal-800 border border-border dark:border-charcoal-700 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-violet-500 text-charcoal-900 dark:text-ivory-100"
-          >
-            <option value="ALL">All Sectors</option>
-            <option value="AI_ML">AI & Machine Learning</option>
-            <option value="ROBOTICS_IOT">Robotics & IoT</option>
-            <option value="FINTECH">Fintech & Blockchain</option>
-            <option value="CLEANTECH">CleanTech & Energy</option>
-            <option value="HEALTH_TECH">HealthTech & Bio</option>
-            <option value="EDTECH">EdTech & Platforms</option>
-          </select>
 
-          <span className="text-xs font-semibold text-charcoal-500 uppercase tracking-wider sm:ml-2">Stage:</span>
-          <select
-            value={filterStage}
-            onChange={(e) => setFilterStage(e.target.value)}
-            className="px-3 py-2 bg-ivory-50 dark:bg-charcoal-800 border border-border dark:border-charcoal-700 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-violet-500 text-charcoal-900 dark:text-ivory-100"
-          >
-            <option value="ALL">All Stages</option>
-            <option value="PRE_INCUBATION">Pre-Incubation</option>
-            <option value="INCUBATED_PROTOTYPE">Incubated Prototype</option>
-            <option value="SEED_FUNDED">Seed Funded</option>
-            <option value="ACCELERATOR_GROWTH">Accelerator Growth</option>
-            <option value="GRADUATED_VENTURE">Graduated Venture</option>
-          </select>
+        {/* Search & Sector Filter Toolbar */}
+        <div className="flex flex-col sm:flex-row gap-3 items-center justify-between bg-white dark:bg-charcoal-900 p-4 rounded-xl border border-border dark:border-charcoal-800">
+          <div className="relative w-full sm:w-96">
+            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-charcoal-400" />
+            <input
+              type="text"
+              placeholder="Search startups, founders, technologies..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-9 pr-4 py-2 bg-ivory-50 dark:bg-charcoal-800 border border-border dark:border-charcoal-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-rose-primary text-charcoal-900 dark:text-ivory-100"
+            />
+          </div>
+          <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+            <span className="text-xs font-semibold text-charcoal-500 uppercase tracking-wider">Sector:</span>
+            <select
+              value={filterSector}
+              onChange={(e) => setFilterSector(e.target.value)}
+              className="px-3 py-2 bg-ivory-50 dark:bg-charcoal-800 border border-border dark:border-charcoal-700 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-rose-primary text-charcoal-900 dark:text-ivory-100"
+            >
+              <option value="ALL">All Sectors</option>
+              <option value="AI_ML">AI & Machine Learning</option>
+              <option value="ROBOTICS_IOT">Robotics & IoT</option>
+              <option value="FINTECH">Fintech & Blockchain</option>
+              <option value="CLEANTECH">CleanTech & Energy</option>
+              <option value="HEALTH_TECH">HealthTech & Bio</option>
+              <option value="EDTECH">EdTech & Platforms</option>
+            </select>
+
+            <span className="text-xs font-semibold text-charcoal-500 uppercase tracking-wider sm:ml-2">Stage:</span>
+            <select
+              value={filterStage}
+              onChange={(e) => setFilterStage(e.target.value)}
+              className="px-3 py-2 bg-ivory-50 dark:bg-charcoal-800 border border-border dark:border-charcoal-700 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-rose-primary text-charcoal-900 dark:text-ivory-100"
+            >
+              <option value="ALL">All Stages</option>
+              <option value="PRE_INCUBATION">Pre-Incubation</option>
+              <option value="INCUBATED_PROTOTYPE">Incubated Prototype</option>
+              <option value="SEED_FUNDED">Seed Funded</option>
+              <option value="ACCELERATOR_GROWTH">Accelerator Growth</option>
+              <option value="GRADUATED_VENTURE">Graduated Venture</option>
+            </select>
+          </div>
         </div>
-      </div>
-
-      {/* Tabs */}
-      <div className="flex border-b border-border dark:border-charcoal-800 overflow-x-auto no-scrollbar flex-nowrap">
-        <button
-          onClick={() => setActiveTab("ventures")}
-          className={`flex items-center gap-2 px-5 py-3 text-sm font-semibold border-b-2 transition-all whitespace-nowrap shrink-0 ${
-            activeTab === "ventures"
-              ? "border-violet-600 text-violet-600 dark:text-violet-400"
-              : "border-transparent text-charcoal-500 hover:text-charcoal-800 dark:hover:text-ivory-200"
-          }`}
-        >
-          <Rocket className="w-4 h-4" />
-          Active Startup Ventures ({startups.length})
-        </button>
-        <button
-          onClick={() => setActiveTab("portfolio")}
-          className={`flex items-center gap-2 px-5 py-3 text-sm font-semibold border-b-2 transition-all whitespace-nowrap shrink-0 ${
-            activeTab === "portfolio"
-              ? "border-violet-600 text-violet-600 dark:text-violet-400"
-              : "border-transparent text-charcoal-500 hover:text-charcoal-800 dark:hover:text-ivory-200"
-          }`}
-        >
-          <TrendingUp className="w-4 h-4" />
-          Portfolio Valuation & Cap-Table
-        </button>
-        <button
-          onClick={() => setActiveTab("investor")}
-          className={`flex items-center gap-2 px-5 py-3 text-sm font-semibold border-b-2 transition-all whitespace-nowrap shrink-0 ${
-            activeTab === "investor"
-              ? "border-violet-600 text-violet-600 dark:text-violet-400"
-              : "border-transparent text-charcoal-500 hover:text-charcoal-800 dark:hover:text-ivory-200"
-          }`}
-        >
-          <Award className="w-4 h-4" />
-          Angel & VC Investor Scorecard
-        </button>
-      </div>
 
       {/* Tab 1: Ventures Grid */}
       {activeTab === "ventures" && (
