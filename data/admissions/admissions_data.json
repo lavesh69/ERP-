@@ -1,6 +1,52 @@
 {
   "applicants": [
     {
+      "id": "app-1793625956202",
+      "applicationNo": "ADM-2026-579",
+      "fullName": "Scholar Integration Test 1793625956200",
+      "email": "scholar.integ.1793625956200@classroom.edu",
+      "phone": "+15559876543",
+      "programCode": "prog-cs-01",
+      "programName": "Undergraduate Degree",
+      "highSchoolGpa": 94.5,
+      "entranceExamScore": 1450,
+      "meritRank": 16,
+      "stage": "SEAT_CONFIRMED",
+      "documentsStatus": {
+        "transcriptsVerified": false,
+        "identityProofVerified": false,
+        "recommendationLettersVerified": false
+      },
+      "seatDepositPaid": true,
+      "depositAmount": 1500,
+      "assignedCounselor": "Admissions Central Desk",
+      "source": "WEBSITE",
+      "appliedDate": "2026-11-02T13:25:56.202Z"
+    },
+    {
+      "id": "app-1793625951512",
+      "applicationNo": "ADM-2026-590",
+      "fullName": "Linus Torvalds Jr.",
+      "email": "linus.jr@test-admissions.edu",
+      "phone": "+1 (555) 019-2834",
+      "programCode": "BTECH-CSE",
+      "programName": "B.Tech Computer Science & Engineering",
+      "highSchoolGpa": 4,
+      "entranceExamScore": 1560,
+      "meritRank": 99,
+      "stage": "OFFER_EXTENDED",
+      "documentsStatus": {
+        "transcriptsVerified": false,
+        "identityProofVerified": false,
+        "recommendationLettersVerified": false
+      },
+      "seatDepositPaid": false,
+      "depositAmount": 0,
+      "assignedCounselor": "Admissions Central Desk",
+      "source": "PORTAL_DIRECT",
+      "appliedDate": "2026-11-02T13:25:51.512Z"
+    },
+    {
       "id": "app-1793624442708",
       "applicationNo": "ADM-2026-692",
       "fullName": "Scholar Integration Test 1793624442707",

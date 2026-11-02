@@ -91,21 +91,23 @@ export default function FeedbackMultiSurveysTab({ onOpenSurveyModal }: FeedbackM
   const exitCount = surveys.filter((s) => s.surveyType === "EXIT_SURVEY_SENIORS").length;
   const alumniCount = surveys.filter((s) => s.surveyType === "ALUMNI_CURRICULUM_SURVEY").length;
   const infraCount = surveys.filter((s) => s.surveyType === "FACILITY_INFRASTRUCTURE").length;
+  const empCount = surveys.filter((s) => s.surveyType === "EMPLOYER_FEEDBACK_SURVEY").length;
+  const parCount = surveys.filter((s) => s.surveyType === "PARENT_FEEDBACK_SURVEY").length;
 
   return (
     <div className="space-y-6">
-      {/* Telemetry Strip */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      {/* Telemetry Strip - 5 NAAC Criterion 1.4 Pillars */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         <div className="glass-panel glass-card-hover p-4 sm:p-5 rounded-2xl shadow-soft flex items-center justify-between">
           <div>
             <p className="text-[10px] sm:text-[11px] font-bold tracking-wider uppercase text-charcoal-500 dark:text-charcoal-400">
-              Senior Exit Evaluations
+              Senior Exit
             </p>
-            <h3 className="text-2xl sm:text-3xl font-display font-bold text-indigo-600 dark:text-indigo-400 mt-1">
+            <h3 className="text-2xl font-display font-bold text-indigo-600 dark:text-indigo-400 mt-1">
               {exitCount}
             </h3>
             <span className="badge-subtle bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 mt-1 inline-block">
-              NBA / NAAC Criterion 1.4
+              NBA POs Attainment
             </span>
           </div>
           <div className="h-10 w-10 rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0">
@@ -116,13 +118,13 @@ export default function FeedbackMultiSurveysTab({ onOpenSurveyModal }: FeedbackM
         <div className="glass-panel glass-card-hover p-4 sm:p-5 rounded-2xl shadow-soft flex items-center justify-between">
           <div>
             <p className="text-[10px] sm:text-[11px] font-bold tracking-wider uppercase text-charcoal-500 dark:text-charcoal-400">
-              Alumni Curriculum Feedback
+              Alumni Curriculum
             </p>
-            <h3 className="text-2xl sm:text-3xl font-display font-bold text-rose-primary dark:text-rose-accent mt-1">
+            <h3 className="text-2xl font-display font-bold text-rose-primary dark:text-rose-accent mt-1">
               {alumniCount}
             </h3>
             <span className="badge-subtle bg-rose-container/60 dark:bg-rose-dark/30 text-rose-primary dark:text-rose-accent mt-1 inline-block">
-              NEP 2020 Industry Readiness
+              NEP 2020 Readiness
             </span>
           </div>
           <div className="h-10 w-10 rounded-xl bg-rose-container text-rose-primary dark:text-rose-accent flex items-center justify-center shrink-0">
@@ -133,17 +135,51 @@ export default function FeedbackMultiSurveysTab({ onOpenSurveyModal }: FeedbackM
         <div className="glass-panel glass-card-hover p-4 sm:p-5 rounded-2xl shadow-soft flex items-center justify-between">
           <div>
             <p className="text-[10px] sm:text-[11px] font-bold tracking-wider uppercase text-charcoal-500 dark:text-charcoal-400">
-              Campus Facilities & Infrastructure
+              Campus Facilities
             </p>
-            <h3 className="text-2xl sm:text-3xl font-display font-bold text-emerald-600 dark:text-emerald-400 mt-1">
+            <h3 className="text-2xl font-display font-bold text-emerald-600 dark:text-emerald-400 mt-1">
               {infraCount}
             </h3>
             <span className="badge-subtle bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 mt-1 inline-block">
-              Institutional Quality
+              Smart Labs &amp; WiFi
             </span>
           </div>
           <div className="h-10 w-10 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
             <Building className="h-5 w-5" />
+          </div>
+        </div>
+
+        <div className="glass-panel glass-card-hover p-4 sm:p-5 rounded-2xl shadow-soft flex items-center justify-between">
+          <div>
+            <p className="text-[10px] sm:text-[11px] font-bold tracking-wider uppercase text-charcoal-500 dark:text-charcoal-400">
+              Corporate Employers
+            </p>
+            <h3 className="text-2xl font-display font-bold text-amber-600 dark:text-amber-400 mt-1">
+              {empCount}
+            </h3>
+            <span className="badge-subtle bg-amber-500/10 text-amber-700 dark:text-amber-300 mt-1 inline-block">
+              Recruiter Feedback
+            </span>
+          </div>
+          <div className="h-10 w-10 rounded-xl bg-amber-500/10 text-amber-600 flex items-center justify-center shrink-0">
+            <Award className="h-5 w-5" />
+          </div>
+        </div>
+
+        <div className="glass-panel glass-card-hover p-4 sm:p-5 rounded-2xl shadow-soft flex items-center justify-between">
+          <div>
+            <p className="text-[10px] sm:text-[11px] font-bold tracking-wider uppercase text-charcoal-500 dark:text-charcoal-400">
+              Parents &amp; Guardians
+            </p>
+            <h3 className="text-2xl font-display font-bold text-purple-600 dark:text-purple-400 mt-1">
+              {parCount}
+            </h3>
+            <span className="badge-subtle bg-purple-500/10 text-purple-700 dark:text-purple-300 mt-1 inline-block">
+              Welfare &amp; Discipline
+            </span>
+          </div>
+          <div className="h-10 w-10 rounded-xl bg-purple-500/10 text-purple-600 flex items-center justify-center shrink-0">
+            <Users className="h-5 w-5" />
           </div>
         </div>
       </div>
@@ -166,8 +202,10 @@ export default function FeedbackMultiSurveysTab({ onOpenSurveyModal }: FeedbackM
             {[
               { id: "ALL", label: "All Stakeholders" },
               { id: "EXIT_SURVEY_SENIORS", label: "Senior Exit" },
-              { id: "ALUMNI_CURRICULUM_SURVEY", label: "Alumni Curriculum" },
-              { id: "FACILITY_INFRASTRUCTURE", label: "Campus Infrastructure" },
+              { id: "ALUMNI_CURRICULUM_SURVEY", label: "Alumni" },
+              { id: "FACILITY_INFRASTRUCTURE", label: "Infrastructure" },
+              { id: "EMPLOYER_FEEDBACK_SURVEY", label: "Employers" },
+              { id: "PARENT_FEEDBACK_SURVEY", label: "Parents" },
             ].map((t) => (
               <button
                 key={t.id}
@@ -249,6 +287,20 @@ export default function FeedbackMultiSurveysTab({ onOpenSurveyModal }: FeedbackM
                   <div className="text-[11px] text-emerald-700 dark:text-emerald-300 mb-2">
                     <span className="font-semibold">Career Aspiration: </span>
                     <span>{s.futureAspirations}</span>
+                  </div>
+                )}
+
+                {s.employerCompanyName && (
+                  <div className="text-[11px] text-amber-700 dark:text-amber-300 mb-2">
+                    <span className="font-semibold">Recruiting Partner: </span>
+                    <span>{s.employerCompanyName} ({s.employerDesignation || "HR Lead"})</span>
+                  </div>
+                )}
+
+                {s.parentWardName && (
+                  <div className="text-[11px] text-purple-700 dark:text-purple-300 mb-2">
+                    <span className="font-semibold">Parent of Scholar: </span>
+                    <span>{s.parentWardName} ({s.parentWardRoll || "Enrolled Student"})</span>
                   </div>
                 )}
               </div>

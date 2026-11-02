@@ -30,6 +30,11 @@ export default function FeedbackActionReportsTab() {
   const [showModal, setShowModal] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [actioningId, setActioningId] = useState<string | null>(null);
+  const [verifyingAtr, setVerifyingAtr] = useState<FeedbackActionReport | null>(null);
+  const [iqacRemarksInput, setIqacRemarksInput] = useState<string>(
+    "Verified compliant with NAAC Criterion 1.4 by Dean Academics."
+  );
+  const [selectedAtrDossier, setSelectedAtrDossier] = useState<FeedbackActionReport | null>(null);
 
   const [form, setForm] = useState({
     targetType: "FACULTY_PEDAGOGY" as const,
@@ -106,12 +111,7 @@ export default function FeedbackActionReportsTab() {
     }
   };
 
-  const handleUpdateStatus = async (id: string, status: ActionPlanStatus) => {
-    let remarks = "";
-    if (status === "VERIFIED_BY_IQAC") {
-      remarks = prompt("Enter IQAC verification comments & resolution outcome:") || "Verified compliant with NAAC Criterion 1.4 by Dean Academics.";
-    }
-
+  const handleUpdateStatus = async (id: string, status: ActionPlanStatus, customRemarks?: string) => {
     try {
       setActioningId(id);
       const res = await fetch("/api/feedback", {
@@ -121,7 +121,7 @@ export default function FeedbackActionReportsTab() {
           action: "UPDATE_ACTION_REPORT",
           id,
           status,
-          iqacRemarks: remarks,
+          iqacRemarks: customRemarks || (status === "VERIFIED_BY_IQAC" ? iqacRemarksInput : undefined),
         }),
       });
 
@@ -129,6 +129,7 @@ export default function FeedbackActionReportsTab() {
       if (!res.ok) throw new Error(data.error || "Failed to update ATR");
 
       showToast(data.message || "Report updated", "success");
+      setVerifyingAtr(null);
       fetchReports();
     } catch (err: any) {
       showToast(err.message || "Error updating ATR", "error");
@@ -382,6 +383,12 @@ export default function FeedbackActionReportsTab() {
                     </td>
                     <td className="p-3.5 text-right whitespace-nowrap">
                       <div className="flex items-center justify-end gap-1.5">
+                        <button
+                          onClick={() => setSelectedAtrDossier(r)}
+                          className="px-2.5 py-1 rounded-lg bg-ivory-100 hover:bg-ivory-200 dark:bg-charcoal-800 dark:hover:bg-charcoal-700 text-charcoal-700 dark:text-ivory-200 font-semibold text-[11px] transition-colors"
+                        >
+                          Dossier
+                        </button>
                         {r.status === "ACTION_PLANNED" && (
                           <button
                             disabled={actioningId === r.id}
@@ -394,14 +401,19 @@ export default function FeedbackActionReportsTab() {
                         {r.status === "IMPLEMENTED" && (
                           <button
                             disabled={actioningId === r.id}
-                            onClick={() => handleUpdateStatus(r.id, "VERIFIED_BY_IQAC")}
+                            onClick={() => {
+                              setVerifyingAtr(r);
+                              setIqacRemarksInput("Verified compliant with NAAC Criterion 1.4 by Dean Academics.");
+                            }}
                             className="px-2.5 py-1 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-[11px] transition-colors shadow-xs"
                           >
                             IQAC Verify
                           </button>
                         )}
                         {r.status === "VERIFIED_BY_IQAC" && (
-                          <span className="text-[11px] text-emerald-600 font-semibold">Compliant</span>
+                          <span className="text-[11px] text-emerald-600 font-semibold flex items-center gap-1">
+                            <CheckCircle2 className="w-3 h-3" /> Ratified
+                          </span>
                         )}
                       </div>
                     </td>
@@ -563,6 +575,145 @@ export default function FeedbackActionReportsTab() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: IQAC Verification */}
+      {verifyingAtr && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Verify Action Taken Report"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setVerifyingAtr(null);
+          }}
+          className="fixed inset-0 z-50 bg-charcoal-950/70 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in"
+        >
+          <div className="bg-white dark:bg-charcoal-900 rounded-2xl max-w-md w-full p-6 border border-border dark:border-charcoal-800 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-border dark:border-charcoal-800">
+              <div className="flex items-center gap-2">
+                <ShieldCheck className="w-5 h-5 text-indigo-600" />
+                <h3 className="font-bold text-base text-charcoal-900 dark:text-ivory-100">
+                  Ratify ATR under IQAC Audit
+                </h3>
+              </div>
+              <button onClick={() => setVerifyingAtr(null)} className="p-1 text-charcoal-400">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-3 bg-ivory-50 dark:bg-charcoal-800/60 rounded-xl space-y-1 text-xs">
+              <span className="font-mono text-rose-primary font-bold">{verifyingAtr.reportRef}</span>
+              <div className="font-bold text-sm text-charcoal-900 dark:text-ivory-100">{verifyingAtr.targetName}</div>
+              <div className="text-charcoal-500">Trigger: {verifyingAtr.triggerReason}</div>
+              <div className="text-emerald-700 dark:text-emerald-400 font-medium">Plan: {verifyingAtr.correctiveAction}</div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-charcoal-700 dark:text-ivory-200 mb-1">
+                IQAC Verification Remarks & Statutory Accreditation Findings *
+              </label>
+              <textarea
+                rows={3}
+                required
+                value={iqacRemarksInput}
+                onChange={(e) => setIqacRemarksInput(e.target.value)}
+                className="w-full px-3 py-2 bg-ivory-50 dark:bg-charcoal-800 border border-border dark:border-charcoal-700 rounded-xl text-xs text-charcoal-900 dark:text-ivory-100"
+              />
+            </div>
+
+            <div className="flex justify-end gap-2 pt-2 border-t border-border dark:border-charcoal-800">
+              <button
+                type="button"
+                onClick={() => setVerifyingAtr(null)}
+                className="px-4 py-2 rounded-xl text-xs font-semibold text-charcoal-600 dark:text-charcoal-300"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => handleUpdateStatus(verifyingAtr.id, "VERIFIED_BY_IQAC", iqacRemarksInput)}
+                className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold shadow-xs flex items-center gap-1.5"
+              >
+                <CheckCircle2 className="w-3.5 h-3.5" />
+                <span>Ratify &amp; Stamp Compliant</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Full ATR Dossier */}
+      {selectedAtrDossier && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Action Taken Report Dossier"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setSelectedAtrDossier(null);
+          }}
+          className="fixed inset-0 z-50 bg-charcoal-950/70 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in"
+        >
+          <div className="bg-white dark:bg-charcoal-900 rounded-2xl max-w-lg w-full p-6 border border-border dark:border-charcoal-800 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-border dark:border-charcoal-800">
+              <div className="flex items-center gap-2">
+                <FileText className="w-5 h-5 text-rose-primary" />
+                <h3 className="font-bold text-base text-charcoal-900 dark:text-ivory-100">
+                  NAAC Criterion 1.4.2 Action Taken Dossier
+                </h3>
+              </div>
+              <button onClick={() => setSelectedAtrDossier(null)} className="p-1 text-charcoal-400">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-4 bg-ivory-50 dark:bg-charcoal-800/60 rounded-xl space-y-2 text-xs">
+              <div className="flex justify-between">
+                <span className="font-mono text-rose-primary font-bold">{selectedAtrDossier.reportRef}</span>
+                <span className="font-bold uppercase text-[10px] px-2 py-0.5 rounded-full bg-surface-soft">
+                  {selectedAtrDossier.status}
+                </span>
+              </div>
+              <div className="font-bold text-base text-charcoal-900 dark:text-ivory-100">{selectedAtrDossier.targetName}</div>
+              <div className="text-charcoal-500">Dept: {selectedAtrDossier.departmentCode} • Authority: {selectedAtrDossier.assignedAuthority}</div>
+            </div>
+
+            <div className="space-y-2 text-xs">
+              <div className="p-3 bg-rose-50/50 dark:bg-rose-950/30 rounded-xl border border-rose-100 dark:border-rose-900/40">
+                <span className="text-[10px] font-bold uppercase text-charcoal-500 block mb-1">Trigger Rationale</span>
+                <p className="text-charcoal-800 dark:text-ivory-200">{selectedAtrDossier.triggerReason}</p>
+              </div>
+
+              <div className="p-3 bg-emerald-50/50 dark:bg-emerald-950/30 rounded-xl border border-emerald-100 dark:border-emerald-900/40">
+                <span className="text-[10px] font-bold uppercase text-charcoal-500 block mb-1">Corrective Remediation Executed</span>
+                <p className="text-charcoal-800 dark:text-ivory-200">{selectedAtrDossier.correctiveAction}</p>
+              </div>
+
+              {selectedAtrDossier.iqacRemarks && (
+                <div className="p-3 bg-indigo-50/50 dark:bg-indigo-950/30 rounded-xl border border-indigo-100 dark:border-indigo-900/40">
+                  <span className="text-[10px] font-bold uppercase text-indigo-600 dark:text-indigo-400 block mb-1">IQAC Verification Finding</span>
+                  <p className="text-charcoal-800 dark:text-ivory-200 font-medium">{selectedAtrDossier.iqacRemarks}</p>
+                </div>
+              )}
+            </div>
+
+            <div className="flex items-center justify-end gap-2 pt-3 border-t border-border dark:border-charcoal-800">
+              <button
+                type="button"
+                onClick={() => window.print()}
+                className="px-3.5 py-2 bg-ivory-100 hover:bg-ivory-200 dark:bg-charcoal-800 text-charcoal-700 dark:text-ivory-200 rounded-xl text-xs font-semibold"
+              >
+                Print Slip
+              </button>
+              <button
+                type="button"
+                onClick={() => setSelectedAtrDossier(null)}
+                className="px-4 py-2 bg-rose-primary hover:bg-rose-dark text-white rounded-xl text-xs font-bold"
+              >
+                Close
+              </button>
+            </div>
           </div>
         </div>
       )}

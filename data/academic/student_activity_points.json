@@ -1,5 +1,20 @@
 [
   {
+    "id": "ACT-CLM-1793625953547-TMFH",
+    "studentId": "stu-mercer-01",
+    "studentName": "Alex Mercer",
+    "rollNumber": "2024-CSE-042",
+    "category": "TECHNICAL_HACKATHONS",
+    "title": "Smart India Hackathon 2025 National Winner",
+    "description": "National Finalist & 1st Runner Up in Software Edition",
+    "activityDate": "2026-02-20",
+    "pointsClaimed": 30,
+    "pointsAwarded": 0,
+    "evidenceUrl": "https://apex.edu/credentials/sih-2025-winner.pdf",
+    "status": "SUBMITTED",
+    "submittedAt": "2026-11-02T13:25:53.547Z"
+  },
+  {
     "id": "ACT-CLM-1793624440335-ZWLC",
     "studentId": "stu-mercer-01",
     "studentName": "Alex Mercer",

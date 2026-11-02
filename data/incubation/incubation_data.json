@@ -1,6 +1,25 @@
 {
   "startups": [
     {
+      "id": "st-1793625956565",
+      "companyRef": "VENT-2026-902",
+      "startupName": "QuantumSense Magnetometry 1793625956545",
+      "founderName": "Pooja Deshmukh",
+      "founderRollOrStaffId": "STUDENT-PHY-6565",
+      "founderRole": "STUDENT",
+      "sector": "AI_ML",
+      "stage": "INCUBATED_PROTOTYPE",
+      "pitchDeckSummary": "Sub-surface geomagnetic navigation requires bulky cryogenic sensors. — Room-temperature nitrogen-vacancy diamond quantum magnetometers on a silicon chip.",
+      "seedGrantDisbursed": 0,
+      "universityEquityPercentage": 3,
+      "externalFundingRaised": 0,
+      "patentsFiled": 0,
+      "labDesksAllocated": 2,
+      "mentorName": "Vikramaditya Bose",
+      "status": "ACTIVE",
+      "incubatedDate": "2026-11-02T13:25:56.565Z"
+    },
+    {
       "id": "st-1793624442984",
       "companyRef": "VENT-2026-586",
       "startupName": "QuantumSense Magnetometry 1793624442967",
@@ -86,10 +105,10 @@
       "sector": "HEALTHTECH",
       "stage": "ACCELERATOR_GROWTH",
       "pitchDeckSummary": "Non-invasive neural interfaces for neuromuscular rehabilitation monitoring.",
-      "seedGrantDisbursed": 2550000,
+      "seedGrantDisbursed": 3050000,
       "universityEquityPercentage": 3.5,
       "externalFundingRaised": 750000,
-      "patentsFiled": 6,
+      "patentsFiled": 7,
       "labDesksAllocated": 6,
       "mentorName": "Dr. Arvind Gupta (Angel Investor)",
       "status": "ACTIVE",
@@ -246,6 +265,18 @@
   ],
   "tranches": [
     {
+      "id": "tr-1793625956519",
+      "trancheRef": "TR-2026-254",
+      "startupId": "st-01",
+      "startupName": "NeuroPulse BioTech",
+      "trancheNumber": 2,
+      "amount": 500000,
+      "milestoneDescription": "Completed Edge-AI Prototype testing on RISC-V hardware",
+      "status": "DISBURSED",
+      "disbursedAt": "2026-11-02T13:25:56.519Z",
+      "sanctionOrderNumber": "ORD-APEX-2026-881"
+    },
+    {
       "id": "tr-1793624442945",
       "trancheRef": "TR-2026-434",
       "startupId": "st-01",
@@ -355,6 +386,22 @@
     }
   ],
   "patents": [
+    {
+      "id": "pat-1793625956529",
+      "disclosureRef": "PAT-2026-969",
+      "startupId": "st-01",
+      "startupName": "NeuroPulse BioTech",
+      "inventionTitle": "Low-Power Quantized Neural Accelerators for Autonomous Aerial Vehicles",
+      "applicationNumber": "IN-PAT-2026-9921",
+      "jurisdiction": "INDIAN_PATENT_OFFICE",
+      "filingDate": "2026-11-02",
+      "status": "PROVISIONAL_FILED",
+      "universitySharePercentage": 5,
+      "inventors": [
+        "Aarav Sharma",
+        "Dr. Vikram Seth"
+      ]
+    },
     {
       "id": "pat-1793624442954",
       "disclosureRef": "PAT-2026-932",
@@ -470,6 +517,20 @@
   ],
   "milestoneReviews": [
     {
+      "id": "rev-1793625956537",
+      "reviewRef": "REV-2026-230",
+      "startupId": "st-01",
+      "startupName": "NeuroPulse BioTech",
+      "quarter": "Q3 2026-27",
+      "reviewDate": "2026-11-02",
+      "reviewerName": "Dr. Elena Vance",
+      "mrrAchieved": 180000,
+      "prototypeStage": "WORKING_ALPHA",
+      "overallRating": 5,
+      "mentorRemarks": "Onboarded 3 defense drone clients for hardware evaluation kits",
+      "recommendedAction": "FAST_TRACK_ACCELERATION"
+    },
+    {
       "id": "rev-1793624442961",
       "reviewRef": "REV-2026-796",
       "startupId": "st-01",
@@ -555,6 +616,27 @@
     }
   ],
   "applications": [
+    {
+      "id": "app-1793625956547",
+      "applicationRef": "APP-2026-900",
+      "startupName": "QuantumSense Magnetometry 1793625956545",
+      "applicantName": "Pooja Deshmukh",
+      "applicantEmail": "pooja.deshmukh@students.apex.edu",
+      "applicantPhone": "+91 99999 00000",
+      "applicantRole": "STUDENT",
+      "department": "Physics & Nanotechnology",
+      "sector": "AI_ML",
+      "problemStatement": "Sub-surface geomagnetic navigation requires bulky cryogenic sensors.",
+      "proposedSolution": "Room-temperature nitrogen-vacancy diamond quantum magnetometers on a silicon chip.",
+      "prototypeUrl": "",
+      "requestedGrant": 750000,
+      "requestedDesks": 2,
+      "status": "APPROVED",
+      "committeeScore": 95,
+      "committeeNotes": "Exceptional diamond NV-center bench results. Approved for immediate admission.",
+      "submittedAt": "2026-11-02T13:25:56.547Z",
+      "evaluatedAt": "2026-11-02T13:25:56.555Z"
+    },
     {
       "id": "app-1793624442968",
       "applicationRef": "APP-2026-660",
@@ -682,6 +764,22 @@
   ],
   "mentors": [
     {
+      "id": "men-1793625956577",
+      "mentorName": "Rajeev Chandrasekharan",
+      "title": "Founding Partner & EIR",
+      "organization": "DeepTech Horizon Ventures",
+      "expertise": [
+        "Quantum Computing",
+        "IP Licensing",
+        "Venture Valuation"
+      ],
+      "email": "rajeev@horizon.vc",
+      "phone": "+91 99887 76655",
+      "totalSessionsConducted": 1,
+      "rating": 5,
+      "availabilityStatus": "AVAILABLE"
+    },
+    {
       "id": "men-1793624442992",
       "mentorName": "Rajeev Chandrasekharan",
       "title": "Founding Partner & EIR",
@@ -783,6 +881,20 @@
     }
   ],
   "mentorSessions": [
+    {
+      "id": "ses-1793625956587",
+      "sessionRef": "SES-2026-375",
+      "mentorId": "men-1793625956577",
+      "mentorName": "Rajeev Chandrasekharan",
+      "startupId": "st-1793625956565",
+      "startupName": "QuantumSense Magnetometry 1793625956545",
+      "scheduledDate": "2026-11-04T13:25:56.584Z",
+      "durationMinutes": 60,
+      "discussionTopic": "Quantum Chip Foundry Tape-out & Cleanroom Access",
+      "keyTakeaways": "Agreed to route test wafers through SCL Chandigarh cleanroom facility.",
+      "actionItems": "Finalize GDS-II layout by end of month.",
+      "status": "COMPLETED"
+    },
     {
       "id": "ses-1793624442999",
       "sessionRef": "SES-2026-535",
@@ -901,6 +1013,20 @@
     }
   ],
   "investorEOIs": [
+    {
+      "id": "eoi-1793625956608",
+      "eoiRef": "EOI-2026-127",
+      "startupId": "st-1793625956565",
+      "startupName": "QuantumSense Magnetometry 1793625956545",
+      "investorFirm": "Matrix Partners India",
+      "partnerName": "Avnish Bajaj",
+      "contactEmail": "avnish@matrixpartners.in",
+      "indicatedChequeAmount": 25000000,
+      "proposedValuationCap": 250000000,
+      "stageInterest": "SEED",
+      "dueDiligenceStatus": "DATA_ROOM_OPENED",
+      "submittedAt": "2026-11-02T13:25:56.608Z"
+    },
     {
       "id": "eoi-1793624443016",
       "eoiRef": "EOI-2026-946",

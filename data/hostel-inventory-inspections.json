@@ -51,11 +51,11 @@
         "damageCharge": 0
       }
     ],
-    "clearanceSeal": "APEX-HOSTEL-CLEAR-AE11FAE8A709DF1D",
+    "clearanceSeal": "APEX-HOSTEL-CLEAR-1EEBD5CC90983985",
     "wardenSignoff": "Chief Warden Dr. H. C. Verma",
-    "clearedAt": "2026-11-02T13:00:42.500Z",
+    "clearedAt": "2026-11-02T13:25:55.862Z",
     "wardenNotes": "Move-out audit finalized with $25 chair mesh damage deduction.",
-    "financeRefundVoucherNo": "RFND-2026-3028",
+    "financeRefundVoucherNo": "RFND-2026-6940",
     "damageDeductionNotes": "Damage fee deduction of $25 deducted from caution deposit"
   },
   {
@@ -170,9 +170,9 @@
     "wardenNotes": "Vacate audit completed. $20 key replacement charged. Net $480 caution refund released.",
     "moveOutDate": "2026-11-02",
     "wardenSignoff": "Chief Warden Dr. H. C. Verma",
-    "clearedAt": "2026-11-02T13:00:40.828Z",
-    "clearanceSeal": "APEX-HOSTEL-CLEAR-F132AE97333A2964",
-    "financeRefundVoucherNo": "RFND-2026-4892",
+    "clearedAt": "2026-11-02T13:25:54.104Z",
+    "clearanceSeal": "APEX-HOSTEL-CLEAR-ED2CC842E9C43E5C",
+    "financeRefundVoucherNo": "RFND-2026-1206",
     "damageDeductionNotes": "Damage fee deduction of $20 deducted from caution deposit"
   }
 ]

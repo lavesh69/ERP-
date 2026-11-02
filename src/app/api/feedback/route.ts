@@ -108,6 +108,14 @@ export async function POST(request: NextRequest) {
         qualitativeRemarks,
         studentId: session.userId || session.id || session.email,
         studentHash: session.id || session.userId,
+        stakeholderType: body.stakeholderType,
+        facilityCategory: body.facilityCategory,
+        emergingTechRecommended: body.emergingTechRecommended,
+        futureAspirations: body.futureAspirations,
+        employerCompanyName: body.employerCompanyName,
+        employerDesignation: body.employerDesignation,
+        parentWardName: body.parentWardName,
+        parentWardRoll: body.parentWardRoll,
       });
 
       return NextResponse.json({
@@ -167,11 +175,43 @@ export async function POST(request: NextRequest) {
           { status: 403 }
         );
       }
-      const cycle = feedbackStore.createSurveyCycle(body);
+      const cycle = feedbackStore.createSurveyCycle(body.cycle || body);
       return NextResponse.json({
         success: true,
         message: `Survey window ${cycle.cycleCode} launched successfully`,
         cycle,
+      });
+    }
+
+    if (action === "UPDATE_SURVEY_CYCLE") {
+      const allowedRoles = ["SUPER_ADMIN", "INSTITUTION_ADMIN", "PRINCIPAL", "DEAN", "HOD"];
+      if (!allowedRoles.includes(session.role)) {
+        return NextResponse.json(
+          { error: "Forbidden: Only administrators can update survey cycles." },
+          { status: 403 }
+        );
+      }
+      const updated = feedbackStore.updateSurveyCycle(body.id, body.status);
+      return NextResponse.json({
+        success: true,
+        message: `Survey window ${updated.cycleCode} status updated to ${body.status}`,
+        cycle: updated,
+      });
+    }
+
+    if (action === "DISPATCH_CYCLE_REMINDERS") {
+      const allowedRoles = ["SUPER_ADMIN", "INSTITUTION_ADMIN", "PRINCIPAL", "DEAN", "HOD", "TEACHER", "FACULTY"];
+      if (!allowedRoles.includes(session.role)) {
+        return NextResponse.json(
+          { error: "Forbidden: Only faculty and administrators can broadcast survey reminders." },
+          { status: 403 }
+        );
+      }
+      const result = feedbackStore.dispatchSurveyCycleReminders(body.cycleId);
+      return NextResponse.json({
+        success: true,
+        message: `Reminder notifications successfully dispatched to ${result.remindedCount} pending stakeholders for cycle ${result.cycleCode}`,
+        remindedCount: result.remindedCount,
       });
     }
 

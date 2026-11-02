@@ -8,7 +8,9 @@ export type FeedbackSurveyType =
   | "COURSE_FACULTY_EVALUATION"
   | "EXIT_SURVEY_SENIORS"
   | "ALUMNI_CURRICULUM_SURVEY"
-  | "FACILITY_INFRASTRUCTURE";
+  | "FACILITY_INFRASTRUCTURE"
+  | "PARENT_FEEDBACK_SURVEY"
+  | "EMPLOYER_FEEDBACK_SURVEY";
 
 export type PerformanceBand = "EXCELLENT" | "VERY_GOOD" | "GOOD" | "SATISFACTORY" | "NEEDS_IMPROVEMENT";
 
@@ -38,6 +40,10 @@ export interface SurveyResponse {
   facilityCategory?: string;
   emergingTechRecommended?: string;
   futureAspirations?: string;
+  employerCompanyName?: string;
+  employerDesignation?: string;
+  parentWardName?: string;
+  parentWardRoll?: string;
 }
 
 export type ActionPlanStatus = "PENDING_REVIEW" | "ACTION_PLANNED" | "IMPLEMENTED" | "VERIFIED_BY_IQAC";

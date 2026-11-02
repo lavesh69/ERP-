@@ -64,6 +64,7 @@ interface SurveyRecord {
   courseCode: string;
   courseName: string;
   facultyName: string;
+  facultyId?: string;
   overallScore: number;
   qualitativeRemarks?: string;
   submittedAt: string;
@@ -241,6 +242,14 @@ export default function FeedbackPage() {
   const [selectedSurveyDossier, setSelectedSurveyDossier] = useState<SurveyRecord | null>(null);
   const [sentimentFilter, setSentimentFilter] = useState<"ALL" | "POSITIVE" | "CRITICAL">("ALL");
 
+  const PRESET_COURSES = [
+    { code: "CS301", name: "Distributed Systems & Cloud Computing", facultyId: "fac-01", facultyName: "Dr. Sarah Jenkins", dept: "CSE" },
+    { code: "CS204", name: "Algorithms & Complexity Theory", facultyId: "fac-02", facultyName: "Prof. Arthur Vance", dept: "CSE" },
+    { code: "CS402", name: "Advanced Deep Learning & Neural Models", facultyId: "fac-03", facultyName: "Dr. Elena Evans", dept: "CSE" },
+    { code: "EC301", name: "Digital Signal Processing & Microcontrollers", facultyId: "fac-04", facultyName: "Dr. Rajesh Rao", dept: "ECE" },
+    { code: "ME202", name: "Thermodynamics & Heat Transfer", facultyId: "fac-05", facultyName: "Dr. Vikram Sharma", dept: "ME" },
+  ];
+
   // Form state supporting all survey categories
   const [formData, setFormData] = useState({
     surveyType: "COURSE_FACULTY_EVALUATION",
@@ -260,6 +269,10 @@ export default function FeedbackPage() {
     facilityCategory: "LIBRARY",
     emergingTechRecommended: "Kubernetes, eBPF & Generative AI",
     futureAspirations: "Cloud Architecture at Tier-1 Research Labs",
+    employerCompanyName: "Google Cloud Platform",
+    employerDesignation: "Principal Engineering Director",
+    parentWardName: "Rohan Verma",
+    parentWardRoll: "CS2026-018",
   });
 
   const handleExportCsv = () => {
@@ -1036,12 +1049,43 @@ export default function FeedbackPage() {
                   <option value="COURSE_FACULTY_EVALUATION">Course & Faculty Evaluation (SET)</option>
                   <option value="EXIT_SURVEY_SENIORS">Senior Exit Survey (NBA / NAAC 1.4)</option>
                   <option value="ALUMNI_CURRICULUM_SURVEY">Alumni Curriculum Relevance Survey (NEP 2020)</option>
-                  <option value="FACILITY_INFRASTRUCTURE">Campus Infrastructure & Facility Survey</option>
+                  <option value="FACILITY_INFRASTRUCTURE">Campus Infrastructure &amp; Facility Survey</option>
+                  <option value="EMPLOYER_FEEDBACK_SURVEY">Corporate Employer &amp; Industry Recruiter Survey</option>
+                  <option value="PARENT_FEEDBACK_SURVEY">Parent &amp; Guardian Stakeholder Survey</option>
                 </select>
               </div>
 
               {formData.surveyType === "COURSE_FACULTY_EVALUATION" && (
                 <>
+                  <div className="p-3 bg-ivory-50 dark:bg-charcoal-800/40 rounded-xl border border-border dark:border-charcoal-700/60 mb-1">
+                    <label className="block text-xs font-semibold text-charcoal-700 dark:text-ivory-300 mb-1.5">
+                      Select Course &amp; Faculty Offering (or edit manually below)
+                    </label>
+                    <select
+                      value={formData.courseCode}
+                      onChange={(e) => {
+                        const sel = PRESET_COURSES.find((c) => c.code === e.target.value);
+                        if (sel) {
+                          setFormData((prev) => ({
+                            ...prev,
+                            courseCode: sel.code,
+                            courseName: sel.name,
+                            facultyId: sel.facultyId,
+                            facultyName: sel.facultyName,
+                            departmentCode: sel.dept,
+                          }));
+                        }
+                      }}
+                      className="w-full px-3 py-2 bg-white dark:bg-charcoal-800 border border-border dark:border-charcoal-700 rounded-xl text-xs text-charcoal-900 dark:text-ivory-100 outline-none"
+                    >
+                      {PRESET_COURSES.map((c) => (
+                        <option key={c.code} value={c.code}>
+                          {c.code}: {c.name} ({c.facultyName} - {c.dept})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
                   <div className="grid grid-cols-2 gap-3">
                     <div>
                       <label className="block text-xs font-medium text-charcoal-600 dark:text-charcoal-400 mb-1">
@@ -1207,6 +1251,120 @@ export default function FeedbackPage() {
                 </div>
               )}
 
+              {formData.surveyType === "EMPLOYER_FEEDBACK_SURVEY" && (
+                <div className="space-y-3 bg-ivory-50 dark:bg-charcoal-800/50 p-3.5 rounded-xl border border-border dark:border-charcoal-700">
+                  <span className="text-[11px] font-bold text-charcoal-700 dark:text-ivory-300 uppercase tracking-wide block">
+                    Corporate Recruiter &amp; Employer Feedback (NAAC 1.4)
+                  </span>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-xs font-medium text-charcoal-600 dark:text-charcoal-400 mb-1">
+                        Company / Enterprise Name
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        placeholder="e.g. Google Cloud Platform, Microsoft"
+                        value={formData.employerCompanyName}
+                        onChange={(e) => setFormData({ ...formData, employerCompanyName: e.target.value })}
+                        className="w-full px-3 py-2 bg-white dark:bg-charcoal-800 border border-border dark:border-charcoal-700 rounded-xl text-xs text-charcoal-900 dark:text-ivory-100"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-charcoal-600 dark:text-charcoal-400 mb-1">
+                        Recruiter / Director Designation
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        placeholder="e.g. Principal Engineering Director"
+                        value={formData.employerDesignation}
+                        onChange={(e) => setFormData({ ...formData, employerDesignation: e.target.value })}
+                        className="w-full px-3 py-2 bg-white dark:bg-charcoal-800 border border-border dark:border-charcoal-700 rounded-xl text-xs text-charcoal-900 dark:text-ivory-100"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-charcoal-600 dark:text-charcoal-400 mb-1">
+                      Emerging Technologies &amp; Skills to Incorporate
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Distributed Systems, Rust, LLM Infra"
+                      value={formData.emergingTechRecommended}
+                      onChange={(e) => setFormData({ ...formData, emergingTechRecommended: e.target.value })}
+                      className="w-full px-3 py-2 bg-white dark:bg-charcoal-800 border border-border dark:border-charcoal-700 rounded-xl text-xs text-charcoal-900 dark:text-ivory-100"
+                    />
+                  </div>
+                  <StarRatingControl
+                    label="Technical Competence &amp; Problem Solving"
+                    value={formData.ratingPedagogy}
+                    onChange={(val) => setFormData({ ...formData, ratingPedagogy: val })}
+                  />
+                  <StarRatingControl
+                    label="Workplace Communication &amp; Professional Ethics"
+                    value={formData.ratingPunctuality}
+                    onChange={(val) => setFormData({ ...formData, ratingPunctuality: val })}
+                  />
+                  <StarRatingControl
+                    label="Curriculum Readiness for Modern Industry"
+                    value={formData.ratingSyllabus}
+                    onChange={(val) => setFormData({ ...formData, ratingSyllabus: val, ratingCourseMaterial: val })}
+                  />
+                </div>
+              )}
+
+              {formData.surveyType === "PARENT_FEEDBACK_SURVEY" && (
+                <div className="space-y-3 bg-ivory-50 dark:bg-charcoal-800/50 p-3.5 rounded-xl border border-border dark:border-charcoal-700">
+                  <span className="text-[11px] font-bold text-charcoal-700 dark:text-ivory-300 uppercase tracking-wide block">
+                    Parent &amp; Guardian Assessment (NAAC 1.4)
+                  </span>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-xs font-medium text-charcoal-600 dark:text-charcoal-400 mb-1">
+                        Ward's Name
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        placeholder="e.g. Rohan Verma"
+                        value={formData.parentWardName}
+                        onChange={(e) => setFormData({ ...formData, parentWardName: e.target.value })}
+                        className="w-full px-3 py-2 bg-white dark:bg-charcoal-800 border border-border dark:border-charcoal-700 rounded-xl text-xs text-charcoal-900 dark:text-ivory-100"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-charcoal-600 dark:text-charcoal-400 mb-1">
+                        Ward's University Roll Number
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        placeholder="e.g. CS2026-018"
+                        value={formData.parentWardRoll}
+                        onChange={(e) => setFormData({ ...formData, parentWardRoll: e.target.value })}
+                        className="w-full px-3 py-2 bg-white dark:bg-charcoal-800 border border-border dark:border-charcoal-700 rounded-xl text-xs text-charcoal-900 dark:text-ivory-100"
+                      />
+                    </div>
+                  </div>
+                  <StarRatingControl
+                    label="Academic Atmosphere &amp; Faculty Accessibility"
+                    value={formData.ratingPedagogy}
+                    onChange={(val) => setFormData({ ...formData, ratingPedagogy: val })}
+                  />
+                  <StarRatingControl
+                    label="Hostel, Dining &amp; Campus Safety"
+                    value={formData.ratingPunctuality}
+                    onChange={(val) => setFormData({ ...formData, ratingPunctuality: val })}
+                  />
+                  <StarRatingControl
+                    label="Placement Support &amp; Institutional Transparency"
+                    value={formData.ratingCourseMaterial}
+                    onChange={(val) => setFormData({ ...formData, ratingCourseMaterial: val, ratingSyllabus: val })}
+                  />
+                </div>
+              )}
+
               <div>
                 <label className="block text-xs font-medium text-charcoal-600 dark:text-charcoal-400 mb-1">
                   Qualitative Feedback / Constructive Suggestions (Optional)
@@ -1353,6 +1511,63 @@ export default function FeedbackPage() {
                 <div className="h-1.5 w-full bg-ivory-200 dark:bg-charcoal-700 rounded-full overflow-hidden">
                   <div className="h-full bg-cyan-500 rounded-full" style={{ width: `${(selectedFacultyDossier.avgCourseMaterial / 5) * 100}%` }} />
                 </div>
+              </div>
+            </div>
+
+            {/* Real Student Qualitative Reflections */}
+            <div className="space-y-2 text-xs">
+              <div className="flex items-center justify-between">
+                <h4 className="font-bold text-charcoal-800 dark:text-ivory-200 uppercase tracking-wider text-[11px]">
+                  Verified Student Qualitative Remarks
+                </h4>
+                <span className="text-[10px] text-charcoal-500 font-mono">
+                  {responses.filter((r) => (r.facultyName && r.facultyName.toLowerCase() === selectedFacultyDossier.facultyName.toLowerCase()) || (r.facultyId && r.facultyId === selectedFacultyDossier.facultyId)).length} Submissions Logged
+                </span>
+              </div>
+
+              <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
+                {(() => {
+                  const facComments = responses.filter(
+                    (r) =>
+                      (r.facultyName && r.facultyName.toLowerCase() === selectedFacultyDossier.facultyName.toLowerCase()) ||
+                      (r.facultyId && r.facultyId === selectedFacultyDossier.facultyId)
+                  );
+                  if (facComments.length === 0) {
+                    return (
+                      <p className="p-3 text-charcoal-400 dark:text-charcoal-500 italic text-center bg-ivory-50 dark:bg-charcoal-800/20 rounded-xl">
+                        No qualitative comments submitted yet for this faculty member.
+                      </p>
+                    );
+                  }
+                  return facComments.map((r, i) => {
+                    const sent = analyzeSentiment(r.qualitativeRemarks, r.overallScore);
+                    return (
+                      <div
+                        key={r.id || r.surveyRef || i}
+                        className="p-3 bg-ivory-50 dark:bg-charcoal-800/40 rounded-xl border border-border/60 dark:border-charcoal-800 space-y-1.5"
+                      >
+                        <div className="flex items-center justify-between text-[11px]">
+                          <span className="font-semibold text-charcoal-700 dark:text-ivory-300 font-mono">
+                            {r.courseCode} ({r.overallScore}/5)
+                          </span>
+                          <span className={`px-2 py-0.5 rounded text-[10px] font-bold border ${sent.bg}`}>
+                            {sent.label}
+                          </span>
+                        </div>
+                        <p className="text-charcoal-700 dark:text-ivory-200 italic leading-relaxed text-xs">
+                          &ldquo;{r.qualitativeRemarks || "Rating submitted with no text remarks."}&rdquo;
+                        </p>
+                        <div className="text-[10px] text-charcoal-400">
+                          {new Date(r.submittedAt).toLocaleDateString(undefined, {
+                            month: "short",
+                            day: "numeric",
+                            year: "numeric",
+                          })}
+                        </div>
+                      </div>
+                    );
+                  });
+                })()}
               </div>
             </div>
 

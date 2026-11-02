@@ -12734,6 +12734,94 @@ By breaking down large monolithic systems into decoupled microservices, systems 
   const createCycleData = await createCycleRes.json();
   assert(createCycleData.cycle?.cycleCode?.includes("CYC-"), "Survey cycle created with CYC- code");
 
+  // Update Survey Cycle Status
+  const updateCycleReq = new NextRequest("http://localhost:3000/api/feedback", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "UPDATE_SURVEY_CYCLE",
+      id: createCycleData.cycle.id,
+      status: "ACTIVE",
+    }),
+  });
+  const updateCycleRes = await handleFeedbackPost(updateCycleReq);
+  assert(updateCycleRes.status === 200, "POST /api/feedback (UPDATE_SURVEY_CYCLE) returns 200 OK");
+  const updateCycleData = await updateCycleRes.json();
+  assert(updateCycleData.cycle?.status === "ACTIVE", "Survey cycle status updated to ACTIVE");
+
+  // Dispatch Survey Cycle Reminders
+  const dispatchRemindersReq = new NextRequest("http://localhost:3000/api/feedback", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "DISPATCH_CYCLE_REMINDERS",
+      cycleId: createCycleData.cycle.id,
+    }),
+  });
+  const dispatchRemindersRes = await handleFeedbackPost(dispatchRemindersReq);
+  assert(dispatchRemindersRes.status === 200, "POST /api/feedback (DISPATCH_CYCLE_REMINDERS) returns 200 OK");
+  const dispatchRemindersData = await dispatchRemindersRes.json();
+  assert(typeof dispatchRemindersData.remindedCount === "number", "Dispatch cycle reminders reports count of notified stakeholders");
+
+  // Submit Corporate Recruiter & Employer Feedback Survey
+  const employerSurveyReq = new NextRequest("http://localhost:3000/api/feedback", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "SUBMIT_SURVEY",
+      surveyType: "EMPLOYER_FEEDBACK_SURVEY",
+      courseCode: "IND-RECRUIT",
+      courseName: "Campus Placement Technical Evaluation",
+      facultyId: "fac-corp",
+      facultyName: "Industry Advisory Council",
+      departmentCode: "CSE",
+      semester: 8,
+      ratingPedagogy: 5,
+      ratingSyllabus: 5,
+      ratingPunctuality: 5,
+      ratingDoubtClearing: 5,
+      ratingCourseMaterial: 5,
+      qualitativeRemarks: "Candidates demonstrate exceptional mastery of distributed systems and zero-overhead concurrency.",
+      employerCompanyName: "Google Cloud Engineering",
+      employerDesignation: "Director of Enterprise Infrastructure",
+      emergingTechRecommended: "Rust, eBPF & Distributed Consensus",
+      stakeholderType: "EMPLOYER",
+    }),
+  });
+  const employerSurveyRes = await handleFeedbackPost(employerSurveyReq);
+  assert(employerSurveyRes.status === 200, "POST /api/feedback (EMPLOYER_FEEDBACK_SURVEY) returns 200 OK");
+  const employerSurveyData = await employerSurveyRes.json();
+  assert(employerSurveyData.survey?.surveyRef?.startsWith("EMP-"), "Corporate recruiter survey allocated EMP- reference code");
+
+  // Submit Parent & Guardian Feedback Survey
+  const parentSurveyReq = new NextRequest("http://localhost:3000/api/feedback", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "SUBMIT_SURVEY",
+      surveyType: "PARENT_FEEDBACK_SURVEY",
+      courseCode: "PAR-INST",
+      courseName: "Institutional Academic & Residential Environment",
+      facultyId: "fac-dean",
+      facultyName: "Office of the Dean of Student Affairs",
+      departmentCode: "INSTITUTION",
+      semester: 4,
+      ratingPedagogy: 5,
+      ratingSyllabus: 4,
+      ratingPunctuality: 5,
+      ratingDoubtClearing: 4,
+      ratingCourseMaterial: 5,
+      qualitativeRemarks: "Very impressed with the hostel security, faculty mentorship, and transparent communication.",
+      parentWardName: "Aarav Sharma",
+      parentWardRoll: "CS2026-042",
+      stakeholderType: "PARENT",
+    }),
+  });
+  const parentSurveyRes = await handleFeedbackPost(parentSurveyReq);
+  assert(parentSurveyRes.status === 200, "POST /api/feedback (PARENT_FEEDBACK_SURVEY) returns 200 OK");
+  const parentSurveyData = await parentSurveyRes.json();
+  assert(parentSurveyData.survey?.surveyRef?.startsWith("PAR-"), "Parent stakeholder survey allocated PAR- reference code");
+
   // 4. Incubation Innovation Lab Desks Allocation & Deallocation
   const desksReq = new NextRequest("http://localhost:3000/api/incubation?tab=desks", {
     method: "GET",

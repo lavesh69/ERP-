@@ -68,6 +68,23 @@
   ],
   "claims": [
     {
+      "id": "clm-1793625951679",
+      "claimRef": "ACT-2026-636",
+      "studentRoll": "CS2026-001",
+      "studentName": "Alex Mercer",
+      "clubCode": "IEEE-SB",
+      "clubName": "IEEE Student Branch",
+      "category": "TECHNICAL",
+      "activityTitle": "AI Model Benchmark Workshop",
+      "description": "Delivered lecture on local LLM orchestration",
+      "participationHours": 12,
+      "pointsClaimed": 20,
+      "pointsAwarded": 20,
+      "status": "APPROVED",
+      "evidenceReference": "CERT-AI-WORKSHOP-2026",
+      "submittedAt": "2026-11-02T13:25:51.679Z"
+    },
+    {
       "id": "clm-1793624438620",
       "claimRef": "ACT-2026-924",
       "studentRoll": "CS2026-001",

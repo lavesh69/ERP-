@@ -1,7 +1,7 @@
 {
   "assets": [
     {
-      "id": "ast-1793624442665",
+      "id": "ast-1793625956129",
       "assetTag": "AST-TEST-UNIQUE-01",
       "name": "Oscilloscope 100MHz Dual Channel",
       "category": "LAB_INSTRUMENTATION",
@@ -109,9 +109,9 @@
   ],
   "workOrders": [
     {
-      "id": "wo-1793624442784",
-      "workOrderNo": "WO-2026-7962",
-      "assetId": "ast-1793624442665",
+      "id": "wo-1793625956301",
+      "workOrderNo": "WO-2026-7581",
+      "assetId": "ast-1793625956129",
       "assetTag": "AST-TEST-UNIQUE-01",
       "assetName": "Oscilloscope 100MHz Dual Channel",
       "reportedIssue": "High temperature alert on server power supply unit",
@@ -119,9 +119,9 @@
       "status": "COMPLETED",
       "assignedTechnician": "Senior Datacenter Engineer",
       "estimatedCost": 350,
-      "reportedDate": "2026-11-02T13:00:42.784Z",
+      "reportedDate": "2026-11-02T13:25:56.301Z",
       "actualCost": 320,
-      "completedDate": "2026-11-02T13:00:42.788Z",
+      "completedDate": "2026-11-02T13:25:56.307Z",
       "notes": "Replaced redundant PSU capacitor; load tested at 100%"
     },
     {

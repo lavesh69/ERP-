@@ -1,6 +1,18 @@
 {
   "corrections": [
     {
+      "id": "CORR-2026-837",
+      "requesterUserId": "usr-stu-01",
+      "requesterRole": "STUDENT",
+      "fieldName": "FULL_NAME",
+      "currentValue": "Alex Mercer",
+      "proposedValue": "Alexander Mercer",
+      "reason": "Legal alignment with Indian Passport and Aadhaar card",
+      "status": "PENDING_VERIFICATION",
+      "createdAt": "2026-11-02T13:25:55.760Z",
+      "updatedAt": "2026-11-02T13:25:55.760Z"
+    },
+    {
       "id": "CORR-2026-432",
       "requesterUserId": "usr-stu-01",
       "requesterRole": "STUDENT",
@@ -316,12 +328,12 @@
   ],
   "consents": [
     {
-      "id": "CNS-mvz9ol67",
+      "id": "CNS-mvzal0vs",
       "userId": "usr-stu-01",
       "userRole": "STUDENT",
       "purpose": "BIOMETRIC_ATTENDANCE",
       "granted": true,
-      "grantedAt": "2026-11-02T13:00:42.415Z",
+      "grantedAt": "2026-11-02T13:25:55.768Z",
       "ipAddress": "127.0.0.1"
     }
   ]

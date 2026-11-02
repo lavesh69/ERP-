@@ -158,6 +158,53 @@ const DEFAULT_RESPONSES: SurveyResponse[] = [
     isAnonymized: true,
     submittedAt: "2026-10-05T09:45:00.000Z",
   },
+  {
+    id: "fb-emp-01",
+    surveyRef: "EMP-2026-001",
+    surveyType: "EMPLOYER_FEEDBACK_SURVEY",
+    courseCode: "CORP-RECRUIT",
+    courseName: "Campus Placement Corporate Recruiter Survey",
+    facultyId: "tnp-office",
+    facultyName: "Training & Placement Cell (T&P)",
+    departmentCode: "ALL",
+    semester: 8,
+    academicYear: "2026-2027",
+    ratingPedagogy: 5,
+    ratingSyllabus: 5,
+    ratingPunctuality: 5,
+    ratingDoubtClearing: 4,
+    ratingCourseMaterial: 5,
+    overallScore: 4.8,
+    qualitativeRemarks: "Graduates possess outstanding foundational algorithms and collaborative problem-solving abilities. High proficiency in modern engineering.",
+    employerCompanyName: "Google Cloud Platform",
+    employerDesignation: "Principal Engineering Director",
+    emergingTechRecommended: "Distributed Tracing, Microservices, Golang & Linux Kernels",
+    isAnonymized: true,
+    submittedAt: "2026-10-12T11:20:00.000Z",
+  },
+  {
+    id: "fb-par-01",
+    surveyRef: "PAR-2026-001",
+    surveyType: "PARENT_FEEDBACK_SURVEY",
+    courseCode: "PARENT-ENGAGE",
+    courseName: "Annual Parent-Teacher Institutional Feedback",
+    facultyId: "mentor-dean",
+    facultyName: "Dean of Student Affairs & Proctorial Board",
+    departmentCode: "ALL",
+    semester: 5,
+    academicYear: "2026-2027",
+    ratingPedagogy: 5,
+    ratingSyllabus: 4,
+    ratingPunctuality: 5,
+    ratingDoubtClearing: 5,
+    ratingCourseMaterial: 4,
+    overallScore: 4.6,
+    qualitativeRemarks: "Extremely pleased with hostel safety, academic discipline, and proactive mentoring updates provided via the Parent Portal.",
+    parentWardName: "Rohan Verma",
+    parentWardRoll: "CS2026-018",
+    isAnonymized: true,
+    submittedAt: "2026-10-14T15:40:00.000Z",
+  },
 ];
 
 const DEFAULT_ACTION_REPORTS: FeedbackActionReport[] = [
@@ -270,6 +317,38 @@ const DEFAULT_SURVEY_CYCLES: FeedbackSurveyCycle[] = [
     isMandatory: false,
     eligibleCount: 2100,
     completedCount: 1450,
+    status: "ACTIVE",
+  },
+  {
+    id: "cycle-05",
+    cycleCode: "EMP-RECRUIT-2026",
+    title: "Annual Corporate Recruiter & Employer Feedback Survey",
+    surveyType: "EMPLOYER_FEEDBACK_SURVEY",
+    academicYear: "2026-2027",
+    semesterTerm: "Campus Drives 2026",
+    startDate: "2026-08-15",
+    endDate: "2026-12-31",
+    targetDepartment: "ALL",
+    targetAudience: "ALL_ENROLLED_STUDENTS",
+    isMandatory: false,
+    eligibleCount: 120,
+    completedCount: 84,
+    status: "ACTIVE",
+  },
+  {
+    id: "cycle-06",
+    cycleCode: "PARENT-PTM-2026",
+    title: "Semester Parent-Teacher Academic & Welfare Feedback",
+    surveyType: "PARENT_FEEDBACK_SURVEY",
+    academicYear: "2026-2027",
+    semesterTerm: "Fall Term",
+    startDate: "2026-09-01",
+    endDate: "2026-11-30",
+    targetDepartment: "ALL",
+    targetAudience: "ALL_CAMPUS_RESIDENTS",
+    isMandatory: false,
+    eligibleCount: 1600,
+    completedCount: 1240,
     status: "ACTIVE",
   },
 ];
@@ -542,6 +621,8 @@ export const feedbackStore = {
     if (payload.surveyType === "EXIT_SURVEY_SENIORS") prefix = "EXIT";
     else if (payload.surveyType === "ALUMNI_CURRICULUM_SURVEY") prefix = "ALUM";
     else if (payload.surveyType === "FACILITY_INFRASTRUCTURE") prefix = "INFR";
+    else if (payload.surveyType === "EMPLOYER_FEEDBACK_SURVEY") prefix = "EMP";
+    else if (payload.surveyType === "PARENT_FEEDBACK_SURVEY") prefix = "PAR";
 
     const newResponse: SurveyResponse = {
       id: `fb-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
@@ -569,6 +650,10 @@ export const feedbackStore = {
       facilityCategory: payload.facilityCategory,
       emergingTechRecommended: payload.emergingTechRecommended,
       futureAspirations: payload.futureAspirations,
+      employerCompanyName: payload.employerCompanyName,
+      employerDesignation: payload.employerDesignation,
+      parentWardName: payload.parentWardName,
+      parentWardRoll: payload.parentWardRoll,
     };
 
     store.responses.unshift(newResponse);
@@ -585,5 +670,13 @@ export const feedbackStore = {
 
     writeStore(store);
     return newResponse;
+  },
+
+  dispatchSurveyCycleReminders(cycleId: string): { remindedCount: number; cycleCode: string } {
+    const store = readStore();
+    const cycle = store.surveyCycles?.find((c) => c.id === cycleId || c.cycleCode === cycleId);
+    if (!cycle) throw new Error(`Survey cycle '${cycleId}' not found`);
+    const pendingCount = Math.max(0, cycle.eligibleCount - cycle.completedCount);
+    return { remindedCount: pendingCount, cycleCode: cycle.cycleCode };
   },
 };
