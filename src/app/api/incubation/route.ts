@@ -57,6 +57,32 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ success: true, reviews });
     }
 
+    if (tab === "applications") {
+      const status = searchParams.get("status") || undefined;
+      const applications = incubationStore.getApplications(status);
+      return NextResponse.json({ success: true, applications });
+    }
+
+    if (tab === "mentors") {
+      const mentors = incubationStore.getMentors();
+      return NextResponse.json({ success: true, mentors });
+    }
+
+    if (tab === "mentor-sessions") {
+      const sessions = incubationStore.getMentorSessions(startupId);
+      return NextResponse.json({ success: true, sessions });
+    }
+
+    if (tab === "schemes") {
+      const schemes = incubationStore.getGrantSchemes();
+      return NextResponse.json({ success: true, schemes });
+    }
+
+    if (tab === "eois") {
+      const eois = incubationStore.getInvestorEOIs(startupId);
+      return NextResponse.json({ success: true, eois });
+    }
+
     const summary = incubationStore.getSummary();
     return NextResponse.json({ success: true, summary });
   } catch (error: any) {
@@ -237,6 +263,134 @@ export async function POST(request: NextRequest) {
         success: true,
         message: `Quarterly milestone review logged for ${review.startupName} (${review.quarter})`,
         review,
+      });
+    }
+
+    if (action === "SUBMIT_APPLICATION") {
+      const application = incubationStore.submitApplication({
+        ...body,
+        applicantName: body.applicantName || session.fullName || "Applicant Founder",
+        applicantEmail: body.applicantEmail || session.email || "founder@students.apex.edu",
+      });
+      return NextResponse.json({
+        success: true,
+        message: `Incubation application submitted successfully (${application.applicationRef})`,
+        application,
+      });
+    }
+
+    if (action === "EVALUATE_APPLICATION") {
+      if (!INCUBATION_STAFF_ROLES.includes(session.role)) {
+        return NextResponse.json(
+          { error: "Forbidden: Only incubation committee members can evaluate applications" },
+          { status: 403 }
+        );
+      }
+
+      const { id, status, score, notes } = body;
+      if (!id || !status) {
+        return NextResponse.json({ error: "Application ID and status are required" }, { status: 400 });
+      }
+
+      const evaluated = incubationStore.evaluateApplication(id, status, score, notes);
+      return NextResponse.json({
+        success: true,
+        message: `Application ${evaluated.applicationRef} transitioned to ${status}`,
+        application: evaluated,
+      });
+    }
+
+    if (action === "CONVERT_APPLICATION") {
+      if (!INCUBATION_STAFF_ROLES.includes(session.role)) {
+        return NextResponse.json(
+          { error: "Forbidden: Only incubation coordinators can onboard applications into cohort" },
+          { status: 403 }
+        );
+      }
+
+      const { applicationId, initialStage, labDesksAllocated, mentorName } = body;
+      if (!applicationId) {
+        return NextResponse.json({ error: "applicationId is required" }, { status: 400 });
+      }
+
+      const venture = incubationStore.convertApplicationToStartup(applicationId, {
+        initialStage,
+        labDesksAllocated,
+        mentorName,
+      });
+      return NextResponse.json({
+        success: true,
+        message: `Venture '${venture.startupName}' successfully onboarded into incubation cohort (${venture.companyRef})`,
+        venture,
+      });
+    }
+
+    if (action === "REGISTER_MENTOR") {
+      if (!INCUBATION_STAFF_ROLES.includes(session.role)) {
+        return NextResponse.json(
+          { error: "Forbidden: Only administrators can register new mentors" },
+          { status: 403 }
+        );
+      }
+
+      const mentor = incubationStore.registerMentor(body);
+      return NextResponse.json({
+        success: true,
+        message: `Mentor ${mentor.mentorName} registered into advisory network`,
+        mentor,
+      });
+    }
+
+    if (action === "SCHEDULE_MENTOR_SESSION") {
+      const sessionItem = incubationStore.scheduleMentorSession(body);
+      return NextResponse.json({
+        success: true,
+        message: `Advisory session scheduled with ${sessionItem.mentorName} (${sessionItem.sessionRef})`,
+        session: sessionItem,
+      });
+    }
+
+    if (action === "COMPLETE_MENTOR_SESSION") {
+      const { id, keyTakeaways, actionItems } = body;
+      if (!id) {
+        return NextResponse.json({ error: "Session ID is required" }, { status: 400 });
+      }
+
+      const completed = incubationStore.completeMentorSession(id, keyTakeaways || "", actionItems || "");
+      return NextResponse.json({
+        success: true,
+        message: `Advisory session ${completed.sessionRef} marked COMPLETED`,
+        session: completed,
+      });
+    }
+
+    if (action === "LOG_INVESTOR_EOI") {
+      const eoi = incubationStore.logInvestorEOI(body);
+      return NextResponse.json({
+        success: true,
+        message: `Expression of interest registered from ${eoi.investorFirm} (${eoi.eoiRef})`,
+        eoi,
+      });
+    }
+
+    if (action === "UPDATE_INVESTOR_EOI") {
+      if (!INCUBATION_STAFF_ROLES.includes(session.role)) {
+        return NextResponse.json(
+          { error: "Forbidden: Only staff can update investor diligence status" },
+          { status: 403 }
+        );
+      }
+
+      const { id, status } = body;
+      if (!id || !status) {
+        return NextResponse.json({ error: "EOI ID and status are required" }, { status: 400 });
+      }
+
+      const updated = incubationStore.updateInvestorEOI(id, status);
+      return NextResponse.json({
+        success: true,
+        message: `Investor EOI ${updated.eoiRef} status updated to ${status}`,
+        eoi: updated,
       });
     }
 

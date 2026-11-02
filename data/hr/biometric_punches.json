@@ -1,5 +1,41 @@
 [
   {
+    "id": "pch-8521",
+    "staffId": "fac-01",
+    "staffName": "Dr. Alan Turing",
+    "terminalId": "BIO-ZKTECO-01",
+    "location": "Main Gate Turnstile A",
+    "punchMode": "FINGERPRINT",
+    "punchType": "PUNCH_IN",
+    "timestamp": "6:30:38 pm",
+    "token": "BIO-TOKEN-14294B",
+    "status": "AUTHENTICATED"
+  },
+  {
+    "id": "pch-9871",
+    "staffId": "fac-01",
+    "staffName": "Dr. Alan Turing",
+    "terminalId": "BIO-ZKTECO-01",
+    "location": "Main Gate Turnstile A",
+    "punchMode": "FINGERPRINT",
+    "punchType": "PUNCH_IN",
+    "timestamp": "6:29:09 pm",
+    "token": "BIO-TOKEN-5B66EB",
+    "status": "AUTHENTICATED"
+  },
+  {
+    "id": "pch-7769",
+    "staffId": "fac-01",
+    "staffName": "Dr. Alan Turing",
+    "terminalId": "BIO-ZKTECO-01",
+    "location": "Main Gate Turnstile A",
+    "punchMode": "FINGERPRINT",
+    "punchType": "PUNCH_IN",
+    "timestamp": "6:22:57 pm",
+    "token": "BIO-TOKEN-38B778",
+    "status": "AUTHENTICATED"
+  },
+  {
     "id": "pch-8817",
     "staffId": "fac-01",
     "staffName": "Dr. Alan Turing",

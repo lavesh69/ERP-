@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: Apache-2.0
 /**
  * University Incubation Center & Venture Accelerator Page
- * Unified Academic OS design with venture cohort tracking, co-working desk allocation matrix,
- * seed grant tranches, patent disclosures, milestone velocity reviews, and cap-table dilution.
+ * Unified Academic OS design with venture cohort tracking, intake applications funnel,
+ * co-working desk allocation matrix, seed grant tranches, government schemes treasury,
+ * EIR mentor office hours, patent disclosures, milestone velocity reviews, and cap-table dilution.
  */
 
 "use client";
@@ -40,17 +41,27 @@ import {
   Calculator,
   PieChart,
   ArrowRight,
+  Calendar,
+  Check,
 } from "lucide-react";
 import IncubationDesksTab from "@/components/incubation/IncubationDesksTab";
 import IncubationGrantsTab from "@/components/incubation/IncubationGrantsTab";
 import IncubationPatentsTab from "@/components/incubation/IncubationPatentsTab";
 import IncubationReviewsTab from "@/components/incubation/IncubationReviewsTab";
+import IncubationApplicationsTab from "@/components/incubation/IncubationApplicationsTab";
+import IncubationMentorsTab from "@/components/incubation/IncubationMentorsTab";
+import IncubationSchemesTab from "@/components/incubation/IncubationSchemesTab";
 import {
   IncubatedStartup,
   LabDeskAllocation,
   SeedGrantTranche,
   PatentDisclosure,
   QuarterlyMilestoneReview,
+  IncubationApplication,
+  IncubationMentor,
+  MentorSession,
+  SeedFundScheme,
+  InvestorEOI,
 } from "@/lib/incubation/incubation-engine";
 
 type Startup = IncubatedStartup;
@@ -58,7 +69,16 @@ type Startup = IncubatedStartup;
 export default function IncubationPage() {
   const { showToast } = useApp();
   const [activeTab, setActiveTab] = useState<
-    "ventures" | "portfolio" | "desks" | "grants" | "patents" | "reviews" | "investor"
+    | "ventures"
+    | "applications"
+    | "portfolio"
+    | "desks"
+    | "grants"
+    | "schemes"
+    | "mentors"
+    | "patents"
+    | "reviews"
+    | "investor"
   >("ventures");
   const [loading, setLoading] = useState(true);
   const [summary, setSummary] = useState<any>(null);
@@ -67,6 +87,11 @@ export default function IncubationPage() {
   const [tranches, setTranches] = useState<SeedGrantTranche[]>([]);
   const [patents, setPatents] = useState<PatentDisclosure[]>([]);
   const [reviews, setReviews] = useState<QuarterlyMilestoneReview[]>([]);
+  const [applications, setApplications] = useState<IncubationApplication[]>([]);
+  const [mentors, setMentors] = useState<IncubationMentor[]>([]);
+  const [mentorSessions, setMentorSessions] = useState<MentorSession[]>([]);
+  const [schemes, setSchemes] = useState<SeedFundScheme[]>([]);
+  const [investorEOIs, setInvestorEOIs] = useState<InvestorEOI[]>([]);
 
   const [selectedStartupDossier, setSelectedStartupDossier] = useState<Startup | null>(null);
   const [showModal, setShowModal] = useState(false);
@@ -93,6 +118,18 @@ export default function IncubationPage() {
   const [evalCommitteeNotes, setEvalCommitteeNotes] = useState<string>(
     "Defensible deep-tech solution with strong faculty-student founding team. Lab trials completed with high efficiency."
   );
+
+  // Investor EOI Modal State
+  const [showEoiModal, setShowEoiModal] = useState(false);
+  const [eoiForm, setEoiForm] = useState({
+    startupId: "",
+    investorFirm: "",
+    partnerName: "",
+    contactEmail: "",
+    indicatedChequeAmount: 20000000,
+    proposedValuationCap: 200000000,
+    stageInterest: "SEED" as const,
+  });
 
   // Cap Table & SAFE Dilution Calculator State
   const [capFounderShare, setCapFounderShare] = useState<number>(85);
@@ -173,13 +210,18 @@ export default function IncubationPage() {
   const fetchData = async () => {
     try {
       setLoading(true);
-      const [sumRes, stRes, deskRes, grantRes, patRes, revRes] = await Promise.all([
+      const [sumRes, stRes, deskRes, grantRes, patRes, revRes, appRes, menRes, sesRes, schRes, eoiRes] = await Promise.all([
         fetch("/api/incubation?tab=summary"),
         fetch("/api/incubation?tab=startups"),
         fetch("/api/incubation?tab=desks"),
         fetch("/api/incubation?tab=grants"),
         fetch("/api/incubation?tab=patents"),
         fetch("/api/incubation?tab=reviews"),
+        fetch("/api/incubation?tab=applications"),
+        fetch("/api/incubation?tab=mentors"),
+        fetch("/api/incubation?tab=mentor-sessions"),
+        fetch("/api/incubation?tab=schemes"),
+        fetch("/api/incubation?tab=eois"),
       ]);
 
       const sumData = await sumRes.json();
@@ -204,6 +246,26 @@ export default function IncubationPage() {
         const rData = await revRes.json();
         if (rData.success) setReviews(rData.reviews || []);
       }
+      if (appRes.ok) {
+        const aData = await appRes.json();
+        if (aData.success) setApplications(aData.applications || []);
+      }
+      if (menRes.ok) {
+        const mData = await menRes.json();
+        if (mData.success) setMentors(mData.mentors || []);
+      }
+      if (sesRes.ok) {
+        const sData = await sesRes.json();
+        if (sData.success) setMentorSessions(sData.sessions || []);
+      }
+      if (schRes.ok) {
+        const scData = await schRes.json();
+        if (scData.success) setSchemes(scData.schemes || []);
+      }
+      if (eoiRes.ok) {
+        const eData = await eoiRes.json();
+        if (eData.success) setInvestorEOIs(eData.eois || []);
+      }
     } catch (err) {
       console.error("Error fetching incubation data:", err);
     } finally {
@@ -216,13 +278,14 @@ export default function IncubationPage() {
   }, []);
 
   useEffect(() => {
-    const isAnyModalOpen = showModal || !!selectedStartupDossier || !!stageModalStartup;
+    const isAnyModalOpen = showModal || !!selectedStartupDossier || !!stageModalStartup || showEoiModal;
     if (!isAnyModalOpen) return;
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         setShowModal(false);
         setSelectedStartupDossier(null);
         setStageModalStartup(null);
+        setShowEoiModal(false);
       }
     };
     window.addEventListener("keydown", handleKeyDown);
@@ -232,7 +295,7 @@ export default function IncubationPage() {
       window.removeEventListener("keydown", handleKeyDown);
       document.body.style.overflow = prevOverflow;
     };
-  }, [showModal, selectedStartupDossier, stageModalStartup]);
+  }, [showModal, selectedStartupDossier, stageModalStartup, showEoiModal]);
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -260,6 +323,61 @@ export default function IncubationPage() {
       showToast(err.message || "Network error", "error");
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const handleLogEoi = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!eoiForm.startupId || !eoiForm.investorFirm.trim() || !eoiForm.partnerName.trim()) {
+      showToast("Please select venture and provide syndicate details", "error");
+      return;
+    }
+
+    try {
+      setSubmitting(true);
+      const res = await fetch("/api/incubation", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "LOG_INVESTOR_EOI",
+          ...eoiForm,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || "Failed to log investor expression of interest");
+      }
+
+      showToast(`Investor EOI registered from ${data.eoi.investorFirm}!`, "success");
+      setShowEoiModal(false);
+      fetchData();
+    } catch (err: any) {
+      showToast(err.message || "Failed to log EOI", "error");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleUpdateEoiStatus = async (id: string, status: string) => {
+    try {
+      const res = await fetch("/api/incubation", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "UPDATE_INVESTOR_EOI",
+          id,
+          status,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || "Failed to update EOI status");
+      }
+      showToast(`EOI status transitioned to ${status}`, "success");
+      fetchData();
+    } catch (err: any) {
+      showToast(err.message || "Failed to update status", "error");
     }
   };
 
@@ -389,16 +507,19 @@ export default function IncubationPage() {
           </div>
         )}
 
-        {/* Navigation Tabs - 7 Clean Unified Academic OS Tabs Strip */}
+        {/* Navigation Tabs - 10 Clean Unified Academic OS Tabs Strip */}
         <div className="flex items-center gap-1.5 p-1.5 rounded-2xl bg-surface-soft/60 dark:bg-charcoal-900 border border-border/80 dark:border-charcoal-800 overflow-x-auto no-scrollbar">
           {[
             { id: "ventures", label: "Cohort Ventures", icon: Rocket, count: startups.length },
+            { id: "applications", label: "Intake & Applications", icon: FileText, count: applications.length },
             { id: "portfolio", label: "Portfolio & SAFE Dilution", icon: TrendingUp },
             { id: "desks", label: "Innovation Desks & Pods", icon: Building, count: desks.length },
             { id: "grants", label: "Seed Capital Tranches", icon: DollarSign, count: tranches.length },
+            { id: "schemes", label: "Government Grant Schemes", icon: PieChart, count: schemes.length },
+            { id: "mentors", label: "EIR Mentors & Office Hours", icon: Users, count: mentors.length },
             { id: "patents", label: "TTO Patent Registry", icon: Lightbulb, count: patents.length },
             { id: "reviews", label: "Milestone Reviews", icon: Layers, count: reviews.length },
-            { id: "investor", label: "Angel & VC Scorecard", icon: Award },
+            { id: "investor", label: "Angel & VC Scorecard", icon: Award, count: investorEOIs.length },
           ].map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
@@ -552,7 +673,7 @@ export default function IncubationPage() {
                         className="px-2.5 py-1 bg-ivory-100 hover:bg-rose-50 dark:bg-charcoal-800 dark:hover:bg-rose-950/60 text-charcoal-800 dark:text-ivory-200 hover:text-rose-primary rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors"
                       >
                         <Eye className="w-3.5 h-3.5" />
-                        Term Sheet
+                        Term Sheet & Dossier
                       </button>
 
                       <button
@@ -609,7 +730,16 @@ export default function IncubationPage() {
           </div>
         )}
 
-        {/* Tab 2: Portfolio Analysis & Cap-Table Waterfall */}
+        {/* Tab 2: Applications & Intake Pipeline */}
+        {activeTab === "applications" && (
+          <IncubationApplicationsTab
+            applications={applications}
+            onRefresh={fetchData}
+            showToast={showToast}
+          />
+        )}
+
+        {/* Tab 3: Portfolio Analysis & Cap-Table Waterfall */}
         {activeTab === "portfolio" && (
           <div className="space-y-6">
             <div className="bg-white dark:bg-charcoal-900 p-6 rounded-2xl border border-border dark:border-charcoal-800 shadow-sm space-y-6">
@@ -698,14 +828,14 @@ export default function IncubationPage() {
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6 p-4 bg-ivory-50 dark:bg-charcoal-800/40 rounded-xl">
                     <div className="space-y-2">
                       <div className="flex justify-between text-xs">
-                        <span className="font-medium text-charcoal-600 dark:text-ivory-300">Pre-Money Valuation</span>
-                        <span className="font-bold font-mono text-charcoal-900 dark:text-ivory-100">
-                          INR {(capPreMoneyVal / 10000000).toFixed(1)} Cr
+                        <span className="font-semibold text-charcoal-700 dark:text-ivory-200">Pre-Money Valuation</span>
+                        <span className="font-mono font-bold text-rose-primary dark:text-rose-400">
+                          INR {(capPreMoneyVal / 10000000).toFixed(2)} Cr
                         </span>
                       </div>
                       <input
                         type="range"
-                        min="10000000"
+                        min="5000000"
                         max="200000000"
                         step="5000000"
                         value={capPreMoneyVal}
@@ -716,9 +846,9 @@ export default function IncubationPage() {
 
                     <div className="space-y-2">
                       <div className="flex justify-between text-xs">
-                        <span className="font-medium text-charcoal-600 dark:text-ivory-300">New Round Investment Amount</span>
-                        <span className="font-bold font-mono text-emerald-600 dark:text-emerald-400">
-                          INR {(capInvestmentAmt / 10000000).toFixed(1)} Cr
+                        <span className="font-semibold text-charcoal-700 dark:text-ivory-200">New Round Investment</span>
+                        <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">
+                          INR {(capInvestmentAmt / 10000000).toFixed(2)} Cr
                         </span>
                       </div>
                       <input
@@ -734,10 +864,8 @@ export default function IncubationPage() {
 
                     <div className="space-y-2">
                       <div className="flex justify-between text-xs">
-                        <span className="font-medium text-charcoal-600 dark:text-ivory-300">ESOP Pool Expansion</span>
-                        <span className="font-bold font-mono text-indigo-600 dark:text-indigo-400">
-                          +{capEsopExpansion}%
-                        </span>
+                        <span className="font-semibold text-charcoal-700 dark:text-ivory-200">ESOP Pool Expansion</span>
+                        <span className="font-mono font-bold text-indigo-600 dark:text-indigo-400">+{capEsopExpansion}%</span>
                       </div>
                       <input
                         type="range"
@@ -751,87 +879,46 @@ export default function IncubationPage() {
                     </div>
                   </div>
 
-                  {/* Visual Cap Table Bar */}
-                  <div className="space-y-2">
-                    <span className="text-xs font-bold text-charcoal-700 dark:text-ivory-200 uppercase tracking-wide">
-                      Post-Round Ownership Structure
-                    </span>
-                    <div className="h-6 w-full rounded-xl overflow-hidden flex text-[10px] font-bold text-white shadow-xs">
-                      <div style={{ width: `${postFounderPct}%` }} className="bg-rose-primary flex items-center justify-center">
-                        Founders {postFounderPct}%
-                      </div>
-                      <div style={{ width: `${postUnivPct}%` }} className="bg-indigo-600 flex items-center justify-center">
-                        Univ {postUnivPct}%
-                      </div>
-                      <div style={{ width: `${postEsopPct}%` }} className="bg-emerald-600 flex items-center justify-center">
-                        ESOP {postEsopPct}%
-                      </div>
-                      <div style={{ width: `${postInvestorPct}%` }} className="bg-amber-500 flex items-center justify-center">
-                        New Investors {postInvestorPct}%
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Stakeholder Ledger */}
-                  <div className="overflow-x-auto border border-border dark:border-charcoal-800 rounded-xl">
+                  {/* Waterfall Output Cap Table */}
+                  <div className="overflow-x-auto">
                     <table className="w-full text-left text-xs">
-                      <thead className="bg-ivory-50 dark:bg-charcoal-800 text-charcoal-500">
+                      <thead className="bg-ivory-50 dark:bg-charcoal-800/60 border-b border-border dark:border-charcoal-800 text-charcoal-500 uppercase tracking-wider text-[10px] font-bold">
                         <tr>
-                          <th className="p-3">Stakeholder Class</th>
-                          <th className="p-3">Pre-Round %</th>
-                          <th className="p-3">Post-Round %</th>
-                          <th className="p-3">Dilution Impact</th>
-                          <th className="p-3 text-right">Implied Equity Valuation</th>
+                          <th className="p-3">Stakeholder Group</th>
+                          <th className="p-3 text-right">Pre-Round %</th>
+                          <th className="p-3 text-right">Post-Round %</th>
+                          <th className="p-3 text-right">Effective Dilution</th>
+                          <th className="p-3 text-right">Implied Holding Value</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-border dark:divide-charcoal-800">
-                        <tr className="hover:bg-ivory-50/50 dark:hover:bg-charcoal-800/40">
-                          <td className="p-3 font-semibold text-charcoal-900 dark:text-ivory-100 flex items-center gap-2">
-                            <span className="w-3 h-3 rounded bg-rose-primary" />
-                            Founders & Core Leadership
-                          </td>
-                          <td className="p-3 font-mono">{capFounderShare}%</td>
-                          <td className="p-3 font-mono font-bold text-rose-primary dark:text-rose-400">{postFounderPct}%</td>
-                          <td className="p-3 font-mono text-rose-500">{(postFounderPct - capFounderShare).toFixed(2)}%</td>
-                          <td className="p-3 font-mono font-bold text-right text-charcoal-900 dark:text-ivory-100">
-                            INR {founderVal.toLocaleString("en-IN")}
-                          </td>
+                      <tbody className="divide-y divide-border/60 dark:divide-charcoal-800">
+                        <tr>
+                          <td className="p-3 font-semibold text-charcoal-900 dark:text-ivory-100">Founders & Key Principals</td>
+                          <td className="p-3 text-right font-mono text-charcoal-600 dark:text-charcoal-300">{capFounderShare}%</td>
+                          <td className="p-3 text-right font-mono font-bold text-charcoal-900 dark:text-ivory-100">{postFounderPct}%</td>
+                          <td className="p-3 text-right font-mono text-rose-primary">-{Number((capFounderShare - postFounderPct).toFixed(2))}%</td>
+                          <td className="p-3 text-right font-mono font-bold text-emerald-600">INR {(founderVal / 10000000).toFixed(2)} Cr</td>
                         </tr>
-                        <tr className="hover:bg-ivory-50/50 dark:hover:bg-charcoal-800/40">
-                          <td className="p-3 font-semibold text-charcoal-900 dark:text-ivory-100 flex items-center gap-2">
-                            <span className="w-3 h-3 rounded bg-indigo-600" />
-                            University Incubator AIC Fund
-                          </td>
-                          <td className="p-3 font-mono">{capUnivStake}%</td>
-                          <td className="p-3 font-mono font-bold text-indigo-600 dark:text-indigo-400">{postUnivPct}%</td>
-                          <td className="p-3 font-mono text-rose-500">{(postUnivPct - capUnivStake).toFixed(2)}%</td>
-                          <td className="p-3 font-mono font-bold text-right text-charcoal-900 dark:text-ivory-100">
-                            INR {univVal.toLocaleString("en-IN")}
-                          </td>
+                        <tr>
+                          <td className="p-3 font-semibold text-charcoal-900 dark:text-ivory-100">University Incubator Equity Stake</td>
+                          <td className="p-3 text-right font-mono text-charcoal-600 dark:text-charcoal-300">{capUnivStake}%</td>
+                          <td className="p-3 text-right font-mono font-bold text-rose-primary dark:text-rose-400">{postUnivPct}%</td>
+                          <td className="p-3 text-right font-mono text-rose-primary">-{Number((capUnivStake - postUnivPct).toFixed(2))}%</td>
+                          <td className="p-3 text-right font-mono font-bold text-emerald-600">INR {(univVal / 100000).toFixed(1)} Lakhs</td>
                         </tr>
-                        <tr className="hover:bg-ivory-50/50 dark:hover:bg-charcoal-800/40">
-                          <td className="p-3 font-semibold text-charcoal-900 dark:text-ivory-100 flex items-center gap-2">
-                            <span className="w-3 h-3 rounded bg-emerald-600" />
-                            Employee ESOP Option Pool
-                          </td>
-                          <td className="p-3 font-mono">{capEsopShare}%</td>
-                          <td className="p-3 font-mono font-bold text-emerald-600 dark:text-emerald-400">{postEsopPct}%</td>
-                          <td className="p-3 font-mono text-emerald-600">+{capEsopExpansion}% Top-Up</td>
-                          <td className="p-3 font-mono font-bold text-right text-charcoal-900 dark:text-ivory-100">
-                            INR {esopVal.toLocaleString("en-IN")}
-                          </td>
+                        <tr>
+                          <td className="p-3 font-semibold text-charcoal-900 dark:text-ivory-100">Employee Option Pool (ESOP)</td>
+                          <td className="p-3 text-right font-mono text-charcoal-600 dark:text-charcoal-300">{capEsopShare}%</td>
+                          <td className="p-3 text-right font-mono font-bold text-indigo-600 dark:text-indigo-400">{postEsopPct}%</td>
+                          <td className="p-3 text-right font-mono text-emerald-600">+{Number((postEsopPct - capEsopShare).toFixed(2))}%</td>
+                          <td className="p-3 text-right font-mono font-bold text-emerald-600">INR {(esopVal / 10000000).toFixed(2)} Cr</td>
                         </tr>
-                        <tr className="hover:bg-ivory-50/50 dark:hover:bg-charcoal-800/40 bg-amber-50/40 dark:bg-amber-950/20">
-                          <td className="p-3 font-semibold text-amber-900 dark:text-amber-200 flex items-center gap-2">
-                            <span className="w-3 h-3 rounded bg-amber-500" />
-                            New SAFE / Seed Syndicate Investors
-                          </td>
-                          <td className="p-3 font-mono text-charcoal-400">0.00%</td>
-                          <td className="p-3 font-mono font-bold text-amber-600 dark:text-amber-400">{postInvestorPct}%</td>
-                          <td className="p-3 font-mono text-amber-600 font-bold">+{postInvestorPct}% New Issue</td>
-                          <td className="p-3 font-mono font-bold text-right text-amber-600 dark:text-amber-400">
-                            INR {investorVal.toLocaleString("en-IN")}
-                          </td>
+                        <tr className="bg-emerald-50/50 dark:bg-emerald-950/20 font-bold">
+                          <td className="p-3 text-emerald-800 dark:text-emerald-300">Incoming Institutional Venture Round</td>
+                          <td className="p-3 text-right font-mono text-charcoal-400">0.00%</td>
+                          <td className="p-3 text-right font-mono text-emerald-700 dark:text-emerald-300">{postInvestorPct}%</td>
+                          <td className="p-3 text-right font-mono text-emerald-700 dark:text-emerald-300">+{postInvestorPct}%</td>
+                          <td className="p-3 text-right font-mono text-emerald-700 dark:text-emerald-300">INR {(investorVal / 10000000).toFixed(2)} Cr</td>
                         </tr>
                       </tbody>
                     </table>
@@ -842,7 +929,7 @@ export default function IncubationPage() {
           </div>
         )}
 
-        {/* Tab 3: Co-Working Innovation Desks */}
+        {/* Tab 4: Innovation Desks & Workspaces */}
         {activeTab === "desks" && (
           <IncubationDesksTab
             desks={desks}
@@ -852,7 +939,7 @@ export default function IncubationPage() {
           />
         )}
 
-        {/* Tab 4: Seed Capital Tranches */}
+        {/* Tab 5: Seed Grants Tranche Disbursement */}
         {activeTab === "grants" && (
           <IncubationGrantsTab
             tranches={tranches}
@@ -862,7 +949,28 @@ export default function IncubationPage() {
           />
         )}
 
-        {/* Tab 5: Tech Transfer Office (TTO) Patent Registry */}
+        {/* Tab 6: Government & Institutional Seed Fund Schemes */}
+        {activeTab === "schemes" && (
+          <IncubationSchemesTab
+            schemes={schemes}
+            tranches={tranches}
+            onRefresh={fetchData}
+            showToast={showToast}
+          />
+        )}
+
+        {/* Tab 7: Mentors & 1:1 Advisory Office Hours */}
+        {activeTab === "mentors" && (
+          <IncubationMentorsTab
+            mentors={mentors}
+            sessions={mentorSessions}
+            startups={startups}
+            onRefresh={fetchData}
+            showToast={showToast}
+          />
+        )}
+
+        {/* Tab 8: Patent Disclosures & TTO */}
         {activeTab === "patents" && (
           <IncubationPatentsTab
             patents={patents}
@@ -872,7 +980,7 @@ export default function IncubationPage() {
           />
         )}
 
-        {/* Tab 6: Milestone Velocity Reviews */}
+        {/* Tab 9: Quarterly Reviews */}
         {activeTab === "reviews" && (
           <IncubationReviewsTab
             reviews={reviews}
@@ -882,28 +990,39 @@ export default function IncubationPage() {
           />
         )}
 
-        {/* Tab 7: Angel & VC Investor Scorecard */}
+        {/* Tab 10: Investor Scorecard, Pitch Deck Vault & Expressions of Interest */}
         {activeTab === "investor" && (
           <div className="space-y-6">
-            <div className="bg-white dark:bg-charcoal-900 p-6 rounded-2xl border border-border dark:border-charcoal-800 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white dark:bg-charcoal-900 p-6 rounded-2xl border border-border dark:border-charcoal-800 shadow-sm">
               <div>
-                <div className="flex items-center gap-2">
-                  <span className="p-2 bg-rose-50 dark:bg-rose-950/60 text-rose-primary dark:text-rose-400 rounded-xl">
-                    <Award className="w-5 h-5" />
-                  </span>
-                  <h2 className="text-lg font-bold text-charcoal-900 dark:text-ivory-100">
-                    Angel & VC Investor Evaluation Scorecard
-                  </h2>
-                </div>
-                <p className="text-xs text-charcoal-500 dark:text-charcoal-400 mt-1">
-                  Institutional Investment Committee Due Diligence Rubric (5-Pillars Weighted Matrix)
+                <h2 className="text-lg font-bold text-charcoal-900 dark:text-ivory-100">
+                  Investor Evaluation Scorecard & Syndicate Expressions of Interest (EOI)
+                </h2>
+                <p className="text-xs text-charcoal-500 mt-0.5">
+                  Institutional VC diligence, angel evaluation rubric, and investor meeting requests
                 </p>
               </div>
 
               <div className="flex items-center gap-3 w-full md:w-auto">
-                <span className="text-xs font-semibold text-charcoal-500 uppercase tracking-wider shrink-0">
-                  Target Venture:
-                </span>
+                <button
+                  onClick={() => {
+                    setEoiForm({
+                      startupId: startups[0]?.id || "",
+                      investorFirm: "",
+                      partnerName: "",
+                      contactEmail: "",
+                      indicatedChequeAmount: 20000000,
+                      proposedValuationCap: 200000000,
+                      stageInterest: "SEED",
+                    });
+                    setShowEoiModal(true);
+                  }}
+                  className="px-3.5 py-2 rounded-xl bg-rose-primary hover:bg-rose-dark text-white text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 shrink-0"
+                >
+                  <PlusCircle className="w-3.5 h-3.5" />
+                  <span>Register Investor EOI</span>
+                </button>
+
                 <select
                   value={evalVentureId || (startups[0]?.id || "")}
                   onChange={(e) => setEvalVentureId(e.target.value)}
@@ -1096,9 +1215,208 @@ export default function IncubationPage() {
                 </div>
               );
             })()}
+
+            {/* Expressions of Interest Ledger */}
+            <div className="bg-white dark:bg-charcoal-900 p-6 rounded-2xl border border-border dark:border-charcoal-800 shadow-sm space-y-4">
+              <div className="flex items-center justify-between pb-3 border-b border-border dark:border-charcoal-800">
+                <div>
+                  <h3 className="font-bold text-base text-charcoal-900 dark:text-ivory-100">
+                    Syndicate Expressions of Interest (EOI) & Term Sheet Pipeline
+                  </h3>
+                  <p className="text-xs text-charcoal-500">VC firms and angel networks reviewing incubated startups</p>
+                </div>
+                <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-rose-container text-rose-primary">
+                  {investorEOIs.length} Active EOIs
+                </span>
+              </div>
+
+              {investorEOIs.length === 0 ? (
+                <EmptyState
+                  icon={Award}
+                  title="No Expressions of Interest Logged"
+                  description="Register angel or institutional VC syndicate term sheet proposals."
+                  actionLabel="Register EOI"
+                  onAction={() => setShowEoiModal(true)}
+                />
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-xs">
+                    <thead className="bg-ivory-50 dark:bg-charcoal-800/60 border-b border-border dark:border-charcoal-800 text-charcoal-500 uppercase tracking-wider text-[10px] font-bold">
+                      <tr>
+                        <th className="p-3">Reference</th>
+                        <th className="p-3">Investor Syndicate</th>
+                        <th className="p-3">Target Venture</th>
+                        <th className="p-3">Cheque Size (INR)</th>
+                        <th className="p-3">Valuation Cap</th>
+                        <th className="p-3">Diligence Stage</th>
+                        <th className="p-3 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-border/60 dark:divide-charcoal-800">
+                      {investorEOIs.map((eoi) => (
+                        <tr key={eoi.id} className="hover:bg-ivory-50/50 dark:hover:bg-charcoal-800/40">
+                          <td className="p-3 font-mono text-charcoal-400 font-semibold">{eoi.eoiRef}</td>
+                          <td className="p-3">
+                            <span className="font-bold text-charcoal-900 dark:text-ivory-100 block">{eoi.investorFirm}</span>
+                            <span className="text-charcoal-500 text-[11px]">{eoi.partnerName} ({eoi.contactEmail})</span>
+                          </td>
+                          <td className="p-3 font-semibold text-charcoal-800 dark:text-ivory-200">{eoi.startupName}</td>
+                          <td className="p-3 font-mono font-bold text-emerald-600">
+                            INR {(eoi.indicatedChequeAmount / 10000000).toFixed(2)} Cr
+                          </td>
+                          <td className="p-3 font-mono text-charcoal-700 dark:text-ivory-300">
+                            INR {(eoi.proposedValuationCap / 10000000).toFixed(2)} Cr
+                          </td>
+                          <td className="p-3">
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200">
+                              {eoi.dueDiligenceStatus.replace(/_/g, " ")}
+                            </span>
+                          </td>
+                          <td className="p-3 text-right whitespace-nowrap">
+                            <select
+                              value={eoi.dueDiligenceStatus}
+                              onChange={(e) => handleUpdateEoiStatus(eoi.id, e.target.value)}
+                              className="px-2 py-1 bg-ivory-50 dark:bg-charcoal-800 border border-border dark:border-charcoal-700 rounded-lg text-xs font-semibold"
+                            >
+                              <option value="EXPRESSION_SUBMITTED">Expression Submitted</option>
+                              <option value="DATA_ROOM_OPENED">Data Room Opened</option>
+                              <option value="DUE_DILIGENCE_PASS">Due Diligence Passed</option>
+                              <option value="TERM_SHEET_ISSUED">Term Sheet Issued</option>
+                            </select>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
           </div>
         )}
       </div>
+
+      {/* Register Investor EOI Modal */}
+      {showEoiModal && (
+        <div className="fixed inset-0 z-50 bg-charcoal-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-charcoal-900 border border-border dark:border-charcoal-800 rounded-2xl max-w-md w-full p-6 shadow-xl">
+            <div className="flex items-center justify-between pb-3 border-b border-border dark:border-charcoal-800 mb-4">
+              <h3 className="font-bold text-base text-charcoal-900 dark:text-ivory-100">
+                Register Investor Expression of Interest (EOI)
+              </h3>
+              <button onClick={() => setShowEoiModal(false)} className="p-1 rounded-lg text-charcoal-400">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleLogEoi} className="space-y-3.5">
+              <div>
+                <label className="block text-xs font-semibold text-charcoal-700 dark:text-ivory-300 mb-1">
+                  Target Startup Venture *
+                </label>
+                <select
+                  value={eoiForm.startupId}
+                  onChange={(e) => setEoiForm({ ...eoiForm, startupId: e.target.value })}
+                  className="w-full px-3 py-2 bg-ivory-50 dark:bg-charcoal-800 border border-border dark:border-charcoal-700 rounded-xl text-xs font-semibold"
+                >
+                  <option value="">Select Venture</option>
+                  {startups.map((s) => (
+                    <option key={s.id} value={s.id}>
+                      {s.startupName} ({s.companyRef})
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-charcoal-700 dark:text-ivory-300 mb-1">
+                  Investor Syndicate / VC Firm *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={eoiForm.investorFirm}
+                  onChange={(e) => setEoiForm({ ...eoiForm, investorFirm: e.target.value })}
+                  placeholder="e.g. Peak XV Partners / Blume Ventures"
+                  className="w-full px-3 py-2 bg-ivory-50 dark:bg-charcoal-800 border border-border dark:border-charcoal-700 rounded-xl text-xs"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-charcoal-700 dark:text-ivory-300 mb-1">
+                    Partner / Lead Name *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={eoiForm.partnerName}
+                    onChange={(e) => setEoiForm({ ...eoiForm, partnerName: e.target.value })}
+                    placeholder="e.g. Rajat Dhawan"
+                    className="w-full px-3 py-2 bg-ivory-50 dark:bg-charcoal-800 border border-border dark:border-charcoal-700 rounded-xl text-xs"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-charcoal-700 dark:text-ivory-300 mb-1">
+                    Contact Email *
+                  </label>
+                  <input
+                    type="email"
+                    required
+                    value={eoiForm.contactEmail}
+                    onChange={(e) => setEoiForm({ ...eoiForm, contactEmail: e.target.value })}
+                    placeholder="partner@firm.com"
+                    className="w-full px-3 py-2 bg-ivory-50 dark:bg-charcoal-800 border border-border dark:border-charcoal-700 rounded-xl text-xs"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-charcoal-700 dark:text-ivory-300 mb-1">
+                    Cheque Amount (INR) *
+                  </label>
+                  <input
+                    type="number"
+                    step="500000"
+                    value={eoiForm.indicatedChequeAmount}
+                    onChange={(e) => setEoiForm({ ...eoiForm, indicatedChequeAmount: Number(e.target.value) })}
+                    className="w-full px-3 py-2 bg-ivory-50 dark:bg-charcoal-800 border border-border dark:border-charcoal-700 rounded-xl text-xs font-mono"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-charcoal-700 dark:text-ivory-300 mb-1">
+                    Valuation Cap (INR)
+                  </label>
+                  <input
+                    type="number"
+                    step="5000000"
+                    value={eoiForm.proposedValuationCap}
+                    onChange={(e) => setEoiForm({ ...eoiForm, proposedValuationCap: Number(e.target.value) })}
+                    className="w-full px-3 py-2 bg-ivory-50 dark:bg-charcoal-800 border border-border dark:border-charcoal-700 rounded-xl text-xs font-mono"
+                  />
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-2 pt-3 border-t border-border dark:border-charcoal-800">
+                <button
+                  type="button"
+                  onClick={() => setShowEoiModal(false)}
+                  className="px-4 py-2 rounded-xl text-xs font-bold text-charcoal-600 dark:text-charcoal-300 hover:bg-surface-soft"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={submitting}
+                  className="px-5 py-2 rounded-xl bg-rose-primary hover:bg-rose-dark text-white text-xs font-bold shadow-xs transition-all disabled:opacity-50"
+                >
+                  {submitting ? "Registering..." : "Log Term Sheet / EOI"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* Stage Progression Modal */}
       {stageModalStartup && (
@@ -1485,13 +1803,26 @@ export default function IncubationPage() {
               </div>
             </div>
 
+            {/* Graduation Exit Clearance Banner if Graduated */}
+            {selectedStartupDossier.stage === "GRADUATED_VENTURE" && (
+              <div className="p-4 rounded-xl border-2 border-dashed border-emerald-500/40 bg-emerald-50/30 dark:bg-emerald-950/20 text-xs space-y-2">
+                <div className="flex items-center gap-2 text-emerald-700 dark:text-emerald-300 font-bold">
+                  <CheckCircle2 className="w-4 h-4" />
+                  <span>Formal Incubation Graduation Certified</span>
+                </div>
+                <p className="text-[11px] text-charcoal-600 dark:text-charcoal-400">
+                  This venture has fulfilled all incubation milestones, vacated physical lab bays, and completed university IP equity transfer.
+                </p>
+              </div>
+            )}
+
             <div className="flex justify-end gap-2.5 pt-2 border-t border-border/60 dark:border-charcoal-800">
               <button
                 onClick={() => window.print()}
                 className="px-3.5 py-2 bg-ivory-100 hover:bg-ivory-200 dark:bg-charcoal-800 dark:hover:bg-charcoal-700 text-charcoal-700 dark:text-ivory-200 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-colors"
               >
                 <Printer className="w-3.5 h-3.5" />
-                Print Term Sheet
+                <span>Print Term Sheet &amp; Certificate</span>
               </button>
               <button
                 onClick={() => setSelectedStartupDossier(null)}

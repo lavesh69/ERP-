@@ -727,6 +727,54 @@
         "id": "pub-1793622929598-323",
         "apiPointsAwarded": 28,
         "verified": true
+      },
+      {
+        "facultyId": "fac-demo-01",
+        "facultyName": "Dr. Rajesh K. Sharma",
+        "title": "Zero-Trust Resilient Microservices in Distributed Clouds",
+        "journalName": "IEEE Transactions on Services Computing",
+        "issnOrIsbn": "N/A",
+        "indexing": "IEEE_XPLORE",
+        "impactFactor": 4.8,
+        "authorshipRole": "FIRST_AUTHOR",
+        "totalAuthors": 2,
+        "doi": "10.1109/TSC.2026.991203",
+        "publicationYear": 2026,
+        "id": "pub-1793623979750-483",
+        "apiPointsAwarded": 28,
+        "verified": true
+      },
+      {
+        "facultyId": "fac-demo-01",
+        "facultyName": "Dr. Rajesh K. Sharma",
+        "title": "Zero-Trust Resilient Microservices in Distributed Clouds",
+        "journalName": "IEEE Transactions on Services Computing",
+        "issnOrIsbn": "N/A",
+        "indexing": "IEEE_XPLORE",
+        "impactFactor": 4.8,
+        "authorshipRole": "FIRST_AUTHOR",
+        "totalAuthors": 2,
+        "doi": "10.1109/TSC.2026.991203",
+        "publicationYear": 2026,
+        "id": "pub-1793624351943-616",
+        "apiPointsAwarded": 28,
+        "verified": true
+      },
+      {
+        "facultyId": "fac-demo-01",
+        "facultyName": "Dr. Rajesh K. Sharma",
+        "title": "Zero-Trust Resilient Microservices in Distributed Clouds",
+        "journalName": "IEEE Transactions on Services Computing",
+        "issnOrIsbn": "N/A",
+        "indexing": "IEEE_XPLORE",
+        "impactFactor": 4.8,
+        "authorshipRole": "FIRST_AUTHOR",
+        "totalAuthors": 2,
+        "doi": "10.1109/TSC.2026.991203",
+        "publicationYear": 2026,
+        "id": "pub-1793624440639-652",
+        "apiPointsAwarded": 28,
+        "verified": true
       }
     ],
     "grants": [
@@ -777,15 +825,15 @@
       }
     ],
     "ugcApiSummary": {
-      "category1PublicationsScore": 1263.5,
+      "category1PublicationsScore": 1347.5,
       "category2GrantsScore": 10,
       "category3PatentsPolicyScore": 7,
       "category4ConsultancyScore": 4,
-      "totalUgcResearchScore": 1284.5,
+      "totalUgcResearchScore": 1368.5,
       "eligibleForProfessorCas": true,
       "eligibleForAssociateProfessorCas": true
     },
-    "integrityVerificationSeal": "UGC-RESEARCH-SEAL-C697AB857007B32ED8453673",
-    "lastUpdated": "2026-11-02T12:35:29.598Z"
+    "integrityVerificationSeal": "UGC-RESEARCH-SEAL-B20A57E029BE165B75CDF6CE",
+    "lastUpdated": "2026-11-02T13:00:40.639Z"
   }
 }

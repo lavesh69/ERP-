@@ -128,7 +128,7 @@
           "isOccupied": true,
           "studentId": "stu-mercer-01",
           "studentName": "Alex Mercer",
-          "studentRoll": "TEMP-HOSTEL-1793622930626",
+          "studentRoll": "TEMP-HOSTEL-1793624442763",
           "branch": "Computer Science",
           "allocatedDate": "2026-11-02",
           "feeStatus": "PAID"
@@ -358,8 +358,8 @@
   ],
   "transferRequests": [
     {
-      "id": "tr-1793622930696",
-      "requestNumber": "TR-2026-285",
+      "id": "tr-1793624442862",
+      "requestNumber": "TR-2026-434",
       "studentId": "stu-resident",
       "studentName": "Ryan Gosling",
       "studentRoll": "CS2026-002",
@@ -373,8 +373,8 @@
       "targetBlockName": "Nelson Mandela Hall (Block A)",
       "reason": "Medical recommendation: quiet study hours and room alignment",
       "status": "APPROVED",
-      "requestedAt": "2026-11-02T12:35:30.696Z",
-      "processedAt": "2026-11-02T12:35:30.714Z",
+      "requestedAt": "2026-11-02T13:00:42.862Z",
+      "processedAt": "2026-11-02T13:00:42.878Z",
       "processedBy": "SUPER_ADMIN",
       "remarks": "Approved by Chief Warden Dr. Verma"
     },
@@ -399,8 +399,8 @@
   ],
   "maintenanceTickets": [
     {
-      "id": "maint-1793622930723",
-      "ticketNumber": "HST-MNT-578",
+      "id": "maint-1793624442884",
+      "ticketNumber": "HST-MNT-308",
       "blockId": "blk-a",
       "blockName": "Nelson Mandela Hall (Block A)",
       "roomNumber": "A-102",
@@ -410,9 +410,9 @@
       "status": "RESOLVED",
       "description": "Ceiling fan regulator humming and loose switchboard wiring",
       "reportedBy": "Resident",
-      "reportedAt": "2026-11-02T12:35:30.723Z",
+      "reportedAt": "2026-11-02T13:00:42.884Z",
       "assignedTechnician": "SUPER_ADMIN",
-      "resolvedAt": "2026-11-02T12:35:30.728Z",
+      "resolvedAt": "2026-11-02T13:00:42.890Z",
       "resolutionNotes": "Replaced regulator and secured switchboard housing."
     },
     {
@@ -467,8 +467,8 @@
   ],
   "visitors": [
     {
-      "id": "vis-1793622930733",
-      "badgeNumber": "VTR-HST-966",
+      "id": "vis-1793624442896",
+      "badgeNumber": "VTR-HST-929",
       "studentRoll": "CS2026-001",
       "studentName": "Alex Mercer",
       "roomNumber": "A-102",
@@ -477,11 +477,11 @@
       "relation": "PARENT",
       "phone": "+1-555-0199",
       "idProofNumber": "DL-CA-992140",
-      "checkInTime": "2026-11-02T12:35:30.733Z",
+      "checkInTime": "2026-11-02T13:00:42.896Z",
       "status": "CHECKED_OUT",
       "gateSecurityOfficer": "Gate Security Officer",
       "purpose": "Weekend family check-in and luggage delivery",
-      "checkOutTime": "2026-11-02T12:35:30.740Z"
+      "checkOutTime": "2026-11-02T13:00:42.902Z"
     },
     {
       "id": "vis-001",
@@ -551,8 +551,8 @@
       "appliedAt": "2026-10-14T11:20:00.000Z"
     },
     {
-      "id": "wl-1793622930746",
-      "waitlistToken": "WL-BLK-A-19",
+      "id": "wl-1793624442908",
+      "waitlistToken": "WL-BLK-A-54",
       "studentId": "stu-wait",
       "studentName": "Lucas Montgomery",
       "studentRoll": "ME2026-088",
@@ -564,7 +564,7 @@
       "distanceFromHomeKm": 650,
       "priorityScore": 72,
       "status": "WAITLISTED",
-      "appliedAt": "2026-11-02T12:35:30.746Z"
+      "appliedAt": "2026-11-02T13:00:42.908Z"
     }
   ]
 }

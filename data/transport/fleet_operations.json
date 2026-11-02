@@ -483,6 +483,72 @@
       "nextFcDate": "2027-12-31",
       "insuranceExpiry": "2027-12-31",
       "pucExpiry": "2027-12-31"
+    },
+    {
+      "id": "veh-1793623982134",
+      "registrationNumber": "MA-TEST-2132",
+      "vehicleCode": "BUS-T132",
+      "type": "BUS",
+      "capacity": 40,
+      "currentPassengers": 0,
+      "fuelType": "ELECTRIC",
+      "driverName": "Chief Driver Anderson",
+      "driverPhone": "+1 (555) 000-0000",
+      "driverLicense": "CDL-PENDING",
+      "attendantName": "Designated Conductor/Attendant",
+      "attendantPhone": "+1 (555) 000-0001",
+      "status": "ON_CAMPUS",
+      "speedKmH": 0,
+      "gpsLat": 42.3601,
+      "gpsLng": -71.0589,
+      "batteryOrFuelLevel": 100,
+      "nextFcDate": "2027-12-31",
+      "insuranceExpiry": "2027-12-31",
+      "pucExpiry": "2027-12-31"
+    },
+    {
+      "id": "veh-1793624354172",
+      "registrationNumber": "MA-TEST-4171",
+      "vehicleCode": "BUS-T171",
+      "type": "BUS",
+      "capacity": 40,
+      "currentPassengers": 0,
+      "fuelType": "ELECTRIC",
+      "driverName": "Chief Driver Anderson",
+      "driverPhone": "+1 (555) 000-0000",
+      "driverLicense": "CDL-PENDING",
+      "attendantName": "Designated Conductor/Attendant",
+      "attendantPhone": "+1 (555) 000-0001",
+      "status": "ON_CAMPUS",
+      "speedKmH": 0,
+      "gpsLat": 42.3601,
+      "gpsLng": -71.0589,
+      "batteryOrFuelLevel": 100,
+      "nextFcDate": "2027-12-31",
+      "insuranceExpiry": "2027-12-31",
+      "pucExpiry": "2027-12-31"
+    },
+    {
+      "id": "veh-1793624442809",
+      "registrationNumber": "MA-TEST-2808",
+      "vehicleCode": "BUS-T808",
+      "type": "BUS",
+      "capacity": 40,
+      "currentPassengers": 0,
+      "fuelType": "ELECTRIC",
+      "driverName": "Chief Driver Anderson",
+      "driverPhone": "+1 (555) 000-0000",
+      "driverLicense": "CDL-PENDING",
+      "attendantName": "Designated Conductor/Attendant",
+      "attendantPhone": "+1 (555) 000-0001",
+      "status": "ON_CAMPUS",
+      "speedKmH": 0,
+      "gpsLat": 42.3601,
+      "gpsLng": -71.0589,
+      "batteryOrFuelLevel": 100,
+      "nextFcDate": "2027-12-31",
+      "insuranceExpiry": "2027-12-31",
+      "pucExpiry": "2027-12-31"
     }
   ],
   "routes": [
@@ -498,7 +564,7 @@
       "assignedVehicleId": "veh-01",
       "assignedVehicleCode": "BUS-01",
       "assignedDriverName": "Robert Kowalski",
-      "totalRegisteredStudents": 162,
+      "totalRegisteredStudents": 165,
       "stops": [
         {
           "stopName": "Union Square Metro",
@@ -592,6 +658,57 @@
     }
   ],
   "passes": [
+    {
+      "id": "pass-1793624442772",
+      "passNumber": "BP-2026-2282",
+      "studentId": "stu-mercer-01",
+      "studentName": "Alex Mercer",
+      "studentRoll": "TRANS-ROLL-1793624442771",
+      "routeId": "rt-01",
+      "routeNumber": "R-01",
+      "stopName": "Union Square Metro",
+      "academicYear": "2026-2027",
+      "validUntil": "2027-05-31",
+      "status": "ACTIVE",
+      "feeAmount": 550,
+      "feeStatus": "PAID",
+      "qrCodeFingerprint": "bf83f78dbbd7ac7e9ca21c7ec58c3d3b",
+      "issuedAt": "2026-11-02T13:00:42.772Z"
+    },
+    {
+      "id": "pass-1793624354137",
+      "passNumber": "BP-2026-3076",
+      "studentId": "stu-mercer-01",
+      "studentName": "Alex Mercer",
+      "studentRoll": "TRANS-ROLL-1793624354136",
+      "routeId": "rt-01",
+      "routeNumber": "R-01",
+      "stopName": "Union Square Metro",
+      "academicYear": "2026-2027",
+      "validUntil": "2027-05-31",
+      "status": "ACTIVE",
+      "feeAmount": 550,
+      "feeStatus": "PAID",
+      "qrCodeFingerprint": "203a4b718aa8310d4ea5a8d0e3e7b528",
+      "issuedAt": "2026-11-02T12:59:14.137Z"
+    },
+    {
+      "id": "pass-1793623982096",
+      "passNumber": "BP-2026-9634",
+      "studentId": "stu-mercer-01",
+      "studentName": "Alex Mercer",
+      "studentRoll": "TRANS-ROLL-1793623982095",
+      "routeId": "rt-01",
+      "routeNumber": "R-01",
+      "stopName": "Union Square Metro",
+      "academicYear": "2026-2027",
+      "validUntil": "2027-05-31",
+      "status": "ACTIVE",
+      "feeAmount": 550,
+      "feeStatus": "PAID",
+      "qrCodeFingerprint": "94d7bc3b5b2783c4babf8aaed8a8ac9e",
+      "issuedAt": "2026-11-02T12:53:02.096Z"
+    },
     {
       "id": "pass-1793622930631",
       "passNumber": "BP-2026-8412",
@@ -930,7 +1047,7 @@
       "feeAmount": 500,
       "feeStatus": "PAID",
       "qrCodeFingerprint": "b2c9a63abed626ce93885a19dc57a947",
-      "issuedAt": "2026-11-02T12:35:30.519Z"
+      "issuedAt": "2026-11-02T13:00:42.637Z"
     },
     {
       "id": "pass-1792042774377",
@@ -946,7 +1063,7 @@
       "feeAmount": 450,
       "feeStatus": "PAID",
       "qrCodeFingerprint": "0dfde1a64e7771e8414f0d3ea094cfb0",
-      "issuedAt": "2026-11-02T12:35:28.715Z"
+      "issuedAt": "2026-11-02T13:00:38.363Z"
     },
     {
       "id": "pass-1792036320317",

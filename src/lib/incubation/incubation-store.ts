@@ -14,12 +14,22 @@ import {
   SeedGrantTranche,
   PatentDisclosure,
   QuarterlyMilestoneReview,
+  IncubationApplication,
+  IncubationMentor,
+  MentorSession,
+  SeedFundScheme,
+  InvestorEOI,
+  ApplicationStatus,
   calculateIncubationPortfolioMetrics,
   validateStartupApplication,
   validateIncubationStageTransition,
   validateGrantTranche,
   validatePatentDisclosure,
   validateMilestoneReview,
+  validateIncubationApplication,
+  validateMentorRegistration,
+  validateMentorSession,
+  validateInvestorEOI,
 } from "./incubation-engine";
 
 const DATA_DIR = path.join(process.cwd(), "data", "incubation");
@@ -37,6 +47,11 @@ interface IncubationStoreSchema {
   tranches: SeedGrantTranche[];
   patents: PatentDisclosure[];
   milestoneReviews: QuarterlyMilestoneReview[];
+  applications?: IncubationApplication[];
+  mentors?: IncubationMentor[];
+  mentorSessions?: MentorSession[];
+  grantSchemes?: SeedFundScheme[];
+  investorEOIs?: InvestorEOI[];
 }
 
 const DEFAULT_STARTUPS: IncubatedStartup[] = [
@@ -240,6 +255,258 @@ const DEFAULT_REVIEWS: QuarterlyMilestoneReview[] = [
   },
 ];
 
+const DEFAULT_APPLICATIONS: IncubationApplication[] = [
+  {
+    id: "app-01",
+    applicationRef: "APP-2026-001",
+    startupName: "BioSens Microfluidics",
+    applicantName: "Dr. Ananya Sen",
+    applicantEmail: "ananya.sen@apex.edu",
+    applicantPhone: "+91 98765 43210",
+    applicantRole: "FACULTY",
+    department: "BioTechnology",
+    sector: "HEALTHTECH",
+    problemStatement: "Current clinical biomarker assays take 48+ hours and require centralized pathology labs, delaying ICU sepsis diagnosis.",
+    proposedSolution: "Microfluidic disposable lab-on-a-chip detecting inflammatory biomarkers in under 15 minutes at bedside.",
+    prototypeUrl: "https://biosens-preview.internal.apex.edu",
+    requestedGrant: 1000000,
+    requestedDesks: 3,
+    status: "APPROVED",
+    committeeScore: 92,
+    committeeNotes: "Strong experimental validation with Department of Biotechnology grant. Recommended for immediate Cohort onboard.",
+    submittedAt: "2026-08-10T10:00:00.000Z",
+    evaluatedAt: "2026-09-01T15:30:00.000Z",
+  },
+  {
+    id: "app-02",
+    applicationRef: "APP-2026-002",
+    startupName: "AeroKite Heavy-Lift Drones",
+    applicantName: "Kabir Mehta",
+    applicantEmail: "kabir.mehta@students.apex.edu",
+    applicantPhone: "+91 98112 34567",
+    applicantRole: "STUDENT",
+    department: "Mechanical & Aerospace Engineering",
+    sector: "ROBOTICS_IOT",
+    problemStatement: "High-altitude disaster relief logistics are constrained by standard quadcopter battery payload limitations.",
+    proposedSolution: "Tethered hybrid fuel-cell octocopter capable of carrying 25kg cargo in Himalayan sub-zero terrains.",
+    prototypeUrl: "https://aerokite-uav.github.io",
+    requestedGrant: 500000,
+    requestedDesks: 2,
+    status: "PITCH_SCHEDULED",
+    committeeScore: 84,
+    committeeNotes: "Initial screening passed. Invited for in-person flight test and pitch presentation on Nov 15.",
+    submittedAt: "2026-09-12T11:30:00.000Z",
+    evaluatedAt: "2026-09-25T14:00:00.000Z",
+  },
+  {
+    id: "app-03",
+    applicationRef: "APP-2026-003",
+    startupName: "FinLedger Micro-Savings",
+    applicantName: "Tanya Goel",
+    applicantEmail: "tanya.goel@alumni.apex.edu",
+    applicantPhone: "+91 98450 11223",
+    applicantRole: "ALUMNI",
+    department: "Computer Science & Engineering",
+    sector: "FINTECH",
+    problemStatement: "Gen-Z university students lack automated disciplined saving and micro-investing instruments linked to UPI.",
+    proposedSolution: "UPI round-up micro-investing smart app rounding merchant purchases to the nearest ₹10 and allocating to sovereign gold bonds.",
+    requestedGrant: 250000,
+    requestedDesks: 1,
+    status: "UNDER_SCREENING",
+    committeeScore: 76,
+    committeeNotes: "Under review by FinTech domain subcommittee. Awaiting compliance opinion on RBI account aggregator framework.",
+    submittedAt: "2026-10-01T09:15:00.000Z",
+  },
+];
+
+const DEFAULT_MENTORS: IncubationMentor[] = [
+  {
+    id: "men-01",
+    mentorName: "Dr. Arvind Gupta",
+    title: "General Partner & Angel Investor",
+    organization: "DeepTech Seed Fund",
+    expertise: ["DeepTech", "AI/ML", "Fundraising", "Venture Valuation"],
+    email: "arvind.gupta@angelnetwork.in",
+    phone: "+91 98100 23456",
+    totalSessionsConducted: 24,
+    rating: 4.9,
+    availabilityStatus: "AVAILABLE",
+  },
+  {
+    id: "men-02",
+    mentorName: "Sunita Rao",
+    title: "Partner & Patent Attorney",
+    organization: "IP Legal Solutions LLP",
+    expertise: ["Patent Claims", "PCT International Filings", "Technology Transfer", "Trade Secrets"],
+    email: "sunita.rao@ipattorneys.com",
+    phone: "+91 98201 34567",
+    totalSessionsConducted: 18,
+    rating: 4.8,
+    availabilityStatus: "AVAILABLE",
+  },
+  {
+    id: "men-03",
+    mentorName: "Vikramaditya Bose",
+    title: "VP of Hardware Engineering & EIR",
+    organization: "HyperScale Robotics",
+    expertise: ["Embedded Systems", "Hardware Prototyping", "Foundry Tape-out", "ISO Compliance"],
+    email: "vbose@hyperscale.tech",
+    phone: "+91 98310 45678",
+    totalSessionsConducted: 15,
+    rating: 5.0,
+    availabilityStatus: "ENGAGED",
+  },
+  {
+    id: "men-04",
+    mentorName: "Meera Namboodiri",
+    title: "Former Unicorn CMO & Growth Advisor",
+    organization: "ScaleUp Partners",
+    expertise: ["B2B Go-to-Market", "Enterprise Sales", "Product-Market Fit", "Unit Economics"],
+    email: "meera@scaleuppartners.io",
+    phone: "+91 98450 56789",
+    totalSessionsConducted: 12,
+    rating: 4.9,
+    availabilityStatus: "AVAILABLE",
+  },
+];
+
+const DEFAULT_MENTOR_SESSIONS: MentorSession[] = [
+  {
+    id: "ses-01",
+    sessionRef: "SES-2026-001",
+    mentorId: "men-01",
+    mentorName: "Dr. Arvind Gupta",
+    startupId: "st-01",
+    startupName: "NeuroPulse BioTech",
+    scheduledDate: "2026-09-18T14:00:00.000Z",
+    durationMinutes: 60,
+    discussionTopic: "Series-A Term Sheet Negotiation & Due Diligence Room Prep",
+    keyTakeaways: "Agreed to fix valuation cap at ₹35 Cr with 15% post-money SAFE note. Cleaned cap table ESOP pool.",
+    actionItems: "1. Finalize audited balance sheet. 2. Request clean patent assignment certificate from TTO.",
+    status: "COMPLETED",
+  },
+  {
+    id: "ses-02",
+    sessionRef: "SES-2026-002",
+    mentorId: "men-03",
+    mentorName: "Vikramaditya Bose",
+    startupId: "st-02",
+    startupName: "TerraCharge Robotics",
+    scheduledDate: "2026-09-28T16:00:00.000Z",
+    durationMinutes: 45,
+    discussionTopic: "Inductive High-Voltage Resonance Safety & ISO Standards",
+    keyTakeaways: "Identified thermal dissipation bottleneck in secondary receiver coil. Recommended copper heat sink re-routing.",
+    actionItems: "1. Update CAD thermals. 2. Order thermal interface pads for depot test bench.",
+    status: "COMPLETED",
+  },
+  {
+    id: "ses-03",
+    sessionRef: "SES-2026-003",
+    mentorId: "men-02",
+    mentorName: "Sunita Rao",
+    startupId: "st-03",
+    startupName: "OmniLedger FinAI",
+    scheduledDate: "2026-11-10T11:00:00.000Z",
+    durationMinutes: 45,
+    discussionTopic: "Smart Contract Algorithm Scoping for Indian Patent Office",
+    keyTakeaways: "",
+    actionItems: "Bring system architecture flowcharts and technical novelties draft.",
+    status: "SCHEDULED",
+  },
+];
+
+const DEFAULT_GRANT_SCHEMES: SeedFundScheme[] = [
+  {
+    id: "sch-01",
+    schemeCode: "SCH-DST-PRAYAS",
+    schemeName: "DST NIDHI-PRAYAS Prototyping Grant",
+    sponsoringAgency: "Department of Science & Technology (DST), Govt. of India",
+    sanctionedCorpus: 10000000,
+    disbursedAmount: 4500000,
+    maxGrantPerVenture: 1000000,
+    activeVenturesFunded: 5,
+    status: "ACTIVE",
+  },
+  {
+    id: "sch-02",
+    schemeCode: "SCH-BIRAC-BIG",
+    schemeName: "BIRAC Biotechnology Ignition Grant (BIG)",
+    sponsoringAgency: "Biotechnology Industry Research Assistance Council (BIRAC)",
+    sanctionedCorpus: 25000000,
+    disbursedAmount: 12000000,
+    maxGrantPerVenture: 5000000,
+    activeVenturesFunded: 3,
+    status: "ACTIVE",
+  },
+  {
+    id: "sch-03",
+    schemeCode: "SCH-SISFS",
+    schemeName: "Startup India Seed Fund Scheme (SISFS)",
+    sponsoringAgency: "DPIIT, Ministry of Commerce & Industry",
+    sanctionedCorpus: 50000000,
+    disbursedAmount: 21000000,
+    maxGrantPerVenture: 2000000,
+    activeVenturesFunded: 11,
+    status: "ACTIVE",
+  },
+  {
+    id: "sch-04",
+    schemeCode: "SCH-INST-SEED",
+    schemeName: "Apex University Venture Innovation Corpus",
+    sponsoringAgency: "Apex University Endowment Trust",
+    sanctionedCorpus: 15000000,
+    disbursedAmount: 6000000,
+    maxGrantPerVenture: 1500000,
+    activeVenturesFunded: 6,
+    status: "ACTIVE",
+  },
+];
+
+const DEFAULT_INVESTOR_EOIS: InvestorEOI[] = [
+  {
+    id: "eoi-01",
+    eoiRef: "EOI-2026-001",
+    startupId: "st-01",
+    startupName: "NeuroPulse BioTech",
+    investorFirm: "Peak XV Surge Accelerator",
+    partnerName: "Rajat Dhawan",
+    contactEmail: "rajat@peakxv.com",
+    indicatedChequeAmount: 35000000,
+    proposedValuationCap: 350000000,
+    stageInterest: "SEED",
+    dueDiligenceStatus: "TERM_SHEET_ISSUED",
+    submittedAt: "2026-09-20T10:00:00.000Z",
+  },
+  {
+    id: "eoi-02",
+    eoiRef: "EOI-2026-002",
+    startupId: "st-02",
+    startupName: "TerraCharge Robotics",
+    investorFirm: "Blume Ventures Climate Fund",
+    partnerName: "Arun Natarajan",
+    contactEmail: "arun@blume.vc",
+    indicatedChequeAmount: 20000000,
+    proposedValuationCap: 220000000,
+    stageInterest: "SEED",
+    dueDiligenceStatus: "DUE_DILIGENCE_PASS",
+    submittedAt: "2026-10-04T12:00:00.000Z",
+  },
+  {
+    id: "eoi-03",
+    eoiRef: "EOI-2026-003",
+    startupId: "st-03",
+    startupName: "OmniLedger FinAI",
+    investorFirm: "Indian Angel Network FinTech Syndicate",
+    partnerName: "Siddharth Roy",
+    contactEmail: "siddharth@indianangels.com",
+    indicatedChequeAmount: 12500000,
+    proposedValuationCap: 150000000,
+    stageInterest: "SEED",
+    dueDiligenceStatus: "DATA_ROOM_OPENED",
+    submittedAt: "2026-10-18T16:30:00.000Z",
+  },
+];
+
 function readStore(): IncubationStoreSchema {
   ensureDirectory();
   if (!fs.existsSync(STORE_FILE)) {
@@ -249,6 +516,11 @@ function readStore(): IncubationStoreSchema {
       tranches: JSON.parse(JSON.stringify(DEFAULT_TRANCHES)),
       patents: JSON.parse(JSON.stringify(DEFAULT_PATENTS)),
       milestoneReviews: JSON.parse(JSON.stringify(DEFAULT_REVIEWS)),
+      applications: JSON.parse(JSON.stringify(DEFAULT_APPLICATIONS)),
+      mentors: JSON.parse(JSON.stringify(DEFAULT_MENTORS)),
+      mentorSessions: JSON.parse(JSON.stringify(DEFAULT_MENTOR_SESSIONS)),
+      grantSchemes: JSON.parse(JSON.stringify(DEFAULT_GRANT_SCHEMES)),
+      investorEOIs: JSON.parse(JSON.stringify(DEFAULT_INVESTOR_EOIS)),
     };
     fs.writeFileSync(STORE_FILE, JSON.stringify(initial, null, 2), "utf-8");
     return initial;
@@ -264,6 +536,11 @@ function readStore(): IncubationStoreSchema {
     if (!data.tranches) { data.tranches = JSON.parse(JSON.stringify(DEFAULT_TRANCHES)); mutated = true; }
     if (!data.patents) { data.patents = JSON.parse(JSON.stringify(DEFAULT_PATENTS)); mutated = true; }
     if (!data.milestoneReviews) { data.milestoneReviews = JSON.parse(JSON.stringify(DEFAULT_REVIEWS)); mutated = true; }
+    if (!data.applications) { data.applications = JSON.parse(JSON.stringify(DEFAULT_APPLICATIONS)); mutated = true; }
+    if (!data.mentors) { data.mentors = JSON.parse(JSON.stringify(DEFAULT_MENTORS)); mutated = true; }
+    if (!data.mentorSessions) { data.mentorSessions = JSON.parse(JSON.stringify(DEFAULT_MENTOR_SESSIONS)); mutated = true; }
+    if (!data.grantSchemes) { data.grantSchemes = JSON.parse(JSON.stringify(DEFAULT_GRANT_SCHEMES)); mutated = true; }
+    if (!data.investorEOIs) { data.investorEOIs = JSON.parse(JSON.stringify(DEFAULT_INVESTOR_EOIS)); mutated = true; }
 
     if (mutated) {
       fs.writeFileSync(STORE_FILE, JSON.stringify(data, null, 2), "utf-8");
@@ -277,6 +554,11 @@ function readStore(): IncubationStoreSchema {
       tranches: JSON.parse(JSON.stringify(DEFAULT_TRANCHES)),
       patents: JSON.parse(JSON.stringify(DEFAULT_PATENTS)),
       milestoneReviews: JSON.parse(JSON.stringify(DEFAULT_REVIEWS)),
+      applications: JSON.parse(JSON.stringify(DEFAULT_APPLICATIONS)),
+      mentors: JSON.parse(JSON.stringify(DEFAULT_MENTORS)),
+      mentorSessions: JSON.parse(JSON.stringify(DEFAULT_MENTOR_SESSIONS)),
+      grantSchemes: JSON.parse(JSON.stringify(DEFAULT_GRANT_SCHEMES)),
+      investorEOIs: JSON.parse(JSON.stringify(DEFAULT_INVESTOR_EOIS)),
     };
   }
 }
@@ -568,6 +850,269 @@ export const incubationStore = {
     return review;
   },
 
+  // Applications & Intake Pipeline
+  getApplications(status?: string): IncubationApplication[] {
+    const store = readStore();
+    const apps = store.applications || [];
+    if (status && status !== "ALL") {
+      return apps.filter((a) => a.status === status);
+    }
+    return apps;
+  },
+
+  submitApplication(payload: Partial<IncubationApplication>): IncubationApplication {
+    const validation = validateIncubationApplication(payload);
+    if (!validation.isValid) {
+      throw new Error(`Application Error: ${validation.errors.join("; ")}`);
+    }
+
+    const store = readStore();
+    if (!store.applications) store.applications = [];
+
+    const newApp: IncubationApplication = {
+      id: `app-${Date.now()}`,
+      applicationRef: `APP-2026-${Math.floor(100 + Math.random() * 900)}`,
+      startupName: payload.startupName!.trim(),
+      applicantName: payload.applicantName!.trim(),
+      applicantEmail: payload.applicantEmail!.trim(),
+      applicantPhone: payload.applicantPhone || "+91 99999 00000",
+      applicantRole: payload.applicantRole || "STUDENT",
+      department: payload.department || "Engineering",
+      sector: payload.sector || "AI_ML",
+      problemStatement: payload.problemStatement!.trim(),
+      proposedSolution: payload.proposedSolution!.trim(),
+      prototypeUrl: payload.prototypeUrl || "",
+      requestedGrant: Number(payload.requestedGrant) || 250000,
+      requestedDesks: Number(payload.requestedDesks) || 1,
+      status: "SUBMITTED",
+      committeeScore: 0,
+      committeeNotes: "",
+      submittedAt: new Date().toISOString(),
+    };
+
+    store.applications.unshift(newApp);
+    writeStore(store);
+    return newApp;
+  },
+
+  evaluateApplication(
+    id: string,
+    status: ApplicationStatus,
+    score?: number,
+    notes?: string
+  ): IncubationApplication {
+    const store = readStore();
+    if (!store.applications) store.applications = [];
+    const app = store.applications.find((a) => a.id === id);
+    if (!app) throw new Error(`Application with ID ${id} not found.`);
+
+    app.status = status;
+    if (score !== undefined) app.committeeScore = Number(score);
+    if (notes !== undefined) app.committeeNotes = notes.trim();
+    app.evaluatedAt = new Date().toISOString();
+
+    writeStore(store);
+    return app;
+  },
+
+  convertApplicationToStartup(
+    applicationId: string,
+    options?: {
+      initialStage?: IncubationStage;
+      labDesksAllocated?: number;
+      mentorName?: string;
+    }
+  ): IncubatedStartup {
+    const store = readStore();
+    if (!store.applications) store.applications = [];
+    const app = store.applications.find((a) => a.id === applicationId);
+    if (!app) throw new Error(`Application with ID ${applicationId} not found.`);
+
+    // Check duplicate
+    const exists = store.startups.some(
+      (s) => s.startupName.toLowerCase() === app.startupName.toLowerCase()
+    );
+    if (exists) {
+      throw new Error(`A venture named '${app.startupName}' is already active in the incubator.`);
+    }
+
+    const newStartup: IncubatedStartup = {
+      id: `st-${Date.now()}`,
+      companyRef: `VENT-2026-${Math.floor(100 + Math.random() * 900)}`,
+      startupName: app.startupName,
+      founderName: app.applicantName,
+      founderRollOrStaffId: `${app.applicantRole}-${app.department.slice(0, 3).toUpperCase()}-${Date.now().toString().slice(-4)}`,
+      founderRole: app.applicantRole,
+      sector: app.sector,
+      stage: options?.initialStage || "INCUBATED_PROTOTYPE",
+      pitchDeckSummary: `${app.problemStatement} — ${app.proposedSolution}`,
+      seedGrantDisbursed: 0,
+      universityEquityPercentage: 3.0,
+      externalFundingRaised: 0,
+      patentsFiled: 0,
+      labDesksAllocated: options?.labDesksAllocated !== undefined ? Number(options.labDesksAllocated) : (app.requestedDesks || 1),
+      mentorName: options?.mentorName || "Center Director & EIR",
+      status: "ACTIVE",
+      incubatedDate: new Date().toISOString(),
+    };
+
+    app.status = "APPROVED";
+    store.startups.unshift(newStartup);
+    writeStore(store);
+    return newStartup;
+  },
+
+  // Mentor Network & Office Hours
+  getMentors(): IncubationMentor[] {
+    const store = readStore();
+    return store.mentors || [];
+  },
+
+  registerMentor(payload: Partial<IncubationMentor>): IncubationMentor {
+    const validation = validateMentorRegistration(payload);
+    if (!validation.isValid) {
+      throw new Error(`Mentor Error: ${validation.errors.join("; ")}`);
+    }
+
+    const store = readStore();
+    if (!store.mentors) store.mentors = [];
+
+    const mentor: IncubationMentor = {
+      id: `men-${Date.now()}`,
+      mentorName: payload.mentorName!.trim(),
+      title: payload.title!.trim(),
+      organization: payload.organization!.trim(),
+      expertise: payload.expertise && payload.expertise.length > 0 ? payload.expertise : ["DeepTech", "Venture Strategy"],
+      email: payload.email || "mentor@aic.apex.edu",
+      phone: payload.phone || "+91 99999 11111",
+      totalSessionsConducted: 0,
+      rating: 5.0,
+      availabilityStatus: payload.availabilityStatus || "AVAILABLE",
+    };
+
+    store.mentors.unshift(mentor);
+    writeStore(store);
+    return mentor;
+  },
+
+  getMentorSessions(startupId?: string): MentorSession[] {
+    const store = readStore();
+    const sessions = store.mentorSessions || [];
+    if (startupId) {
+      return sessions.filter((s) => s.startupId === startupId);
+    }
+    return sessions;
+  },
+
+  scheduleMentorSession(payload: Partial<MentorSession>): MentorSession {
+    const validation = validateMentorSession(payload);
+    if (!validation.isValid) {
+      throw new Error(`Mentor Session Error: ${validation.errors.join("; ")}`);
+    }
+
+    const store = readStore();
+    if (!store.mentorSessions) store.mentorSessions = [];
+
+    const mentor = store.mentors?.find((m) => m.id === payload.mentorId);
+    const startup = store.startups.find((s) => s.id === payload.startupId);
+    if (!startup) throw new Error(`Venture with ID ${payload.startupId} not found.`);
+
+    const session: MentorSession = {
+      id: `ses-${Date.now()}`,
+      sessionRef: `SES-2026-${Math.floor(100 + Math.random() * 900)}`,
+      mentorId: payload.mentorId!,
+      mentorName: mentor ? mentor.mentorName : (payload.mentorName || "Designated EIR"),
+      startupId: startup.id,
+      startupName: startup.startupName,
+      scheduledDate: payload.scheduledDate!,
+      durationMinutes: Number(payload.durationMinutes) || 45,
+      discussionTopic: payload.discussionTopic!.trim(),
+      keyTakeaways: payload.keyTakeaways || "",
+      actionItems: payload.actionItems || "",
+      status: "SCHEDULED",
+    };
+
+    store.mentorSessions.unshift(session);
+    if (mentor) {
+      mentor.totalSessionsConducted = (mentor.totalSessionsConducted || 0) + 1;
+    }
+    writeStore(store);
+    return session;
+  },
+
+  completeMentorSession(id: string, keyTakeaways: string, actionItems: string): MentorSession {
+    const store = readStore();
+    if (!store.mentorSessions) store.mentorSessions = [];
+    const session = store.mentorSessions.find((s) => s.id === id);
+    if (!session) throw new Error(`Mentor session with ID ${id} not found.`);
+
+    session.status = "COMPLETED";
+    session.keyTakeaways = keyTakeaways.trim();
+    session.actionItems = actionItems.trim();
+
+    writeStore(store);
+    return session;
+  },
+
+  // Seed Fund Schemes
+  getGrantSchemes(): SeedFundScheme[] {
+    const store = readStore();
+    return store.grantSchemes || [];
+  },
+
+  // Investor Pitch Vault & Expressions of Interest
+  getInvestorEOIs(startupId?: string): InvestorEOI[] {
+    const store = readStore();
+    const eois = store.investorEOIs || [];
+    if (startupId) {
+      return eois.filter((e) => e.startupId === startupId);
+    }
+    return eois;
+  },
+
+  logInvestorEOI(payload: Partial<InvestorEOI>): InvestorEOI {
+    const validation = validateInvestorEOI(payload);
+    if (!validation.isValid) {
+      throw new Error(`Investor EOI Error: ${validation.errors.join("; ")}`);
+    }
+
+    const store = readStore();
+    if (!store.investorEOIs) store.investorEOIs = [];
+
+    const startup = store.startups.find((s) => s.id === payload.startupId);
+    if (!startup) throw new Error(`Venture with ID ${payload.startupId} not found.`);
+
+    const eoi: InvestorEOI = {
+      id: `eoi-${Date.now()}`,
+      eoiRef: `EOI-2026-${Math.floor(100 + Math.random() * 900)}`,
+      startupId: startup.id,
+      startupName: startup.startupName,
+      investorFirm: payload.investorFirm!.trim(),
+      partnerName: payload.partnerName!.trim(),
+      contactEmail: payload.contactEmail!.trim(),
+      indicatedChequeAmount: Number(payload.indicatedChequeAmount),
+      proposedValuationCap: Number(payload.proposedValuationCap) || Number(payload.indicatedChequeAmount) * 10,
+      stageInterest: payload.stageInterest || "SEED",
+      dueDiligenceStatus: payload.dueDiligenceStatus || "EXPRESSION_SUBMITTED",
+      submittedAt: new Date().toISOString(),
+    };
+
+    store.investorEOIs.unshift(eoi);
+    writeStore(store);
+    return eoi;
+  },
+
+  updateInvestorEOI(id: string, status: string): InvestorEOI {
+    const store = readStore();
+    if (!store.investorEOIs) store.investorEOIs = [];
+    const eoi = store.investorEOIs.find((e) => e.id === id);
+    if (!eoi) throw new Error(`Investor EOI with ID ${id} not found.`);
+
+    eoi.dueDiligenceStatus = status as any;
+    writeStore(store);
+    return eoi;
+  },
+
   resetStore() {
     const initial: IncubationStoreSchema = {
       startups: JSON.parse(JSON.stringify(DEFAULT_STARTUPS)),
@@ -575,6 +1120,11 @@ export const incubationStore = {
       tranches: JSON.parse(JSON.stringify(DEFAULT_TRANCHES)),
       patents: JSON.parse(JSON.stringify(DEFAULT_PATENTS)),
       milestoneReviews: JSON.parse(JSON.stringify(DEFAULT_REVIEWS)),
+      applications: JSON.parse(JSON.stringify(DEFAULT_APPLICATIONS)),
+      mentors: JSON.parse(JSON.stringify(DEFAULT_MENTORS)),
+      mentorSessions: JSON.parse(JSON.stringify(DEFAULT_MENTOR_SESSIONS)),
+      grantSchemes: JSON.parse(JSON.stringify(DEFAULT_GRANT_SCHEMES)),
+      investorEOIs: JSON.parse(JSON.stringify(DEFAULT_INVESTOR_EOIS)),
     };
     writeStore(initial);
     return initial;

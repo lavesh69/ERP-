@@ -12835,6 +12835,166 @@ By breaking down large monolithic systems into decoupled microservices, systems 
   assert(reviewData.review?.overallRating === 5, "Quarterly milestone velocity score recorded accurately");
   assert(reviewData.review.recommendedAction === "FAST_TRACK_ACCELERATION", "Committee recommendation recorded accurately");
 
+  // 8. Incubation Intake Application Pipeline
+  const uniqueVentureName = `QuantumSense Magnetometry ${Date.now()}`;
+  const applyReq = new NextRequest("http://localhost:3000/api/incubation", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "SUBMIT_APPLICATION",
+      startupName: uniqueVentureName,
+      applicantName: "Pooja Deshmukh",
+      applicantEmail: "pooja.deshmukh@students.apex.edu",
+      applicantRole: "STUDENT",
+      department: "Physics & Nanotechnology",
+      sector: "AI_ML",
+      problemStatement: "Sub-surface geomagnetic navigation requires bulky cryogenic sensors.",
+      proposedSolution: "Room-temperature nitrogen-vacancy diamond quantum magnetometers on a silicon chip.",
+      requestedGrant: 750000,
+      requestedDesks: 2,
+    }),
+  });
+  const applyRes = await handleIncubationPost(applyReq);
+  assert(applyRes.status === 200, "POST /api/incubation (SUBMIT_APPLICATION) returns 200 OK");
+  const applyData = await applyRes.json();
+  assert(applyData.application?.applicationRef?.startsWith("APP-"), "Incubation application created with APP- reference");
+  assert(applyData.application.status === "SUBMITTED", "Initial application status is SUBMITTED");
+
+  // Evaluate Application
+  const evalAppReq = new NextRequest("http://localhost:3000/api/incubation", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "EVALUATE_APPLICATION",
+      id: applyData.application.id,
+      status: "APPROVED",
+      score: 95,
+      notes: "Exceptional diamond NV-center bench results. Approved for immediate admission.",
+    }),
+  });
+  const evalAppRes = await handleIncubationPost(evalAppReq);
+  assert(evalAppRes.status === 200, "POST /api/incubation (EVALUATE_APPLICATION) returns 200 OK");
+  const evalAppData = await evalAppRes.json();
+  assert(evalAppData.application.status === "APPROVED", "Application status updated to APPROVED");
+  assert(evalAppData.application.committeeScore === 95, "Committee score recorded accurately");
+
+  // Convert Application to Active Cohort Startup
+  const convertAppReq = new NextRequest("http://localhost:3000/api/incubation", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "CONVERT_APPLICATION",
+      applicationId: applyData.application.id,
+      initialStage: "INCUBATED_PROTOTYPE",
+      labDesksAllocated: 2,
+      mentorName: "Vikramaditya Bose",
+    }),
+  });
+  const convertAppRes = await handleIncubationPost(convertAppReq);
+  assert(convertAppRes.status === 200, "POST /api/incubation (CONVERT_APPLICATION) returns 200 OK");
+  const convertAppData = await convertAppRes.json();
+  assert(convertAppData.venture?.startupName === uniqueVentureName, "Application converted to active startup venture");
+  assert(convertAppData.venture.stage === "INCUBATED_PROTOTYPE", "Venture initialized at INCUBATED_PROTOTYPE stage");
+
+  // 9. Mentor Network & 1:1 Advisory Office Hours
+  const mentorReq = new NextRequest("http://localhost:3000/api/incubation", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "REGISTER_MENTOR",
+      mentorName: "Rajeev Chandrasekharan",
+      title: "Founding Partner & EIR",
+      organization: "DeepTech Horizon Ventures",
+      expertise: ["Quantum Computing", "IP Licensing", "Venture Valuation"],
+      email: "rajeev@horizon.vc",
+      phone: "+91 99887 76655",
+    }),
+  });
+  const mentorRes = await handleIncubationPost(mentorReq);
+  assert(mentorRes.status === 200, "POST /api/incubation (REGISTER_MENTOR) returns 200 OK");
+  const mentorData = await mentorRes.json();
+  assert(mentorData.mentor?.mentorName === "Rajeev Chandrasekharan", "New mentor registered in advisory directory");
+
+  // Schedule Advisory Office Hours
+  const sessionReq = new NextRequest("http://localhost:3000/api/incubation", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "SCHEDULE_MENTOR_SESSION",
+      mentorId: mentorData.mentor.id,
+      startupId: convertAppData.venture.id,
+      scheduledDate: new Date(Date.now() + 86400000 * 2).toISOString(),
+      durationMinutes: 60,
+      discussionTopic: "Quantum Chip Foundry Tape-out & Cleanroom Access",
+    }),
+  });
+  const sessionRes = await handleIncubationPost(sessionReq);
+  assert(sessionRes.status === 200, "POST /api/incubation (SCHEDULE_MENTOR_SESSION) returns 200 OK");
+  const sessionData = await sessionRes.json();
+  assert(sessionData.session?.sessionRef?.startsWith("SES-"), "Advisory session scheduled with SES- reference");
+  assert(sessionData.session.status === "SCHEDULED", "Initial session status is SCHEDULED");
+
+  // Complete Advisory Session
+  const compSessionReq = new NextRequest("http://localhost:3000/api/incubation", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "COMPLETE_MENTOR_SESSION",
+      id: sessionData.session.id,
+      keyTakeaways: "Agreed to route test wafers through SCL Chandigarh cleanroom facility.",
+      actionItems: "Finalize GDS-II layout by end of month.",
+    }),
+  });
+  const compSessionRes = await handleIncubationPost(compSessionReq);
+  assert(compSessionRes.status === 200, "POST /api/incubation (COMPLETE_MENTOR_SESSION) returns 200 OK");
+  const compSessionData = await compSessionRes.json();
+  assert(compSessionData.session.status === "COMPLETED", "Advisory session status updated to COMPLETED");
+
+  // 10. Seed Fund Schemes & Treasury Query
+  const schemesReq = new NextRequest("http://localhost:3000/api/incubation?tab=schemes", {
+    method: "GET",
+    headers: { Cookie: `classroom_session=${adminToken}` },
+  });
+  const schemesRes = await handleIncubationGet(schemesReq);
+  assert(schemesRes.status === 200, "GET /api/incubation?tab=schemes returns 200 OK");
+  const schemesData = await schemesRes.json();
+  assert(Array.isArray(schemesData.schemes) && schemesData.schemes.length >= 4, "Government grant schemes returned with at least 4 schemes");
+
+  // 11. Investor Expressions of Interest (EOI)
+  const eoiReq = new NextRequest("http://localhost:3000/api/incubation", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "LOG_INVESTOR_EOI",
+      startupId: convertAppData.venture.id,
+      investorFirm: "Matrix Partners India",
+      partnerName: "Avnish Bajaj",
+      contactEmail: "avnish@matrixpartners.in",
+      indicatedChequeAmount: 25000000,
+      proposedValuationCap: 250000000,
+      stageInterest: "SEED",
+    }),
+  });
+  const eoiRes = await handleIncubationPost(eoiReq);
+  assert(eoiRes.status === 200, "POST /api/incubation (LOG_INVESTOR_EOI) returns 200 OK");
+  const eoiData = await eoiRes.json();
+  assert(eoiData.eoi?.eoiRef?.startsWith("EOI-"), "Investor EOI registered with EOI- reference");
+
+  // Update EOI Status
+  const updateEoiReq = new NextRequest("http://localhost:3000/api/incubation", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "UPDATE_INVESTOR_EOI",
+      id: eoiData.eoi.id,
+      status: "DATA_ROOM_OPENED",
+    }),
+  });
+  const updateEoiRes = await handleIncubationPost(updateEoiReq);
+  assert(updateEoiRes.status === 200, "POST /api/incubation (UPDATE_INVESTOR_EOI) returns 200 OK");
+  const updateEoiData = await updateEoiRes.json();
+  assert(updateEoiData.eoi.dueDiligenceStatus === "DATA_ROOM_OPENED", "EOI status transitioned to DATA_ROOM_OPENED");
+
   console.log("\n=================================================");
   console.log(`🎉 ALL ${passedTests}/${totalTests} TESTS PASSED SUCCESSFULLY!`);
   console.log("=================================================\n");

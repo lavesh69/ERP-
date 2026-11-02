@@ -18,8 +18,8 @@
         "industryRndPerHour": 5000,
         "samplePrepCharge": 250
       },
-      "totalBeamHoursLogged": 1324,
-      "totalSamplesAnalyzed": 913,
+      "totalBeamHoursLogged": 1334.5,
+      "totalSamplesAnalyzed": 919,
       "lastCalibrationDate": "2026-09-10",
       "nextCalibrationDueDate": "2026-12-10"
     },
@@ -117,6 +117,126 @@
     }
   ],
   "bookings": [
+    {
+      "id": "cif-book-1793624441640",
+      "bookingRef": "APEX-CIF-REQ-2026-5532",
+      "instrumentId": "INST-CIF-SEM",
+      "instrumentName": "Field Emission Scanning Electron Microscope",
+      "userId": "scholar-phd-test-77",
+      "userName": "Rohan Chatterjee",
+      "userEmail": "rohan.c@res.apex.edu",
+      "userCategory": "INTERNAL_SCHOLAR",
+      "departmentOrOrg": "Department of Metallurgical Engineering",
+      "bookingDate": "2026-11-05",
+      "timeSlot": "MORNING_0930_1300",
+      "estimatedHours": 3.5,
+      "sampleCount": 2,
+      "sampleState": "SOLID_POWDER",
+      "hazardLevel": "NON_HAZARDOUS",
+      "safetyDeclarationAccepted": true,
+      "samplePrepRequired": true,
+      "samplePrepDetails": "Gold sputter conductive layer",
+      "calculatedTariff": 1900,
+      "status": "COMPLETED",
+      "createdAt": "2026-11-02T13:00:41.640Z",
+      "updatedAt": "2026-11-02T13:00:41.664Z",
+      "safetyOfficerApproval": {
+        "approvedBy": "Prof. Arvind Trivedi (CIF Safety Chair)",
+        "clearedAt": "2026-11-02T13:00:41.648Z",
+        "remarks": "Sample MSDS non-toxic and compliant with vacuum chamber standards."
+      },
+      "slotToken": "APEX-CIF-SLOT-2026-8912",
+      "assignedOperator": "Dr. Rajesh Sharma (Sr. Scientific Officer)",
+      "completionData": {
+        "beamHoursUsed": 3.5,
+        "completedAt": "2026-11-02T13:00:41.664Z",
+        "operatorSignature": "Dr. Rajesh Sharma, SSO",
+        "dataFileUrls": [
+          "/data/cif/sem_spectra_01.dm3"
+        ],
+        "cryptographicSeal": "936600a1627e7ef2f415b495bf6e607f88fe4ac4a101b0411f420a038e35fe16"
+      }
+    },
+    {
+      "id": "cif-book-1793624352915",
+      "bookingRef": "APEX-CIF-REQ-2026-1313",
+      "instrumentId": "INST-CIF-SEM",
+      "instrumentName": "Field Emission Scanning Electron Microscope",
+      "userId": "scholar-phd-test-77",
+      "userName": "Rohan Chatterjee",
+      "userEmail": "rohan.c@res.apex.edu",
+      "userCategory": "INTERNAL_SCHOLAR",
+      "departmentOrOrg": "Department of Metallurgical Engineering",
+      "bookingDate": "2026-11-05",
+      "timeSlot": "MORNING_0930_1300",
+      "estimatedHours": 3.5,
+      "sampleCount": 2,
+      "sampleState": "SOLID_POWDER",
+      "hazardLevel": "NON_HAZARDOUS",
+      "safetyDeclarationAccepted": true,
+      "samplePrepRequired": true,
+      "samplePrepDetails": "Gold sputter conductive layer",
+      "calculatedTariff": 1900,
+      "status": "COMPLETED",
+      "createdAt": "2026-11-02T12:59:12.915Z",
+      "updatedAt": "2026-11-02T12:59:12.938Z",
+      "safetyOfficerApproval": {
+        "approvedBy": "Prof. Arvind Trivedi (CIF Safety Chair)",
+        "clearedAt": "2026-11-02T12:59:12.924Z",
+        "remarks": "Sample MSDS non-toxic and compliant with vacuum chamber standards."
+      },
+      "slotToken": "APEX-CIF-SLOT-2026-1121",
+      "assignedOperator": "Dr. Rajesh Sharma (Sr. Scientific Officer)",
+      "completionData": {
+        "beamHoursUsed": 3.5,
+        "completedAt": "2026-11-02T12:59:12.938Z",
+        "operatorSignature": "Dr. Rajesh Sharma, SSO",
+        "dataFileUrls": [
+          "/data/cif/sem_spectra_01.dm3"
+        ],
+        "cryptographicSeal": "9bc781e4dfd5b215f84ec6db6aa348ecc7b4fc7ed09cd2e1a465d1e2fa65ed6e"
+      }
+    },
+    {
+      "id": "cif-book-1793623981041",
+      "bookingRef": "APEX-CIF-REQ-2026-2110",
+      "instrumentId": "INST-CIF-SEM",
+      "instrumentName": "Field Emission Scanning Electron Microscope",
+      "userId": "scholar-phd-test-77",
+      "userName": "Rohan Chatterjee",
+      "userEmail": "rohan.c@res.apex.edu",
+      "userCategory": "INTERNAL_SCHOLAR",
+      "departmentOrOrg": "Department of Metallurgical Engineering",
+      "bookingDate": "2026-11-05",
+      "timeSlot": "MORNING_0930_1300",
+      "estimatedHours": 3.5,
+      "sampleCount": 2,
+      "sampleState": "SOLID_POWDER",
+      "hazardLevel": "NON_HAZARDOUS",
+      "safetyDeclarationAccepted": true,
+      "samplePrepRequired": true,
+      "samplePrepDetails": "Gold sputter conductive layer",
+      "calculatedTariff": 1900,
+      "status": "COMPLETED",
+      "createdAt": "2026-11-02T12:53:01.041Z",
+      "updatedAt": "2026-11-02T12:53:01.067Z",
+      "safetyOfficerApproval": {
+        "approvedBy": "Prof. Arvind Trivedi (CIF Safety Chair)",
+        "clearedAt": "2026-11-02T12:53:01.050Z",
+        "remarks": "Sample MSDS non-toxic and compliant with vacuum chamber standards."
+      },
+      "slotToken": "APEX-CIF-SLOT-2026-2188",
+      "assignedOperator": "Dr. Rajesh Sharma (Sr. Scientific Officer)",
+      "completionData": {
+        "beamHoursUsed": 3.5,
+        "completedAt": "2026-11-02T12:53:01.067Z",
+        "operatorSignature": "Dr. Rajesh Sharma, SSO",
+        "dataFileUrls": [
+          "/data/cif/sem_spectra_01.dm3"
+        ],
+        "cryptographicSeal": "8bc3070c0c63c51c570b0fd303965fe4dc5ac9d601b066d14de76b1a1060a71d"
+      }
+    },
     {
       "id": "cif-book-1793622930225",
       "bookingRef": "APEX-CIF-REQ-2026-4040",
