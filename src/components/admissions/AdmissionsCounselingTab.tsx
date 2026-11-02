@@ -178,27 +178,36 @@ export function AdmissionsCounselingTab() {
 
   return (
     <div className="space-y-6">
-      {/* Header Banner */}
-      <div className="bg-gradient-to-r from-emerald-900 to-teal-900 text-white rounded-2xl p-6 shadow-md border border-emerald-700/40">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      {/* Header - Academic OS Native Glassmorphism */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 glass-panel p-6 rounded-2xl shadow-soft">
+        <div className="flex items-center gap-3">
+          <div className="h-12 w-12 rounded-xl bg-emerald-600 text-white flex items-center justify-center shadow-md shadow-emerald-600/20 shrink-0">
+            <Award className="h-6 w-6" />
+          </div>
           <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 text-xs font-semibold mb-2">
-              <Award className="w-3.5 h-3.5" />
-              Statutory Reservation & Merit Allocation Engine
+            <div className="flex items-center gap-2 mb-1">
+              <span className="badge-subtle bg-emerald-500/10 text-emerald-700 dark:text-emerald-300">
+                Statutory Reservation &amp; Merit Allocation Engine
+              </span>
+              <span className="badge-subtle bg-surface-soft text-charcoal-600 dark:text-charcoal-400">
+                Round 1 Allotment
+              </span>
             </div>
-            <h2 className="text-xl font-bold tracking-tight">Centralized Counseling & Seat Allotment Portal</h2>
-            <p className="text-xs text-emerald-100/80 mt-1 max-w-2xl">
+            <h2 className="text-xl font-display font-bold text-charcoal-900 dark:text-ivory-100">
+              Centralized Counseling &amp; Seat Allotment Portal
+            </h2>
+            <p className="text-xs text-charcoal-600 dark:text-charcoal-400">
               Composite merit ranking (Board 40% + Entrance 60%), statutory reservation quotas (UR, OBC-NCL, SC, ST, EWS), and multi-round seat allotment orders with SHA-256 digital seals.
             </p>
           </div>
-          <div className="flex items-center gap-3">
-            <button
-              onClick={fetchCounselingData}
-              className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-xs font-medium backdrop-blur transition-colors"
-            >
-              Refresh Allotments
-            </button>
-          </div>
+        </div>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={fetchCounselingData}
+            className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-ivory-100 dark:bg-charcoal-800 hover:bg-emerald-50 dark:hover:bg-charcoal-700 text-charcoal-800 dark:text-ivory-200 text-xs font-bold border border-border dark:border-charcoal-700 transition-all shadow-xs"
+          >
+            <span>Refresh Allotments</span>
+          </button>
         </div>
       </div>
 

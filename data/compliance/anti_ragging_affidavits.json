@@ -1,5 +1,19 @@
 [
   {
+    "id": "RAG-MVZB4DJK",
+    "affidavitId": "APEX-RAG-AFF-2026-2026CS901",
+    "studentId": "STD-2026-901",
+    "rollNumber": "2026-CS-901",
+    "studentName": "Aditya Verma",
+    "academicYear": "2026-2027",
+    "parentGuardianName": "Rajesh Verma",
+    "parentPhone": "+91 99887 76655",
+    "undertakingSignedDate": "2026-11-02T13:40:58.640Z",
+    "antiRaggingReferenceNumber": "UGC-RAG-2026-142",
+    "complianceStatus": "AFFIDAVIT_VERIFIED",
+    "signedOathHash": "APEX-OATH-SEAL-9FDF02AE36A7B183"
+  },
+  {
     "id": "RAG-MVZAKZQ6",
     "affidavitId": "APEX-RAG-AFF-2026-2026CS901",
     "studentId": "STD-2026-901",

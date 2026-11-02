@@ -305,30 +305,73 @@ export default function AdmissionsPage() {
     }
   };
 
-  const handleSimulateOfferDispatch = (applicant: any) => {
+  const handleUpdateDocument = async (
+    docType: "transcriptsVerified" | "identityProofVerified" | "recommendationLettersVerified"
+  ) => {
+    if (!selectedApplicantDossier) return;
+    const currentVal = !!selectedApplicantDossier.documentsStatus?.[docType];
+    const newVal = !currentVal;
+
+    try {
+      const res = await fetch("/api/admissions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "UPDATE_DOCUMENT_STATUS",
+          applicantId: selectedApplicantDossier.id,
+          documentType: docType,
+          isVerified: newVal,
+        }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setSelectedApplicantDossier(data.applicant);
+        showToast(data.message, "success");
+        fetchData();
+      } else {
+        showToast(data.error || "Failed to update document verification", "error");
+      }
+    } catch (err: any) {
+      showToast(err.message || "Failed to update document", "error");
+    }
+  };
+
+  const handleSimulateOfferDispatch = async (applicant: any) => {
     setTargetOfferApplicant(applicant);
     setShowOfferDispatchModal(true);
-    setDispatchLog(["[1/4] Establishing TLS connection to campus SMTP relay mail.apex.edu:587..."]);
+    setDispatchLog([`[1/4] Connecting to university SMTP relay mail.apex.edu:587 for ${applicant.email}...`]);
     setDispatching(true);
-    setTimeout(() => {
-      setDispatchLog((prev) => [
-        ...prev,
-        `[2/4] Generating cryptographic admission seal DEG-OFFER-${applicant.meritRank}-2026...`,
-      ]);
-    }, 400);
-    setTimeout(() => {
-      setDispatchLog((prev) => [
-        ...prev,
-        `[3/4] Attaching signed scholarship confirmation & fee structure for ${applicant.programName}...`,
-      ]);
-    }, 800);
-    setTimeout(() => {
-      setDispatchLog((prev) => [
-        ...prev,
-        `[4/4] 250 OK: Digital offer letter successfully dispatched to ${applicant.email} (Message-ID: <apex_adm_${Date.now()}@apex.edu>)`,
-      ]);
+
+    try {
+      const res = await fetch("/api/admissions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "DISPATCH_OFFER_LETTER",
+          applicantId: applicant.id,
+          deadlineDays: 14,
+        }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setDispatchLog([
+          `[1/4] Connected to campus SMTP relay mail.apex.edu:587`,
+          `[2/4] Cryptographic admission seal generated: ${data.offerSeal}`,
+          `[3/4] Attached signed scholarship confirmation & fee schedule for ${applicant.programName}`,
+          `[4/4] 250 OK: Digital offer letter successfully queued and dispatched to ${applicant.email} (Email ID: ${data.emailId || "OUTBOX-QUEUED"})`,
+        ]);
+        showToast(data.message || `Offer letter dispatched to ${applicant.email}`, "success");
+        fetchData();
+      } else {
+        setDispatchLog((prev) => [...prev, `[ERROR] Dispatch failed: ${data.error || "Unknown error"}`]);
+        showToast(data.error || "Failed to dispatch offer letter", "error");
+      }
+    } catch (err: any) {
+      setDispatchLog((prev) => [...prev, `[ERROR] Network failure: ${err.message}`]);
+      showToast(err.message || "Network error", "error");
+    } finally {
       setDispatching(false);
-    }, 1200);
+    }
   };
 
   return (
@@ -1169,15 +1212,7 @@ export default function AdmissionsPage() {
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                 <button
                   type="button"
-                  onClick={() => {
-                    setSelectedApplicantDossier((prev: any) => ({
-                      ...prev,
-                      documentsStatus: {
-                        ...prev.documentsStatus,
-                        transcriptsVerified: !prev.documentsStatus?.transcriptsVerified,
-                      },
-                    }));
-                  }}
+                  onClick={() => handleUpdateDocument("transcriptsVerified")}
                   className="p-2.5 rounded-lg border border-border dark:border-charcoal-700 bg-ivory-50 dark:bg-charcoal-800 flex items-center justify-between text-left hover:border-rose-300 transition-colors"
                 >
                   <span>High School Transcripts</span>
@@ -1187,15 +1222,7 @@ export default function AdmissionsPage() {
                 </button>
                 <button
                   type="button"
-                  onClick={() => {
-                    setSelectedApplicantDossier((prev: any) => ({
-                      ...prev,
-                      documentsStatus: {
-                        ...prev.documentsStatus,
-                        identityProofVerified: !prev.documentsStatus?.identityProofVerified,
-                      },
-                    }));
-                  }}
+                  onClick={() => handleUpdateDocument("identityProofVerified")}
                   className="p-2.5 rounded-lg border border-border dark:border-charcoal-700 bg-ivory-50 dark:bg-charcoal-800 flex items-center justify-between text-left hover:border-rose-300 transition-colors"
                 >
                   <span>National Identity Proof</span>
@@ -1205,15 +1232,7 @@ export default function AdmissionsPage() {
                 </button>
                 <button
                   type="button"
-                  onClick={() => {
-                    setSelectedApplicantDossier((prev: any) => ({
-                      ...prev,
-                      documentsStatus: {
-                        ...prev.documentsStatus,
-                        recommendationLettersVerified: !prev.documentsStatus?.recommendationLettersVerified,
-                      },
-                    }));
-                  }}
+                  onClick={() => handleUpdateDocument("recommendationLettersVerified")}
                   className="p-2.5 rounded-lg border border-border dark:border-charcoal-700 bg-ivory-50 dark:bg-charcoal-800 flex items-center justify-between text-left hover:border-rose-300 transition-colors"
                 >
                   <span>Letters of Reference</span>

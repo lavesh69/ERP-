@@ -2711,11 +2711,32 @@
       "totalAmount": 7500,
       "dueDate": "2026-12-01",
       "createdAt": "2026-11-02T13:25:51.334Z"
+    },
+    {
+      "id": "mfs-mvzb4bc0",
+      "code": "TEST-STR-5774",
+      "title": "Automated Suite Test Fee Structure",
+      "programCode": "BTECH-CSE",
+      "academicYear": "2026-2027",
+      "quotaType": "MERIT_GENERAL",
+      "studentType": "DAY_SCHOLAR",
+      "currency": "USD",
+      "heads": [
+        {
+          "id": "h1",
+          "name": "Tuition",
+          "category": "TUITION",
+          "amount": 7500
+        }
+      ],
+      "totalAmount": 7500,
+      "dueDate": "2026-12-01",
+      "createdAt": "2026-11-02T13:40:55.776Z"
     }
   ],
   "installmentPlans": [
     {
-      "id": "plan-flexi-1793625953513",
+      "id": "plan-flexi-1793626857881",
       "studentFeeId": "sfee-mercer-01",
       "studentId": "stu-mercer-01",
       "studentName": "Alex Mercer",
@@ -2750,7 +2771,7 @@
           "paidAmount": 0
         }
       ],
-      "createdAt": "2026-11-02T13:25:53.513Z"
+      "createdAt": "2026-11-02T13:40:57.881Z"
     }
   ],
   "fineRule": {
@@ -2795,6 +2816,102 @@
     }
   ],
   "refundVouchers": [
+    {
+      "id": "rfnd-1793626860317",
+      "voucherNo": "RFND-2026-6992",
+      "studentId": "stu-general",
+      "studentName": "Devendra Joshi",
+      "rollNo": "2026-CSE-099",
+      "program": "B.Tech Computer Science",
+      "type": "CAUTION_MONEY",
+      "amount": 500,
+      "bankDetails": {
+        "accountHolder": "Devendra Joshi",
+        "accountNumber": "987654321012",
+        "ifscOrSwift": "HDFC0001234",
+        "bankName": "HDFC Bank"
+      },
+      "clearanceStatus": {
+        "libraryCleared": true,
+        "hostelCleared": true,
+        "labCleared": true
+      },
+      "status": "PENDING_APPROVAL",
+      "requestedAt": "2026-11-02T13:41:00.317Z",
+      "remarks": "Graduation caution money clearance"
+    },
+    {
+      "id": "rfnd-1793626860210",
+      "voucherNo": "RFND-2026-2663",
+      "studentId": "STU-2026-001",
+      "studentName": "Alex Rivera",
+      "rollNo": "CS2026-001",
+      "program": "Hostel Residency - Mandela International House",
+      "type": "CAUTION_MONEY",
+      "amount": 475,
+      "bankDetails": {
+        "accountHolder": "Alex Rivera",
+        "accountNumber": "0000000000",
+        "ifscOrSwift": "INSTITUTION-SWIFT",
+        "bankName": "National Treasury Bank"
+      },
+      "clearanceStatus": {
+        "libraryCleared": true,
+        "hostelCleared": true,
+        "labCleared": true
+      },
+      "status": "PENDING_APPROVAL",
+      "requestedAt": "2026-11-02T13:41:00.210Z",
+      "remarks": "Hostel move-out clearance caution deposit refund for Room B-204 (Mandela International House)"
+    },
+    {
+      "id": "rfnd-1793626858430",
+      "voucherNo": "RFND-2026-4650",
+      "studentId": "STU-2026-003",
+      "studentName": "Marcus Vance",
+      "rollNo": "EE2024-019",
+      "program": "Hostel Residency - Aryabhata Engineering Hall",
+      "type": "CAUTION_MONEY",
+      "amount": 480,
+      "bankDetails": {
+        "accountHolder": "Marcus Vance",
+        "accountNumber": "0000000000",
+        "ifscOrSwift": "INSTITUTION-SWIFT",
+        "bankName": "National Treasury Bank"
+      },
+      "clearanceStatus": {
+        "libraryCleared": true,
+        "hostelCleared": true,
+        "labCleared": true
+      },
+      "status": "PENDING_APPROVAL",
+      "requestedAt": "2026-11-02T13:40:58.430Z",
+      "remarks": "Hostel move-out clearance caution deposit refund for Room A-305 (Aryabhata Engineering Hall)"
+    },
+    {
+      "id": "rfnd-1793626855845",
+      "voucherNo": "RFND-2026-8703",
+      "studentId": "stu-general",
+      "studentName": "Alex Mercer",
+      "rollNo": "CS2026-001",
+      "program": "B.Tech Computer Science",
+      "type": "CAUTION_MONEY",
+      "amount": 500,
+      "bankDetails": {
+        "accountHolder": "Alex Mercer",
+        "accountNumber": "0000000000",
+        "ifscOrSwift": "INSTITUTION-SWIFT",
+        "bankName": "National Treasury Bank"
+      },
+      "clearanceStatus": {
+        "libraryCleared": true,
+        "hostelCleared": true,
+        "labCleared": true
+      },
+      "status": "PENDING_APPROVAL",
+      "requestedAt": "2026-11-02T13:40:55.845Z",
+      "remarks": "Refund application logged with Bursar Treasury"
+    },
     {
       "id": "rfnd-1793625956031",
       "voucherNo": "RFND-2026-5791",

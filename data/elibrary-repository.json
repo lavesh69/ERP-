@@ -1,5 +1,30 @@
 [
   {
+    "id": "IR-2026-051",
+    "itemType": "THESIS",
+    "title": "Real-Time Sub-Millisecond Neural Network Inference on Edge FPGAs",
+    "author": "Aditi Roy",
+    "authorAffiliation": "Apex Institute of Technology",
+    "department": "Electrical Engineering",
+    "publicationYear": 2026,
+    "doi": "10.5555/apex-ir/2026/ele-051",
+    "license": "CC-BY-4.0",
+    "abstract": "Investigation into low-precision quantized neural network architectures synthesized on Xilinx UltraScale+ FPGAs.",
+    "keywords": [
+      "FPGA",
+      "Neural Networks",
+      "Quantization"
+    ],
+    "fileSizeMb": 4.5,
+    "fileFormat": "PDF",
+    "accessLevel": "OPEN_ACCESS",
+    "downloadsCount": 0,
+    "citationsCount": 0,
+    "peerReviewed": true,
+    "checksumSha256": "b1623cffac40a5b6913aca834cd189bfed5976ffab04d69150cb2d010733e737",
+    "createdAt": "2026-11-02T13:40:58.305Z"
+  },
+  {
     "id": "IR-2026-050",
     "itemType": "THESIS",
     "title": "Real-Time Sub-Millisecond Neural Network Inference on Edge FPGAs",
@@ -18,7 +43,7 @@
     "fileSizeMb": 4.5,
     "fileFormat": "PDF",
     "accessLevel": "OPEN_ACCESS",
-    "downloadsCount": 0,
+    "downloadsCount": 1,
     "citationsCount": 0,
     "peerReviewed": true,
     "checksumSha256": "172af39deedf4b9c4cc66d20a4f91eced673052628975eaad0209ce41708236c",

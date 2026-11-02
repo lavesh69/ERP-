@@ -18,8 +18,8 @@
         "industryRndPerHour": 5000,
         "samplePrepCharge": 250
       },
-      "totalBeamHoursLogged": 1338,
-      "totalSamplesAnalyzed": 921,
+      "totalBeamHoursLogged": 1341.5,
+      "totalSamplesAnalyzed": 923,
       "lastCalibrationDate": "2026-09-10",
       "nextCalibrationDueDate": "2026-12-10"
     },
@@ -117,6 +117,46 @@
     }
   ],
   "bookings": [
+    {
+      "id": "cif-book-1793626859373",
+      "bookingRef": "APEX-CIF-REQ-2026-4605",
+      "instrumentId": "INST-CIF-SEM",
+      "instrumentName": "Field Emission Scanning Electron Microscope",
+      "userId": "scholar-phd-test-77",
+      "userName": "Rohan Chatterjee",
+      "userEmail": "rohan.c@res.apex.edu",
+      "userCategory": "INTERNAL_SCHOLAR",
+      "departmentOrOrg": "Department of Metallurgical Engineering",
+      "bookingDate": "2026-11-05",
+      "timeSlot": "MORNING_0930_1300",
+      "estimatedHours": 3.5,
+      "sampleCount": 2,
+      "sampleState": "SOLID_POWDER",
+      "hazardLevel": "NON_HAZARDOUS",
+      "safetyDeclarationAccepted": true,
+      "samplePrepRequired": true,
+      "samplePrepDetails": "Gold sputter conductive layer",
+      "calculatedTariff": 1900,
+      "status": "COMPLETED",
+      "createdAt": "2026-11-02T13:40:59.373Z",
+      "updatedAt": "2026-11-02T13:40:59.429Z",
+      "safetyOfficerApproval": {
+        "approvedBy": "Prof. Arvind Trivedi (CIF Safety Chair)",
+        "clearedAt": "2026-11-02T13:40:59.392Z",
+        "remarks": "Sample MSDS non-toxic and compliant with vacuum chamber standards."
+      },
+      "slotToken": "APEX-CIF-SLOT-2026-4823",
+      "assignedOperator": "Dr. Rajesh Sharma (Sr. Scientific Officer)",
+      "completionData": {
+        "beamHoursUsed": 3.5,
+        "completedAt": "2026-11-02T13:40:59.429Z",
+        "operatorSignature": "Dr. Rajesh Sharma, SSO",
+        "dataFileUrls": [
+          "/data/cif/sem_spectra_01.dm3"
+        ],
+        "cryptographicSeal": "e97feb4092e45e1ba0b5e6884a2075256ab9800f0e1bdbd598398e7ef6d2c991"
+      }
+    },
     {
       "id": "cif-book-1793625954793",
       "bookingRef": "APEX-CIF-REQ-2026-1182",

@@ -1,6 +1,23 @@
 {
   "alumni": [
     {
+      "id": "alm-1793626860421",
+      "fullName": "Aakash Banerjee",
+      "graduationBatch": 2021,
+      "degree": "B.Tech in Information Technology",
+      "currentCompany": "Microsoft Azure",
+      "jobTitle": "Senior Cloud Architect",
+      "location": "Hyderabad, India",
+      "isAvailableForMentorship": true,
+      "mentorTopics": [
+        "Kubernetes",
+        "Azure Cloud Architecture",
+        "Tech Leadership"
+      ],
+      "linkedinUrl": "",
+      "registeredAt": "2026-11-02T13:41:00.421Z"
+    },
+    {
       "id": "alm-1793625956163",
       "fullName": "Aakash Banerjee",
       "graduationBatch": 2021,
@@ -474,6 +491,21 @@
   ],
   "mentorshipBookings": [
     {
+      "id": "mb-1793626860428",
+      "bookingRef": "MB-2026-3123",
+      "mentorId": "alm-1793626860421",
+      "mentorName": "Aakash Banerjee",
+      "studentId": "stu-booking-01",
+      "studentName": "Aarav Sharma",
+      "studentRoll": "CS2026-101",
+      "topic": "Cloud Career Guidance",
+      "date": "2026-11-20",
+      "slotTime": "17:00 - 17:45 IST",
+      "meetingFormat": "1:1 Video Mentorship (Google Meet)",
+      "status": "CONFIRMED",
+      "bookedAt": "2026-11-02T13:41:00.428Z"
+    },
+    {
       "id": "mb-1793625956171",
       "bookingRef": "MB-2026-8001",
       "mentorId": "alm-1793625956163",
@@ -854,8 +886,8 @@
       "id": "camp-01",
       "title": "Dean's Merit Scholarship Endowment Fund",
       "target": 250000,
-      "raised": 424500,
-      "donorsCount": 336,
+      "raised": 434500,
+      "donorsCount": 337,
       "category": "Student Financial Aid",
       "deadline": "2026-12-31"
     },
@@ -879,6 +911,18 @@
     }
   ],
   "donations": [
+    {
+      "id": "don-1793626860439",
+      "receiptNo": "REC-APEX-2026-94872",
+      "campaignId": "camp-01",
+      "campaignTitle": "Dean's Merit Scholarship Endowment Fund",
+      "donorName": "Aakash Banerjee",
+      "amount": 10000,
+      "isAnonymous": false,
+      "paymentMethod": "UPI Gateway",
+      "transactionRef": "TXN-MVZB4EXJ",
+      "donatedAt": "2026-11-02T13:41:00.439Z"
+    },
     {
       "id": "don-1793625956185",
       "receiptNo": "REC-APEX-2026-62153",

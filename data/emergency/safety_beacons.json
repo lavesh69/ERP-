@@ -538,5 +538,15 @@
     "currentLocation": "Admin Building Auditorium Floor 2",
     "emergencyContactNotified": false,
     "timestamp": "2026-11-02T13:25:53.440Z"
+  },
+  {
+    "id": "BCN-1793626857822-CKN",
+    "incidentId": "EMRG-1793626857777-T41T",
+    "userId": "usr-admin-01",
+    "name": "Elena Evans",
+    "status": "SAFE",
+    "currentLocation": "Admin Building Auditorium Floor 2",
+    "emergencyContactNotified": false,
+    "timestamp": "2026-11-02T13:40:57.822Z"
   }
 ]

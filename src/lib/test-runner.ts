@@ -5666,6 +5666,7 @@ By breaking down large monolithic systems into decoupled microservices, systems 
   const admSummaryData = await admSummaryRes.json();
   assert(admSummaryData.summary.totalSeatCapacity > 0, "Admissions summary returns positive institutional seat quota");
 
+  admissionsStore.resetStore();
   const submitAppReq = new NextRequest("http://localhost:3000/api/admissions", {
     method: "POST",
     headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
@@ -5684,6 +5685,56 @@ By breaking down large monolithic systems into decoupled microservices, systems 
   assert(submitAppRes.status === 200, "POST /api/admissions (action: SUBMIT_APPLICATION) enrolls applicant with 200 OK");
   const submitAppData = await submitAppRes.json();
   assert(submitAppData.applicant.applicationNo.startsWith("ADM-2026"), "Applicant assigned institutional application reference number");
+
+  // Duplicate submission prevention
+  const duplicateAppReq = new NextRequest("http://localhost:3000/api/admissions", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "SUBMIT_APPLICATION",
+      fullName: "Linus Torvalds Jr.",
+      email: "linus.jr@test-admissions.edu",
+      phone: "+1 (555) 019-2834",
+      programCode: "BTECH-CSE",
+      highSchoolGpa: 4.0,
+      entranceExamScore: 1560,
+      source: "PORTAL_DIRECT",
+    }),
+  });
+  const duplicateAppRes = await handleAdmissionsPost(duplicateAppReq);
+  assert(duplicateAppRes.status === 400, "POST /api/admissions rejects duplicate application for same email and program (400 Bad Request)");
+
+  // Document verification persistence
+  const updateDocReq = new NextRequest("http://localhost:3000/api/admissions", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "UPDATE_DOCUMENT_STATUS",
+      applicantId: submitAppData.applicant.id,
+      documentType: "transcriptsVerified",
+      isVerified: true,
+    }),
+  });
+  const updateDocRes = await handleAdmissionsPost(updateDocReq);
+  assert(updateDocRes.status === 200, "POST /api/admissions (UPDATE_DOCUMENT_STATUS) returns 200 OK");
+  const updateDocData = await updateDocRes.json();
+  assert(updateDocData.applicant.documentsStatus.transcriptsVerified === true, "Applicant transcripts marked verified and persisted");
+
+  // Digital offer letter cryptographic dispatch
+  const dispatchOfferReq = new NextRequest("http://localhost:3000/api/admissions", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "DISPATCH_OFFER_LETTER",
+      applicantId: submitAppData.applicant.id,
+      deadlineDays: 14,
+    }),
+  });
+  const dispatchOfferRes = await handleAdmissionsPost(dispatchOfferReq);
+  assert(dispatchOfferRes.status === 200, "POST /api/admissions (DISPATCH_OFFER_LETTER) returns 200 OK");
+  const dispatchOfferData = await dispatchOfferRes.json();
+  assert(dispatchOfferData.offerSeal.startsWith("APEX-OFFER-"), "Digital offer letter issued with cryptographic seal");
+  assert(dispatchOfferData.applicant.stage === "OFFER_EXTENDED", "Applicant stage transitioned to OFFER_EXTENDED");
 
   const updateStageReq = new NextRequest("http://localhost:3000/api/admissions", {
     method: "POST",

@@ -571,6 +571,28 @@
       "nextFcDate": "2027-12-31",
       "insuranceExpiry": "2027-12-31",
       "pucExpiry": "2027-12-31"
+    },
+    {
+      "id": "veh-1793626860533",
+      "registrationNumber": "MA-TEST-0532",
+      "vehicleCode": "BUS-T532",
+      "type": "BUS",
+      "capacity": 40,
+      "currentPassengers": 0,
+      "fuelType": "ELECTRIC",
+      "driverName": "Chief Driver Anderson",
+      "driverPhone": "+1 (555) 000-0000",
+      "driverLicense": "CDL-PENDING",
+      "attendantName": "Designated Conductor/Attendant",
+      "attendantPhone": "+1 (555) 000-0001",
+      "status": "ON_CAMPUS",
+      "speedKmH": 0,
+      "gpsLat": 42.3601,
+      "gpsLng": -71.0589,
+      "batteryOrFuelLevel": 100,
+      "nextFcDate": "2027-12-31",
+      "insuranceExpiry": "2027-12-31",
+      "pucExpiry": "2027-12-31"
     }
   ],
   "routes": [
@@ -586,7 +608,7 @@
       "assignedVehicleId": "veh-01",
       "assignedVehicleCode": "BUS-01",
       "assignedDriverName": "Robert Kowalski",
-      "totalRegisteredStudents": 166,
+      "totalRegisteredStudents": 167,
       "stops": [
         {
           "stopName": "Union Square Metro",
@@ -680,6 +702,23 @@
     }
   ],
   "passes": [
+    {
+      "id": "pass-1793626860494",
+      "passNumber": "BP-2026-6896",
+      "studentId": "stu-mercer-01",
+      "studentName": "Alex Mercer",
+      "studentRoll": "TRANS-ROLL-1793626860493",
+      "routeId": "rt-01",
+      "routeNumber": "R-01",
+      "stopName": "Union Square Metro",
+      "academicYear": "2026-2027",
+      "validUntil": "2027-05-31",
+      "status": "ACTIVE",
+      "feeAmount": 550,
+      "feeStatus": "PAID",
+      "qrCodeFingerprint": "6c38078b663309f1ec9734ffa43f1f7a",
+      "issuedAt": "2026-11-02T13:41:00.494Z"
+    },
     {
       "id": "pass-1793625956288",
       "passNumber": "BP-2026-4639",
@@ -1086,7 +1125,7 @@
       "feeAmount": 500,
       "feeStatus": "PAID",
       "qrCodeFingerprint": "b2c9a63abed626ce93885a19dc57a947",
-      "issuedAt": "2026-11-02T13:25:56.083Z"
+      "issuedAt": "2026-11-02T13:41:00.358Z"
     },
     {
       "id": "pass-1792042774377",
@@ -1102,7 +1141,7 @@
       "feeAmount": 450,
       "feeStatus": "PAID",
       "qrCodeFingerprint": "0dfde1a64e7771e8414f0d3ea094cfb0",
-      "issuedAt": "2026-11-02T13:25:51.447Z"
+      "issuedAt": "2026-11-02T13:40:55.980Z"
     },
     {
       "id": "pass-1792036320317",

@@ -5,6 +5,7 @@
 
 import fs from "fs";
 import path from "path";
+import crypto from "crypto";
 import {
   ApplicantLead,
   ProgramQuota,
@@ -201,6 +202,13 @@ export const admissionsStore = {
     }
 
     const store = readStore();
+    const existing = store.applicants.find(
+      (a) => a.email.toLowerCase() === lead.email!.toLowerCase() && a.programCode === lead.programCode
+    );
+    if (existing) {
+      throw new Error(`Duplicate Application: An active admission application (${existing.applicationNo}) already exists for ${lead.email} under program ${lead.programCode}.`);
+    }
+
     const quota = store.quotas.find((q) => q.programCode === lead.programCode);
     const gpa = Number(lead.highSchoolGpa);
     const entrance = Number(lead.entranceExamScore);
@@ -292,5 +300,76 @@ export const admissionsStore = {
     }
     writeStore(store);
     return quota;
+  },
+
+  updateDocumentStatus(
+    applicantId: string,
+    documentType: "transcriptsVerified" | "identityProofVerified" | "recommendationLettersVerified",
+    isVerified: boolean,
+    counselorNotes?: string
+  ) {
+    const store = readStore();
+    const app = store.applicants.find((a) => a.id === applicantId || a.applicationNo === applicantId);
+    if (!app) throw new Error("Applicant record not found.");
+
+    if (!app.documentsStatus) {
+      app.documentsStatus = {
+        transcriptsVerified: false,
+        identityProofVerified: false,
+        recommendationLettersVerified: false,
+      };
+    }
+
+    app.documentsStatus[documentType] = isVerified;
+
+    // Automatically transition to DOCUMENTS_VERIFIED if all three standard documents are verified
+    const allVerified =
+      app.documentsStatus.transcriptsVerified &&
+      app.documentsStatus.identityProofVerified &&
+      app.documentsStatus.recommendationLettersVerified;
+
+    if (allVerified && app.stage === "APPLICATION_SUBMITTED") {
+      app.stage = "DOCUMENTS_VERIFIED";
+    }
+
+    writeStore(store);
+    return app;
+  },
+
+  dispatchOfferLetter(
+    applicantId: string,
+    params?: { scholarshipAmount?: number; deadlineDays?: number; issuedBy?: string }
+  ) {
+    const store = readStore();
+    const app = store.applicants.find((a) => a.id === applicantId || a.applicationNo === applicantId);
+    if (!app) throw new Error("Applicant record not found.");
+
+    const deadlineDays = params?.deadlineDays || 14;
+    const deadlineDate = new Date(Date.now() + deadlineDays * 24 * 60 * 60 * 1000).toISOString().split("T")[0];
+    const seal = `APEX-OFFER-2026-${crypto.createHash("sha256").update(`${app.id}|${app.applicationNo}|${app.programCode}|${Date.now()}`).digest("hex").slice(0, 16).toUpperCase()}`;
+
+    if (app.stage === "APPLICATION_SUBMITTED" || app.stage === "DOCUMENTS_VERIFIED" || app.stage === "MERIT_SHORTLISTED") {
+      app.stage = "OFFER_EXTENDED";
+    }
+
+    writeStore(store);
+
+    return {
+      applicant: app,
+      offerSeal: seal,
+      reportingDeadline: deadlineDate,
+      scholarshipAmount: params?.scholarshipAmount || 0,
+      seatDepositRequired: 1500,
+    };
+  },
+
+  resetStore() {
+    ensureDirectory();
+    const initial: AdmissionsStoreSchema = {
+      applicants: DEFAULT_APPLICANTS,
+      quotas: DEFAULT_QUOTAS,
+    };
+    writeStore(initial);
+    return initial;
   },
 };

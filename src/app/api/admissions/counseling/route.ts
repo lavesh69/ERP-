@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
 import { prisma } from "@/lib/db/prisma";
 import { getOptionalSession } from "@/lib/auth/admin-guard";
+import { admissionsStore } from "@/lib/admissions/admissions-store";
 import {
   calculateCompositeMeritScore,
   generateMeritRankings,
@@ -75,8 +76,32 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const applicantId = searchParams.get("applicantId");
 
-    // Pre-rank the sample cohort
-    const rankedCohort = generateMeritRankings(SAMPLE_APPLICANTS);
+    // Pre-rank the cohort including persistent admissions store applicants
+    const storeApplicants = admissionsStore.getApplicants();
+    const mappedStore: ApplicantMeritRecord[] = storeApplicants.map((a) => {
+      const progClean = a.programCode.replace("BTECH-", "").replace("BTECH_", "");
+      const boardPct = a.highSchoolGpa <= 4.0 ? (a.highSchoolGpa / 4.0) * 100 : a.highSchoolGpa;
+      const examPct = a.entranceExamScore <= 100 ? a.entranceExamScore : (a.entranceExamScore / 1600) * 100;
+      return {
+        applicantId: a.id,
+        applicationNo: a.applicationNo,
+        fullName: a.fullName,
+        category: "GENERAL",
+        isPwd: false,
+        boardExamPercent: Math.round(boardPct * 10) / 10,
+        entranceScore: Math.round(examPct * 10) / 10,
+        preferredPrograms: [progClean, "CSE", "AI_DS"],
+      };
+    });
+
+    const combinedCohort = [...SAMPLE_APPLICANTS];
+    for (const m of mappedStore) {
+      if (!combinedCohort.some((c) => c.applicationNo === m.applicationNo)) {
+        combinedCohort.push(m);
+      }
+    }
+
+    const rankedCohort = generateMeritRankings(combinedCohort);
     const allotment = executeCounselingAllocation({
       rankedApplicants: rankedCohort,
       roundNumber: 1,

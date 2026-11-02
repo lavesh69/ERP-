@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getOptionalSession } from "@/lib/auth/admin-guard";
 import { admissionsStore } from "@/lib/admissions/admissions-store";
 import { prisma } from "@/lib/db/prisma";
+import { sendEmail } from "@/lib/email/email-service";
 
 export async function GET(request: NextRequest) {
   try {
@@ -193,6 +194,83 @@ export async function POST(request: NextRequest) {
         message: `Student successfully provisioned and enrolled into SIS (Roll No: ${student.rollNumber})`,
         student,
         applicant: updatedApplicant,
+      });
+    }
+
+    if (action === "UPDATE_DOCUMENT_STATUS") {
+      if (!session) {
+        return NextResponse.json({ error: "Administrative authentication required to update document verification" }, { status: 401 });
+      }
+      const isStaffOrAdmin = ["SUPER_ADMIN", "INSTITUTION_ADMIN", "PRINCIPAL", "HOD", "ADMISSION_OFFICER", "FACULTY"].includes(session.role);
+      if (!isStaffOrAdmin) {
+        return NextResponse.json({ error: "Forbidden: Only admissions administrators can update document verification" }, { status: 403 });
+      }
+
+      const { applicantId, documentType, isVerified, notes } = body;
+      if (!applicantId || !documentType) {
+        return NextResponse.json({ error: "applicantId and documentType are required" }, { status: 400 });
+      }
+
+      const updated = admissionsStore.updateDocumentStatus(applicantId, documentType, Boolean(isVerified), notes);
+      return NextResponse.json({
+        success: true,
+        message: `Document '${documentType}' verification updated to ${isVerified ? "VERIFIED" : "PENDING"} for ${updated.fullName}`,
+        applicant: updated,
+      });
+    }
+
+    if (action === "DISPATCH_OFFER_LETTER") {
+      if (!session) {
+        return NextResponse.json({ error: "Administrative authentication required to dispatch offer letters" }, { status: 401 });
+      }
+      const isStaffOrAdmin = ["SUPER_ADMIN", "INSTITUTION_ADMIN", "PRINCIPAL", "HOD", "ADMISSION_OFFICER", "FACULTY"].includes(session.role);
+      if (!isStaffOrAdmin) {
+        return NextResponse.json({ error: "Forbidden: Only admissions administrators can dispatch offer letters" }, { status: 403 });
+      }
+
+      const { applicantId, scholarshipAmount, deadlineDays } = body;
+      if (!applicantId) {
+        return NextResponse.json({ error: "applicantId is required" }, { status: 400 });
+      }
+
+      const result = admissionsStore.dispatchOfferLetter(applicantId, { scholarshipAmount, deadlineDays });
+
+      let emailResult = null;
+      try {
+        emailResult = await sendEmail({
+          to: result.applicant.email,
+          subject: `Provisional Admission Offer Letter 2026-27 — ${result.applicant.programName}`,
+          type: "NOTIFICATION",
+          html: `
+            <div style="font-family: Arial, sans-serif; padding: 24px; color: #1e293b;">
+              <h2 style="color: #be123c;">APEX UNIVERSITY ADMISSIONS DIRECTORATE</h2>
+              <p>Dear <strong>${result.applicant.fullName}</strong>,</p>
+              <p>Congratulations! We are delighted to inform you that your application for admission to <strong>${result.applicant.programName} (${result.applicant.programCode})</strong> for the Academic Cohort 2026-27 has been provisionally approved.</p>
+              <div style="background-color: #f8fafc; border-left: 4px solid #be123c; padding: 12px; margin: 16px 0;">
+                <p style="margin: 4px 0;"><strong>Application Number:</strong> ${result.applicant.applicationNo}</p>
+                <p style="margin: 4px 0;"><strong>Merit Rank:</strong> #${result.applicant.meritRank}</p>
+                <p style="margin: 4px 0;"><strong>Composite Score:</strong> ${result.applicant.highSchoolGpa} GPA / ${result.applicant.entranceExamScore} Exam</p>
+                <p style="margin: 4px 0;"><strong>Seat Deposit Required:</strong> ₹${result.seatDepositRequired.toLocaleString("en-IN")}</p>
+                <p style="margin: 4px 0;"><strong>Reporting Deadline:</strong> ${result.reportingDeadline}</p>
+                <p style="margin: 4px 0; font-family: monospace; font-size: 11px;"><strong>Cryptographic Offer Seal:</strong> ${result.offerSeal}</p>
+              </div>
+              <p>To reserve your seat, please submit the provisional reservation deposit within the reporting window.</p>
+              <p>Sincerely,<br/><strong>Office of the Registrar & Admissions Deanery</strong><br/>Apex University</p>
+            </div>
+          `,
+        });
+      } catch (emailErr) {
+        console.warn("[Admissions Email Dispatch Warning]:", emailErr);
+      }
+
+      return NextResponse.json({
+        success: true,
+        message: `Provisional offer letter dispatched to ${result.applicant.email} (Seal: ${result.offerSeal})`,
+        applicant: result.applicant,
+        offerSeal: result.offerSeal,
+        reportingDeadline: result.reportingDeadline,
+        emailDispatched: !!emailResult?.success,
+        emailId: emailResult?.messageId,
       });
     }
 
