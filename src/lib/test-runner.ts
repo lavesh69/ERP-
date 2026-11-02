@@ -13226,6 +13226,89 @@ By breaking down large monolithic systems into decoupled microservices, systems 
   assert(cseEval.isScholarshipGranted === true, "Score >= 90% qualifies for merit scholarship waiver");
   assert(cseEval.effectiveNetTuition !== cseEval.standardTuition, "Net tuition lower than standard fee");
 
+  // --- GROUP 92: Admissions Public Portal, Application Tracking, Quotas & Seat Confirmation ---
+  console.log("\n--- GROUP 92: Admissions Public Portal, Application Tracking, Quotas & Seat Confirmation ---");
+
+  // 1. Unauthenticated Public Quotas API
+  const publicQuotasReq = new NextRequest("http://localhost:3000/api/admissions?tab=public-quotas", {
+    method: "GET",
+  });
+  const publicQuotasRes = await handleAdmissionsGet(publicQuotasReq);
+  assert(publicQuotasRes.status === 200, "GET /api/admissions?tab=public-quotas returns 200 OK without auth");
+  const publicQuotasData = await publicQuotasRes.json();
+  assert(Array.isArray(publicQuotasData.quotas) && publicQuotasData.quotas.length >= 6, "Public quotas list includes all 6 degree specializations");
+  const eceQuota = publicQuotasData.quotas.find((q: any) => q.programCode === "BTECH-ECE");
+  assert(eceQuota != null && typeof eceQuota.seatsAvailable === "number", "B.Tech ECE quota has live seatsAvailable metric");
+
+  // 2. Submit Application with Document Attachments and Quota Category
+  const uniqueCandidateEmail = `public.scholar.${Date.now()}@applicant-apex.org`;
+  const group92SubmitAppReq = new NextRequest("http://localhost:3000/api/admissions", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      action: "SUBMIT_APPLICATION",
+      fullName: "Devika Jayakrishnan",
+      email: uniqueCandidateEmail,
+      phone: "+91 94471 22334",
+      programCode: "BTECH-AI",
+      category: "OBC",
+      highSchoolGpa: 93.8,
+      entranceExamScore: 1460,
+      source: "PUBLIC_PORTAL",
+      documentsUploaded: {
+        transcripts: "devika_12th_board.pdf",
+        identityProof: "devika_aadhaar_card.pdf",
+        recommendationLetters: "lor_school_principal.pdf",
+      },
+    }),
+  });
+  const group92SubmitAppRes = await handleAdmissionsPost(group92SubmitAppReq);
+  assert(group92SubmitAppRes.status === 200, "POST /api/admissions (SUBMIT_APPLICATION) creates candidate dossier");
+  const group92SubmitAppData = await group92SubmitAppRes.json();
+  assert(group92SubmitAppData.applicant?.applicationNo.startsWith("ADM-2026"), "Applicant assigned official ADM-2026 identifier");
+  assert(group92SubmitAppData.applicant?.documentsUploaded?.transcripts === "devika_12th_board.pdf", "Uploaded document metadata persisted in dossier");
+
+  // 3. Public Application Tracking Portal
+  const trackReq = new NextRequest(`http://localhost:3000/api/admissions?tab=track&query=${group92SubmitAppData.applicant.applicationNo}`, {
+    method: "GET",
+  });
+  const trackRes = await handleAdmissionsGet(trackReq);
+  assert(trackRes.status === 200, "GET /api/admissions?tab=track resolves candidate status without admin login");
+  const trackData = await trackRes.json();
+  assert(trackData.applicant?.fullName === "Devika Jayakrishnan", "Tracking payload returns candidate identity");
+  assert(trackData.applicant?.programCode === "BTECH-AI", "Target program matches enrolled preference");
+
+  // 4. Record Scrutiny Counselor Qualitative Notes
+  const counselorNoteReq = new NextRequest("http://localhost:3000/api/admissions", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "ADD_COUNSELOR_NOTE",
+      applicantId: group92SubmitAppData.applicant.id,
+      note: "Academic credentials validated against state exam board. Top 5% AI cohort prospect.",
+    }),
+  });
+  const counselorNoteRes = await handleAdmissionsPost(counselorNoteReq);
+  assert(counselorNoteRes.status === 200, "POST /api/admissions (ADD_COUNSELOR_NOTE) returns 200 OK");
+  const counselorNoteData = await counselorNoteRes.json();
+  assert(counselorNoteData.applicant?.counselorNotes.includes("Top 5% AI cohort"), "Counselor qualitative observation persisted in store");
+
+  // 5. Seat Reservation Deposit Confirmation
+  const confirmDepositReq = new NextRequest("http://localhost:3000/api/admissions", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      action: "CONFIRM_SEAT_DEPOSIT",
+      applicantId: group92SubmitAppData.applicant.id,
+      amount: 1500,
+    }),
+  });
+  const confirmDepositRes = await handleAdmissionsPost(confirmDepositReq);
+  assert(confirmDepositRes.status === 200, "POST /api/admissions (CONFIRM_SEAT_DEPOSIT) returns 200 OK");
+  const confirmDepositData = await confirmDepositRes.json();
+  assert(confirmDepositData.applicant?.seatDepositPaid === true, "Applicant marked seatDepositPaid: true");
+  assert(confirmDepositData.applicant?.stage === "SEAT_CONFIRMED", "Applicant status transitioned to SEAT_CONFIRMED");
+
   console.log("\n=================================================");
   console.log(`🎉 ALL ${passedTests}/${totalTests} TESTS PASSED SUCCESSFULLY!`);
   console.log("=================================================\n");

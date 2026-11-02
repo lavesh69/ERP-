@@ -47,6 +47,14 @@ const DEFAULT_QUOTAS: ProgramQuota[] = [
     applicationFee: 75,
   },
   {
+    programCode: "BTECH-ECE",
+    programName: "B.Tech Electronics & Communication Engineering",
+    totalSeats: 90,
+    confirmedSeats: 72,
+    cutoffScore: 76.0,
+    applicationFee: 70,
+  },
+  {
     programCode: "BTECH-MECH",
     programName: "B.Tech Mechanical & Mechatronics",
     totalSeats: 90,
@@ -61,6 +69,14 @@ const DEFAULT_QUOTAS: ProgramQuota[] = [
     confirmedSeats: 48,
     cutoffScore: 78.0,
     applicationFee: 90,
+  },
+  {
+    programCode: "MTECH-CYBER",
+    programName: "M.Tech Cybersecurity & Information Defense",
+    totalSeats: 30,
+    confirmedSeats: 21,
+    cutoffScore: 80.0,
+    applicationFee: 85,
   },
 ];
 
@@ -136,6 +152,14 @@ const DEFAULT_APPLICANTS: ApplicantLead[] = [
   },
 ];
 
+const PROGRAM_ALIASES: Record<string, string> = {
+  BTECH_CS: "BTECH-CSE",
+  BTECH_AI_ML: "BTECH-AI",
+  BTECH_ECE: "BTECH-ECE",
+  MBA_FINTECH: "MBA-TECH",
+  MTECH_CYBER: "MTECH-CYBER",
+};
+
 function readStore(): AdmissionsStoreSchema {
   ensureDirectory();
   if (!fs.existsSync(STORE_FILE)) {
@@ -149,7 +173,18 @@ function readStore(): AdmissionsStoreSchema {
 
   try {
     const raw = fs.readFileSync(STORE_FILE, "utf-8");
-    return JSON.parse(raw);
+    const parsed: AdmissionsStoreSchema = JSON.parse(raw);
+    let changed = false;
+    for (const dq of DEFAULT_QUOTAS) {
+      if (!parsed.quotas.some((q) => q.programCode === dq.programCode)) {
+        parsed.quotas.push(dq);
+        changed = true;
+      }
+    }
+    if (changed) {
+      fs.writeFileSync(STORE_FILE, JSON.stringify(parsed, null, 2), "utf-8");
+    }
+    return parsed;
   } catch (err) {
     console.error("Error reading admissions store, using defaults", err);
     return {
@@ -196,31 +231,35 @@ export const admissionsStore = {
   },
 
   createApplicant(lead: Partial<ApplicantLead>) {
-    const validation = validateApplicantInput(lead);
+    const rawCode = lead.programCode || "";
+    const programCode = PROGRAM_ALIASES[rawCode] || rawCode;
+    const normalizedLead = { ...lead, programCode };
+
+    const validation = validateApplicantInput(normalizedLead);
     if (!validation.isValid) {
       throw new Error(`Validation Error: ${validation.errors.join("; ")}`);
     }
 
     const store = readStore();
     const existing = store.applicants.find(
-      (a) => a.email.toLowerCase() === lead.email!.toLowerCase() && a.programCode === lead.programCode
+      (a) => a.email.toLowerCase() === normalizedLead.email!.toLowerCase() && a.programCode === programCode
     );
     if (existing) {
-      throw new Error(`Duplicate Application: An active admission application (${existing.applicationNo}) already exists for ${lead.email} under program ${lead.programCode}.`);
+      throw new Error(`Duplicate Application: An active admission application (${existing.applicationNo}) already exists for ${normalizedLead.email} under program ${programCode}.`);
     }
 
-    const quota = store.quotas.find((q) => q.programCode === lead.programCode);
-    const gpa = Number(lead.highSchoolGpa);
-    const entrance = Number(lead.entranceExamScore);
+    const quota = store.quotas.find((q) => q.programCode === programCode);
+    const gpa = Number(normalizedLead.highSchoolGpa);
+    const entrance = Number(normalizedLead.entranceExamScore);
     const composite = calculateCompositeScore(gpa, entrance);
 
     const newLead: ApplicantLead = {
       id: `app-${Date.now()}`,
       applicationNo: `ADM-2026-${Math.floor(100 + Math.random() * 900)}`,
-      fullName: lead.fullName!,
-      email: lead.email!,
-      phone: lead.phone!,
-      programCode: lead.programCode!,
+      fullName: normalizedLead.fullName!,
+      email: normalizedLead.email!,
+      phone: normalizedLead.phone!,
+      programCode,
       programName: quota ? quota.programName : "Undergraduate Degree",
       highSchoolGpa: gpa,
       entranceExamScore: entrance,
@@ -231,16 +270,72 @@ export const admissionsStore = {
         identityProofVerified: false,
         recommendationLettersVerified: false,
       },
+      documentsUploaded: normalizedLead.documentsUploaded || {
+        transcripts: "highschool_transcript.pdf",
+        identityProof: "government_id_card.pdf",
+        uploadedAt: new Date().toISOString(),
+      },
+      category: normalizedLead.category || "General",
+      counselorNotes: normalizedLead.counselorNotes || "",
       seatDepositPaid: false,
       depositAmount: 0,
       assignedCounselor: "Admissions Central Desk",
-      source: lead.source || "WEBSITE",
+      source: normalizedLead.source || "WEBSITE",
       appliedDate: new Date().toISOString(),
     };
 
     store.applicants.unshift(newLead);
     writeStore(store);
     return newLead;
+  },
+
+  getApplicantByTrack(identifier: string) {
+    const store = readStore();
+    const clean = identifier.trim().toLowerCase();
+    return store.applicants.find(
+      (a) =>
+        a.applicationNo.toLowerCase() === clean ||
+        a.email.toLowerCase() === clean ||
+        a.id.toLowerCase() === clean
+    );
+  },
+
+  confirmSeatDeposit(applicantId: string, amount: number = 1500) {
+    const store = readStore();
+    const app = store.applicants.find((a) => a.id === applicantId || a.applicationNo === applicantId);
+    if (!app) throw new Error("Applicant record not found.");
+
+    if (app.seatDepositPaid && (app.stage === "SEAT_CONFIRMED" || app.stage === "ENROLLED")) {
+      return app;
+    }
+
+    const quota = store.quotas.find((q) => q.programCode === app.programCode);
+    if (quota) {
+      if (quota.confirmedSeats < quota.totalSeats) {
+        quota.confirmedSeats += 1;
+      }
+    }
+    app.seatDepositPaid = true;
+    app.depositAmount = amount;
+    app.stage = "SEAT_CONFIRMED";
+    writeStore(store);
+    return app;
+  },
+
+  addCounselorNote(applicantId: string, note: string) {
+    const store = readStore();
+    const app = store.applicants.find((a) => a.id === applicantId || a.applicationNo === applicantId);
+    if (!app) throw new Error("Applicant record not found.");
+
+    const timestamp = new Date().toISOString();
+    const formattedNote = `[${timestamp}] ${note.trim()}`;
+    if (app.counselorNotes) {
+      app.counselorNotes += `\n${formattedNote}`;
+    } else {
+      app.counselorNotes = formattedNote;
+    }
+    writeStore(store);
+    return app;
   },
 
   updateApplicantStage(applicantId: string, stage: ApplicantLead["stage"], depositPaid?: boolean) {

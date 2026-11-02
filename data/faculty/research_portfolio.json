@@ -871,6 +871,22 @@
         "id": "pub-1793628274117-859",
         "apiPointsAwarded": 28,
         "verified": true
+      },
+      {
+        "facultyId": "fac-demo-01",
+        "facultyName": "Dr. Rajesh K. Sharma",
+        "title": "Zero-Trust Resilient Microservices in Distributed Clouds",
+        "journalName": "IEEE Transactions on Services Computing",
+        "issnOrIsbn": "N/A",
+        "indexing": "IEEE_XPLORE",
+        "impactFactor": 4.8,
+        "authorshipRole": "FIRST_AUTHOR",
+        "totalAuthors": 2,
+        "doi": "10.1109/TSC.2026.991203",
+        "publicationYear": 2026,
+        "id": "pub-1793630383630-553",
+        "apiPointsAwarded": 28,
+        "verified": true
       }
     ],
     "grants": [
@@ -921,15 +937,15 @@
       }
     ],
     "ugcApiSummary": {
-      "category1PublicationsScore": 1515.5,
+      "category1PublicationsScore": 1543.5,
       "category2GrantsScore": 10,
       "category3PatentsPolicyScore": 7,
       "category4ConsultancyScore": 4,
-      "totalUgcResearchScore": 1536.5,
+      "totalUgcResearchScore": 1564.5,
       "eligibleForProfessorCas": true,
       "eligibleForAssociateProfessorCas": true
     },
-    "integrityVerificationSeal": "UGC-RESEARCH-SEAL-97E2924C8AE0DB1A335E4C6E",
-    "lastUpdated": "2026-11-02T14:04:34.117Z"
+    "integrityVerificationSeal": "UGC-RESEARCH-SEAL-DD67A9269E494E3D2E8456E8",
+    "lastUpdated": "2026-11-02T14:39:43.630Z"
   }
 }

@@ -1,5 +1,27 @@
 [
   {
+    "id": "REB-MVZD7Y1B",
+    "rebateNumber": "APEX-REB-2026-0087",
+    "studentId": "STD-2025-001",
+    "rollNumber": "2025-CS-101",
+    "studentName": "Aarav Sharma",
+    "hostelName": "Aryabhatta Hall of Residence",
+    "roomNumber": "B-204",
+    "leaveStartDate": "2026-11-01",
+    "leaveEndDate": "2026-11-05",
+    "daysAbsent": 5,
+    "leaveReason": "ACADEMIC_INTERNSHIP",
+    "leaveApplicationRef": "HOSTEL-LEAVE-7829",
+    "dailyDietRateInr": 160,
+    "calculatedRebateAmountInr": 800,
+    "approvalStatus": "BURSAR_CREDITED",
+    "createdAt": "2026-11-02T14:39:44.399Z",
+    "updatedAt": "2026-11-02T14:39:44.589Z",
+    "wardenApprovalNotes": "Internship schedule confirmed with department.",
+    "wardenSignatory": "Dr. Alok Verma (Chief Warden)",
+    "bursarCreditVoucherNo": "BUR-CR-REB-2026-9386"
+  },
+  {
     "id": "REB-MVZBYQ7I",
     "rebateNumber": "APEX-REB-2026-0086",
     "studentId": "STD-2025-001",

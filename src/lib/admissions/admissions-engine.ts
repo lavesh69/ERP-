@@ -30,10 +30,23 @@ export interface ApplicantLead {
     identityProofVerified: boolean;
     recommendationLettersVerified: boolean;
   };
+  documentsUploaded?: {
+    transcripts?: string;
+    identityProof?: string;
+    recommendationLetters?: string;
+    categoryCertificate?: string;
+    uploadedAt?: string;
+  };
+  category?: string;
+  counselorNotes?: string;
+  offerSeal?: string;
+  offerIssuedAt?: string;
+  reportingDeadline?: string;
+  scholarshipAmount?: number;
   seatDepositPaid: boolean;
   depositAmount: number;
   assignedCounselor: string;
-  source: "WEBSITE" | "EDUCATION_FAIR" | "WALK_IN" | "REFERRAL";
+  source: "WEBSITE" | "EDUCATION_FAIR" | "WALK_IN" | "REFERRAL" | "PUBLIC_PORTAL";
   appliedDate: string;
 }
 
@@ -51,8 +64,12 @@ export interface ProgramQuota {
  * Formula: 40% High School GPA (normalized to 100) + 60% Entrance Exam Score (normalized to 100)
  */
 export function calculateCompositeScore(gpaOutOfFour: number, entranceScore: number, entranceMax: number = 1600): number {
-  const gpaNorm = (Math.min(4.0, Math.max(0, gpaOutOfFour)) / 4.0) * 100;
-  const examNorm = (Math.min(entranceMax, Math.max(0, entranceScore)) / entranceMax) * 100;
+  const gpaNorm = gpaOutOfFour > 4.0
+    ? Math.min(100, Math.max(0, gpaOutOfFour))
+    : (Math.min(4.0, Math.max(0, gpaOutOfFour)) / 4.0) * 100;
+  const examNorm = entranceScore <= 100
+    ? Math.min(100, Math.max(0, entranceScore))
+    : (Math.min(entranceMax, Math.max(0, entranceScore)) / entranceMax) * 100;
   const composite = gpaNorm * 0.4 + examNorm * 0.6;
   return Math.round(composite * 10) / 10;
 }

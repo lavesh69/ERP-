@@ -1,54 +1,98 @@
 {
   "applicants": [
     {
-      "id": "app-1793628276692",
-      "applicationNo": "ADM-2026-704",
-      "fullName": "Siddharth Nambiar",
-      "email": "walkin.lead.1793628276667@apex-prospective.edu",
-      "phone": "+91-9871198711",
-      "programCode": "BTECH-CSE",
-      "programName": "B.Tech Computer Science & Engineering",
-      "highSchoolGpa": 3.78,
-      "entranceExamScore": 1350,
-      "meritRank": 64,
-      "stage": "MERIT_SHORTLISTED",
-      "documentsStatus": {
-        "transcriptsVerified": false,
-        "identityProofVerified": false,
-        "recommendationLettersVerified": false
-      },
-      "seatDepositPaid": false,
-      "depositAmount": 0,
-      "assignedCounselor": "Admissions Central Desk",
-      "source": "WALK_IN",
-      "appliedDate": "2026-11-02T14:04:36.692Z"
-    },
-    {
-      "id": "app-1793628276275",
-      "applicationNo": "ADM-2026-253",
-      "fullName": "Scholar Integration Test 1793628276274",
-      "email": "scholar.integ.1793628276274@classroom.edu",
-      "phone": "+15559876543",
-      "programCode": "prog-cs-01",
-      "programName": "Undergraduate Degree",
-      "highSchoolGpa": 94.5,
-      "entranceExamScore": 1450,
-      "meritRank": 74,
+      "id": "app-1793630387198",
+      "applicationNo": "ADM-2026-139",
+      "fullName": "Devika Jayakrishnan",
+      "email": "public.scholar.1793630387197@applicant-apex.org",
+      "phone": "+91 94471 22334",
+      "programCode": "BTECH-AI",
+      "programName": "B.Tech Artificial Intelligence & Robotics",
+      "highSchoolGpa": 93.8,
+      "entranceExamScore": 1460,
+      "meritRank": 93,
       "stage": "SEAT_CONFIRMED",
       "documentsStatus": {
         "transcriptsVerified": false,
         "identityProofVerified": false,
         "recommendationLettersVerified": false
       },
+      "documentsUploaded": {
+        "transcripts": "devika_12th_board.pdf",
+        "identityProof": "devika_aadhaar_card.pdf",
+        "recommendationLetters": "lor_school_principal.pdf"
+      },
+      "category": "OBC",
+      "counselorNotes": "[2026-11-02T14:39:47.204Z] Academic credentials validated against state exam board. Top 5% AI cohort prospect.",
+      "seatDepositPaid": true,
+      "depositAmount": 1500,
+      "assignedCounselor": "Admissions Central Desk",
+      "source": "PUBLIC_PORTAL",
+      "appliedDate": "2026-11-02T14:39:47.198Z"
+    },
+    {
+      "id": "app-1793630387184",
+      "applicationNo": "ADM-2026-600",
+      "fullName": "Siddharth Nambiar",
+      "email": "walkin.lead.1793630387165@apex-prospective.edu",
+      "phone": "+91-9871198711",
+      "programCode": "BTECH-CSE",
+      "programName": "B.Tech Computer Science & Engineering",
+      "highSchoolGpa": 3.78,
+      "entranceExamScore": 1350,
+      "meritRank": 51,
+      "stage": "MERIT_SHORTLISTED",
+      "documentsStatus": {
+        "transcriptsVerified": false,
+        "identityProofVerified": false,
+        "recommendationLettersVerified": false
+      },
+      "documentsUploaded": {
+        "transcripts": "highschool_transcript.pdf",
+        "identityProof": "government_id_card.pdf",
+        "uploadedAt": "2026-11-02T14:39:47.184Z"
+      },
+      "category": "General",
+      "counselorNotes": "",
+      "seatDepositPaid": false,
+      "depositAmount": 0,
+      "assignedCounselor": "Admissions Central Desk",
+      "source": "WALK_IN",
+      "appliedDate": "2026-11-02T14:39:47.184Z"
+    },
+    {
+      "id": "app-1793630386609",
+      "applicationNo": "ADM-2026-279",
+      "fullName": "Scholar Integration Test 1793630386609",
+      "email": "scholar.integ.1793630386609@classroom.edu",
+      "phone": "+15559876543",
+      "programCode": "prog-cs-01",
+      "programName": "Undergraduate Degree",
+      "highSchoolGpa": 94.5,
+      "entranceExamScore": 1450,
+      "meritRank": 92,
+      "stage": "SEAT_CONFIRMED",
+      "documentsStatus": {
+        "transcriptsVerified": false,
+        "identityProofVerified": false,
+        "recommendationLettersVerified": false
+      },
+      "documentsUploaded": {
+        "transcripts": "highschool_transcript.pdf",
+        "identityProof": "government_id_card.pdf",
+        "uploadedAt": "2026-11-02T14:39:46.609Z"
+      },
+      "category": "General",
+      "counselorNotes": "",
       "seatDepositPaid": true,
       "depositAmount": 1500,
       "assignedCounselor": "Admissions Central Desk",
       "source": "WEBSITE",
-      "appliedDate": "2026-11-02T14:04:36.275Z"
+      "appliedDate": "2026-11-02T14:39:46.609Z"
     },
     {
-      "id": "app-1793628271768",
-      "applicationNo": "ADM-2026-740",
+      "id": "app-1793630380155",
+      "applicationNo": "ADM-2026-133",
       "fullName": "Linus Torvalds Jr.",
       "email": "linus.jr@test-admissions.edu",
       "phone": "+1 (555) 019-2834",
@@ -56,18 +100,25 @@
       "programName": "B.Tech Computer Science & Engineering",
       "highSchoolGpa": 4,
       "entranceExamScore": 1560,
-      "meritRank": 60,
+      "meritRank": 54,
       "stage": "OFFER_EXTENDED",
       "documentsStatus": {
         "transcriptsVerified": true,
         "identityProofVerified": false,
         "recommendationLettersVerified": false
       },
+      "documentsUploaded": {
+        "transcripts": "highschool_transcript.pdf",
+        "identityProof": "government_id_card.pdf",
+        "uploadedAt": "2026-11-02T14:39:40.155Z"
+      },
+      "category": "General",
+      "counselorNotes": "",
       "seatDepositPaid": false,
       "depositAmount": 0,
       "assignedCounselor": "Admissions Central Desk",
       "source": "PORTAL_DIRECT",
-      "appliedDate": "2026-11-02T14:04:31.768Z"
+      "appliedDate": "2026-11-02T14:39:40.155Z"
     },
     {
       "id": "app-01",
@@ -152,9 +203,17 @@
       "programCode": "BTECH-AI",
       "programName": "B.Tech Artificial Intelligence & Robotics",
       "totalSeats": 60,
-      "confirmedSeats": 54,
+      "confirmedSeats": 55,
       "cutoffScore": 84.5,
       "applicationFee": 75
+    },
+    {
+      "programCode": "BTECH-ECE",
+      "programName": "B.Tech Electronics & Communication Engineering",
+      "totalSeats": 90,
+      "confirmedSeats": 72,
+      "cutoffScore": 76,
+      "applicationFee": 70
     },
     {
       "programCode": "BTECH-MECH",
@@ -171,6 +230,14 @@
       "confirmedSeats": 48,
       "cutoffScore": 78,
       "applicationFee": 90
+    },
+    {
+      "programCode": "MTECH-CYBER",
+      "programName": "M.Tech Cybersecurity & Information Defense",
+      "totalSeats": 30,
+      "confirmedSeats": 21,
+      "cutoffScore": 80,
+      "applicationFee": 85
     },
     {
       "programCode": "AI_DS",

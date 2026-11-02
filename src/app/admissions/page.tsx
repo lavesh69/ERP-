@@ -12,6 +12,7 @@ import {
   Clock,
   AlertCircle,
   FileCheck,
+  FileText,
   PlusCircle,
   Filter,
   DollarSign,
@@ -53,8 +54,11 @@ export default function AdmissionsPage() {
   const [summary, setSummary] = useState<AdmissionsSummary | null>(null);
   const [applicants, setApplicants] = useState<any[]>([]);
   const [selectedStage, setSelectedStage] = useState<string>("ALL");
+  const [selectedProgramFilter, setSelectedProgramFilter] = useState<string>("ALL");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedApplicantDossier, setSelectedApplicantDossier] = useState<any | null>(null);
+  const [counselorNoteInput, setCounselorNoteInput] = useState<string>("");
+  const [savingNote, setSavingNote] = useState(false);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [showOfferDispatchModal, setShowOfferDispatchModal] = useState(false);
   const [targetOfferApplicant, setTargetOfferApplicant] = useState<any | null>(null);
@@ -123,13 +127,44 @@ export default function AdmissionsPage() {
     document.body.removeChild(link);
   };
 
+  const handleSaveCounselorNote = async () => {
+    if (!selectedApplicantDossier || !counselorNoteInput.trim()) return;
+    try {
+      setSavingNote(true);
+      const res = await fetch("/api/admissions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "ADD_COUNSELOR_NOTE",
+          applicantId: selectedApplicantDossier.id,
+          note: counselorNoteInput.trim(),
+        }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setSelectedApplicantDossier(data.applicant);
+        setCounselorNoteInput("");
+        showToast("Counselor note appended to dossier", "success");
+        fetchData();
+      } else {
+        showToast(data.error || "Failed to save counselor note", "error");
+      }
+    } catch (err: any) {
+      showToast(err.message || "Network error saving note", "error");
+    } finally {
+      setSavingNote(false);
+    }
+  };
+
   const filteredApplicants = applicants.filter((a: any) => {
-    return (
+    const matchesProgram =
+      selectedProgramFilter === "ALL" || a.programCode === selectedProgramFilter;
+    const matchesSearch =
       a.fullName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       a.applicationNo?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       a.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      a.programName?.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+      a.programName?.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesProgram && matchesSearch;
   });
 
   // New Application Form
@@ -553,10 +588,29 @@ export default function AdmissionsPage() {
                 >
                   <option value="ALL">All Applicants</option>
                   <option value="APPLICATION_SUBMITTED">Submitted</option>
+                  <option value="DOCUMENTS_VERIFIED">Documents Scrutinized</option>
                   <option value="MERIT_SHORTLISTED">Merit Shortlisted</option>
                   <option value="OFFER_EXTENDED">Offer Extended</option>
                   <option value="SEAT_CONFIRMED">Seat Confirmed (Enrolled)</option>
                   <option value="REJECTED">Declined / Rejected</option>
+                </select>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <GraduationCap className="w-4 h-4 text-charcoal-500" />
+                <span className="text-sm font-medium text-charcoal-700 dark:text-ivory-300">Program:</span>
+                <select
+                  value={selectedProgramFilter}
+                  onChange={(e) => setSelectedProgramFilter(e.target.value)}
+                  className="text-sm bg-ivory-50 dark:bg-charcoal-800 border border-border dark:border-charcoal-700 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-rose-500"
+                >
+                  <option value="ALL">All Programs</option>
+                  <option value="BTECH-CSE">B.Tech CSE</option>
+                  <option value="BTECH-AI">B.Tech AI &amp; Robotics</option>
+                  <option value="BTECH-ECE">B.Tech ECE</option>
+                  <option value="BTECH-MECH">B.Tech Mech</option>
+                  <option value="MBA-TECH">MBA Tech</option>
+                  <option value="MTECH-CYBER">M.Tech Cyber</option>
                 </select>
               </div>
 
@@ -727,6 +781,35 @@ export default function AdmissionsPage() {
                             className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-rose-primary text-white hover:bg-rose-accent transition-colors"
                           >
                             Shortlist for Merit
+                          </button>
+                          <button
+                            onClick={() => handleUpdateStage(lead.id, "REJECTED")}
+                            className="px-2.5 py-1.5 rounded-lg text-xs font-medium text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors"
+                          >
+                            Decline
+                          </button>
+                        </>
+                      )}
+                      {lead.stage === "DOCUMENTS_VERIFIED" && (
+                        <>
+                          <button
+                            onClick={() => handleUpdateStage(lead.id, "MERIT_SHORTLISTED")}
+                            className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-rose-primary text-white hover:bg-rose-accent transition-colors"
+                          >
+                            Shortlist for Merit
+                          </button>
+                          <button
+                            onClick={() => handleUpdateStage(lead.id, "OFFER_EXTENDED")}
+                            className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600 text-white hover:bg-emerald-700 transition-colors"
+                          >
+                            Release Offer Letter
+                          </button>
+                          <button
+                            onClick={() => handleSimulateOfferDispatch(lead)}
+                            className="px-2.5 py-1.5 rounded-lg text-xs font-medium text-purple-700 bg-purple-50 hover:bg-purple-100 dark:bg-purple-950/60 dark:text-purple-300 transition-colors flex items-center gap-1"
+                          >
+                            <Mail className="w-3.5 h-3.5" />
+                            Email Offer
                           </button>
                           <button
                             onClick={() => handleUpdateStage(lead.id, "REJECTED")}
@@ -1098,10 +1181,12 @@ export default function AdmissionsPage() {
                   onChange={(e) => setAppForm({ ...appForm, programCode: e.target.value })}
                   className="w-full p-2 bg-ivory-50 dark:bg-charcoal-800 border rounded-lg"
                 >
-                  <option value="BTECH-CSE">B.Tech Computer Science & Engineering</option>
-                  <option value="BTECH-AI">B.Tech Artificial Intelligence & Robotics</option>
-                  <option value="BTECH-MECH">B.Tech Mechanical & Mechatronics</option>
+                  <option value="BTECH-CSE">B.Tech Computer Science &amp; Engineering</option>
+                  <option value="BTECH-AI">B.Tech Artificial Intelligence &amp; Robotics</option>
+                  <option value="BTECH-ECE">B.Tech Electronics &amp; Communication</option>
+                  <option value="BTECH-MECH">B.Tech Mechanical &amp; Mechatronics</option>
                   <option value="MBA-TECH">Master of Business Administration (Tech)</option>
+                  <option value="MTECH-CYBER">M.Tech Cybersecurity &amp; Defense</option>
                 </select>
               </div>
 
@@ -1266,6 +1351,72 @@ export default function AdmissionsPage() {
               </div>
             </div>
 
+            {/* Uploaded Scanned Files */}
+            {selectedApplicantDossier.documentsUploaded && (
+              <div className="space-y-1.5 text-xs">
+                <h4 className="font-bold text-charcoal-800 dark:text-ivory-200 flex items-center gap-1.5">
+                  <FileText className="w-3.5 h-3.5 text-rose-primary" /> Attached Scrutiny Files &amp; Certificates
+                </h4>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px]">
+                  {selectedApplicantDossier.documentsUploaded.transcripts && (
+                    <div className="p-2 bg-ivory-50 dark:bg-charcoal-800 rounded-lg border border-border dark:border-charcoal-700 flex items-center justify-between">
+                      <span className="truncate">Marksheet: {selectedApplicantDossier.documentsUploaded.transcripts}</span>
+                      <span className="text-[10px] text-emerald-600 font-bold">Attached</span>
+                    </div>
+                  )}
+                  {selectedApplicantDossier.documentsUploaded.identityProof && (
+                    <div className="p-2 bg-ivory-50 dark:bg-charcoal-800 rounded-lg border border-border dark:border-charcoal-700 flex items-center justify-between">
+                      <span className="truncate">Identity: {selectedApplicantDossier.documentsUploaded.identityProof}</span>
+                      <span className="text-[10px] text-emerald-600 font-bold">Attached</span>
+                    </div>
+                  )}
+                  {selectedApplicantDossier.documentsUploaded.recommendationLetters && (
+                    <div className="p-2 bg-ivory-50 dark:bg-charcoal-800 rounded-lg border border-border dark:border-charcoal-700 flex items-center justify-between">
+                      <span className="truncate">LOR: {selectedApplicantDossier.documentsUploaded.recommendationLetters}</span>
+                      <span className="text-[10px] text-purple-600 font-bold">Attached</span>
+                    </div>
+                  )}
+                  {selectedApplicantDossier.documentsUploaded.categoryCertificate && (
+                    <div className="p-2 bg-ivory-50 dark:bg-charcoal-800 rounded-lg border border-border dark:border-charcoal-700 flex items-center justify-between">
+                      <span className="truncate">Quota: {selectedApplicantDossier.documentsUploaded.categoryCertificate}</span>
+                      <span className="text-[10px] text-amber-600 font-bold">Attached</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Qualitative Counselor Notes Ledger */}
+            <div className="space-y-2 text-xs">
+              <h4 className="font-bold text-charcoal-800 dark:text-ivory-200">
+                Admissions Counselor Scrutiny Notes
+              </h4>
+              {selectedApplicantDossier.counselorNotes ? (
+                <div className="p-3 bg-ivory-50 dark:bg-charcoal-800 rounded-xl border border-border dark:border-charcoal-700 text-charcoal-700 dark:text-ivory-300 font-mono text-[11px] whitespace-pre-line max-h-32 overflow-y-auto">
+                  {selectedApplicantDossier.counselorNotes}
+                </div>
+              ) : (
+                <p className="text-[11px] text-charcoal-400 italic">No counselor notes recorded yet.</p>
+              )}
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  placeholder="Append qualitative counseling observation or waiver note..."
+                  value={counselorNoteInput}
+                  onChange={(e) => setCounselorNoteInput(e.target.value)}
+                  className="flex-1 px-3 py-1.5 text-xs bg-ivory-50 dark:bg-charcoal-800 border rounded-lg"
+                />
+                <button
+                  type="button"
+                  onClick={handleSaveCounselorNote}
+                  disabled={savingNote || !counselorNoteInput.trim()}
+                  className="px-3 py-1.5 bg-rose-primary hover:bg-rose-600 disabled:opacity-50 text-white rounded-lg font-semibold text-xs transition-colors shrink-0"
+                >
+                  {savingNote ? "Saving..." : "Add Note"}
+                </button>
+              </div>
+            </div>
+
             <div className="p-3.5 rounded-xl bg-rose-50/50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-900/50 text-xs flex justify-between items-center">
               <div>
                 <span className="font-semibold text-charcoal-800 dark:text-ivory-200 block">Seat Reservation Commitment Fee</span>
@@ -1314,6 +1465,18 @@ export default function AdmissionsPage() {
                 >
                   Confirm Seat
                 </button>
+                {selectedApplicantDossier.stage === "SEAT_CONFIRMED" && (
+                  <button
+                    onClick={async () => {
+                      await handleProvisionStudent(selectedApplicantDossier.id);
+                      setSelectedApplicantDossier((prev: any) => ({ ...prev, stage: "ENROLLED" }));
+                    }}
+                    className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-semibold transition-colors flex items-center gap-1"
+                  >
+                    <UserCheck className="w-3.5 h-3.5" />
+                    Enroll in SIS
+                  </button>
+                )}
                 <button
                   onClick={async () => {
                     await handleUpdateStage(selectedApplicantDossier.id, "REJECTED");

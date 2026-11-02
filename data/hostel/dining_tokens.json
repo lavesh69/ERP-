@@ -1,5 +1,19 @@
 [
   {
+    "id": "TOK-MVZD7Y7E",
+    "tokenNumber": "TKN-DIN-2026-182",
+    "date": "2026-11-25",
+    "mealType": "DINNER",
+    "studentId": "STD-MESS-1793630384617",
+    "studentRollNumber": "2025-CS-999",
+    "studentName": "Aarav Sharma",
+    "hostelName": "Aryabhatta Hall of Residence",
+    "status": "CONSUMED",
+    "qrDigest": "APEX-MESS-AUTH-FCE1DB9E1480",
+    "scannedAt": "2026-11-02T14:39:44.638Z",
+    "scannedByMessManager": "Mess Supervisor Ramesh Chandra"
+  },
+  {
     "id": "TOK-MVZBYQAE",
     "tokenNumber": "TKN-DIN-2026-890",
     "date": "2026-11-25",

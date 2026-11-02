@@ -6,14 +6,67 @@ import { sendEmail } from "@/lib/email/email-service";
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await getOptionalSession(request);
-    if (!session) {
-      return NextResponse.json({ error: "Authentication required to access admissions portal" }, { status: 401 });
-    }
-
     const { searchParams } = new URL(request.url);
     const tab = searchParams.get("tab") || "summary";
     const stage = searchParams.get("stage") || undefined;
+    const query = searchParams.get("query") || searchParams.get("applicationNo") || searchParams.get("email") || "";
+
+    // Public / Candidate Facing Endpoints
+    if (tab === "public-quotas" || tab === "quotas") {
+      const summary = admissionsStore.getSummary();
+      return NextResponse.json({
+        success: true,
+        quotas: summary.quotas.map((q) => ({
+          ...q,
+          seatsAvailable: Math.max(0, q.totalSeats - q.confirmedSeats),
+          isFull: q.confirmedSeats >= q.totalSeats,
+        })),
+        totalSeatCapacity: summary.totalSeatCapacity,
+      });
+    }
+
+    if (tab === "track") {
+      if (!query.trim()) {
+        return NextResponse.json({ error: "Please provide an application number or email to track" }, { status: 400 });
+      }
+      const applicant = admissionsStore.getApplicantByTrack(query.trim());
+      if (!applicant) {
+        return NextResponse.json({
+          error: `No admission record found for '${query.trim()}'. Please verify your application number or registered email.`,
+        }, { status: 404 });
+      }
+
+      return NextResponse.json({
+        success: true,
+        applicant: {
+          id: applicant.id,
+          applicationNo: applicant.applicationNo,
+          fullName: applicant.fullName,
+          email: applicant.email,
+          phone: applicant.phone,
+          programCode: applicant.programCode,
+          programName: applicant.programName,
+          stage: applicant.stage,
+          meritRank: applicant.meritRank,
+          highSchoolGpa: applicant.highSchoolGpa,
+          entranceExamScore: applicant.entranceExamScore,
+          documentsStatus: applicant.documentsStatus,
+          documentsUploaded: applicant.documentsUploaded,
+          seatDepositPaid: applicant.seatDepositPaid,
+          depositAmount: applicant.depositAmount,
+          offerSeal: applicant.offerSeal,
+          reportingDeadline: applicant.reportingDeadline,
+          scholarshipAmount: applicant.scholarshipAmount,
+          appliedDate: applicant.appliedDate,
+        },
+      });
+    }
+
+    // Administrative Authenticated Endpoints
+    const session = await getOptionalSession(request);
+    if (!session) {
+      return NextResponse.json({ error: "Authentication required to access administrative admissions portal" }, { status: 401 });
+    }
 
     if (tab === "applicants") {
       const applicants = admissionsStore.getApplicants(stage);
@@ -36,7 +89,7 @@ export async function POST(request: NextRequest) {
     const { action } = body;
 
     if (action === "SUBMIT_APPLICATION") {
-      const { fullName, email, phone, programCode, highSchoolGpa, entranceExamScore, source } = body;
+      const { fullName, email, phone, programCode, highSchoolGpa, entranceExamScore, source, category, documentsUploaded } = body;
       if (!fullName || !email || !programCode) {
         return NextResponse.json({ error: "Full name, email, and target program are required" }, { status: 400 });
       }
@@ -56,6 +109,8 @@ export async function POST(request: NextRequest) {
         highSchoolGpa: Number(highSchoolGpa),
         entranceExamScore: Number(entranceExamScore),
         source: source || "WEBSITE",
+        category: category || "General",
+        documentsUploaded: documentsUploaded || undefined,
       });
 
       return NextResponse.json({
@@ -271,6 +326,38 @@ export async function POST(request: NextRequest) {
         reportingDeadline: result.reportingDeadline,
         emailDispatched: !!emailResult?.success,
         emailId: emailResult?.messageId,
+      });
+    }
+
+    if (action === "CONFIRM_SEAT_DEPOSIT") {
+      const { applicantId, amount } = body;
+      if (!applicantId) {
+        return NextResponse.json({ error: "applicantId is required to confirm seat deposit" }, { status: 400 });
+      }
+
+      const depositAmount = Number(amount) || 1500;
+      const applicant = admissionsStore.confirmSeatDeposit(applicantId, depositAmount);
+      return NextResponse.json({
+        success: true,
+        message: `Seat deposit of ₹${depositAmount.toLocaleString("en-IN")} confirmed for ${applicant.fullName}. Provisional seat locked!`,
+        applicant,
+      });
+    }
+
+    if (action === "ADD_COUNSELOR_NOTE") {
+      if (!session) {
+        return NextResponse.json({ error: "Administrative authentication required to record counselor notes" }, { status: 401 });
+      }
+      const { applicantId, note } = body;
+      if (!applicantId || !note || !note.trim()) {
+        return NextResponse.json({ error: "applicantId and note are required" }, { status: 400 });
+      }
+
+      const applicant = admissionsStore.addCounselorNote(applicantId, note);
+      return NextResponse.json({
+        success: true,
+        message: "Counselor note recorded and appended to applicant dossier",
+        applicant,
       });
     }
 
