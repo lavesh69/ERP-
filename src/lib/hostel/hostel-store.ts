@@ -17,6 +17,14 @@ import {
   validateGatePassRequest,
   processGatePassAction,
   calculateMessRebate,
+  RoomTransferRequest,
+  HostelMaintenanceTicket,
+  HostelVisitorRecord,
+  HostelWaitlistEntry,
+  validateTransferRequest,
+  validateMaintenanceTicket,
+  validateVisitorRecord,
+  MaintenanceStatus,
 } from "./hostel-engine";
 
 const DATA_DIR = path.join(process.cwd(), "data", "hostel");
@@ -58,6 +66,10 @@ interface HostelStoreSchema {
   nightRollCalls?: any[];
   punchedMeals?: PunchedMeal[];
   wasteLogs?: WasteLog[];
+  transferRequests?: RoomTransferRequest[];
+  maintenanceTickets?: HostelMaintenanceTicket[];
+  visitors?: HostelVisitorRecord[];
+  waitlist?: HostelWaitlistEntry[];
 }
 
 const DEFAULT_BLOCKS: HostelBlock[] = [
@@ -379,6 +391,150 @@ export const DEFAULT_WASTE_LOGS: WasteLog[] = [
   { id: "w-3", session: "Lunch (Today)", preparedKg: 360, consumedKg: 334, wastedKg: 26, residents: 395, divertedToBiogas: true },
 ];
 
+export const DEFAULT_TRANSFERS: RoomTransferRequest[] = [
+  {
+    id: "tr-001",
+    requestNumber: "TR-2026-081",
+    studentId: "stu-alex-01",
+    studentName: "Alex Mercer",
+    studentRoll: "CS2026-001",
+    currentRoomId: "rm-a-101",
+    currentRoomNumber: "A-101",
+    currentBedNumber: "A",
+    currentBlockName: "Nelson Mandela Hall (Block A)",
+    targetRoomId: "rm-c-301",
+    targetRoomNumber: "C-301",
+    targetBedNumber: "A",
+    targetBlockName: "C.V. Raman Postgrad Scholars Hall (Block C)",
+    reason: "Promoted to AI Research Fellowship; requiring quiet postgrad research floor.",
+    status: "PENDING_WARDEN",
+    requestedAt: "2026-10-18T14:20:00.000Z",
+  },
+];
+
+export const DEFAULT_MAINTENANCE_TICKETS: HostelMaintenanceTicket[] = [
+  {
+    id: "maint-101",
+    ticketNumber: "HST-MNT-101",
+    blockId: "blk-a",
+    blockName: "Nelson Mandela Hall (Block A)",
+    roomNumber: "A-102",
+    bedNumber: "A",
+    category: "PLUMBING",
+    priority: "HIGH",
+    status: "OPEN",
+    description: "Attached washroom washbasin tap continuously leaking with severe water pressure drop.",
+    reportedBy: "David Miller",
+    reportedRoll: "ME2026-015",
+    reportedAt: "2026-10-28T09:15:00.000Z",
+  },
+  {
+    id: "maint-102",
+    ticketNumber: "HST-MNT-102",
+    blockId: "blk-b",
+    blockName: "Marie Curie Hall (Block B)",
+    roomNumber: "B-201",
+    bedNumber: "A",
+    category: "ELECTRICAL",
+    priority: "MEDIUM",
+    status: "IN_PROGRESS",
+    description: "Ceiling fan speed regulator sparking on setting 4. Fan oscillates erratically.",
+    reportedBy: "Priya Sharma",
+    reportedRoll: "CS2026-018",
+    assignedTechnician: "Campus Electrician Ramesh K.",
+    reportedAt: "2026-10-27T11:40:00.000Z",
+  },
+  {
+    id: "maint-103",
+    ticketNumber: "HST-MNT-103",
+    blockId: "blk-a",
+    blockName: "Nelson Mandela Hall (Block A)",
+    roomNumber: "A-101",
+    bedNumber: "B",
+    category: "INTERNET_WIFI",
+    priority: "LOW",
+    status: "RESOLVED",
+    description: "Ethernet wall jack RJ45 clip loose; packet drop during distributed computing lab sync.",
+    reportedBy: "Ryan Gosling",
+    reportedRoll: "CS2026-002",
+    assignedTechnician: "Network Admin Deepak S.",
+    reportedAt: "2026-10-25T16:00:00.000Z",
+    resolvedAt: "2026-10-26T10:30:00.000Z",
+    resolutionNotes: "Wall plate replaced, Cat6 keystone re-terminated and validated at 1Gbps duplex.",
+  },
+];
+
+export const DEFAULT_VISITORS: HostelVisitorRecord[] = [
+  {
+    id: "vis-001",
+    badgeNumber: "VTR-HST-881",
+    studentRoll: "CS2026-001",
+    studentName: "Alex Mercer",
+    roomNumber: "A-101",
+    blockName: "Nelson Mandela Hall (Block A)",
+    visitorName: "Robert Mercer",
+    relation: "PARENT",
+    phone: "+1 (555) 441-9988",
+    idProofNumber: "DL-MA-9921827",
+    checkInTime: "2026-11-02T11:30:00.000Z",
+    status: "CHECKED_IN",
+    gateSecurityOfficer: "Officer B. K. Singh (Gate #01)",
+    purpose: "Parental visit for semester commencement kit delivery & winter blankets.",
+  },
+  {
+    id: "vis-002",
+    badgeNumber: "VTR-HST-882",
+    studentRoll: "CS2026-018",
+    studentName: "Priya Sharma",
+    roomNumber: "B-201",
+    blockName: "Marie Curie Hall (Block B)",
+    visitorName: "Anjali Sharma",
+    relation: "PARENT",
+    phone: "+1 (555) 321-4411",
+    idProofNumber: "AADHAAR-4491-0029",
+    checkInTime: "2026-11-01T14:00:00.000Z",
+    checkOutTime: "2026-11-01T18:15:00.000Z",
+    status: "CHECKED_OUT",
+    gateSecurityOfficer: "Officer P. L. Rawat (Gate #02)",
+    purpose: "Family festival sweets and medical supplements handover.",
+  },
+];
+
+export const DEFAULT_WAITLIST: HostelWaitlistEntry[] = [
+  {
+    id: "wl-001",
+    waitlistToken: "WL-BLK-A-01",
+    studentId: "stu-wait-01",
+    studentName: "Rohan Saxena",
+    studentRoll: "CS2026-088",
+    gender: "MALE",
+    branch: "B.Tech Computer Science",
+    preferredBlockId: "blk-a",
+    preferredBlockName: "Nelson Mandela Hall (Block A)",
+    preferredRoomType: "DOUBLE_AC",
+    distanceFromHomeKm: 1450,
+    priorityScore: 92,
+    status: "WAITLISTED",
+    appliedAt: "2026-10-12T09:00:00.000Z",
+  },
+  {
+    id: "wl-002",
+    waitlistToken: "WL-BLK-B-01",
+    studentId: "stu-wait-02",
+    studentName: "Meera Nair",
+    studentRoll: "EC2026-034",
+    gender: "FEMALE",
+    branch: "B.Tech Electronics & Comm",
+    preferredBlockId: "blk-b",
+    preferredBlockName: "Marie Curie Hall (Block B)",
+    preferredRoomType: "SINGLE_AC",
+    distanceFromHomeKm: 980,
+    priorityScore: 84,
+    status: "WAITLISTED",
+    appliedAt: "2026-10-14T11:20:00.000Z",
+  },
+];
+
 function readStore(): HostelStoreSchema {
   ensureDirectory();
   if (!fs.existsSync(STORE_FILE)) {
@@ -390,6 +546,10 @@ function readStore(): HostelStoreSchema {
       subscriptions: DEFAULT_SUBSCRIPTIONS,
       punchedMeals: DEFAULT_PUNCHED_MEALS,
       wasteLogs: DEFAULT_WASTE_LOGS,
+      transferRequests: DEFAULT_TRANSFERS,
+      maintenanceTickets: DEFAULT_MAINTENANCE_TICKETS,
+      visitors: DEFAULT_VISITORS,
+      waitlist: DEFAULT_WAITLIST,
     };
     fs.writeFileSync(STORE_FILE, JSON.stringify(initial, null, 2), "utf-8");
     return initial;
@@ -407,6 +567,22 @@ function readStore(): HostelStoreSchema {
       parsed.wasteLogs = DEFAULT_WASTE_LOGS;
       changed = true;
     }
+    if (!parsed.transferRequests || !Array.isArray(parsed.transferRequests)) {
+      parsed.transferRequests = DEFAULT_TRANSFERS;
+      changed = true;
+    }
+    if (!parsed.maintenanceTickets || !Array.isArray(parsed.maintenanceTickets)) {
+      parsed.maintenanceTickets = DEFAULT_MAINTENANCE_TICKETS;
+      changed = true;
+    }
+    if (!parsed.visitors || !Array.isArray(parsed.visitors)) {
+      parsed.visitors = DEFAULT_VISITORS;
+      changed = true;
+    }
+    if (!parsed.waitlist || !Array.isArray(parsed.waitlist)) {
+      parsed.waitlist = DEFAULT_WAITLIST;
+      changed = true;
+    }
     if (changed) {
       writeStore(parsed);
     }
@@ -421,6 +597,10 @@ function readStore(): HostelStoreSchema {
       subscriptions: DEFAULT_SUBSCRIPTIONS,
       punchedMeals: DEFAULT_PUNCHED_MEALS,
       wasteLogs: DEFAULT_WASTE_LOGS,
+      transferRequests: DEFAULT_TRANSFERS,
+      maintenanceTickets: DEFAULT_MAINTENANCE_TICKETS,
+      visitors: DEFAULT_VISITORS,
+      waitlist: DEFAULT_WAITLIST,
     };
   }
 }
@@ -439,8 +619,12 @@ export const hostelStore = {
       messPlans: JSON.parse(JSON.stringify(DEFAULT_MESS_PLANS)),
       subscriptions: JSON.parse(JSON.stringify(DEFAULT_SUBSCRIPTIONS)),
       nightRollCalls: [],
-      punchedMeals: [],
-      wasteLogs: [],
+      punchedMeals: JSON.parse(JSON.stringify(DEFAULT_PUNCHED_MEALS)),
+      wasteLogs: JSON.parse(JSON.stringify(DEFAULT_WASTE_LOGS)),
+      transferRequests: JSON.parse(JSON.stringify(DEFAULT_TRANSFERS)),
+      maintenanceTickets: JSON.parse(JSON.stringify(DEFAULT_MAINTENANCE_TICKETS)),
+      visitors: JSON.parse(JSON.stringify(DEFAULT_VISITORS)),
+      waitlist: JSON.parse(JSON.stringify(DEFAULT_WAITLIST)),
     });
   },
 
@@ -863,5 +1047,291 @@ export const hostelStore = {
     store.wasteLogs.unshift(newEntry);
     writeStore(store);
     return newEntry;
+  },
+
+  // -------------------------------------------------------------
+  // Room Transfer & Bed Swap Methods
+  // -------------------------------------------------------------
+  getTransferRequests(studentRoll?: string): RoomTransferRequest[] {
+    const store = readStore();
+    const list = store.transferRequests || DEFAULT_TRANSFERS;
+    if (studentRoll) {
+      return list.filter((t) => t.studentRoll === studentRoll);
+    }
+    return list;
+  },
+
+  requestRoomTransfer(payload: Partial<RoomTransferRequest>): RoomTransferRequest {
+    const validation = validateTransferRequest(payload);
+    if (!validation.isValid) {
+      throw new Error(`Room Transfer Error: ${validation.errors.join("; ")}`);
+    }
+
+    const store = readStore();
+    if (!store.transferRequests) store.transferRequests = [...DEFAULT_TRANSFERS];
+
+    const currentRoom = store.rooms.find((r) => r.id === payload.currentRoomId);
+    const targetRoom = store.rooms.find((r) => r.id === payload.targetRoomId);
+    if (!currentRoom) throw new Error("Current room could not be found.");
+    if (!targetRoom) throw new Error("Target room could not be found.");
+
+    const targetBed = targetRoom.beds.find((b) => b.bedNumber === payload.targetBedNumber);
+    if (!targetBed) throw new Error(`Target Bed ${payload.targetBedNumber} does not exist in room ${targetRoom.roomNumber}.`);
+    if (targetBed.isOccupied) throw new Error(`Target Bed ${payload.targetBedNumber} in room ${targetRoom.roomNumber} is already occupied.`);
+
+    const newTransfer: RoomTransferRequest = {
+      id: `tr-${Date.now()}`,
+      requestNumber: `TR-2026-${Math.floor(100 + Math.random() * 900)}`,
+      studentId: payload.studentId || "stu-resident",
+      studentName: payload.studentName || "Student Resident",
+      studentRoll: payload.studentRoll!,
+      currentRoomId: payload.currentRoomId!,
+      currentRoomNumber: currentRoom.roomNumber,
+      currentBedNumber: payload.currentBedNumber!,
+      currentBlockName: currentRoom.blockName,
+      targetRoomId: payload.targetRoomId!,
+      targetRoomNumber: targetRoom.roomNumber,
+      targetBedNumber: payload.targetBedNumber!,
+      targetBlockName: targetRoom.blockName,
+      reason: payload.reason!,
+      status: "PENDING_WARDEN",
+      requestedAt: new Date().toISOString(),
+    };
+
+    store.transferRequests.unshift(newTransfer);
+    writeStore(store);
+    return newTransfer;
+  },
+
+  processRoomTransfer(
+    transferId: string,
+    action: "APPROVE" | "REJECT",
+    actor: string,
+    remarks?: string
+  ): RoomTransferRequest {
+    const store = readStore();
+    if (!store.transferRequests) store.transferRequests = [...DEFAULT_TRANSFERS];
+
+    const transfer = store.transferRequests.find((t) => t.id === transferId);
+    if (!transfer) throw new Error("Room transfer request could not be found.");
+    if (transfer.status !== "PENDING_WARDEN") {
+      throw new Error(`Transfer request has already been ${transfer.status.toLowerCase()}.`);
+    }
+
+    if (action === "REJECT") {
+      transfer.status = "REJECTED";
+      transfer.processedAt = new Date().toISOString();
+      transfer.processedBy = actor;
+      if (remarks) transfer.remarks = remarks;
+      writeStore(store);
+      return transfer;
+    }
+
+    // Action === APPROVE: Perform atomic room bed relocation
+    const targetRoom = store.rooms.find((r) => r.id === transfer.targetRoomId);
+    if (!targetRoom) throw new Error("Target room does not exist.");
+    const targetBed = targetRoom.beds.find((b) => b.bedNumber === transfer.targetBedNumber);
+    if (!targetBed) throw new Error("Target bed does not exist.");
+    if (targetBed.isOccupied) {
+      throw new Error(`Cannot approve transfer: Target bed ${transfer.targetBedNumber} in room ${targetRoom.roomNumber} is now occupied.`);
+    }
+
+    // 1. Vacate current bed
+    this.vacateBed({
+      roomId: transfer.currentRoomId,
+      bedNumber: transfer.currentBedNumber,
+      studentRoll: transfer.studentRoll,
+    });
+
+    // 2. Allocate target bed
+    this.allocateBed({
+      roomId: transfer.targetRoomId,
+      bedNumber: transfer.targetBedNumber,
+      studentId: transfer.studentId,
+      studentName: transfer.studentName,
+      studentRoll: transfer.studentRoll,
+      branch: "Institutional Academic Program",
+    });
+
+    // 3. Mark transfer approved
+    const refreshedStore = readStore();
+    const updatedTransfer = refreshedStore.transferRequests?.find((t) => t.id === transferId) || transfer;
+    updatedTransfer.status = "APPROVED";
+    updatedTransfer.processedAt = new Date().toISOString();
+    updatedTransfer.processedBy = actor;
+    if (remarks) updatedTransfer.remarks = remarks;
+
+    writeStore(refreshedStore);
+    return updatedTransfer;
+  },
+
+  // -------------------------------------------------------------
+  // Hostel Maintenance & Repair Tickets Methods
+  // -------------------------------------------------------------
+  getMaintenanceTickets(blockId?: string, roomNumber?: string): HostelMaintenanceTicket[] {
+    const store = readStore();
+    let tickets = store.maintenanceTickets || DEFAULT_MAINTENANCE_TICKETS;
+    if (blockId && blockId !== "all") {
+      tickets = tickets.filter((t) => t.blockId === blockId);
+    }
+    if (roomNumber) {
+      tickets = tickets.filter((t) => t.roomNumber === roomNumber);
+    }
+    return tickets;
+  },
+
+  createMaintenanceTicket(payload: Partial<HostelMaintenanceTicket>): HostelMaintenanceTicket {
+    const validation = validateMaintenanceTicket(payload);
+    if (!validation.isValid) {
+      throw new Error(`Maintenance Error: ${validation.errors.join("; ")}`);
+    }
+
+    const store = readStore();
+    if (!store.maintenanceTickets) store.maintenanceTickets = [...DEFAULT_MAINTENANCE_TICKETS];
+
+    const block = store.blocks.find((b) => b.id === payload.blockId) || store.blocks[0];
+
+    const newTicket: HostelMaintenanceTicket = {
+      id: `maint-${Date.now()}`,
+      ticketNumber: `HST-MNT-${Math.floor(100 + Math.random() * 900)}`,
+      blockId: payload.blockId || block.id,
+      blockName: payload.blockName || block.name,
+      roomNumber: payload.roomNumber!,
+      bedNumber: payload.bedNumber,
+      category: payload.category!,
+      priority: payload.priority || "MEDIUM",
+      status: "OPEN",
+      description: payload.description!,
+      reportedBy: payload.reportedBy || "Resident Scholar",
+      reportedRoll: payload.reportedRoll,
+      reportedAt: new Date().toISOString(),
+    };
+
+    store.maintenanceTickets.unshift(newTicket);
+    writeStore(store);
+    return newTicket;
+  },
+
+  updateMaintenanceTicket(
+    ticketId: string,
+    status: MaintenanceStatus,
+    actor?: string,
+    resolutionNotes?: string
+  ): HostelMaintenanceTicket {
+    const store = readStore();
+    if (!store.maintenanceTickets) store.maintenanceTickets = [...DEFAULT_MAINTENANCE_TICKETS];
+
+    const ticket = store.maintenanceTickets.find((t) => t.id === ticketId);
+    if (!ticket) throw new Error("Maintenance ticket could not be found.");
+
+    ticket.status = status;
+    if (actor && !ticket.assignedTechnician) {
+      ticket.assignedTechnician = actor;
+    }
+    if (status === "RESOLVED") {
+      ticket.resolvedAt = new Date().toISOString();
+      if (resolutionNotes) ticket.resolutionNotes = resolutionNotes;
+    }
+
+    writeStore(store);
+    return ticket;
+  },
+
+  // -------------------------------------------------------------
+  // Hostel Visitor & Guest Register Methods
+  // -------------------------------------------------------------
+  getVisitors(studentRoll?: string): HostelVisitorRecord[] {
+    const store = readStore();
+    let visitors = store.visitors || DEFAULT_VISITORS;
+    if (studentRoll) {
+      visitors = visitors.filter((v) => v.studentRoll === studentRoll);
+    }
+    return visitors;
+  },
+
+  registerVisitor(payload: Partial<HostelVisitorRecord>): HostelVisitorRecord {
+    const validation = validateVisitorRecord(payload);
+    if (!validation.isValid) {
+      throw new Error(`Visitor Registration Error: ${validation.errors.join("; ")}`);
+    }
+
+    const store = readStore();
+    if (!store.visitors) store.visitors = [...DEFAULT_VISITORS];
+
+    const newVisitor: HostelVisitorRecord = {
+      id: `vis-${Date.now()}`,
+      badgeNumber: `VTR-HST-${Math.floor(800 + Math.random() * 199)}`,
+      studentRoll: payload.studentRoll!,
+      studentName: payload.studentName || "Host Resident",
+      roomNumber: payload.roomNumber || "Residence Room",
+      blockName: payload.blockName || "Residence Hall",
+      visitorName: payload.visitorName!,
+      relation: payload.relation || "PARENT",
+      phone: payload.phone!,
+      idProofNumber: payload.idProofNumber!,
+      checkInTime: new Date().toISOString(),
+      status: "CHECKED_IN",
+      gateSecurityOfficer: payload.gateSecurityOfficer || "Gate Security Officer",
+      purpose: payload.purpose!,
+    };
+
+    store.visitors.unshift(newVisitor);
+    writeStore(store);
+    return newVisitor;
+  },
+
+  checkoutVisitor(visitorId: string): HostelVisitorRecord {
+    const store = readStore();
+    if (!store.visitors) store.visitors = [...DEFAULT_VISITORS];
+
+    const visitor = store.visitors.find((v) => v.id === visitorId);
+    if (!visitor) throw new Error("Visitor record could not be found.");
+    if (visitor.status === "CHECKED_OUT") {
+      throw new Error("Visitor has already been checked out.");
+    }
+
+    visitor.status = "CHECKED_OUT";
+    visitor.checkOutTime = new Date().toISOString();
+
+    writeStore(store);
+    return visitor;
+  },
+
+  // -------------------------------------------------------------
+  // Hostel Waitlist Methods
+  // -------------------------------------------------------------
+  getWaitlist(): HostelWaitlistEntry[] {
+    const store = readStore();
+    return store.waitlist || DEFAULT_WAITLIST;
+  },
+
+  joinWaitlist(payload: Partial<HostelWaitlistEntry>): HostelWaitlistEntry {
+    const store = readStore();
+    if (!store.waitlist) store.waitlist = [...DEFAULT_WAITLIST];
+
+    const block = store.blocks.find((b) => b.id === payload.preferredBlockId) || store.blocks[0];
+    const dist = Number(payload.distanceFromHomeKm) || 100;
+    const priority = Math.min(100, Math.round(50 + dist / 30));
+
+    const newWaitlist: HostelWaitlistEntry = {
+      id: `wl-${Date.now()}`,
+      waitlistToken: `WL-${block.code}-${Math.floor(10 + Math.random() * 90)}`,
+      studentId: payload.studentId || "stu-wait",
+      studentName: payload.studentName || "Applicant Scholar",
+      studentRoll: payload.studentRoll || "STU-2026",
+      gender: payload.gender || "COED",
+      branch: payload.branch || "General Program",
+      preferredBlockId: block.id,
+      preferredBlockName: block.name,
+      preferredRoomType: payload.preferredRoomType || "DOUBLE_AC",
+      distanceFromHomeKm: dist,
+      priorityScore: priority,
+      status: "WAITLISTED",
+      appliedAt: new Date().toISOString(),
+    };
+
+    store.waitlist.push(newWaitlist);
+    writeStore(store);
+    return newWaitlist;
   },
 };

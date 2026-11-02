@@ -94,10 +94,10 @@
     ],
     "immunizationComplianceStatus": "COMPLIANT",
     "fitnessCategory": "MEDICAL_HOLD",
-    "medicalClearanceSeal": "APEX-MED-FIT-SEAL-BBFE6437C43D4375",
+    "medicalClearanceSeal": "APEX-MED-FIT-SEAL-FBC4E926EE5AC2F8",
     "certifiedBy": "Dr. Arvind Swaminathan, MD",
-    "certifiedAt": "2026-11-02T08:30:47.036Z",
-    "validUntil": "2027-11-02T08:30:47.036Z",
+    "certifiedAt": "2026-11-02T08:57:14.536Z",
+    "validUntil": "2027-11-02T08:57:14.536Z",
     "physicianNotes": "Severe anaphylaxis precaution; pending dormitory epinephrine kit verification."
   },
   {
@@ -135,7 +135,7 @@
       },
       {
         "vaccineName": "Meningococcal (MenACWY)",
-        "dosesReceived": 24,
+        "dosesReceived": 31,
         "dosesRequired": 1,
         "lastDoseDate": "2026-03-15",
         "compliant": true
@@ -145,9 +145,9 @@
     "fitnessCategory": "FIT_FOR_ALL",
     "physicianNotes": "Hostel residency clearance granted following completion of residential immunization booster.",
     "certifiedBy": "Dr. Arvind Swaminathan, MD",
-    "certifiedAt": "2026-11-02T08:30:45.894Z",
-    "validUntil": "2027-11-02T08:30:45.894Z",
-    "medicalClearanceSeal": "APEX-MED-FIT-SEAL-6444B10D92FF7ACC"
+    "certifiedAt": "2026-11-02T08:57:13.304Z",
+    "validUntil": "2027-11-02T08:57:13.304Z",
+    "medicalClearanceSeal": "APEX-MED-FIT-SEAL-3A9AF04B62B3505B"
   },
   {
     "studentId": "STU-2026-004",

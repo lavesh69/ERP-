@@ -1,6 +1,90 @@
 {
   "corrections": [
     {
+      "id": "CORR-2026-491",
+      "requesterUserId": "usr-stu-01",
+      "requesterRole": "STUDENT",
+      "fieldName": "FULL_NAME",
+      "currentValue": "Alex Mercer",
+      "proposedValue": "Alexander Mercer",
+      "reason": "Legal alignment with Indian Passport and Aadhaar card",
+      "status": "PENDING_VERIFICATION",
+      "createdAt": "2026-11-02T08:57:14.277Z",
+      "updatedAt": "2026-11-02T08:57:14.277Z"
+    },
+    {
+      "id": "CORR-2026-433",
+      "requesterUserId": "usr-stu-01",
+      "requesterRole": "STUDENT",
+      "fieldName": "FULL_NAME",
+      "currentValue": "Alex Mercer",
+      "proposedValue": "Alexander Mercer",
+      "reason": "Legal alignment with Indian Passport and Aadhaar card",
+      "status": "PENDING_VERIFICATION",
+      "createdAt": "2026-11-02T08:56:39.475Z",
+      "updatedAt": "2026-11-02T08:56:39.475Z"
+    },
+    {
+      "id": "CORR-2026-458",
+      "requesterUserId": "usr-stu-01",
+      "requesterRole": "STUDENT",
+      "fieldName": "FULL_NAME",
+      "currentValue": "Alex Mercer",
+      "proposedValue": "Alexander Mercer",
+      "reason": "Legal alignment with Indian Passport and Aadhaar card",
+      "status": "PENDING_VERIFICATION",
+      "createdAt": "2026-11-02T08:55:37.907Z",
+      "updatedAt": "2026-11-02T08:55:37.907Z"
+    },
+    {
+      "id": "CORR-2026-748",
+      "requesterUserId": "usr-stu-01",
+      "requesterRole": "STUDENT",
+      "fieldName": "FULL_NAME",
+      "currentValue": "Alex Mercer",
+      "proposedValue": "Alexander Mercer",
+      "reason": "Legal alignment with Indian Passport and Aadhaar card",
+      "status": "PENDING_VERIFICATION",
+      "createdAt": "2026-11-02T08:55:05.835Z",
+      "updatedAt": "2026-11-02T08:55:05.835Z"
+    },
+    {
+      "id": "CORR-2026-392",
+      "requesterUserId": "usr-stu-01",
+      "requesterRole": "STUDENT",
+      "fieldName": "FULL_NAME",
+      "currentValue": "Alex Mercer",
+      "proposedValue": "Alexander Mercer",
+      "reason": "Legal alignment with Indian Passport and Aadhaar card",
+      "status": "PENDING_VERIFICATION",
+      "createdAt": "2026-11-02T08:54:11.009Z",
+      "updatedAt": "2026-11-02T08:54:11.009Z"
+    },
+    {
+      "id": "CORR-2026-303",
+      "requesterUserId": "usr-stu-01",
+      "requesterRole": "STUDENT",
+      "fieldName": "FULL_NAME",
+      "currentValue": "Alex Mercer",
+      "proposedValue": "Alexander Mercer",
+      "reason": "Legal alignment with Indian Passport and Aadhaar card",
+      "status": "PENDING_VERIFICATION",
+      "createdAt": "2026-11-02T08:52:58.639Z",
+      "updatedAt": "2026-11-02T08:52:58.639Z"
+    },
+    {
+      "id": "CORR-2026-208",
+      "requesterUserId": "usr-stu-01",
+      "requesterRole": "STUDENT",
+      "fieldName": "FULL_NAME",
+      "currentValue": "Alex Mercer",
+      "proposedValue": "Alexander Mercer",
+      "reason": "Legal alignment with Indian Passport and Aadhaar card",
+      "status": "PENDING_VERIFICATION",
+      "createdAt": "2026-11-02T08:50:58.664Z",
+      "updatedAt": "2026-11-02T08:50:58.664Z"
+    },
+    {
       "id": "CORR-2026-773",
       "requesterUserId": "usr-stu-01",
       "requesterRole": "STUDENT",
@@ -76,12 +160,12 @@
   ],
   "consents": [
     {
-      "id": "CNS-mvz01gme",
+      "id": "CNS-mvz0zhgr",
       "userId": "usr-stu-01",
       "userRole": "STUDENT",
       "purpose": "BIOMETRIC_ATTENDANCE",
       "granted": true,
-      "grantedAt": "2026-11-02T08:30:46.886Z",
+      "grantedAt": "2026-11-02T08:57:14.283Z",
       "ipAddress": "127.0.0.1"
     }
   ]

@@ -201,3 +201,163 @@ export function calculateMessRebate(monthlyFee: number, sanctionedLeaveDays: num
   const rawRebate = sanctionedLeaveDays * perDayRate * 0.7;
   return Math.round(rawRebate);
 }
+
+// -------------------------------------------------------------
+// Room Transfer & Bed Swap Types & Helpers
+// -------------------------------------------------------------
+
+export interface RoomTransferRequest {
+  id: string;
+  requestNumber: string;
+  studentId: string;
+  studentName: string;
+  studentRoll: string;
+  currentRoomId: string;
+  currentRoomNumber: string;
+  currentBedNumber: string;
+  currentBlockName: string;
+  targetRoomId: string;
+  targetRoomNumber: string;
+  targetBedNumber: string;
+  targetBlockName: string;
+  reason: string;
+  status: "PENDING_WARDEN" | "APPROVED" | "REJECTED";
+  requestedAt: string;
+  processedAt?: string;
+  processedBy?: string;
+  remarks?: string;
+}
+
+export function validateTransferRequest(req: Partial<RoomTransferRequest>): { isValid: boolean; errors: string[] } {
+  const errors: string[] = [];
+  if (!req.studentRoll || req.studentRoll.trim().length === 0) {
+    errors.push("Student roll number is required.");
+  }
+  if (!req.currentRoomId || !req.currentBedNumber) {
+    errors.push("Current room and bed identifiers are required.");
+  }
+  if (!req.targetRoomId || !req.targetBedNumber) {
+    errors.push("Target room and bed identifiers are required.");
+  }
+  if (req.currentRoomId === req.targetRoomId && req.currentBedNumber === req.targetBedNumber) {
+    errors.push("Target room and bed must differ from current allocation.");
+  }
+  if (!req.reason || req.reason.trim().length < 5) {
+    errors.push("A substantive justification for room transfer is required (min 5 characters).");
+  }
+  return { isValid: errors.length === 0, errors };
+}
+
+// -------------------------------------------------------------
+// Hostel Maintenance & Repair Tickets Types & Helpers
+// -------------------------------------------------------------
+
+export type MaintenanceCategory =
+  | "PLUMBING"
+  | "ELECTRICAL"
+  | "CARPENTRY"
+  | "AIR_CONDITIONING"
+  | "INTERNET_WIFI"
+  | "HOUSEKEEPING";
+
+export type MaintenancePriority = "LOW" | "MEDIUM" | "HIGH" | "URGENT";
+export type MaintenanceStatus = "OPEN" | "ASSIGNED" | "IN_PROGRESS" | "RESOLVED";
+
+export interface HostelMaintenanceTicket {
+  id: string;
+  ticketNumber: string;
+  blockId: string;
+  blockName: string;
+  roomNumber: string;
+  bedNumber?: string;
+  category: MaintenanceCategory;
+  priority: MaintenancePriority;
+  status: MaintenanceStatus;
+  description: string;
+  reportedBy: string;
+  reportedRoll?: string;
+  assignedTechnician?: string;
+  reportedAt: string;
+  resolvedAt?: string;
+  resolutionNotes?: string;
+}
+
+export function validateMaintenanceTicket(t: Partial<HostelMaintenanceTicket>): { isValid: boolean; errors: string[] } {
+  const errors: string[] = [];
+  if (!t.roomNumber || t.roomNumber.trim().length === 0) {
+    errors.push("Room number is required.");
+  }
+  if (!t.blockName || t.blockName.trim().length === 0) {
+    errors.push("Block name is required.");
+  }
+  if (!t.category) {
+    errors.push("Maintenance category is required.");
+  }
+  if (!t.description || t.description.trim().length < 5) {
+    errors.push("Detailed description of defect/repair is required (min 5 characters).");
+  }
+  return { isValid: errors.length === 0, errors };
+}
+
+// -------------------------------------------------------------
+// Hostel Visitor & Guest Register Types & Helpers
+// -------------------------------------------------------------
+
+export interface HostelVisitorRecord {
+  id: string;
+  badgeNumber: string;
+  studentRoll: string;
+  studentName: string;
+  roomNumber: string;
+  blockName: string;
+  visitorName: string;
+  relation: "PARENT" | "GUARDIAN" | "SIBLING" | "GUEST" | "OFFICIAL";
+  phone: string;
+  idProofNumber: string;
+  checkInTime: string;
+  checkOutTime?: string;
+  status: "CHECKED_IN" | "CHECKED_OUT";
+  gateSecurityOfficer: string;
+  purpose: string;
+}
+
+export function validateVisitorRecord(v: Partial<HostelVisitorRecord>): { isValid: boolean; errors: string[] } {
+  const errors: string[] = [];
+  if (!v.studentRoll || v.studentRoll.trim().length === 0) {
+    errors.push("Host resident student roll number is required.");
+  }
+  if (!v.visitorName || v.visitorName.trim().length === 0) {
+    errors.push("Visitor name is required.");
+  }
+  if (!v.phone || v.phone.trim().length < 8) {
+    errors.push("Valid visitor telephone contact is required.");
+  }
+  if (!v.idProofNumber || v.idProofNumber.trim().length === 0) {
+    errors.push("Government identity proof number (Aadhaar/DL/Passport) is mandatory.");
+  }
+  if (!v.purpose || v.purpose.trim().length < 4) {
+    errors.push("Purpose of visit must be stated.");
+  }
+  return { isValid: errors.length === 0, errors };
+}
+
+// -------------------------------------------------------------
+// Hostel Waitlist Types & Helpers
+// -------------------------------------------------------------
+
+export interface HostelWaitlistEntry {
+  id: string;
+  waitlistToken: string;
+  studentId: string;
+  studentName: string;
+  studentRoll: string;
+  gender: GenderAllowed;
+  branch: string;
+  preferredBlockId: string;
+  preferredBlockName: string;
+  preferredRoomType: RoomType;
+  distanceFromHomeKm: number;
+  priorityScore: number;
+  status: "WAITLISTED" | "ALLOTTED" | "CANCELLED";
+  appliedAt: string;
+}

@@ -1,5 +1,1111 @@
 [
   {
+    "id": "WF-REQ-2026-9260",
+    "workflowType": "EXAM_RESULT_PUBLICATION",
+    "institutionId": "inst-apex-01",
+    "requesterId": "usr-admin-01",
+    "requesterName": "provost.evans@classroom.edu",
+    "requesterRole": "SUPER_ADMIN",
+    "entityId": "entity-1793609833968",
+    "title": "End-Semester Examination Result Gazetting V-A",
+    "description": "Official result sheets finalized by Moderation Board awaiting Controller endorsement.",
+    "metadata": {},
+    "currentLevel": 1,
+    "requiredLevels": 2,
+    "authorizedRolesPerLevel": {
+      "1": [
+        "HOD",
+        "EXAMINATION_CONTROLLER"
+      ],
+      "2": [
+        "PRINCIPAL",
+        "SUPER_ADMIN"
+      ]
+    },
+    "status": "CANCELLED",
+    "auditTrail": [
+      {
+        "level": 1,
+        "approverUserId": "usr-admin-01",
+        "approverRole": "SUPER_ADMIN",
+        "approverName": "Institutional SLA Auto-Escalation Sentinel",
+        "action": "ESCALATED",
+        "remarks": "SLA Escalation Triggered: Automated SLA timer expired without Level 1 Dean sign-off. Escalated to Office of the Principal.",
+        "timestamp": "2026-11-02T08:57:14.046Z",
+        "signatureHash": "90f83ecaae29855cd10777fa"
+      },
+      {
+        "level": 1,
+        "approverUserId": "usr-admin-01",
+        "approverRole": "SUPER_ADMIN",
+        "approverName": "provost.evans@classroom.edu",
+        "action": "CANCELLED",
+        "remarks": "Requester cancelled submission: Course moderation board requested re-evaluation of Question 4",
+        "timestamp": "2026-11-02T08:57:14.144Z",
+        "signatureHash": "b15890daf58ab102d285a10b"
+      }
+    ],
+    "createdAt": "2026-11-02T08:57:13.968Z",
+    "updatedAt": "2026-11-02T08:57:14.144Z",
+    "deadlineHours": 24,
+    "slaDeadline": "2026-11-03T08:57:13.968Z",
+    "slaStatus": "ON_TRACK",
+    "idempotencyKey": "idemp-wf-1793609833968",
+    "isEscalated": true,
+    "escalatedToRole": "PRINCIPAL",
+    "escalatedAt": "2026-11-02T08:57:14.046Z"
+  },
+  {
+    "id": "WF-REQ-2026-8720",
+    "workflowType": "GRADE_CORRECTION",
+    "institutionId": "inst-apex-01",
+    "requesterId": "usr-admin-01",
+    "requesterName": "provost.evans@classroom.edu",
+    "requesterRole": "SUPER_ADMIN",
+    "entityId": "exam-cs402-grade-corr",
+    "title": "Mid-Term Question 4 Revaluation Discrepancy",
+    "description": "Answer script question 4 re-totaling adds 3 marks following evaluator re-check.",
+    "metadata": {
+      "originalMarks": 72,
+      "revisedMarks": 75,
+      "courseCode": "CS-402"
+    },
+    "currentLevel": 2,
+    "requiredLevels": 2,
+    "authorizedRolesPerLevel": {
+      "1": [
+        "HOD",
+        "EXAMINATION_CONTROLLER"
+      ],
+      "2": [
+        "PRINCIPAL",
+        "SUPER_ADMIN"
+      ]
+    },
+    "status": "PENDING",
+    "auditTrail": [
+      {
+        "level": 1,
+        "approverUserId": "usr-admin-01",
+        "approverRole": "SUPER_ADMIN",
+        "approverName": "provost.evans@classroom.edu",
+        "action": "APPROVED",
+        "remarks": "CoE reviewed original answer key; verified revised total.",
+        "timestamp": "2026-11-02T08:57:12.520Z",
+        "signatureHash": "e36d7c8892a9e181905f7d06"
+      }
+    ],
+    "createdAt": "2026-11-02T08:57:12.425Z",
+    "updatedAt": "2026-11-02T08:57:12.520Z",
+    "deadlineHours": 24,
+    "slaDeadline": "2026-11-03T08:57:12.425Z",
+    "slaStatus": "ON_TRACK"
+  },
+  {
+    "id": "WF-REQ-2026-8759",
+    "workflowType": "PURCHASE_REQUISITION",
+    "institutionId": "inst-apex-01",
+    "requesterId": "fac-chen-01",
+    "requesterName": "Dr. Wei Chen",
+    "requesterRole": "HOD",
+    "entityId": "po-quantum-lab-01",
+    "title": "Liquid Helium Cryostat Purchase for Quantum Computing Lab",
+    "description": "Requisitioning 50L Cryostat dewars for Qubit coherence experiments.",
+    "metadata": {
+      "estimatedCost": 15000,
+      "vendor": "CryoTech Systems Ltd"
+    },
+    "currentLevel": 2,
+    "requiredLevels": 2,
+    "authorizedRolesPerLevel": {
+      "1": [
+        "HOD",
+        "ACCOUNTANT"
+      ],
+      "2": [
+        "PRINCIPAL",
+        "SUPER_ADMIN"
+      ]
+    },
+    "status": "APPROVED",
+    "auditTrail": [
+      {
+        "level": 1,
+        "approverUserId": "usr-acct-01",
+        "approverRole": "ACCOUNTANT",
+        "approverName": "Chief Financial Accountant",
+        "action": "APPROVED",
+        "remarks": "Budget line item cleared under Sponsored Research Equipment Grant.",
+        "timestamp": "2026-11-02T08:57:12.255Z",
+        "signatureHash": "23ea7c7ffa907f92eaa66615"
+      },
+      {
+        "level": 2,
+        "approverUserId": "usr-prin-01",
+        "approverRole": "PRINCIPAL",
+        "approverName": "Dr. Arthur Pendelton",
+        "action": "APPROVED",
+        "remarks": "Sanctioned and approved under Institute Research Capex 2026.",
+        "timestamp": "2026-11-02T08:57:12.340Z",
+        "signatureHash": "8e65a6082dc5e20e12f3cc28"
+      }
+    ],
+    "createdAt": "2026-11-02T08:57:12.153Z",
+    "updatedAt": "2026-11-02T08:57:12.340Z",
+    "deadlineHours": 72,
+    "slaDeadline": "2026-11-05T08:57:12.153Z",
+    "slaStatus": "ON_TRACK",
+    "completionSeal": "APPROVED-SEAL-4ED9BCB07B81AF8C31B8D761FD5190CD"
+  },
+  {
+    "id": "WF-REQ-2026-1640",
+    "workflowType": "EXAM_RESULT_PUBLICATION",
+    "institutionId": "inst-apex-01",
+    "requesterId": "usr-admin-01",
+    "requesterName": "provost.evans@classroom.edu",
+    "requesterRole": "SUPER_ADMIN",
+    "entityId": "entity-1793609799171",
+    "title": "End-Semester Examination Result Gazetting V-A",
+    "description": "Official result sheets finalized by Moderation Board awaiting Controller endorsement.",
+    "metadata": {},
+    "currentLevel": 1,
+    "requiredLevels": 2,
+    "authorizedRolesPerLevel": {
+      "1": [
+        "HOD",
+        "EXAMINATION_CONTROLLER"
+      ],
+      "2": [
+        "PRINCIPAL",
+        "SUPER_ADMIN"
+      ]
+    },
+    "status": "CANCELLED",
+    "auditTrail": [
+      {
+        "level": 1,
+        "approverUserId": "usr-admin-01",
+        "approverRole": "SUPER_ADMIN",
+        "approverName": "Institutional SLA Auto-Escalation Sentinel",
+        "action": "ESCALATED",
+        "remarks": "SLA Escalation Triggered: Automated SLA timer expired without Level 1 Dean sign-off. Escalated to Office of the Principal.",
+        "timestamp": "2026-11-02T08:56:39.274Z",
+        "signatureHash": "aaabd81f021e2c2455d11a72"
+      },
+      {
+        "level": 1,
+        "approverUserId": "usr-admin-01",
+        "approverRole": "SUPER_ADMIN",
+        "approverName": "provost.evans@classroom.edu",
+        "action": "CANCELLED",
+        "remarks": "Requester cancelled submission: Course moderation board requested re-evaluation of Question 4",
+        "timestamp": "2026-11-02T08:56:39.360Z",
+        "signatureHash": "c53a252ba67cba33d5ea0150"
+      }
+    ],
+    "createdAt": "2026-11-02T08:56:39.171Z",
+    "updatedAt": "2026-11-02T08:56:39.360Z",
+    "deadlineHours": 24,
+    "slaDeadline": "2026-11-03T08:56:39.171Z",
+    "slaStatus": "ON_TRACK",
+    "idempotencyKey": "idemp-wf-1793609799170",
+    "isEscalated": true,
+    "escalatedToRole": "PRINCIPAL",
+    "escalatedAt": "2026-11-02T08:56:39.274Z"
+  },
+  {
+    "id": "WF-REQ-2026-7272",
+    "workflowType": "GRADE_CORRECTION",
+    "institutionId": "inst-apex-01",
+    "requesterId": "usr-admin-01",
+    "requesterName": "provost.evans@classroom.edu",
+    "requesterRole": "SUPER_ADMIN",
+    "entityId": "exam-cs402-grade-corr",
+    "title": "Mid-Term Question 4 Revaluation Discrepancy",
+    "description": "Answer script question 4 re-totaling adds 3 marks following evaluator re-check.",
+    "metadata": {
+      "originalMarks": 72,
+      "revisedMarks": 75,
+      "courseCode": "CS-402"
+    },
+    "currentLevel": 2,
+    "requiredLevels": 2,
+    "authorizedRolesPerLevel": {
+      "1": [
+        "HOD",
+        "EXAMINATION_CONTROLLER"
+      ],
+      "2": [
+        "PRINCIPAL",
+        "SUPER_ADMIN"
+      ]
+    },
+    "status": "PENDING",
+    "auditTrail": [
+      {
+        "level": 1,
+        "approverUserId": "usr-admin-01",
+        "approverRole": "SUPER_ADMIN",
+        "approverName": "provost.evans@classroom.edu",
+        "action": "APPROVED",
+        "remarks": "CoE reviewed original answer key; verified revised total.",
+        "timestamp": "2026-11-02T08:56:37.814Z",
+        "signatureHash": "6b56bca2be7dd02af941ce01"
+      }
+    ],
+    "createdAt": "2026-11-02T08:56:37.723Z",
+    "updatedAt": "2026-11-02T08:56:37.814Z",
+    "deadlineHours": 24,
+    "slaDeadline": "2026-11-03T08:56:37.723Z",
+    "slaStatus": "ON_TRACK"
+  },
+  {
+    "id": "WF-REQ-2026-6680",
+    "workflowType": "PURCHASE_REQUISITION",
+    "institutionId": "inst-apex-01",
+    "requesterId": "fac-chen-01",
+    "requesterName": "Dr. Wei Chen",
+    "requesterRole": "HOD",
+    "entityId": "po-quantum-lab-01",
+    "title": "Liquid Helium Cryostat Purchase for Quantum Computing Lab",
+    "description": "Requisitioning 50L Cryostat dewars for Qubit coherence experiments.",
+    "metadata": {
+      "estimatedCost": 15000,
+      "vendor": "CryoTech Systems Ltd"
+    },
+    "currentLevel": 2,
+    "requiredLevels": 2,
+    "authorizedRolesPerLevel": {
+      "1": [
+        "HOD",
+        "ACCOUNTANT"
+      ],
+      "2": [
+        "PRINCIPAL",
+        "SUPER_ADMIN"
+      ]
+    },
+    "status": "APPROVED",
+    "auditTrail": [
+      {
+        "level": 1,
+        "approverUserId": "usr-acct-01",
+        "approverRole": "ACCOUNTANT",
+        "approverName": "Chief Financial Accountant",
+        "action": "APPROVED",
+        "remarks": "Budget line item cleared under Sponsored Research Equipment Grant.",
+        "timestamp": "2026-11-02T08:56:37.537Z",
+        "signatureHash": "6d96bd7c983c3d5c8e2a6bf7"
+      },
+      {
+        "level": 2,
+        "approverUserId": "usr-prin-01",
+        "approverRole": "PRINCIPAL",
+        "approverName": "Dr. Arthur Pendelton",
+        "action": "APPROVED",
+        "remarks": "Sanctioned and approved under Institute Research Capex 2026.",
+        "timestamp": "2026-11-02T08:56:37.622Z",
+        "signatureHash": "9bdc696f80932b191a7d464f"
+      }
+    ],
+    "createdAt": "2026-11-02T08:56:37.446Z",
+    "updatedAt": "2026-11-02T08:56:37.622Z",
+    "deadlineHours": 72,
+    "slaDeadline": "2026-11-05T08:56:37.446Z",
+    "slaStatus": "ON_TRACK",
+    "completionSeal": "APPROVED-SEAL-1DB48E7118AA549DE791C7F6C85F3DC5"
+  },
+  {
+    "id": "WF-REQ-2026-2974",
+    "workflowType": "EXAM_RESULT_PUBLICATION",
+    "institutionId": "inst-apex-01",
+    "requesterId": "usr-admin-01",
+    "requesterName": "provost.evans@classroom.edu",
+    "requesterRole": "SUPER_ADMIN",
+    "entityId": "entity-1793609737527",
+    "title": "End-Semester Examination Result Gazetting V-A",
+    "description": "Official result sheets finalized by Moderation Board awaiting Controller endorsement.",
+    "metadata": {},
+    "currentLevel": 1,
+    "requiredLevels": 2,
+    "authorizedRolesPerLevel": {
+      "1": [
+        "HOD",
+        "EXAMINATION_CONTROLLER"
+      ],
+      "2": [
+        "PRINCIPAL",
+        "SUPER_ADMIN"
+      ]
+    },
+    "status": "CANCELLED",
+    "auditTrail": [
+      {
+        "level": 1,
+        "approverUserId": "usr-admin-01",
+        "approverRole": "SUPER_ADMIN",
+        "approverName": "Institutional SLA Auto-Escalation Sentinel",
+        "action": "ESCALATED",
+        "remarks": "SLA Escalation Triggered: Automated SLA timer expired without Level 1 Dean sign-off. Escalated to Office of the Principal.",
+        "timestamp": "2026-11-02T08:55:37.653Z",
+        "signatureHash": "e14da83a32447896641822e9"
+      },
+      {
+        "level": 1,
+        "approverUserId": "usr-admin-01",
+        "approverRole": "SUPER_ADMIN",
+        "approverName": "provost.evans@classroom.edu",
+        "action": "CANCELLED",
+        "remarks": "Requester cancelled submission: Course moderation board requested re-evaluation of Question 4",
+        "timestamp": "2026-11-02T08:55:37.753Z",
+        "signatureHash": "ed13813b1146683a5c6cb514"
+      }
+    ],
+    "createdAt": "2026-11-02T08:55:37.527Z",
+    "updatedAt": "2026-11-02T08:55:37.753Z",
+    "deadlineHours": 24,
+    "slaDeadline": "2026-11-03T08:55:37.527Z",
+    "slaStatus": "ON_TRACK",
+    "idempotencyKey": "idemp-wf-1793609737527",
+    "isEscalated": true,
+    "escalatedToRole": "PRINCIPAL",
+    "escalatedAt": "2026-11-02T08:55:37.653Z"
+  },
+  {
+    "id": "WF-REQ-2026-9176",
+    "workflowType": "GRADE_CORRECTION",
+    "institutionId": "inst-apex-01",
+    "requesterId": "usr-admin-01",
+    "requesterName": "provost.evans@classroom.edu",
+    "requesterRole": "SUPER_ADMIN",
+    "entityId": "exam-cs402-grade-corr",
+    "title": "Mid-Term Question 4 Revaluation Discrepancy",
+    "description": "Answer script question 4 re-totaling adds 3 marks following evaluator re-check.",
+    "metadata": {
+      "originalMarks": 72,
+      "revisedMarks": 75,
+      "courseCode": "CS-402"
+    },
+    "currentLevel": 2,
+    "requiredLevels": 2,
+    "authorizedRolesPerLevel": {
+      "1": [
+        "HOD",
+        "EXAMINATION_CONTROLLER"
+      ],
+      "2": [
+        "PRINCIPAL",
+        "SUPER_ADMIN"
+      ]
+    },
+    "status": "PENDING",
+    "auditTrail": [
+      {
+        "level": 1,
+        "approverUserId": "usr-admin-01",
+        "approverRole": "SUPER_ADMIN",
+        "approverName": "provost.evans@classroom.edu",
+        "action": "APPROVED",
+        "remarks": "CoE reviewed original answer key; verified revised total.",
+        "timestamp": "2026-11-02T08:55:36.019Z",
+        "signatureHash": "5771ed5d7aafdb1596c3c6f3"
+      }
+    ],
+    "createdAt": "2026-11-02T08:55:35.937Z",
+    "updatedAt": "2026-11-02T08:55:36.019Z",
+    "deadlineHours": 24,
+    "slaDeadline": "2026-11-03T08:55:35.937Z",
+    "slaStatus": "ON_TRACK"
+  },
+  {
+    "id": "WF-REQ-2026-9398",
+    "workflowType": "PURCHASE_REQUISITION",
+    "institutionId": "inst-apex-01",
+    "requesterId": "fac-chen-01",
+    "requesterName": "Dr. Wei Chen",
+    "requesterRole": "HOD",
+    "entityId": "po-quantum-lab-01",
+    "title": "Liquid Helium Cryostat Purchase for Quantum Computing Lab",
+    "description": "Requisitioning 50L Cryostat dewars for Qubit coherence experiments.",
+    "metadata": {
+      "estimatedCost": 15000,
+      "vendor": "CryoTech Systems Ltd"
+    },
+    "currentLevel": 2,
+    "requiredLevels": 2,
+    "authorizedRolesPerLevel": {
+      "1": [
+        "HOD",
+        "ACCOUNTANT"
+      ],
+      "2": [
+        "PRINCIPAL",
+        "SUPER_ADMIN"
+      ]
+    },
+    "status": "APPROVED",
+    "auditTrail": [
+      {
+        "level": 1,
+        "approverUserId": "usr-acct-01",
+        "approverRole": "ACCOUNTANT",
+        "approverName": "Chief Financial Accountant",
+        "action": "APPROVED",
+        "remarks": "Budget line item cleared under Sponsored Research Equipment Grant.",
+        "timestamp": "2026-11-02T08:55:35.783Z",
+        "signatureHash": "640da9d52b520d60e69a3763"
+      },
+      {
+        "level": 2,
+        "approverUserId": "usr-prin-01",
+        "approverRole": "PRINCIPAL",
+        "approverName": "Dr. Arthur Pendelton",
+        "action": "APPROVED",
+        "remarks": "Sanctioned and approved under Institute Research Capex 2026.",
+        "timestamp": "2026-11-02T08:55:35.860Z",
+        "signatureHash": "69c766667ceb17d5c0045f06"
+      }
+    ],
+    "createdAt": "2026-11-02T08:55:35.704Z",
+    "updatedAt": "2026-11-02T08:55:35.860Z",
+    "deadlineHours": 72,
+    "slaDeadline": "2026-11-05T08:55:35.704Z",
+    "slaStatus": "ON_TRACK",
+    "completionSeal": "APPROVED-SEAL-44EA1F6AEB5F7FAE9CFB0B9B46E609C2"
+  },
+  {
+    "id": "WF-REQ-2026-1745",
+    "workflowType": "EXAM_RESULT_PUBLICATION",
+    "institutionId": "inst-apex-01",
+    "requesterId": "usr-admin-01",
+    "requesterName": "provost.evans@classroom.edu",
+    "requesterRole": "SUPER_ADMIN",
+    "entityId": "entity-1793609705538",
+    "title": "End-Semester Examination Result Gazetting V-A",
+    "description": "Official result sheets finalized by Moderation Board awaiting Controller endorsement.",
+    "metadata": {},
+    "currentLevel": 1,
+    "requiredLevels": 2,
+    "authorizedRolesPerLevel": {
+      "1": [
+        "HOD",
+        "EXAMINATION_CONTROLLER"
+      ],
+      "2": [
+        "PRINCIPAL",
+        "SUPER_ADMIN"
+      ]
+    },
+    "status": "CANCELLED",
+    "auditTrail": [
+      {
+        "level": 1,
+        "approverUserId": "usr-admin-01",
+        "approverRole": "SUPER_ADMIN",
+        "approverName": "Institutional SLA Auto-Escalation Sentinel",
+        "action": "ESCALATED",
+        "remarks": "SLA Escalation Triggered: Automated SLA timer expired without Level 1 Dean sign-off. Escalated to Office of the Principal.",
+        "timestamp": "2026-11-02T08:55:05.617Z",
+        "signatureHash": "83e51870843300f3817d802d"
+      },
+      {
+        "level": 1,
+        "approverUserId": "usr-admin-01",
+        "approverRole": "SUPER_ADMIN",
+        "approverName": "provost.evans@classroom.edu",
+        "action": "CANCELLED",
+        "remarks": "Requester cancelled submission: Course moderation board requested re-evaluation of Question 4",
+        "timestamp": "2026-11-02T08:55:05.706Z",
+        "signatureHash": "965af12640640ff2cff36d53"
+      }
+    ],
+    "createdAt": "2026-11-02T08:55:05.538Z",
+    "updatedAt": "2026-11-02T08:55:05.706Z",
+    "deadlineHours": 24,
+    "slaDeadline": "2026-11-03T08:55:05.538Z",
+    "slaStatus": "ON_TRACK",
+    "idempotencyKey": "idemp-wf-1793609705538",
+    "isEscalated": true,
+    "escalatedToRole": "PRINCIPAL",
+    "escalatedAt": "2026-11-02T08:55:05.617Z"
+  },
+  {
+    "id": "WF-REQ-2026-7735",
+    "workflowType": "GRADE_CORRECTION",
+    "institutionId": "inst-apex-01",
+    "requesterId": "usr-admin-01",
+    "requesterName": "provost.evans@classroom.edu",
+    "requesterRole": "SUPER_ADMIN",
+    "entityId": "exam-cs402-grade-corr",
+    "title": "Mid-Term Question 4 Revaluation Discrepancy",
+    "description": "Answer script question 4 re-totaling adds 3 marks following evaluator re-check.",
+    "metadata": {
+      "originalMarks": 72,
+      "revisedMarks": 75,
+      "courseCode": "CS-402"
+    },
+    "currentLevel": 2,
+    "requiredLevels": 2,
+    "authorizedRolesPerLevel": {
+      "1": [
+        "HOD",
+        "EXAMINATION_CONTROLLER"
+      ],
+      "2": [
+        "PRINCIPAL",
+        "SUPER_ADMIN"
+      ]
+    },
+    "status": "PENDING",
+    "auditTrail": [
+      {
+        "level": 1,
+        "approverUserId": "usr-admin-01",
+        "approverRole": "SUPER_ADMIN",
+        "approverName": "provost.evans@classroom.edu",
+        "action": "APPROVED",
+        "remarks": "CoE reviewed original answer key; verified revised total.",
+        "timestamp": "2026-11-02T08:55:04.015Z",
+        "signatureHash": "41036d6161b75a4b8c5a61f5"
+      }
+    ],
+    "createdAt": "2026-11-02T08:55:03.942Z",
+    "updatedAt": "2026-11-02T08:55:04.015Z",
+    "deadlineHours": 24,
+    "slaDeadline": "2026-11-03T08:55:03.942Z",
+    "slaStatus": "ON_TRACK"
+  },
+  {
+    "id": "WF-REQ-2026-8575",
+    "workflowType": "PURCHASE_REQUISITION",
+    "institutionId": "inst-apex-01",
+    "requesterId": "fac-chen-01",
+    "requesterName": "Dr. Wei Chen",
+    "requesterRole": "HOD",
+    "entityId": "po-quantum-lab-01",
+    "title": "Liquid Helium Cryostat Purchase for Quantum Computing Lab",
+    "description": "Requisitioning 50L Cryostat dewars for Qubit coherence experiments.",
+    "metadata": {
+      "estimatedCost": 15000,
+      "vendor": "CryoTech Systems Ltd"
+    },
+    "currentLevel": 2,
+    "requiredLevels": 2,
+    "authorizedRolesPerLevel": {
+      "1": [
+        "HOD",
+        "ACCOUNTANT"
+      ],
+      "2": [
+        "PRINCIPAL",
+        "SUPER_ADMIN"
+      ]
+    },
+    "status": "APPROVED",
+    "auditTrail": [
+      {
+        "level": 1,
+        "approverUserId": "usr-acct-01",
+        "approverRole": "ACCOUNTANT",
+        "approverName": "Chief Financial Accountant",
+        "action": "APPROVED",
+        "remarks": "Budget line item cleared under Sponsored Research Equipment Grant.",
+        "timestamp": "2026-11-02T08:55:03.783Z",
+        "signatureHash": "b235eaaad24fbe15cddaa156"
+      },
+      {
+        "level": 2,
+        "approverUserId": "usr-prin-01",
+        "approverRole": "PRINCIPAL",
+        "approverName": "Dr. Arthur Pendelton",
+        "action": "APPROVED",
+        "remarks": "Sanctioned and approved under Institute Research Capex 2026.",
+        "timestamp": "2026-11-02T08:55:03.867Z",
+        "signatureHash": "03f6433cfde0b970e7e71ac2"
+      }
+    ],
+    "createdAt": "2026-11-02T08:55:03.702Z",
+    "updatedAt": "2026-11-02T08:55:03.867Z",
+    "deadlineHours": 72,
+    "slaDeadline": "2026-11-05T08:55:03.702Z",
+    "slaStatus": "ON_TRACK",
+    "completionSeal": "APPROVED-SEAL-F8ACF9D1F2E236298827D40574F7E9C3"
+  },
+  {
+    "id": "WF-REQ-2026-7244",
+    "workflowType": "EXAM_RESULT_PUBLICATION",
+    "institutionId": "inst-apex-01",
+    "requesterId": "usr-admin-01",
+    "requesterName": "provost.evans@classroom.edu",
+    "requesterRole": "SUPER_ADMIN",
+    "entityId": "entity-1793609650694",
+    "title": "End-Semester Examination Result Gazetting V-A",
+    "description": "Official result sheets finalized by Moderation Board awaiting Controller endorsement.",
+    "metadata": {},
+    "currentLevel": 1,
+    "requiredLevels": 2,
+    "authorizedRolesPerLevel": {
+      "1": [
+        "HOD",
+        "EXAMINATION_CONTROLLER"
+      ],
+      "2": [
+        "PRINCIPAL",
+        "SUPER_ADMIN"
+      ]
+    },
+    "status": "CANCELLED",
+    "auditTrail": [
+      {
+        "level": 1,
+        "approverUserId": "usr-admin-01",
+        "approverRole": "SUPER_ADMIN",
+        "approverName": "Institutional SLA Auto-Escalation Sentinel",
+        "action": "ESCALATED",
+        "remarks": "SLA Escalation Triggered: Automated SLA timer expired without Level 1 Dean sign-off. Escalated to Office of the Principal.",
+        "timestamp": "2026-11-02T08:54:10.790Z",
+        "signatureHash": "530a038323c76e1041587148"
+      },
+      {
+        "level": 1,
+        "approverUserId": "usr-admin-01",
+        "approverRole": "SUPER_ADMIN",
+        "approverName": "provost.evans@classroom.edu",
+        "action": "CANCELLED",
+        "remarks": "Requester cancelled submission: Course moderation board requested re-evaluation of Question 4",
+        "timestamp": "2026-11-02T08:54:10.874Z",
+        "signatureHash": "b95bc375f26c6891ad9565fc"
+      }
+    ],
+    "createdAt": "2026-11-02T08:54:10.694Z",
+    "updatedAt": "2026-11-02T08:54:10.874Z",
+    "deadlineHours": 24,
+    "slaDeadline": "2026-11-03T08:54:10.694Z",
+    "slaStatus": "ON_TRACK",
+    "idempotencyKey": "idemp-wf-1793609650693",
+    "isEscalated": true,
+    "escalatedToRole": "PRINCIPAL",
+    "escalatedAt": "2026-11-02T08:54:10.790Z"
+  },
+  {
+    "id": "WF-REQ-2026-3783",
+    "workflowType": "GRADE_CORRECTION",
+    "institutionId": "inst-apex-01",
+    "requesterId": "usr-admin-01",
+    "requesterName": "provost.evans@classroom.edu",
+    "requesterRole": "SUPER_ADMIN",
+    "entityId": "exam-cs402-grade-corr",
+    "title": "Mid-Term Question 4 Revaluation Discrepancy",
+    "description": "Answer script question 4 re-totaling adds 3 marks following evaluator re-check.",
+    "metadata": {
+      "originalMarks": 72,
+      "revisedMarks": 75,
+      "courseCode": "CS-402"
+    },
+    "currentLevel": 2,
+    "requiredLevels": 2,
+    "authorizedRolesPerLevel": {
+      "1": [
+        "HOD",
+        "EXAMINATION_CONTROLLER"
+      ],
+      "2": [
+        "PRINCIPAL",
+        "SUPER_ADMIN"
+      ]
+    },
+    "status": "PENDING",
+    "auditTrail": [
+      {
+        "level": 1,
+        "approverUserId": "usr-admin-01",
+        "approverRole": "SUPER_ADMIN",
+        "approverName": "provost.evans@classroom.edu",
+        "action": "APPROVED",
+        "remarks": "CoE reviewed original answer key; verified revised total.",
+        "timestamp": "2026-11-02T08:54:09.288Z",
+        "signatureHash": "2ef3917fb21603c41a3f50a9"
+      }
+    ],
+    "createdAt": "2026-11-02T08:54:09.104Z",
+    "updatedAt": "2026-11-02T08:54:09.288Z",
+    "deadlineHours": 24,
+    "slaDeadline": "2026-11-03T08:54:09.104Z",
+    "slaStatus": "ON_TRACK"
+  },
+  {
+    "id": "WF-REQ-2026-4790",
+    "workflowType": "PURCHASE_REQUISITION",
+    "institutionId": "inst-apex-01",
+    "requesterId": "fac-chen-01",
+    "requesterName": "Dr. Wei Chen",
+    "requesterRole": "HOD",
+    "entityId": "po-quantum-lab-01",
+    "title": "Liquid Helium Cryostat Purchase for Quantum Computing Lab",
+    "description": "Requisitioning 50L Cryostat dewars for Qubit coherence experiments.",
+    "metadata": {
+      "estimatedCost": 15000,
+      "vendor": "CryoTech Systems Ltd"
+    },
+    "currentLevel": 2,
+    "requiredLevels": 2,
+    "authorizedRolesPerLevel": {
+      "1": [
+        "HOD",
+        "ACCOUNTANT"
+      ],
+      "2": [
+        "PRINCIPAL",
+        "SUPER_ADMIN"
+      ]
+    },
+    "status": "APPROVED",
+    "auditTrail": [
+      {
+        "level": 1,
+        "approverUserId": "usr-acct-01",
+        "approverRole": "ACCOUNTANT",
+        "approverName": "Chief Financial Accountant",
+        "action": "APPROVED",
+        "remarks": "Budget line item cleared under Sponsored Research Equipment Grant.",
+        "timestamp": "2026-11-02T08:54:08.921Z",
+        "signatureHash": "ea1a185c69d14c063db4ac8c"
+      },
+      {
+        "level": 2,
+        "approverUserId": "usr-prin-01",
+        "approverRole": "PRINCIPAL",
+        "approverName": "Dr. Arthur Pendelton",
+        "action": "APPROVED",
+        "remarks": "Sanctioned and approved under Institute Research Capex 2026.",
+        "timestamp": "2026-11-02T08:54:09.011Z",
+        "signatureHash": "ff3e5bdffb3776c93dc66ef3"
+      }
+    ],
+    "createdAt": "2026-11-02T08:54:08.841Z",
+    "updatedAt": "2026-11-02T08:54:09.011Z",
+    "deadlineHours": 72,
+    "slaDeadline": "2026-11-05T08:54:08.841Z",
+    "slaStatus": "ON_TRACK",
+    "completionSeal": "APPROVED-SEAL-07C1CDB228D5DD221205E9DA003EAE82"
+  },
+  {
+    "id": "WF-REQ-2026-6125",
+    "workflowType": "EXAM_RESULT_PUBLICATION",
+    "institutionId": "inst-apex-01",
+    "requesterId": "usr-admin-01",
+    "requesterName": "provost.evans@classroom.edu",
+    "requesterRole": "SUPER_ADMIN",
+    "entityId": "entity-1793609578307",
+    "title": "End-Semester Examination Result Gazetting V-A",
+    "description": "Official result sheets finalized by Moderation Board awaiting Controller endorsement.",
+    "metadata": {},
+    "currentLevel": 1,
+    "requiredLevels": 2,
+    "authorizedRolesPerLevel": {
+      "1": [
+        "HOD",
+        "EXAMINATION_CONTROLLER"
+      ],
+      "2": [
+        "PRINCIPAL",
+        "SUPER_ADMIN"
+      ]
+    },
+    "status": "CANCELLED",
+    "auditTrail": [
+      {
+        "level": 1,
+        "approverUserId": "usr-admin-01",
+        "approverRole": "SUPER_ADMIN",
+        "approverName": "Institutional SLA Auto-Escalation Sentinel",
+        "action": "ESCALATED",
+        "remarks": "SLA Escalation Triggered: Automated SLA timer expired without Level 1 Dean sign-off. Escalated to Office of the Principal.",
+        "timestamp": "2026-11-02T08:52:58.418Z",
+        "signatureHash": "4ddb92ee219bd1fd88a0d454"
+      },
+      {
+        "level": 1,
+        "approverUserId": "usr-admin-01",
+        "approverRole": "SUPER_ADMIN",
+        "approverName": "provost.evans@classroom.edu",
+        "action": "CANCELLED",
+        "remarks": "Requester cancelled submission: Course moderation board requested re-evaluation of Question 4",
+        "timestamp": "2026-11-02T08:52:58.522Z",
+        "signatureHash": "ab1b43c51840f18a5659a5d7"
+      }
+    ],
+    "createdAt": "2026-11-02T08:52:58.307Z",
+    "updatedAt": "2026-11-02T08:52:58.522Z",
+    "deadlineHours": 24,
+    "slaDeadline": "2026-11-03T08:52:58.307Z",
+    "slaStatus": "ON_TRACK",
+    "idempotencyKey": "idemp-wf-1793609578307",
+    "isEscalated": true,
+    "escalatedToRole": "PRINCIPAL",
+    "escalatedAt": "2026-11-02T08:52:58.418Z"
+  },
+  {
+    "id": "WF-REQ-2026-5676",
+    "workflowType": "GRADE_CORRECTION",
+    "institutionId": "inst-apex-01",
+    "requesterId": "usr-admin-01",
+    "requesterName": "provost.evans@classroom.edu",
+    "requesterRole": "SUPER_ADMIN",
+    "entityId": "exam-cs402-grade-corr",
+    "title": "Mid-Term Question 4 Revaluation Discrepancy",
+    "description": "Answer script question 4 re-totaling adds 3 marks following evaluator re-check.",
+    "metadata": {
+      "originalMarks": 72,
+      "revisedMarks": 75,
+      "courseCode": "CS-402"
+    },
+    "currentLevel": 2,
+    "requiredLevels": 2,
+    "authorizedRolesPerLevel": {
+      "1": [
+        "HOD",
+        "EXAMINATION_CONTROLLER"
+      ],
+      "2": [
+        "PRINCIPAL",
+        "SUPER_ADMIN"
+      ]
+    },
+    "status": "PENDING",
+    "auditTrail": [
+      {
+        "level": 1,
+        "approverUserId": "usr-admin-01",
+        "approverRole": "SUPER_ADMIN",
+        "approverName": "provost.evans@classroom.edu",
+        "action": "APPROVED",
+        "remarks": "CoE reviewed original answer key; verified revised total.",
+        "timestamp": "2026-11-02T08:52:56.706Z",
+        "signatureHash": "219e00216eaaa2e9b827379b"
+      }
+    ],
+    "createdAt": "2026-11-02T08:52:56.612Z",
+    "updatedAt": "2026-11-02T08:52:56.706Z",
+    "deadlineHours": 24,
+    "slaDeadline": "2026-11-03T08:52:56.612Z",
+    "slaStatus": "ON_TRACK"
+  },
+  {
+    "id": "WF-REQ-2026-3426",
+    "workflowType": "PURCHASE_REQUISITION",
+    "institutionId": "inst-apex-01",
+    "requesterId": "fac-chen-01",
+    "requesterName": "Dr. Wei Chen",
+    "requesterRole": "HOD",
+    "entityId": "po-quantum-lab-01",
+    "title": "Liquid Helium Cryostat Purchase for Quantum Computing Lab",
+    "description": "Requisitioning 50L Cryostat dewars for Qubit coherence experiments.",
+    "metadata": {
+      "estimatedCost": 15000,
+      "vendor": "CryoTech Systems Ltd"
+    },
+    "currentLevel": 2,
+    "requiredLevels": 2,
+    "authorizedRolesPerLevel": {
+      "1": [
+        "HOD",
+        "ACCOUNTANT"
+      ],
+      "2": [
+        "PRINCIPAL",
+        "SUPER_ADMIN"
+      ]
+    },
+    "status": "APPROVED",
+    "auditTrail": [
+      {
+        "level": 1,
+        "approverUserId": "usr-acct-01",
+        "approverRole": "ACCOUNTANT",
+        "approverName": "Chief Financial Accountant",
+        "action": "APPROVED",
+        "remarks": "Budget line item cleared under Sponsored Research Equipment Grant.",
+        "timestamp": "2026-11-02T08:52:56.433Z",
+        "signatureHash": "0c69595a91e9e5b999a74fb5"
+      },
+      {
+        "level": 2,
+        "approverUserId": "usr-prin-01",
+        "approverRole": "PRINCIPAL",
+        "approverName": "Dr. Arthur Pendelton",
+        "action": "APPROVED",
+        "remarks": "Sanctioned and approved under Institute Research Capex 2026.",
+        "timestamp": "2026-11-02T08:52:56.521Z",
+        "signatureHash": "980d34b826f39cc9c60fb4ac"
+      }
+    ],
+    "createdAt": "2026-11-02T08:52:56.354Z",
+    "updatedAt": "2026-11-02T08:52:56.521Z",
+    "deadlineHours": 72,
+    "slaDeadline": "2026-11-05T08:52:56.354Z",
+    "slaStatus": "ON_TRACK",
+    "completionSeal": "APPROVED-SEAL-EEA02C546820A5642B81E376569B7AF7"
+  },
+  {
+    "id": "WF-REQ-2026-4013",
+    "workflowType": "EXAM_RESULT_PUBLICATION",
+    "institutionId": "inst-apex-01",
+    "requesterId": "usr-admin-01",
+    "requesterName": "provost.evans@classroom.edu",
+    "requesterRole": "SUPER_ADMIN",
+    "entityId": "entity-1793609458370",
+    "title": "End-Semester Examination Result Gazetting V-A",
+    "description": "Official result sheets finalized by Moderation Board awaiting Controller endorsement.",
+    "metadata": {},
+    "currentLevel": 1,
+    "requiredLevels": 2,
+    "authorizedRolesPerLevel": {
+      "1": [
+        "HOD",
+        "EXAMINATION_CONTROLLER"
+      ],
+      "2": [
+        "PRINCIPAL",
+        "SUPER_ADMIN"
+      ]
+    },
+    "status": "CANCELLED",
+    "auditTrail": [
+      {
+        "level": 1,
+        "approverUserId": "usr-admin-01",
+        "approverRole": "SUPER_ADMIN",
+        "approverName": "Institutional SLA Auto-Escalation Sentinel",
+        "action": "ESCALATED",
+        "remarks": "SLA Escalation Triggered: Automated SLA timer expired without Level 1 Dean sign-off. Escalated to Office of the Principal.",
+        "timestamp": "2026-11-02T08:50:58.452Z",
+        "signatureHash": "fbf5decdb60bc9492d470c57"
+      },
+      {
+        "level": 1,
+        "approverUserId": "usr-admin-01",
+        "approverRole": "SUPER_ADMIN",
+        "approverName": "provost.evans@classroom.edu",
+        "action": "CANCELLED",
+        "remarks": "Requester cancelled submission: Course moderation board requested re-evaluation of Question 4",
+        "timestamp": "2026-11-02T08:50:58.527Z",
+        "signatureHash": "4344f6874090e626b8eb43fe"
+      }
+    ],
+    "createdAt": "2026-11-02T08:50:58.370Z",
+    "updatedAt": "2026-11-02T08:50:58.527Z",
+    "deadlineHours": 24,
+    "slaDeadline": "2026-11-03T08:50:58.370Z",
+    "slaStatus": "ON_TRACK",
+    "idempotencyKey": "idemp-wf-1793609458369",
+    "isEscalated": true,
+    "escalatedToRole": "PRINCIPAL",
+    "escalatedAt": "2026-11-02T08:50:58.452Z"
+  },
+  {
+    "id": "WF-REQ-2026-8494",
+    "workflowType": "GRADE_CORRECTION",
+    "institutionId": "inst-apex-01",
+    "requesterId": "usr-admin-01",
+    "requesterName": "provost.evans@classroom.edu",
+    "requesterRole": "SUPER_ADMIN",
+    "entityId": "exam-cs402-grade-corr",
+    "title": "Mid-Term Question 4 Revaluation Discrepancy",
+    "description": "Answer script question 4 re-totaling adds 3 marks following evaluator re-check.",
+    "metadata": {
+      "originalMarks": 72,
+      "revisedMarks": 75,
+      "courseCode": "CS-402"
+    },
+    "currentLevel": 2,
+    "requiredLevels": 2,
+    "authorizedRolesPerLevel": {
+      "1": [
+        "HOD",
+        "EXAMINATION_CONTROLLER"
+      ],
+      "2": [
+        "PRINCIPAL",
+        "SUPER_ADMIN"
+      ]
+    },
+    "status": "PENDING",
+    "auditTrail": [
+      {
+        "level": 1,
+        "approverUserId": "usr-admin-01",
+        "approverRole": "SUPER_ADMIN",
+        "approverName": "provost.evans@classroom.edu",
+        "action": "APPROVED",
+        "remarks": "CoE reviewed original answer key; verified revised total.",
+        "timestamp": "2026-11-02T08:50:56.780Z",
+        "signatureHash": "00dfcefc819fe0ed173d922f"
+      }
+    ],
+    "createdAt": "2026-11-02T08:50:56.680Z",
+    "updatedAt": "2026-11-02T08:50:56.780Z",
+    "deadlineHours": 24,
+    "slaDeadline": "2026-11-03T08:50:56.680Z",
+    "slaStatus": "ON_TRACK"
+  },
+  {
+    "id": "WF-REQ-2026-8062",
+    "workflowType": "PURCHASE_REQUISITION",
+    "institutionId": "inst-apex-01",
+    "requesterId": "fac-chen-01",
+    "requesterName": "Dr. Wei Chen",
+    "requesterRole": "HOD",
+    "entityId": "po-quantum-lab-01",
+    "title": "Liquid Helium Cryostat Purchase for Quantum Computing Lab",
+    "description": "Requisitioning 50L Cryostat dewars for Qubit coherence experiments.",
+    "metadata": {
+      "estimatedCost": 15000,
+      "vendor": "CryoTech Systems Ltd"
+    },
+    "currentLevel": 2,
+    "requiredLevels": 2,
+    "authorizedRolesPerLevel": {
+      "1": [
+        "HOD",
+        "ACCOUNTANT"
+      ],
+      "2": [
+        "PRINCIPAL",
+        "SUPER_ADMIN"
+      ]
+    },
+    "status": "APPROVED",
+    "auditTrail": [
+      {
+        "level": 1,
+        "approverUserId": "usr-acct-01",
+        "approverRole": "ACCOUNTANT",
+        "approverName": "Chief Financial Accountant",
+        "action": "APPROVED",
+        "remarks": "Budget line item cleared under Sponsored Research Equipment Grant.",
+        "timestamp": "2026-11-02T08:50:56.336Z",
+        "signatureHash": "eb7ba52f2996a93caf304480"
+      },
+      {
+        "level": 2,
+        "approverUserId": "usr-prin-01",
+        "approverRole": "PRINCIPAL",
+        "approverName": "Dr. Arthur Pendelton",
+        "action": "APPROVED",
+        "remarks": "Sanctioned and approved under Institute Research Capex 2026.",
+        "timestamp": "2026-11-02T08:50:56.476Z",
+        "signatureHash": "5ba070005cb35ee3361af08c"
+      }
+    ],
+    "createdAt": "2026-11-02T08:50:56.241Z",
+    "updatedAt": "2026-11-02T08:50:56.476Z",
+    "deadlineHours": 72,
+    "slaDeadline": "2026-11-05T08:50:56.241Z",
+    "slaStatus": "ON_TRACK",
+    "completionSeal": "APPROVED-SEAL-141A624CEF5ED9DD4C46AC899452614E"
+  },
+  {
     "id": "WF-REQ-2026-8307",
     "workflowType": "EXAM_RESULT_PUBLICATION",
     "institutionId": "inst-apex-01",

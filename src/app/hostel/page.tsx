@@ -37,10 +37,17 @@ import {
   Eye,
   LogOut,
   ShieldCheck,
+  ArrowRightLeft,
+  UserCheck,
+  ClipboardList,
 } from "lucide-react";
 import { NightRollCallView } from "@/components/hostel/NightRollCallView";
 import HostelAssetAuditTab from "@/components/hostel/HostelAssetAuditTab";
 import MessRebateTab from "@/components/hostel/MessRebateTab";
+import HostelTransfersTab from "@/components/hostel/HostelTransfersTab";
+import HostelMaintenanceTab from "@/components/hostel/HostelMaintenanceTab";
+import HostelVisitorsTab from "@/components/hostel/HostelVisitorsTab";
+import HostelWaitlistTab from "@/components/hostel/HostelWaitlistTab";
 import { SkeletonCard } from "@/components/common/SkeletonLoader";
 import { EmptyState } from "@/components/common/EmptyState";
 
@@ -58,7 +65,19 @@ interface HostelSummary {
 
 export default function HostelPage() {
   const { currentUser, currentRole, showToast } = useApp();
-  const [activeTab, setActiveTab] = useState<"matrix" | "allocations" | "gatepass" | "mess" | "night-rollcall" | "asset-audit" | "mess-rebate">("matrix");
+  const [activeTab, setActiveTab] = useState<
+    | "matrix"
+    | "allocations"
+    | "transfers"
+    | "maintenance"
+    | "visitors"
+    | "waitlist"
+    | "gatepass"
+    | "mess"
+    | "mess-rebate"
+    | "night-rollcall"
+    | "asset-audit"
+  >("matrix");
   const [loading, setLoading] = useState(true);
   const [summary, setSummary] = useState<HostelSummary | null>(null);
   const [rooms, setRooms] = useState<any[]>([]);
@@ -623,11 +642,15 @@ export default function HostelPage() {
           {[
             { id: "matrix", label: "Room Matrix & Layout", icon: Building },
             { id: "allocations", label: "Bed Allocation Registry", icon: Bed },
+            { id: "transfers", label: "Room Transfers & Bed Swaps", icon: ArrowRightLeft },
+            { id: "maintenance", label: "Dorm Maintenance & Repairs", icon: Wrench },
+            { id: "visitors", label: "Visitor & Guest Register", icon: UserCheck },
+            { id: "waitlist", label: "Housing Waitlist Queue", icon: ClipboardList },
             { id: "gatepass", label: "Gate Pass & Night Outpass", icon: Clock, count: summary?.pendingGatePasses },
             { id: "mess", label: "Dining & Mess Management", icon: Utensils },
             { id: "mess-rebate", label: "Mess Diet Rebates & Meal Tokens", icon: Receipt },
             { id: "night-rollcall", label: "Night Curfew Roll-Call (21:30)", icon: Moon },
-            { id: "asset-audit", label: "Room Inventory & Deposit Clearance", icon: Wrench },
+            { id: "asset-audit", label: "Room Inventory & Deposit Clearance", icon: ShieldCheck },
           ].map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
@@ -1016,6 +1039,26 @@ export default function HostelPage() {
           </div>
         );
       })()}
+
+      {/* TAB: ROOM TRANSFERS & SWAPS */}
+      {activeTab === "transfers" && (
+        <HostelTransfersTab rooms={rooms} onRefresh={fetchData} />
+      )}
+
+      {/* TAB: DORM MAINTENANCE & REPAIRS */}
+      {activeTab === "maintenance" && (
+        <HostelMaintenanceTab blocks={summary?.blocks || []} rooms={rooms} onRefresh={fetchData} />
+      )}
+
+      {/* TAB: VISITOR & GUEST REGISTER */}
+      {activeTab === "visitors" && (
+        <HostelVisitorsTab rooms={rooms} onRefresh={fetchData} />
+      )}
+
+      {/* TAB: HOUSING WAITLIST QUEUE */}
+      {activeTab === "waitlist" && (
+        <HostelWaitlistTab blocks={summary?.blocks || []} onRefresh={fetchData} />
+      )}
 
       {/* TAB 3: GATE PASS & OUTPASS */}
       {activeTab === "gatepass" && (() => {

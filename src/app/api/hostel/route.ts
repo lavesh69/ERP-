@@ -36,6 +36,29 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ success: true, rollCalls });
     }
 
+    if (tab === "transfers") {
+      const studentRoll = searchParams.get("studentRoll") || undefined;
+      const transfers = hostelStore.getTransferRequests(studentRoll);
+      return NextResponse.json({ success: true, transfers });
+    }
+
+    if (tab === "maintenance") {
+      const roomNumber = searchParams.get("roomNumber") || undefined;
+      const tickets = hostelStore.getMaintenanceTickets(blockId, roomNumber);
+      return NextResponse.json({ success: true, tickets });
+    }
+
+    if (tab === "visitors") {
+      const studentRoll = searchParams.get("studentRoll") || undefined;
+      const visitors = hostelStore.getVisitors(studentRoll);
+      return NextResponse.json({ success: true, visitors });
+    }
+
+    if (tab === "waitlist") {
+      const waitlist = hostelStore.getWaitlist();
+      return NextResponse.json({ success: true, waitlist });
+    }
+
     // Default: summary
     const summary = hostelStore.getSummary();
     return NextResponse.json({ success: true, summary });
@@ -243,6 +266,156 @@ export async function POST(request: NextRequest) {
         success: true,
         message: `Logged ${wasted} kg kitchen surplus for ${diningSession}. Diverted to campus anaerobic digester.`,
         log,
+      });
+    }
+
+    if (action === "REQUEST_ROOM_TRANSFER") {
+      const transfer = hostelStore.requestRoomTransfer({
+        studentId: body.studentId || session.id,
+        studentName: body.studentName || session.fullName || "Student",
+        studentRoll: body.studentRoll || (session as any)?.studentRollNumber || "STU-2026",
+        currentRoomId: body.currentRoomId,
+        currentBedNumber: body.currentBedNumber,
+        targetRoomId: body.targetRoomId,
+        targetBedNumber: body.targetBedNumber,
+        reason: body.reason,
+      });
+      return NextResponse.json({
+        success: true,
+        message: "Room transfer request submitted for warden authorization.",
+        transfer,
+      });
+    }
+
+    if (action === "PROCESS_ROOM_TRANSFER") {
+      const allowedRoles = ["SUPER_ADMIN", "INSTITUTION_ADMIN", "WARDEN", "PRINCIPAL"];
+      if (!allowedRoles.includes(session.role)) {
+        return NextResponse.json(
+          { error: "Forbidden: Only hostel wardens or administrators can process room transfers." },
+          { status: 403 }
+        );
+      }
+      const { transferId, remarks } = body;
+      const passAction = body.passAction || body.processAction;
+      if (!transferId || !passAction) {
+        return NextResponse.json({ error: "Transfer ID and action ('APPROVE' or 'REJECT') are required." }, { status: 400 });
+      }
+      const updated = hostelStore.processRoomTransfer(
+        transferId,
+        passAction as "APPROVE" | "REJECT",
+        session.fullName || session.role,
+        remarks
+      );
+      return NextResponse.json({
+        success: true,
+        message: `Room transfer ${passAction.toLowerCase()} successfully.`,
+        transfer: updated,
+      });
+    }
+
+    if (action === "LOG_MAINTENANCE_TICKET") {
+      const ticket = hostelStore.createMaintenanceTicket({
+        blockId: body.blockId,
+        blockName: body.blockName,
+        roomNumber: body.roomNumber,
+        bedNumber: body.bedNumber,
+        category: body.category,
+        priority: body.priority,
+        description: body.description,
+        reportedBy: body.reportedBy || session.fullName || "Resident",
+        reportedRoll: body.reportedRoll || (session as any)?.studentRollNumber,
+      });
+      return NextResponse.json({
+        success: true,
+        message: "Hostel maintenance ticket logged successfully.",
+        ticket,
+      });
+    }
+
+    if (action === "UPDATE_MAINTENANCE_TICKET") {
+      const allowedRoles = ["SUPER_ADMIN", "INSTITUTION_ADMIN", "WARDEN", "PRINCIPAL", "ESTATE_MANAGER", "STAFF", "FACULTY", "HR_STAFF"];
+      if (!allowedRoles.includes(session.role)) {
+        return NextResponse.json(
+          { error: "Forbidden: Only hostel or maintenance staff can update tickets." },
+          { status: 403 }
+        );
+      }
+      const { ticketId, status, resolutionNotes } = body;
+      if (!ticketId || !status) {
+        return NextResponse.json({ error: "Ticket ID and status are required." }, { status: 400 });
+      }
+      const updated = hostelStore.updateMaintenanceTicket(
+        ticketId,
+        status,
+        session.fullName || session.role,
+        resolutionNotes
+      );
+      return NextResponse.json({
+        success: true,
+        message: "Maintenance ticket updated successfully.",
+        ticket: updated,
+      });
+    }
+
+    if (action === "LOG_VISITOR_ENTRY") {
+      const allowedRoles = ["SUPER_ADMIN", "INSTITUTION_ADMIN", "WARDEN", "PRINCIPAL", "SECURITY_OFFICER", "STAFF", "HR_STAFF"];
+      if (!allowedRoles.includes(session.role)) {
+        return NextResponse.json(
+          { error: "Forbidden: Only hostel wardens or security officers can register visitors." },
+          { status: 403 }
+        );
+      }
+      const visitor = hostelStore.registerVisitor({
+        studentRoll: body.studentRoll,
+        studentName: body.studentName,
+        roomNumber: body.roomNumber,
+        blockName: body.blockName,
+        visitorName: body.visitorName,
+        relation: body.relation,
+        phone: body.phone,
+        idProofNumber: body.idProofNumber,
+        purpose: body.purpose,
+        gateSecurityOfficer: session.fullName || "Gate Security Officer",
+      });
+      return NextResponse.json({
+        success: true,
+        message: "Hostel visitor entry pass issued.",
+        visitor,
+      });
+    }
+
+    if (action === "CHECKOUT_VISITOR") {
+      const allowedRoles = ["SUPER_ADMIN", "INSTITUTION_ADMIN", "WARDEN", "PRINCIPAL", "SECURITY_OFFICER", "STAFF", "HR_STAFF"];
+      if (!allowedRoles.includes(session.role)) {
+        return NextResponse.json(
+          { error: "Forbidden: Only hostel wardens or security officers can check out visitors." },
+          { status: 403 }
+        );
+      }
+      const visitor = hostelStore.checkoutVisitor(body.visitorId);
+      return NextResponse.json({
+        success: true,
+        message: "Visitor checked out successfully.",
+        visitor,
+      });
+    }
+
+    if (action === "JOIN_WAITLIST") {
+      const waitlist = hostelStore.joinWaitlist({
+        studentId: body.studentId || session.id,
+        studentName: body.studentName || session.fullName || "Student Scholar",
+        studentRoll: body.studentRoll || (session as any)?.studentRollNumber || "STU-2026",
+        gender: body.gender,
+        branch: body.branch,
+        preferredBlockId: body.preferredBlockId,
+        preferredRoomType: body.preferredRoomType,
+        distanceFromHomeKm: body.distanceFromHomeKm,
+      });
+      return NextResponse.json({
+        success: true,
+        message: "Hostel accommodation waitlist application registered.",
+        waitlist,
+        waitlistEntry: waitlist,
       });
     }
 

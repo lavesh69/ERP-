@@ -63,19 +63,19 @@
           "id": "bed-a-101-a",
           "roomId": "rm-a-101",
           "bedNumber": "A",
-          "isOccupied": false
+          "isOccupied": true,
+          "studentId": "stu-resident",
+          "studentName": "Ryan Gosling",
+          "studentRoll": "CS2026-002",
+          "branch": "Institutional Academic Program",
+          "allocatedDate": "2026-11-02",
+          "feeStatus": "PAID"
         },
         {
           "id": "bed-a-101-b",
           "roomId": "rm-a-101",
           "bedNumber": "B",
-          "isOccupied": true,
-          "studentId": "stu-ryan-02",
-          "studentName": "Ryan Gosling",
-          "studentRoll": "CS2026-002",
-          "branch": "B.Tech Computer Science",
-          "allocatedDate": "2026-08-01",
-          "feeStatus": "PAID"
+          "isOccupied": false
         }
       ]
     },
@@ -128,7 +128,7 @@
           "isOccupied": true,
           "studentId": "stu-mercer-01",
           "studentName": "Alex Mercer",
-          "studentRoll": "TEMP-HOSTEL-1793608247221",
+          "studentRoll": "TEMP-HOSTEL-1793609834762",
           "branch": "Computer Science",
           "allocatedDate": "2026-11-02",
           "feeStatus": "PAID"
@@ -295,6 +295,276 @@
     }
   ],
   "nightRollCalls": [],
-  "punchedMeals": [],
-  "wasteLogs": []
+  "punchedMeals": [
+    {
+      "id": "tok-101",
+      "studentRoll": "CS2026-001",
+      "studentName": "Alex Rivera",
+      "plan": "All-Access Premium Buffet",
+      "mealType": "Dinner (Executive)",
+      "timestamp": "Just now",
+      "lane": "Turnstile Gate #02 (Optical)",
+      "tokenHash": "0x89f4b...3e1a"
+    },
+    {
+      "id": "tok-102",
+      "studentRoll": "ME2025-042",
+      "studentName": "Priya Sharma",
+      "plan": "South Indian Vegetarian",
+      "mealType": "Dinner (Executive)",
+      "timestamp": "3 mins ago",
+      "lane": "Turnstile Gate #01 (Biometric)",
+      "tokenHash": "0x12c8a...9f00"
+    },
+    {
+      "id": "tok-103",
+      "studentRoll": "EE2024-019",
+      "studentName": "Marcus Vance",
+      "plan": "Continental & Halal Fusion",
+      "mealType": "Dinner (Executive)",
+      "timestamp": "7 mins ago",
+      "lane": "Turnstile Gate #03 (RFID Card)",
+      "tokenHash": "0x44d1e...bc27"
+    }
+  ],
+  "wasteLogs": [
+    {
+      "id": "w-1",
+      "session": "Dinner (Yesterday)",
+      "preparedKg": 340,
+      "consumedKg": 318,
+      "wastedKg": 22,
+      "residents": 410,
+      "divertedToBiogas": true
+    },
+    {
+      "id": "w-2",
+      "session": "Breakfast (Today)",
+      "preparedKg": 210,
+      "consumedKg": 198,
+      "wastedKg": 12,
+      "residents": 380,
+      "divertedToBiogas": true
+    },
+    {
+      "id": "w-3",
+      "session": "Lunch (Today)",
+      "preparedKg": 360,
+      "consumedKg": 334,
+      "wastedKg": 26,
+      "residents": 395,
+      "divertedToBiogas": true
+    }
+  ],
+  "transferRequests": [
+    {
+      "id": "tr-1793609834991",
+      "requestNumber": "TR-2026-337",
+      "studentId": "stu-resident",
+      "studentName": "Ryan Gosling",
+      "studentRoll": "CS2026-002",
+      "currentRoomId": "rm-a-101",
+      "currentRoomNumber": "A-101",
+      "currentBedNumber": "B",
+      "currentBlockName": "Nelson Mandela Hall (Block A)",
+      "targetRoomId": "rm-a-101",
+      "targetRoomNumber": "A-101",
+      "targetBedNumber": "A",
+      "targetBlockName": "Nelson Mandela Hall (Block A)",
+      "reason": "Medical recommendation: quiet study hours and room alignment",
+      "status": "APPROVED",
+      "requestedAt": "2026-11-02T08:57:14.991Z",
+      "processedAt": "2026-11-02T08:57:15.009Z",
+      "processedBy": "SUPER_ADMIN",
+      "remarks": "Approved by Chief Warden Dr. Verma"
+    },
+    {
+      "id": "tr-001",
+      "requestNumber": "TR-2026-081",
+      "studentId": "stu-alex-01",
+      "studentName": "Alex Mercer",
+      "studentRoll": "CS2026-001",
+      "currentRoomId": "rm-a-101",
+      "currentRoomNumber": "A-101",
+      "currentBedNumber": "A",
+      "currentBlockName": "Nelson Mandela Hall (Block A)",
+      "targetRoomId": "rm-c-301",
+      "targetRoomNumber": "C-301",
+      "targetBedNumber": "A",
+      "targetBlockName": "C.V. Raman Postgrad Scholars Hall (Block C)",
+      "reason": "Promoted to AI Research Fellowship; requiring quiet postgrad research floor.",
+      "status": "PENDING_WARDEN",
+      "requestedAt": "2026-10-18T14:20:00.000Z"
+    }
+  ],
+  "maintenanceTickets": [
+    {
+      "id": "maint-1793609835018",
+      "ticketNumber": "HST-MNT-758",
+      "blockId": "blk-a",
+      "blockName": "Nelson Mandela Hall (Block A)",
+      "roomNumber": "A-102",
+      "bedNumber": "C",
+      "category": "ELECTRICAL",
+      "priority": "HIGH",
+      "status": "RESOLVED",
+      "description": "Ceiling fan regulator humming and loose switchboard wiring",
+      "reportedBy": "Resident",
+      "reportedAt": "2026-11-02T08:57:15.018Z",
+      "assignedTechnician": "SUPER_ADMIN",
+      "resolvedAt": "2026-11-02T08:57:15.025Z",
+      "resolutionNotes": "Replaced regulator and secured switchboard housing."
+    },
+    {
+      "id": "maint-101",
+      "ticketNumber": "HST-MNT-101",
+      "blockId": "blk-a",
+      "blockName": "Nelson Mandela Hall (Block A)",
+      "roomNumber": "A-102",
+      "bedNumber": "A",
+      "category": "PLUMBING",
+      "priority": "HIGH",
+      "status": "OPEN",
+      "description": "Attached washroom washbasin tap continuously leaking with severe water pressure drop.",
+      "reportedBy": "David Miller",
+      "reportedRoll": "ME2026-015",
+      "reportedAt": "2026-10-28T09:15:00.000Z"
+    },
+    {
+      "id": "maint-102",
+      "ticketNumber": "HST-MNT-102",
+      "blockId": "blk-b",
+      "blockName": "Marie Curie Hall (Block B)",
+      "roomNumber": "B-201",
+      "bedNumber": "A",
+      "category": "ELECTRICAL",
+      "priority": "MEDIUM",
+      "status": "IN_PROGRESS",
+      "description": "Ceiling fan speed regulator sparking on setting 4. Fan oscillates erratically.",
+      "reportedBy": "Priya Sharma",
+      "reportedRoll": "CS2026-018",
+      "assignedTechnician": "Campus Electrician Ramesh K.",
+      "reportedAt": "2026-10-27T11:40:00.000Z"
+    },
+    {
+      "id": "maint-103",
+      "ticketNumber": "HST-MNT-103",
+      "blockId": "blk-a",
+      "blockName": "Nelson Mandela Hall (Block A)",
+      "roomNumber": "A-101",
+      "bedNumber": "B",
+      "category": "INTERNET_WIFI",
+      "priority": "LOW",
+      "status": "RESOLVED",
+      "description": "Ethernet wall jack RJ45 clip loose; packet drop during distributed computing lab sync.",
+      "reportedBy": "Ryan Gosling",
+      "reportedRoll": "CS2026-002",
+      "assignedTechnician": "Network Admin Deepak S.",
+      "reportedAt": "2026-10-25T16:00:00.000Z",
+      "resolvedAt": "2026-10-26T10:30:00.000Z",
+      "resolutionNotes": "Wall plate replaced, Cat6 keystone re-terminated and validated at 1Gbps duplex."
+    }
+  ],
+  "visitors": [
+    {
+      "id": "vis-1793609835031",
+      "badgeNumber": "VTR-HST-839",
+      "studentRoll": "CS2026-001",
+      "studentName": "Alex Mercer",
+      "roomNumber": "A-102",
+      "blockName": "Nelson Mandela Hall (Block A)",
+      "visitorName": "Robert Mercer",
+      "relation": "PARENT",
+      "phone": "+1-555-0199",
+      "idProofNumber": "DL-CA-992140",
+      "checkInTime": "2026-11-02T08:57:15.031Z",
+      "status": "CHECKED_OUT",
+      "gateSecurityOfficer": "Gate Security Officer",
+      "purpose": "Weekend family check-in and luggage delivery",
+      "checkOutTime": "2026-11-02T08:57:15.037Z"
+    },
+    {
+      "id": "vis-001",
+      "badgeNumber": "VTR-HST-881",
+      "studentRoll": "CS2026-001",
+      "studentName": "Alex Mercer",
+      "roomNumber": "A-101",
+      "blockName": "Nelson Mandela Hall (Block A)",
+      "visitorName": "Robert Mercer",
+      "relation": "PARENT",
+      "phone": "+1 (555) 441-9988",
+      "idProofNumber": "DL-MA-9921827",
+      "checkInTime": "2026-11-02T11:30:00.000Z",
+      "status": "CHECKED_IN",
+      "gateSecurityOfficer": "Officer B. K. Singh (Gate #01)",
+      "purpose": "Parental visit for semester commencement kit delivery & winter blankets."
+    },
+    {
+      "id": "vis-002",
+      "badgeNumber": "VTR-HST-882",
+      "studentRoll": "CS2026-018",
+      "studentName": "Priya Sharma",
+      "roomNumber": "B-201",
+      "blockName": "Marie Curie Hall (Block B)",
+      "visitorName": "Anjali Sharma",
+      "relation": "PARENT",
+      "phone": "+1 (555) 321-4411",
+      "idProofNumber": "AADHAAR-4491-0029",
+      "checkInTime": "2026-11-01T14:00:00.000Z",
+      "checkOutTime": "2026-11-01T18:15:00.000Z",
+      "status": "CHECKED_OUT",
+      "gateSecurityOfficer": "Officer P. L. Rawat (Gate #02)",
+      "purpose": "Family festival sweets and medical supplements handover."
+    }
+  ],
+  "waitlist": [
+    {
+      "id": "wl-001",
+      "waitlistToken": "WL-BLK-A-01",
+      "studentId": "stu-wait-01",
+      "studentName": "Rohan Saxena",
+      "studentRoll": "CS2026-088",
+      "gender": "MALE",
+      "branch": "B.Tech Computer Science",
+      "preferredBlockId": "blk-a",
+      "preferredBlockName": "Nelson Mandela Hall (Block A)",
+      "preferredRoomType": "DOUBLE_AC",
+      "distanceFromHomeKm": 1450,
+      "priorityScore": 92,
+      "status": "WAITLISTED",
+      "appliedAt": "2026-10-12T09:00:00.000Z"
+    },
+    {
+      "id": "wl-002",
+      "waitlistToken": "WL-BLK-B-01",
+      "studentId": "stu-wait-02",
+      "studentName": "Meera Nair",
+      "studentRoll": "EC2026-034",
+      "gender": "FEMALE",
+      "branch": "B.Tech Electronics & Comm",
+      "preferredBlockId": "blk-b",
+      "preferredBlockName": "Marie Curie Hall (Block B)",
+      "preferredRoomType": "SINGLE_AC",
+      "distanceFromHomeKm": 980,
+      "priorityScore": 84,
+      "status": "WAITLISTED",
+      "appliedAt": "2026-10-14T11:20:00.000Z"
+    },
+    {
+      "id": "wl-1793609835042",
+      "waitlistToken": "WL-BLK-A-79",
+      "studentId": "stu-wait",
+      "studentName": "Lucas Montgomery",
+      "studentRoll": "ME2026-088",
+      "gender": "MALE",
+      "branch": "Mechanical Engineering",
+      "preferredBlockId": "blk-a",
+      "preferredBlockName": "Nelson Mandela Hall (Block A)",
+      "preferredRoomType": "DOUBLE_AC",
+      "distanceFromHomeKm": 650,
+      "priorityScore": 72,
+      "status": "WAITLISTED",
+      "appliedAt": "2026-11-02T08:57:15.042Z"
+    }
+  ]
 }

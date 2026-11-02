@@ -12508,6 +12508,159 @@ By breaking down large monolithic systems into decoupled microservices, systems 
   const assignMentorData = await assignMentorRes.json();
   assert(assignMentorData.venture.mentorName === "Dr. Evelyn Vance (Senior Partner)", "Mentor assigned to venture successfully");
 
+  // --- GROUP 89: Enterprise Hostel Residential Life (Transfers, Maintenance, Visitors & Waitlist) ---
+  console.log("\n--- GROUP 89: Enterprise Hostel Residential Life (Transfers, Maintenance, Visitors & Waitlist) ---");
+
+  // 1. Room Transfers & Bed Swaps
+  const xferOccupiedRoom = hostelStore.getRooms().find((r) => r.beds.some((b) => b.isOccupied));
+  const xferOccupiedBed = xferOccupiedRoom?.beds.find((b) => b.isOccupied);
+  const xferVacantRoom = hostelStore.getRooms().find((r) => r.beds.some((b) => !b.isOccupied && (r.id !== xferOccupiedRoom?.id || b.bedNumber !== xferOccupiedBed?.bedNumber)));
+  const xferVacantBed = xferVacantRoom?.beds.find((b) => !b.isOccupied && (xferVacantRoom.id !== xferOccupiedRoom?.id || b.bedNumber !== xferOccupiedBed?.bedNumber));
+
+  const transferReq = new NextRequest("http://localhost:3000/api/hostel", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "REQUEST_ROOM_TRANSFER",
+      studentRoll: xferOccupiedBed?.studentRoll || "CS2026-001",
+      studentName: xferOccupiedBed?.studentName || "Alex Mercer",
+      currentRoomId: xferOccupiedRoom!.id,
+      currentBedNumber: xferOccupiedBed!.bedNumber,
+      targetRoomId: xferVacantRoom!.id,
+      targetBedNumber: xferVacantBed!.bedNumber,
+      reason: "Medical recommendation: quiet study hours and room alignment",
+    }),
+  });
+  const transferRes = await handleHostelPost(transferReq);
+  assert(transferRes.status === 200, "POST /api/hostel (REQUEST_ROOM_TRANSFER) returns 200 OK");
+  const transferData = await transferRes.json();
+  assert(transferData.transfer?.id != null, "Room transfer request logged successfully");
+  assert(transferData.transfer.status === "PENDING_WARDEN", "Initial transfer request status is PENDING_WARDEN");
+
+  // Process Transfer (APPROVE)
+  const processTransferReq = new NextRequest("http://localhost:3000/api/hostel", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "PROCESS_ROOM_TRANSFER",
+      transferId: transferData.transfer.id,
+      processAction: "APPROVE",
+      remarks: "Approved by Chief Warden Dr. Verma",
+    }),
+  });
+  const processTransferRes = await handleHostelPost(processTransferReq);
+  assert(processTransferRes.status === 200, "POST /api/hostel (PROCESS_ROOM_TRANSFER) returns 200 OK");
+  const processTransferData = await processTransferRes.json();
+  assert(processTransferData.transfer.status === "APPROVED", "Transfer status updated to APPROVED");
+
+  // Verify transfers query
+  const getTransfersReq = new NextRequest("http://localhost:3000/api/hostel?tab=transfers", {
+    headers: { Cookie: `classroom_session=${adminToken}` },
+  });
+  const getTransfersRes = await handleHostelGet(getTransfersReq);
+  assert(getTransfersRes.status === 200, "GET /api/hostel?tab=transfers returns 200 OK");
+  const getTransfersData = await getTransfersRes.json();
+  assert(Array.isArray(getTransfersData.transfers), "Transfers returned as array");
+
+  // 2. Hostel Maintenance & Defect Tickets
+  const maintReq = new NextRequest("http://localhost:3000/api/hostel", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "LOG_MAINTENANCE_TICKET",
+      blockId: "blk-a",
+      blockName: "Nelson Mandela Hall (Block A)",
+      roomNumber: "A-102",
+      bedNumber: "C",
+      category: "ELECTRICAL",
+      priority: "HIGH",
+      description: "Ceiling fan regulator humming and loose switchboard wiring",
+    }),
+  });
+  const maintRes = await handleHostelPost(maintReq);
+  assert(maintRes.status === 200, "POST /api/hostel (LOG_MAINTENANCE_TICKET) returns 200 OK");
+  const maintData = await maintRes.json();
+  assert(maintData.ticket?.ticketNumber != null, "Maintenance ticket created with reference number");
+  assert(maintData.ticket.priority === "HIGH", "Ticket priority accurately recorded as HIGH");
+
+  // Update Maintenance Ticket
+  const updateMaintReq = new NextRequest("http://localhost:3000/api/hostel", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "UPDATE_MAINTENANCE_TICKET",
+      ticketId: maintData.ticket.id,
+      status: "RESOLVED",
+      resolutionNotes: "Replaced regulator and secured switchboard housing.",
+    }),
+  });
+  const updateMaintRes = await handleHostelPost(updateMaintReq);
+  assert(updateMaintRes.status === 200, "POST /api/hostel (UPDATE_MAINTENANCE_TICKET) returns 200 OK");
+  const updateMaintData = await updateMaintRes.json();
+  assert(updateMaintData.ticket.status === "RESOLVED", "Ticket marked as RESOLVED");
+
+  // 3. Visitor & Guest Security Register
+  const visitorReq = new NextRequest("http://localhost:3000/api/hostel", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "LOG_VISITOR_ENTRY",
+      studentRoll: "CS2026-001",
+      studentName: "Alex Mercer",
+      roomNumber: "A-102",
+      blockName: "Nelson Mandela Hall (Block A)",
+      visitorName: "Robert Mercer",
+      relation: "PARENT",
+      phone: "+1-555-0199",
+      idProofNumber: "DL-CA-992140",
+      purpose: "Weekend family check-in and luggage delivery",
+      gateSecurityOfficer: "Officer Henderson",
+    }),
+  });
+  const visitorRes = await handleHostelPost(visitorReq);
+  assert(visitorRes.status === 200, "POST /api/hostel (LOG_VISITOR_ENTRY) returns 200 OK");
+  const visitorData = await visitorRes.json();
+  assert(visitorData.visitor?.badgeNumber != null, "Visitor registered and security badge generated");
+  assert(visitorData.visitor.status === "CHECKED_IN", "Visitor status is CHECKED_IN");
+
+  // Visitor Gate Check-Out
+  const checkoutVisReq = new NextRequest("http://localhost:3000/api/hostel", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "CHECKOUT_VISITOR",
+      visitorId: visitorData.visitor.id,
+    }),
+  });
+  const checkoutVisRes = await handleHostelPost(checkoutVisReq);
+  assert(checkoutVisRes.status === 200, "POST /api/hostel (CHECKOUT_VISITOR) returns 200 OK");
+  const checkoutVisData = await checkoutVisRes.json();
+  assert(checkoutVisData.visitor.status === "CHECKED_OUT", "Visitor status transitioned to CHECKED_OUT");
+  assert(checkoutVisData.visitor.checkOutTime != null, "Visitor departure timestamp accurately recorded");
+
+  // 4. Housing Accommodation Priority Waitlist
+  const waitlistReq = new NextRequest("http://localhost:3000/api/hostel", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "JOIN_WAITLIST",
+      studentName: "Lucas Montgomery",
+      studentRoll: "ME2026-088",
+      gender: "MALE",
+      branch: "Mechanical Engineering",
+      preferredBlockId: "blk-a",
+      preferredBlockName: "Nelson Mandela Hall (Block A)",
+      preferredRoomType: "DOUBLE_AC",
+      distanceFromHomeKm: 650,
+    }),
+  });
+  const waitlistRes = await handleHostelPost(waitlistReq);
+  assert(waitlistRes.status === 200, "POST /api/hostel (JOIN_WAITLIST) returns 200 OK");
+  const waitlistData = await waitlistRes.json();
+  assert(waitlistData.waitlistEntry?.waitlistToken != null, "Waitlist entry generated with token");
+  assert(waitlistData.waitlistEntry.priorityScore === Math.min(100, Math.round(50 + 650 / 30)), "Priority score calculated correctly for outstation scholar");
+  assert(waitlistData.waitlistEntry.status === "WAITLISTED", "Initial waitlist status is WAITLISTED");
+
   console.log("\n=================================================");
   console.log(`🎉 ALL ${passedTests}/${totalTests} TESTS PASSED SUCCESSFULLY!`);
   console.log("=================================================\n");
