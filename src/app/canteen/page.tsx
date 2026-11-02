@@ -222,69 +222,104 @@ export default function CanteenPage() {
   return (
     <AppShell>
       <div className="space-y-6 animate-in fade-in duration-300">
-        {/* Top Banner */}
-        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-charcoal-900 via-amber-950 to-charcoal-900 text-white p-6 md:p-8 shadow-xl">
-          <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+        {/* Top Banner - Academic OS Native Glassmorphism */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 glass-panel p-6 rounded-2xl shadow-soft">
+          <div className="flex items-center gap-3">
+            <div className="h-12 w-12 rounded-xl bg-amber-600 text-white flex items-center justify-center shadow-md shadow-amber-600/20 shrink-0">
+              <UtensilsCrossed className="h-6 w-6" />
+            </div>
             <div>
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30 mb-2">
-                <UtensilsCrossed className="w-3.5 h-3.5" /> Apex Central Cafeteria & Food Court
+              <div className="flex items-center gap-2 mb-1">
+                <span className="badge-subtle bg-amber-500/10 text-amber-700 dark:text-amber-300">
+                  Apex Central Cafeteria &amp; Food Court
+                </span>
+                <span className="badge-subtle bg-emerald-500/10 text-emerald-700 dark:text-emerald-300">
+                  Active Shift
+                </span>
               </div>
-              <h1 className="text-2xl md:text-3xl font-display font-black tracking-tight text-white">
+              <h1 className="text-xl font-display font-bold text-charcoal-900 dark:text-ivory-100">
                 Campus Smart-Card Meal POS
               </h1>
-              <p className="text-xs md:text-sm text-charcoal-300 max-w-xl mt-1">
+              <p className="text-xs text-charcoal-600 dark:text-charcoal-400">
                 Cashless RFID contactless food ordering, daily chef specials, live pickup token board, and nutritional calorie tracking.
               </p>
             </div>
+          </div>
 
-            <div className="flex flex-wrap items-center gap-3">
-              {wallet && (
-                <div className="flex items-center gap-3 px-4 py-2.5 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20">
-                  <div className="w-8 h-8 rounded-xl bg-amber-400 text-charcoal-950 flex items-center justify-center font-bold">
-                    <CreditCard className="w-4 h-4" />
-                  </div>
-                  <div>
-                    <span className="text-[10px] uppercase font-bold text-amber-200 block">Meal RFID Balance</span>
-                    <span className="text-lg font-mono font-black text-white">₹{wallet.currentBalance.toFixed(2)}</span>
-                  </div>
-                  <button
-                    onClick={() => setShowTopUpModal(true)}
-                    className="ml-2 px-3 py-1.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-charcoal-950 font-bold text-xs shadow-sm transition-all active:scale-95"
-                  >
-                    + Top Up
-                  </button>
+          <div className="flex flex-wrap items-center gap-3">
+            {wallet && (
+              <div className="flex items-center gap-3 px-4 py-2 rounded-xl bg-surface-soft/80 dark:bg-charcoal-800 border border-border/80">
+                <div className="w-8 h-8 rounded-lg bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center font-bold">
+                  <CreditCard className="w-4 h-4" />
                 </div>
-              )}
+                <div>
+                  <span className="text-[10px] uppercase font-bold text-charcoal-500 dark:text-charcoal-400 block">Meal RFID Balance</span>
+                  <span className="text-base font-mono font-bold text-charcoal-900 dark:text-ivory-100">₹{wallet.currentBalance.toFixed(2)}</span>
+                </div>
+                <button
+                  onClick={() => setShowTopUpModal(true)}
+                  className="btn-primary text-xs ml-1 py-1 px-2.5"
+                >
+                  + Top Up
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* 4-Card KPI Telemetry Strip */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="glass-panel glass-card-hover p-4 sm:p-5 rounded-2xl shadow-soft flex items-center justify-between">
+            <div>
+              <p className="text-[10px] sm:text-[11px] font-bold tracking-wider uppercase text-charcoal-500 dark:text-charcoal-400">Daily Menu Offerings</p>
+              <h3 className="text-2xl sm:text-3xl font-display font-bold text-charcoal-900 dark:text-ivory-100 mt-1">{menu.length} Dishes</h3>
+              <span className="badge-subtle bg-surface-soft text-charcoal-600 dark:text-charcoal-300 mt-1 inline-block">Artisan Chef Specials</span>
+            </div>
+            <div className="h-10 w-10 rounded-xl bg-amber-500/10 text-amber-600 flex items-center justify-center shrink-0">
+              <UtensilsCrossed className="h-5 w-5" />
             </div>
           </div>
 
-          {/* Quick Metrics */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-6 pt-6 border-t border-amber-900/40 text-xs">
+          <div className="glass-panel glass-card-hover p-4 sm:p-5 rounded-2xl shadow-soft flex items-center justify-between">
             <div>
-              <span className="text-amber-200/70 uppercase text-[10px] font-bold block">Daily Menu Offerings</span>
-              <span className="text-xl font-bold font-display text-white mt-0.5 block">{menu.length} Artisan Dishes</span>
+              <p className="text-[10px] sm:text-[11px] font-bold tracking-wider uppercase text-charcoal-500 dark:text-charcoal-400">Contactless Card ID</p>
+              <h3 className="text-xl sm:text-2xl font-mono font-bold text-amber-600 dark:text-amber-400 mt-1">{wallet?.rfidCardId || "RFID-SYNC"}</h3>
+              <span className="badge-subtle bg-amber-500/10 text-amber-700 dark:text-amber-300 mt-1 inline-block">NFC Encrypted Pass</span>
             </div>
-            <div>
-              <span className="text-amber-200/70 uppercase text-[10px] font-bold block">Contactless Card ID</span>
-              <span className="text-xl font-mono font-bold text-amber-300 mt-0.5 block">{wallet?.rfidCardId || "RFID-SYNC"}</span>
+            <div className="h-10 w-10 rounded-xl bg-amber-500/10 text-amber-600 flex items-center justify-center shrink-0">
+              <CreditCard className="h-5 w-5" />
             </div>
+          </div>
+
+          <div className="glass-panel glass-card-hover p-4 sm:p-5 rounded-2xl shadow-soft flex items-center justify-between">
             <div>
-              <span className="text-amber-200/70 uppercase text-[10px] font-bold block">Active Orders in Kitchen</span>
-              <span className="text-xl font-bold font-display text-emerald-300 mt-0.5 block">
-                {orders.filter((o) => o.status === "PREPARING").length} Cooking Now
-              </span>
+              <p className="text-[10px] sm:text-[11px] font-bold tracking-wider uppercase text-charcoal-500 dark:text-charcoal-400">Kitchen Queue</p>
+              <h3 className="text-2xl sm:text-3xl font-display font-bold text-emerald-600 dark:text-emerald-400 mt-1">
+                {orders.filter((o) => o.status === "PREPARING").length} Cooking
+              </h3>
+              <span className="badge-subtle bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 mt-1 inline-block">Live Chef Stations</span>
             </div>
+            <div className="h-10 w-10 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center shrink-0">
+              <Receipt className="h-5 w-5" />
+            </div>
+          </div>
+
+          <div className="glass-panel glass-card-hover p-4 sm:p-5 rounded-2xl shadow-soft flex items-center justify-between">
             <div>
-              <span className="text-amber-200/70 uppercase text-[10px] font-bold block">Ready at Counter</span>
-              <span className="text-xl font-bold font-display text-cyan-300 mt-0.5 block">
-                {orders.filter((o) => o.status === "READY_FOR_PICKUP").length} Awaiting Collection
-              </span>
+              <p className="text-[10px] sm:text-[11px] font-bold tracking-wider uppercase text-charcoal-500 dark:text-charcoal-400">Ready at Counter</p>
+              <h3 className="text-2xl sm:text-3xl font-display font-bold text-sky-600 dark:text-sky-400 mt-1">
+                {orders.filter((o) => o.status === "READY_FOR_PICKUP").length} Ready
+              </h3>
+              <span className="badge-subtle bg-sky-500/10 text-sky-700 dark:text-sky-300 mt-1 inline-block">Awaiting Pickup</span>
+            </div>
+            <div className="h-10 w-10 rounded-xl bg-sky-500/10 text-sky-600 flex items-center justify-center shrink-0">
+              <CheckCircle2 className="h-5 w-5" />
             </div>
           </div>
         </div>
 
-        {/* Tab Navigation */}
-        <div className="flex items-center gap-2 border-b border-border dark:border-charcoal-700 pb-2 overflow-x-auto no-scrollbar flex-nowrap">
+        {/* Tab Navigation - Clean Unified Pills Strip */}
+        <div className="flex items-center gap-1.5 p-1.5 rounded-2xl bg-surface-soft/60 dark:bg-charcoal-900 border border-border/80 dark:border-charcoal-800 overflow-x-auto no-scrollbar">
           {[
             { id: "menu", label: "Live Menu & Order POS", icon: UtensilsCrossed },
             { id: "orders", label: "Order Tokens & Pickup Board", icon: Receipt },
@@ -296,13 +331,13 @@ export default function CanteenPage() {
               <button
                 key={t.id}
                 onClick={() => setActiveTab(t.id as any)}
-                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs transition-all whitespace-nowrap shrink-0 ${
+                className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all whitespace-nowrap shrink-0 ${
                   isActive
-                    ? "bg-amber-500 text-charcoal-950 shadow-sm"
-                    : "bg-white dark:bg-charcoal-800 text-charcoal-700 dark:text-charcoal-300 hover:bg-surface-soft border border-border dark:border-charcoal-700"
+                    ? "bg-white dark:bg-charcoal-800 text-charcoal-900 dark:text-ivory-100 shadow-sm border border-border/50 dark:border-charcoal-700"
+                    : "text-charcoal-600 dark:text-charcoal-400 hover:text-charcoal-900 dark:hover:text-ivory-100"
                 }`}
               >
-                <Icon className="w-4 h-4" />
+                <Icon className={`w-4 h-4 ${isActive ? "text-amber-600 dark:text-amber-400" : "text-charcoal-500 dark:text-charcoal-400"}`} />
                 <span>{t.label}</span>
               </button>
             );

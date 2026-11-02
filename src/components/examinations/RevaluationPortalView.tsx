@@ -190,43 +190,45 @@ export function RevaluationPortalView() {
 
   return (
     <div className="space-y-6">
-      {/* Executive Header Banner */}
-      <div className="bg-gradient-to-r from-amber-900 via-rose-950 to-charcoal-900 text-white rounded-2xl p-6 shadow-md border border-amber-800/40">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      {/* Executive Header Banner - Academic OS Native Glassmorphism */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-5 rounded-2xl glass-panel shadow-soft border border-border/80">
+        <div className="flex items-center gap-3">
+          <div className="h-11 w-11 rounded-xl bg-amber-600 text-white flex items-center justify-center shadow-md shadow-amber-600/20 shrink-0">
+            <RotateCcw className="h-5 w-5" />
+          </div>
           <div>
             <div className="flex items-center gap-2 mb-1">
-              <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">
+              <span className="badge-subtle bg-amber-500/10 text-amber-700 dark:text-amber-300">
                 Statutory Examination Grievance Redressal
               </span>
-              <span className="text-[10px] font-mono text-charcoal-300">
-                UGC & State Univ Examination Regulation Compliant
+              <span className="badge-subtle bg-surface-soft text-charcoal-600 dark:text-charcoal-300 font-mono text-[10px]">
+                UGC &amp; State Univ Compliant
               </span>
             </div>
-            <h2 className="text-xl md:text-2xl font-bold tracking-tight text-white flex items-center gap-2.5">
-              <RotateCcw className="h-6 w-6 text-amber-400" />
-              Post-Result Revaluation, Retotaling & Certified Script Photocopy
+            <h2 className="text-lg font-display font-bold text-charcoal-900 dark:text-ivory-100">
+              Post-Result Revaluation, Retotaling &amp; Certified Script Photocopy
             </h2>
-            <p className="text-xs text-charcoal-300 mt-1 max-w-3xl">
+            <p className="text-xs text-charcoal-600 dark:text-charcoal-400">
               Double-blind external examination scrutiny, arithmetic summation audits, certified photocopy watermarks, referee dispute arbitration, and automated grade sheet revision.
             </p>
           </div>
+        </div>
 
-          <div className="flex items-center gap-2 shrink-0">
-            <button
-              onClick={() => setIsApplyModalOpen(true)}
-              className="px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-charcoal-950 font-bold text-xs shadow-md flex items-center gap-1.5 transition-all"
-            >
-              <Plus className="h-4 w-4" />
-              <span>Apply for Revaluation</span>
-            </button>
-            <button
-              onClick={fetchApplications}
-              className="p-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white border border-white/10 transition-colors"
-              title="Refresh Registry"
-            >
-              <RefreshCw className="h-4 w-4" />
-            </button>
-          </div>
+        <div className="flex items-center gap-2 shrink-0">
+          <button
+            onClick={() => setIsApplyModalOpen(true)}
+            className="btn-primary text-xs flex items-center gap-1.5"
+          >
+            <Plus className="h-4 w-4" />
+            <span>Apply for Revaluation</span>
+          </button>
+          <button
+            onClick={fetchApplications}
+            className="btn-ghost text-xs p-2.5"
+            title="Refresh Registry"
+          >
+            <RefreshCw className="h-4 w-4" />
+          </button>
         </div>
       </div>
 

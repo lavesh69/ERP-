@@ -238,26 +238,31 @@ export default function StoreIndentView() {
 
   return (
     <div className="space-y-6">
-      {/* Header Banner */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-5 rounded-2xl bg-gradient-to-r from-charcoal-900 via-rose-950 to-charcoal-900 border border-border/60 text-white shadow-xl">
-        <div className="space-y-1">
-          <div className="flex items-center gap-2">
-            <span className="p-1.5 rounded-lg bg-rose-500/20 text-rose-300 border border-rose-500/30">
-              <Package className="w-5 h-5" />
-            </span>
-            <h2 className="text-xl font-bold tracking-tight text-white">Central Store &amp; Examination Stationery Desk</h2>
-            <span className="text-xs px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-medium">
-              Serialized Barcode Security
-            </span>
+      {/* Header Banner - Academic OS Native Glassmorphism */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-5 rounded-2xl glass-panel shadow-soft border border-border/80">
+        <div className="flex items-center gap-3">
+          <div className="h-11 w-11 rounded-xl bg-rose-primary text-white flex items-center justify-center shadow-md shadow-rose-primary/20 shrink-0">
+            <Package className="w-5 h-5" />
           </div>
-          <p className="text-sm text-ivory-200">
-            Automated requisitions for 32-page Examination Answer Booklets, supplementary sheets, continuous assessment ledgers, and lab consumables.
-          </p>
+          <div>
+            <div className="flex items-center gap-2 mb-1">
+              <span className="badge-subtle bg-rose-container/60 dark:bg-rose-dark/30 text-rose-primary dark:text-rose-accent">
+                Central Store
+              </span>
+              <span className="badge-subtle bg-emerald-500/10 text-emerald-700 dark:text-emerald-300">
+                Serialized Barcode Security
+              </span>
+            </div>
+            <h2 className="text-lg font-display font-bold text-charcoal-900 dark:text-ivory-100">Central Store &amp; Examination Stationery Desk</h2>
+            <p className="text-xs text-charcoal-600 dark:text-charcoal-400">
+              Automated requisitions for 32-page Examination Answer Booklets, supplementary sheets, continuous assessment ledgers, and lab consumables.
+            </p>
+          </div>
         </div>
 
         <button
           onClick={handleOpenIndentModal}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold bg-rose-primary hover:bg-rose-primary/90 text-white transition shadow-lg shadow-rose-950/20 shrink-0"
+          className="btn-primary text-xs flex items-center gap-1.5 shrink-0"
         >
           <Plus className="w-4 h-4" />
           Raise Department Indent

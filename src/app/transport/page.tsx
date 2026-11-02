@@ -1593,28 +1593,28 @@ export default function TransportPage() {
         >
           <div className="bg-white dark:bg-charcoal-900 border border-border dark:border-charcoal-700 rounded-2xl w-full max-w-3xl max-h-[92vh] overflow-y-auto shadow-2xl flex flex-col">
             {/* Header */}
-            <div className="p-5 border-b border-border dark:border-charcoal-800 flex items-start justify-between bg-gradient-to-r from-charcoal-900 via-rose-950 to-charcoal-900 text-white rounded-t-2xl">
+            <div className="p-5 border-b border-border dark:border-charcoal-800 flex items-start justify-between bg-surface-soft/80 dark:bg-charcoal-850 rounded-t-2xl">
               <div>
                 <div className="flex items-center gap-2">
-                  <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-rose-500/20 text-rose-300 border border-rose-400/30 flex items-center gap-1.5">
-                    <Radio className="w-3 h-3 text-rose-400 animate-pulse" />
+                  <span className="badge-subtle bg-rose-container/60 dark:bg-rose-dark/30 text-rose-primary dark:text-rose-accent flex items-center gap-1.5">
+                    <Radio className="w-3 h-3 text-rose-primary dark:text-rose-accent animate-pulse" />
                     LIVE TELEMATICS RADAR
                   </span>
-                  <span className="text-xs px-2 py-0.5 rounded-full font-mono bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                  <span className="badge-subtle bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 font-mono">
                     Dual GNSS Lock • 14 Satellites
                   </span>
                 </div>
-                <h2 className="text-xl font-bold tracking-tight mt-1 flex items-center gap-2">
+                <h2 className="text-xl font-display font-bold tracking-tight text-charcoal-900 dark:text-ivory-100 mt-1 flex items-center gap-2">
                   <span>{selectedTelematicsVehicle.vehicleCode}</span>
-                  <span className="text-sm font-normal text-rose-200">({selectedTelematicsVehicle.registrationNumber})</span>
+                  <span className="text-sm font-normal text-charcoal-500 dark:text-charcoal-400">({selectedTelematicsVehicle.registrationNumber})</span>
                 </h2>
-                <p className="text-xs text-rose-200/80">
+                <p className="text-xs text-charcoal-600 dark:text-charcoal-400">
                   Assigned Route: {selectedTelematicsVehicle.currentRoute || "Campus Express Corridor A"} • Driver: {selectedTelematicsVehicle.driverName} ({selectedTelematicsVehicle.driverPhone})
                 </p>
               </div>
               <button
                 onClick={() => setSelectedTelematicsVehicle(null)}
-                className="p-1.5 rounded-lg text-rose-200 hover:text-white hover:bg-white/10 transition-colors"
+                className="p-1.5 rounded-lg text-charcoal-400 hover:text-charcoal-700 dark:hover:text-ivory-100 hover:bg-surface-soft transition-colors"
                 aria-label="Close modal"
               >
                 <X className="w-5 h-5" />

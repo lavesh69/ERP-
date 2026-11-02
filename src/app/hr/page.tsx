@@ -40,6 +40,7 @@ import {
   GraduationCap,
   CheckSquare,
   CreditCard,
+  HeartPulse,
 } from "lucide-react";
 import { CpcIncrementTab } from "@/components/hr/tabs/CpcIncrementTab";
 import { IncomeTaxTdsTab } from "@/components/hr/tabs/IncomeTaxTdsTab";
@@ -548,133 +549,160 @@ export default function HRPage() {
             { label: "HR & Payroll", href: "/hr" },
           ]}
         />
-        {/* Top Banner */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-charcoal-900 via-rose-950 to-charcoal-900 text-white p-6 md:p-8 shadow-xl">
-        <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+      {/* Top Banner - Academic OS Native Glassmorphism */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 glass-panel p-6 rounded-2xl shadow-soft">
+        <div className="flex items-center gap-3">
+          <div className="h-12 w-12 rounded-xl bg-rose-primary text-white flex items-center justify-center shadow-md shadow-rose-primary/20 shrink-0">
+            <Users className="h-6 w-6" />
+          </div>
           <div>
-            <div className="flex items-center gap-2 mb-2">
-              <span className="px-3 py-1 rounded-full text-xs font-semibold bg-rose-500/20 text-rose-200 border border-rose-400/30">
-                Staff Welfare & Compensation ERP
+            <div className="flex items-center gap-2 mb-1">
+              <span className="badge-subtle bg-rose-container/60 dark:bg-rose-dark/30 text-rose-primary dark:text-rose-accent">
+                Staff Welfare &amp; Compensation
               </span>
-              <span className="px-3 py-1 rounded-full text-xs font-medium bg-emerald-500/20 text-emerald-200 border border-emerald-400/30">
+              <span className="badge-subtle bg-emerald-500/10 text-emerald-700 dark:text-emerald-300">
                 Pay Cycle Active (October 2026)
               </span>
             </div>
-            <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-white">
-              Human Resources, Staff Leave & Payroll
+            <h1 className="text-xl font-display font-bold text-charcoal-900 dark:text-ivory-100">
+              Human Resources, Staff Leave &amp; Payroll
             </h1>
-            <p className="text-sm md:text-base text-rose-100/80 mt-1 max-w-2xl">
+            <p className="text-xs text-charcoal-600 dark:text-charcoal-400">
               Faculty workforce governance, statutory leave quota reconciliations, automated tax deductions, and cryptographic salary payslips.
             </p>
           </div>
-          <div className="flex flex-wrap items-center gap-3">
-            <button
-              onClick={handleRunBatchPayroll}
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium text-sm bg-emerald-600 hover:bg-emerald-700 text-white shadow-md transition-all active:scale-95"
-            >
-              <DollarSign className="w-4 h-4" />
-              Run Payroll ({selectedPayPeriod})
-            </button>
-            <button
-              onClick={handleDownloadBankPayout}
-              className="inline-flex items-center gap-2 px-3.5 py-2.5 rounded-xl font-medium text-xs bg-white/10 hover:bg-white/20 text-white border border-white/20 shadow-sm transition-all active:scale-95"
-            >
-              <Building className="w-4 h-4" />
-              Bank NACH/NEFT
-            </button>
-            <button
-              onClick={handleDownloadEpfoEcr}
-              className="inline-flex items-center gap-2 px-3.5 py-2.5 rounded-xl font-medium text-xs bg-white/10 hover:bg-white/20 text-white border border-white/20 shadow-sm transition-all active:scale-95"
-            >
-              <FileText className="w-4 h-4" />
-              EPFO ECR
-            </button>
-            <button
-              onClick={handleDownloadNpsScf}
-              className="inline-flex items-center gap-2 px-3.5 py-2.5 rounded-xl font-medium text-xs bg-white/10 hover:bg-white/20 text-white border border-white/20 shadow-sm transition-all active:scale-95"
-            >
-              <Landmark className="w-4 h-4 text-emerald-300" />
-              NSDL NPS (Tier-I)
-            </button>
-            <button
-              onClick={handleOpenEsic}
-              className="inline-flex items-center gap-2 px-3.5 py-2.5 rounded-xl font-medium text-xs bg-teal-600/80 hover:bg-teal-600 text-white border border-teal-400/40 shadow-sm transition-all active:scale-95"
-            >
-              <FileCheck className="w-4 h-4 text-teal-200" />
-              ESIC & 24Q
-            </button>
-            <button
-              onClick={handleOpenRoster}
-              className="inline-flex items-center gap-2 px-3.5 py-2.5 rounded-xl font-medium text-xs bg-blue-600/80 hover:bg-blue-600 text-white border border-blue-400/40 shadow-sm transition-all active:scale-95"
-            >
-              <GraduationCap className="w-4 h-4 text-blue-200" />
-              200-Pt Roster
-            </button>
-            <button
-              onClick={() => handleOpenNoDues()}
-              className="inline-flex items-center gap-2 px-3.5 py-2.5 rounded-xl font-medium text-xs bg-purple-600/80 hover:bg-purple-600 text-white border border-purple-400/40 shadow-sm transition-all active:scale-95"
-            >
-              <ClipboardCheck className="w-4 h-4 text-purple-200" />
-              Digital No-Dues
-            </button>
-            <button
-              onClick={() => setH2hModal({ ...h2hModal, isOpen: true })}
-              className="inline-flex items-center gap-2 px-3.5 py-2.5 rounded-xl font-medium text-xs bg-indigo-600/80 hover:bg-indigo-600 text-white border border-indigo-400/40 shadow-sm transition-all active:scale-95"
-            >
-              <Key className="w-4 h-4" />
-              Direct H2H Payout
-            </button>
-            <button
-              onClick={() => handleCalculateDaArrears(selectedPayrollStaffId)}
-              className="inline-flex items-center gap-2 px-3.5 py-2.5 rounded-xl font-medium text-xs bg-amber-600/80 hover:bg-amber-600 text-white border border-amber-400/40 shadow-sm transition-all active:scale-95"
-            >
-              <TrendingUp className="w-4 h-4" />
-              7th CPC DA Arrears
-            </button>
-            <button
-              onClick={handleExportStaffCsv}
-              className="inline-flex items-center gap-2 px-3.5 py-2.5 rounded-xl font-medium text-xs bg-white/10 hover:bg-white/20 text-white border border-white/20 shadow-sm transition-all active:scale-95"
-            >
-              <Download className="w-4 h-4" />
-              Staff CSV
-            </button>
-            <button
-              onClick={() => setShowLeaveModal(true)}
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium text-sm bg-rose-primary hover:bg-rose-600 text-white shadow-md transition-all active:scale-95"
-            >
-              <PlusCircle className="w-4 h-4" />
-              Apply Leave
-            </button>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            onClick={handleRunBatchPayroll}
+            className="btn-primary text-xs flex items-center gap-1.5"
+          >
+            <DollarSign className="w-3.5 h-3.5" />
+            Run Payroll ({selectedPayPeriod})
+          </button>
+          <button
+            onClick={handleDownloadBankPayout}
+            className="btn-ghost text-xs flex items-center gap-1.5"
+          >
+            <Building className="w-3.5 h-3.5" />
+            NACH/NEFT
+          </button>
+          <button
+            onClick={handleDownloadEpfoEcr}
+            className="btn-ghost text-xs flex items-center gap-1.5"
+          >
+            <FileText className="w-3.5 h-3.5" />
+            EPFO ECR
+          </button>
+          <button
+            onClick={handleDownloadNpsScf}
+            className="btn-ghost text-xs flex items-center gap-1.5"
+          >
+            <Landmark className="w-3.5 h-3.5" />
+            NSDL NPS
+          </button>
+          <button
+            onClick={handleOpenEsic}
+            className="btn-ghost text-xs flex items-center gap-1.5"
+          >
+            <FileCheck className="w-3.5 h-3.5" />
+            ESIC &amp; 24Q
+          </button>
+          <button
+            onClick={handleOpenRoster}
+            className="btn-ghost text-xs flex items-center gap-1.5"
+          >
+            <GraduationCap className="w-3.5 h-3.5" />
+            200-Pt Roster
+          </button>
+          <button
+            onClick={() => handleOpenNoDues()}
+            className="btn-ghost text-xs flex items-center gap-1.5"
+          >
+            <ClipboardCheck className="w-3.5 h-3.5" />
+            No-Dues
+          </button>
+          <button
+            onClick={() => setH2hModal({ ...h2hModal, isOpen: true })}
+            className="btn-ghost text-xs flex items-center gap-1.5"
+          >
+            <Key className="w-3.5 h-3.5" />
+            H2H Payout
+          </button>
+          <button
+            onClick={() => handleCalculateDaArrears(selectedPayrollStaffId)}
+            className="btn-ghost text-xs flex items-center gap-1.5"
+          >
+            <TrendingUp className="w-3.5 h-3.5" />
+            7th CPC DA
+          </button>
+          <button
+            onClick={handleExportStaffCsv}
+            className="btn-ghost text-xs flex items-center gap-1.5"
+          >
+            <Download className="w-3.5 h-3.5" />
+            Export Staff
+          </button>
+          <button
+            onClick={() => setShowLeaveModal(true)}
+            className="btn-primary text-xs flex items-center gap-1.5"
+          >
+            <PlusCircle className="w-3.5 h-3.5" />
+            Apply Leave
+          </button>
+        </div>
+      </div>
+
+      {/* 4-Card KPI Telemetry Strip */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="glass-panel glass-card-hover p-4 sm:p-5 rounded-2xl shadow-soft flex items-center justify-between">
+          <div>
+            <p className="text-[10px] sm:text-[11px] font-bold tracking-wider uppercase text-charcoal-500 dark:text-charcoal-400">Total Faculty &amp; Staff</p>
+            <h3 className="text-2xl sm:text-3xl font-display font-bold text-charcoal-900 dark:text-ivory-100 mt-1">{staffMembers.length} Members</h3>
+            <span className="badge-subtle bg-surface-soft text-charcoal-600 dark:text-charcoal-300 mt-1 inline-block">100% Verified Records</span>
+          </div>
+          <div className="h-10 w-10 rounded-xl bg-rose-container text-rose-primary flex items-center justify-center shrink-0">
+            <Users className="h-5 w-5" />
           </div>
         </div>
 
-        {/* Live Metrics */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-6 pt-6 border-t border-rose-900/50">
+        <div className="glass-panel glass-card-hover p-4 sm:p-5 rounded-2xl shadow-soft flex items-center justify-between">
           <div>
-            <p className="text-xs text-rose-200 uppercase tracking-wider font-semibold">Total Faculty & Staff</p>
-            <p className="text-xl md:text-2xl font-bold mt-1">{staffMembers.length} Members</p>
-            <p className="text-xs text-rose-300 mt-0.5">100% Verified Service Records</p>
+            <p className="text-[10px] sm:text-[11px] font-bold tracking-wider uppercase text-charcoal-500 dark:text-charcoal-400">Casual Leave Quota</p>
+            <h3 className="text-2xl sm:text-3xl font-display font-bold text-emerald-600 dark:text-emerald-400 mt-1">
+              {leaveData?.leaveQuotas?.casualLeaveRemaining ?? leaveData?.quota?.casualLeaveRemaining ?? 10} / {leaveData?.leaveQuotas?.casualLeaveTotal ?? 12}
+            </h3>
+            <span className="badge-subtle bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 mt-1 inline-block">Days Balance</span>
           </div>
-          <div>
-            <p className="text-xs text-rose-200 uppercase tracking-wider font-semibold">Casual Leave Quota</p>
-            <p className="text-xl md:text-2xl font-bold mt-1 text-emerald-300">
-              {leaveData?.leaveQuotas?.casualLeaveRemaining ?? leaveData?.quota?.casualLeaveRemaining ?? 10} / {leaveData?.leaveQuotas?.casualLeaveTotal ?? 12} Days
-            </p>
-            <p className="text-xs text-rose-300 mt-0.5">Annual Statutory Balance</p>
+          <div className="h-10 w-10 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center shrink-0">
+            <Calendar className="h-5 w-5" />
           </div>
+        </div>
+
+        <div className="glass-panel glass-card-hover p-4 sm:p-5 rounded-2xl shadow-soft flex items-center justify-between">
           <div>
-            <p className="text-xs text-rose-200 uppercase tracking-wider font-semibold">Medical Leave</p>
-            <p className="text-xl md:text-2xl font-bold mt-1 text-cyan-300">
-              {leaveData?.leaveQuotas?.medicalLeaveRemaining ?? leaveData?.quota?.medicalLeaveRemaining ?? 9} / {leaveData?.leaveQuotas?.medicalLeaveTotal ?? 10} Days
-            </p>
-            <p className="text-xs text-rose-300 mt-0.5">Paid Sickness Benefit</p>
+            <p className="text-[10px] sm:text-[11px] font-bold tracking-wider uppercase text-charcoal-500 dark:text-charcoal-400">Medical Leave</p>
+            <h3 className="text-2xl sm:text-3xl font-display font-bold text-sky-600 dark:text-sky-400 mt-1">
+              {leaveData?.leaveQuotas?.medicalLeaveRemaining ?? leaveData?.quota?.medicalLeaveRemaining ?? 9} / {leaveData?.leaveQuotas?.medicalLeaveTotal ?? 10}
+            </h3>
+            <span className="badge-subtle bg-sky-500/10 text-sky-700 dark:text-sky-300 mt-1 inline-block">Paid Sickness Benefit</span>
           </div>
+          <div className="h-10 w-10 rounded-xl bg-sky-500/10 text-sky-600 flex items-center justify-center shrink-0">
+            <HeartPulse className="h-5 w-5" />
+          </div>
+        </div>
+
+        <div className="glass-panel glass-card-hover p-4 sm:p-5 rounded-2xl shadow-soft flex items-center justify-between">
           <div>
-            <p className="text-xs text-rose-200 uppercase tracking-wider font-semibold">Monthly Payroll Total</p>
-            <p className="text-xl md:text-2xl font-bold mt-1 text-amber-300">
-              ${staffMembers.reduce((acc, m) => acc + m.basicPay * 1.44, 0).toLocaleString()}
-            </p>
-            <p className="text-xs text-rose-300 mt-0.5">Gross Salaries Disbursed</p>
+            <p className="text-[10px] sm:text-[11px] font-bold tracking-wider uppercase text-charcoal-500 dark:text-charcoal-400">Monthly Payroll Total</p>
+            <h3 className="text-2xl sm:text-3xl font-display font-bold text-amber-600 dark:text-amber-400 mt-1">
+              ₹{staffMembers.reduce((acc, m) => acc + m.basicPay * 1.44, 0).toLocaleString("en-IN")}
+            </h3>
+            <span className="badge-subtle bg-amber-500/10 text-amber-700 dark:text-amber-300 mt-1 inline-block">Gross Salaries Disbursed</span>
+          </div>
+          <div className="h-10 w-10 rounded-xl bg-amber-500/10 text-amber-600 flex items-center justify-center shrink-0">
+            <DollarSign className="h-5 w-5" />
           </div>
         </div>
       </div>
@@ -705,8 +733,8 @@ export default function HRPage() {
         </div>
       )}
 
-      {/* Navigation Tabs */}
-      <div className="flex border-b border-border dark:border-charcoal-800 space-x-2 overflow-x-auto no-scrollbar flex-nowrap pb-px">
+      {/* Navigation Tabs - Clean Unified Pills Strip */}
+      <div className="flex items-center gap-1.5 p-1.5 rounded-2xl bg-surface-soft/60 dark:bg-charcoal-900 border border-border/80 dark:border-charcoal-800 overflow-x-auto no-scrollbar">
         {[
           { id: "staff", label: "Faculty & Staff Directory", icon: Users },
           { id: "leaves", label: "Leave Management & Quotas", icon: Calendar, count: leaveData?.applications?.filter((a: any) => a.status === "PENDING")?.length },
@@ -721,16 +749,16 @@ export default function HRPage() {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id as any)}
-              className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-all whitespace-nowrap shrink-0 ${
+              className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all whitespace-nowrap shrink-0 ${
                 isActive
-                  ? "border-rose-primary text-rose-primary dark:text-rose-light dark:border-rose-light"
-                  : "border-transparent text-charcoal-600 dark:text-ivory-400 hover:text-charcoal-900 dark:hover:text-white"
+                  ? "bg-white dark:bg-charcoal-800 text-charcoal-900 dark:text-ivory-100 shadow-sm border border-border/50 dark:border-charcoal-700"
+                  : "text-charcoal-600 dark:text-charcoal-400 hover:text-charcoal-900 dark:hover:text-ivory-100"
               }`}
             >
-              <Icon className="w-4 h-4" />
+              <Icon className={`w-4 h-4 ${isActive ? "text-rose-primary dark:text-rose-accent" : "text-charcoal-500 dark:text-charcoal-400"}`} />
               <span>{tab.label}</span>
               {typeof tab.count === "number" && tab.count > 0 && (
-                <span className="px-1.5 py-0.5 rounded-full text-xs font-bold bg-rose-100 dark:bg-rose-900/60 text-rose-700 dark:text-rose-300">
+                <span className="px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-container text-rose-primary dark:bg-rose-dark/40 dark:text-rose-accent">
                   {tab.count}
                 </span>
               )}
