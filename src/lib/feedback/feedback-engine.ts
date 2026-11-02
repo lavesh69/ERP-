@@ -34,6 +34,48 @@ export interface SurveyResponse {
   studentId?: string;
   studentHash?: string;
   submittedAt: string;
+  stakeholderType?: "STUDENT" | "SENIOR_EXIT" | "ALUMNI" | "PARENT" | "EMPLOYER";
+  facilityCategory?: string;
+  emergingTechRecommended?: string;
+  futureAspirations?: string;
+}
+
+export type ActionPlanStatus = "PENDING_REVIEW" | "ACTION_PLANNED" | "IMPLEMENTED" | "VERIFIED_BY_IQAC";
+
+export interface FeedbackActionReport {
+  id: string;
+  reportRef: string;
+  targetType: "FACULTY_PEDAGOGY" | "COURSE_CURRICULUM" | "CAMPUS_FACILITY" | "DEPARTMENTAL_SLA";
+  targetId: string;
+  targetName: string;
+  departmentCode: string;
+  triggerReason: string;
+  correctiveAction: string;
+  assignedAuthority: string;
+  deadlineDate: string;
+  status: ActionPlanStatus;
+  iqacVerificationDate?: string;
+  iqacRemarks?: string;
+  createdAt: string;
+}
+
+export type SurveyCycleStatus = "SCHEDULED" | "ACTIVE" | "COMPLETED" | "CLOSED";
+
+export interface FeedbackSurveyCycle {
+  id: string;
+  cycleCode: string;
+  title: string;
+  surveyType: FeedbackSurveyType;
+  academicYear: string;
+  semesterTerm: string;
+  startDate: string;
+  endDate: string;
+  targetDepartment: string;
+  targetAudience: "ALL_ENROLLED_STUDENTS" | "GRADUATING_FINAL_YEAR" | "ALUMNI_COMMUNITY" | "ALL_CAMPUS_RESIDENTS";
+  isMandatory: boolean;
+  eligibleCount: number;
+  completedCount: number;
+  status: SurveyCycleStatus;
 }
 
 export interface FacultyPerformanceIndex {
@@ -201,5 +243,47 @@ export function deriveFeedbackSentiment(remarks?: string, score?: number) {
     hasWrittenFeedback: true,
     description: `Analyzed from student's written response (${posCount} positive markers, ${negCount} critical markers).`,
   };
+}
+
+/**
+ * Validates Action Taken Report (ATR / CAP) creation under NAAC Criterion 1.4.2
+ */
+export function validateActionReport(report: Partial<FeedbackActionReport>): { isValid: boolean; errors: string[] } {
+  const errors: string[] = [];
+  if (!report.targetName || report.targetName.trim().length === 0) {
+    errors.push("Target faculty, course, or facility name is required.");
+  }
+  if (!report.triggerReason || report.triggerReason.trim().length < 5) {
+    errors.push("Trigger reason must be substantively documented (min 5 characters).");
+  }
+  if (!report.correctiveAction || report.correctiveAction.trim().length < 5) {
+    errors.push("Corrective action description is required (min 5 characters).");
+  }
+  if (!report.assignedAuthority || report.assignedAuthority.trim().length === 0) {
+    errors.push("Assigned authority / responsible department head is required.");
+  }
+  if (!report.deadlineDate || isNaN(new Date(report.deadlineDate).getTime())) {
+    errors.push("Valid deadline date is required.");
+  }
+  return { isValid: errors.length === 0, errors };
+}
+
+/**
+ * Validates academic survey cycle schedule configuration
+ */
+export function validateSurveyCycle(cycle: Partial<FeedbackSurveyCycle>): { isValid: boolean; errors: string[] } {
+  const errors: string[] = [];
+  if (!cycle.title || cycle.title.trim().length === 0) {
+    errors.push("Survey cycle title is required.");
+  }
+  if (!cycle.startDate || !cycle.endDate) {
+    errors.push("Start date and end date are required.");
+  } else if (new Date(cycle.endDate).getTime() <= new Date(cycle.startDate).getTime()) {
+    errors.push("End date must be strictly after start date.");
+  }
+  if (cycle.eligibleCount !== undefined && cycle.eligibleCount < 0) {
+    errors.push("Eligible student count cannot be negative.");
+  }
+  return { isValid: errors.length === 0, errors };
 }
 

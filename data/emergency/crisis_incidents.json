@@ -1299,5 +1299,485 @@
     "dispatchTimestamp": "2026-11-02T08:57:14.344Z",
     "status": "ACTIVE",
     "incidentSeal": "CLERY-SEAL-BBECB72E72CB0B0E27FF78DE"
+  },
+  {
+    "id": "EMRG-1793621314056-32QE",
+    "institutionId": "inst-apex-01",
+    "category": "WEATHER",
+    "severity": "CRITICAL",
+    "headline": "FLASH FLOOD ALERT: Campus Evacuation Protocol",
+    "instructions": "Move to designated assembly points on higher ground immediately.",
+    "affectedLocations": [
+      "North Campus",
+      "Sports Complex",
+      "Block B"
+    ],
+    "activatedByUserId": "usr-admin-01",
+    "activatorName": "Elena Evans (SUPER_ADMIN)",
+    "channelsDispatched": [
+      "SMS",
+      "WHATSAPP",
+      "EMAIL",
+      "IN_APP_BANNER"
+    ],
+    "dispatchTimestamp": "2026-11-02T12:08:34.056Z",
+    "status": "ALL_CLEAR",
+    "incidentSeal": "CLERY-SEAL-4F5D307F3E1EC568A59A4BF2",
+    "resolvedAt": "2026-11-02T12:08:34.105Z"
+  },
+  {
+    "id": "EMRG-1793621315793-7SLD",
+    "institutionId": "inst-apex-01",
+    "category": "SEVERE_WEATHER_ALERT",
+    "severity": "HIGH_WARNING",
+    "headline": "Flash Thunderstorm Protocol: Secure Open Quads",
+    "instructions": "All laboratory windows must be latched. Ground floor classes move to upper auditoriums.",
+    "affectedLocations": [
+      "Central Academic Block",
+      "Sports Ground"
+    ],
+    "activatedByUserId": "usr-hr-security-01",
+    "activatorName": "Campus Incident Commander",
+    "channelsDispatched": [
+      "SMS",
+      "WHATSAPP",
+      "EMAIL",
+      "IN_APP_BANNER"
+    ],
+    "dispatchTimestamp": "2026-11-02T12:08:35.793Z",
+    "status": "ACTIVE",
+    "incidentSeal": "CLERY-SEAL-C2DB1726642D60C217880A50"
+  },
+  {
+    "id": "EMRG-1793621779719-2GEB",
+    "institutionId": "inst-apex-01",
+    "category": "WEATHER",
+    "severity": "CRITICAL",
+    "headline": "FLASH FLOOD ALERT: Campus Evacuation Protocol",
+    "instructions": "Move to designated assembly points on higher ground immediately.",
+    "affectedLocations": [
+      "North Campus",
+      "Sports Complex",
+      "Block B"
+    ],
+    "activatedByUserId": "usr-admin-01",
+    "activatorName": "Elena Evans (SUPER_ADMIN)",
+    "channelsDispatched": [
+      "SMS",
+      "WHATSAPP",
+      "EMAIL",
+      "IN_APP_BANNER"
+    ],
+    "dispatchTimestamp": "2026-11-02T12:16:19.719Z",
+    "status": "ALL_CLEAR",
+    "incidentSeal": "CLERY-SEAL-491299D7BA168DA69F469E9B",
+    "resolvedAt": "2026-11-02T12:16:19.768Z"
+  },
+  {
+    "id": "EMRG-1793621781432-GBRS",
+    "institutionId": "inst-apex-01",
+    "category": "SEVERE_WEATHER_ALERT",
+    "severity": "HIGH_WARNING",
+    "headline": "Flash Thunderstorm Protocol: Secure Open Quads",
+    "instructions": "All laboratory windows must be latched. Ground floor classes move to upper auditoriums.",
+    "affectedLocations": [
+      "Central Academic Block",
+      "Sports Ground"
+    ],
+    "activatedByUserId": "usr-hr-security-01",
+    "activatorName": "Campus Incident Commander",
+    "channelsDispatched": [
+      "SMS",
+      "WHATSAPP",
+      "EMAIL",
+      "IN_APP_BANNER"
+    ],
+    "dispatchTimestamp": "2026-11-02T12:16:21.432Z",
+    "status": "ACTIVE",
+    "incidentSeal": "CLERY-SEAL-53ADCCB07AFB5F6FB7248929"
+  },
+  {
+    "id": "EMRG-1793622361873-SLMF",
+    "institutionId": "inst-apex-01",
+    "category": "WEATHER",
+    "severity": "CRITICAL",
+    "headline": "FLASH FLOOD ALERT: Campus Evacuation Protocol",
+    "instructions": "Move to designated assembly points on higher ground immediately.",
+    "affectedLocations": [
+      "North Campus",
+      "Sports Complex",
+      "Block B"
+    ],
+    "activatedByUserId": "usr-admin-01",
+    "activatorName": "Elena Evans (SUPER_ADMIN)",
+    "channelsDispatched": [
+      "SMS",
+      "WHATSAPP",
+      "EMAIL",
+      "IN_APP_BANNER"
+    ],
+    "dispatchTimestamp": "2026-11-02T12:26:01.873Z",
+    "status": "ALL_CLEAR",
+    "incidentSeal": "CLERY-SEAL-FF41491B9C47D2996ABC23B5",
+    "resolvedAt": "2026-11-02T12:26:01.926Z"
+  },
+  {
+    "id": "EMRG-1793622363812-LQPJ",
+    "institutionId": "inst-apex-01",
+    "category": "SEVERE_WEATHER_ALERT",
+    "severity": "HIGH_WARNING",
+    "headline": "Flash Thunderstorm Protocol: Secure Open Quads",
+    "instructions": "All laboratory windows must be latched. Ground floor classes move to upper auditoriums.",
+    "affectedLocations": [
+      "Central Academic Block",
+      "Sports Ground"
+    ],
+    "activatedByUserId": "usr-hr-security-01",
+    "activatorName": "Campus Incident Commander",
+    "channelsDispatched": [
+      "SMS",
+      "WHATSAPP",
+      "EMAIL",
+      "IN_APP_BANNER"
+    ],
+    "dispatchTimestamp": "2026-11-02T12:26:03.812Z",
+    "status": "ACTIVE",
+    "incidentSeal": "CLERY-SEAL-B62FFAC476AEAC406E5D205B"
+  },
+  {
+    "id": "EMRG-1793622529386-UZ2K",
+    "institutionId": "inst-apex-01",
+    "category": "WEATHER",
+    "severity": "CRITICAL",
+    "headline": "FLASH FLOOD ALERT: Campus Evacuation Protocol",
+    "instructions": "Move to designated assembly points on higher ground immediately.",
+    "affectedLocations": [
+      "North Campus",
+      "Sports Complex",
+      "Block B"
+    ],
+    "activatedByUserId": "usr-admin-01",
+    "activatorName": "Elena Evans (SUPER_ADMIN)",
+    "channelsDispatched": [
+      "SMS",
+      "WHATSAPP",
+      "EMAIL",
+      "IN_APP_BANNER"
+    ],
+    "dispatchTimestamp": "2026-11-02T12:28:49.386Z",
+    "status": "ALL_CLEAR",
+    "incidentSeal": "CLERY-SEAL-AA9EEA75481344DCEDD0B615",
+    "resolvedAt": "2026-11-02T12:28:49.430Z"
+  },
+  {
+    "id": "EMRG-1793622531037-NSMH",
+    "institutionId": "inst-apex-01",
+    "category": "SEVERE_WEATHER_ALERT",
+    "severity": "HIGH_WARNING",
+    "headline": "Flash Thunderstorm Protocol: Secure Open Quads",
+    "instructions": "All laboratory windows must be latched. Ground floor classes move to upper auditoriums.",
+    "affectedLocations": [
+      "Central Academic Block",
+      "Sports Ground"
+    ],
+    "activatedByUserId": "usr-hr-security-01",
+    "activatorName": "Campus Incident Commander",
+    "channelsDispatched": [
+      "SMS",
+      "WHATSAPP",
+      "EMAIL",
+      "IN_APP_BANNER"
+    ],
+    "dispatchTimestamp": "2026-11-02T12:28:51.037Z",
+    "status": "ACTIVE",
+    "incidentSeal": "CLERY-SEAL-06273753B1E31B4CD5DEC065"
+  },
+  {
+    "id": "EMRG-1793622695065-DXY3",
+    "institutionId": "inst-apex-01",
+    "category": "WEATHER",
+    "severity": "CRITICAL",
+    "headline": "FLASH FLOOD ALERT: Campus Evacuation Protocol",
+    "instructions": "Move to designated assembly points on higher ground immediately.",
+    "affectedLocations": [
+      "North Campus",
+      "Sports Complex",
+      "Block B"
+    ],
+    "activatedByUserId": "usr-admin-01",
+    "activatorName": "Elena Evans (SUPER_ADMIN)",
+    "channelsDispatched": [
+      "SMS",
+      "WHATSAPP",
+      "EMAIL",
+      "IN_APP_BANNER"
+    ],
+    "dispatchTimestamp": "2026-11-02T12:31:35.065Z",
+    "status": "ALL_CLEAR",
+    "incidentSeal": "CLERY-SEAL-7D9AA29E55DB3B93AD2B7D65",
+    "resolvedAt": "2026-11-02T12:31:35.104Z"
+  },
+  {
+    "id": "EMRG-1793622695841-773S",
+    "institutionId": "inst-apex-01",
+    "category": "SEVERE_WEATHER_ALERT",
+    "severity": "HIGH_WARNING",
+    "headline": "Flash Thunderstorm Protocol: Secure Open Quads",
+    "instructions": "All laboratory windows must be latched. Ground floor classes move to upper auditoriums.",
+    "affectedLocations": [
+      "Central Academic Block",
+      "Sports Ground"
+    ],
+    "activatedByUserId": "usr-hr-security-01",
+    "activatorName": "Campus Incident Commander",
+    "channelsDispatched": [
+      "SMS",
+      "WHATSAPP",
+      "EMAIL",
+      "IN_APP_BANNER"
+    ],
+    "dispatchTimestamp": "2026-11-02T12:31:35.841Z",
+    "status": "ACTIVE",
+    "incidentSeal": "CLERY-SEAL-03C043E4D2A877FA88DDEC44"
+  },
+  {
+    "id": "EMRG-1793622731203-RRAD",
+    "institutionId": "inst-apex-01",
+    "category": "WEATHER",
+    "severity": "CRITICAL",
+    "headline": "FLASH FLOOD ALERT: Campus Evacuation Protocol",
+    "instructions": "Move to designated assembly points on higher ground immediately.",
+    "affectedLocations": [
+      "North Campus",
+      "Sports Complex",
+      "Block B"
+    ],
+    "activatedByUserId": "usr-admin-01",
+    "activatorName": "Elena Evans (SUPER_ADMIN)",
+    "channelsDispatched": [
+      "SMS",
+      "WHATSAPP",
+      "EMAIL",
+      "IN_APP_BANNER"
+    ],
+    "dispatchTimestamp": "2026-11-02T12:32:11.203Z",
+    "status": "ALL_CLEAR",
+    "incidentSeal": "CLERY-SEAL-E3B4EF3365EA50C046A4D87A",
+    "resolvedAt": "2026-11-02T12:32:11.252Z"
+  },
+  {
+    "id": "EMRG-1793622733246-HS10",
+    "institutionId": "inst-apex-01",
+    "category": "SEVERE_WEATHER_ALERT",
+    "severity": "HIGH_WARNING",
+    "headline": "Flash Thunderstorm Protocol: Secure Open Quads",
+    "instructions": "All laboratory windows must be latched. Ground floor classes move to upper auditoriums.",
+    "affectedLocations": [
+      "Central Academic Block",
+      "Sports Ground"
+    ],
+    "activatedByUserId": "usr-hr-security-01",
+    "activatorName": "Campus Incident Commander",
+    "channelsDispatched": [
+      "SMS",
+      "WHATSAPP",
+      "EMAIL",
+      "IN_APP_BANNER"
+    ],
+    "dispatchTimestamp": "2026-11-02T12:32:13.246Z",
+    "status": "ACTIVE",
+    "incidentSeal": "CLERY-SEAL-1552E97BFC61BE9462B5EA29"
+  },
+  {
+    "id": "EMRG-1793622765169-A9PT",
+    "institutionId": "inst-apex-01",
+    "category": "WEATHER",
+    "severity": "CRITICAL",
+    "headline": "FLASH FLOOD ALERT: Campus Evacuation Protocol",
+    "instructions": "Move to designated assembly points on higher ground immediately.",
+    "affectedLocations": [
+      "North Campus",
+      "Sports Complex",
+      "Block B"
+    ],
+    "activatedByUserId": "usr-admin-01",
+    "activatorName": "Elena Evans (SUPER_ADMIN)",
+    "channelsDispatched": [
+      "SMS",
+      "WHATSAPP",
+      "EMAIL",
+      "IN_APP_BANNER"
+    ],
+    "dispatchTimestamp": "2026-11-02T12:32:45.169Z",
+    "status": "ALL_CLEAR",
+    "incidentSeal": "CLERY-SEAL-6E7BED590FECD294D8AFB7E5",
+    "resolvedAt": "2026-11-02T12:32:45.221Z"
+  },
+  {
+    "id": "EMRG-1793622766953-R4Z1",
+    "institutionId": "inst-apex-01",
+    "category": "SEVERE_WEATHER_ALERT",
+    "severity": "HIGH_WARNING",
+    "headline": "Flash Thunderstorm Protocol: Secure Open Quads",
+    "instructions": "All laboratory windows must be latched. Ground floor classes move to upper auditoriums.",
+    "affectedLocations": [
+      "Central Academic Block",
+      "Sports Ground"
+    ],
+    "activatedByUserId": "usr-hr-security-01",
+    "activatorName": "Campus Incident Commander",
+    "channelsDispatched": [
+      "SMS",
+      "WHATSAPP",
+      "EMAIL",
+      "IN_APP_BANNER"
+    ],
+    "dispatchTimestamp": "2026-11-02T12:32:46.953Z",
+    "status": "ACTIVE",
+    "incidentSeal": "CLERY-SEAL-B582189AE278525306BCD253"
+  },
+  {
+    "id": "EMRG-1793622825178-TFD8",
+    "institutionId": "inst-apex-01",
+    "category": "WEATHER",
+    "severity": "CRITICAL",
+    "headline": "FLASH FLOOD ALERT: Campus Evacuation Protocol",
+    "instructions": "Move to designated assembly points on higher ground immediately.",
+    "affectedLocations": [
+      "North Campus",
+      "Sports Complex",
+      "Block B"
+    ],
+    "activatedByUserId": "usr-admin-01",
+    "activatorName": "Elena Evans (SUPER_ADMIN)",
+    "channelsDispatched": [
+      "SMS",
+      "WHATSAPP",
+      "EMAIL",
+      "IN_APP_BANNER"
+    ],
+    "dispatchTimestamp": "2026-11-02T12:33:45.178Z",
+    "status": "ALL_CLEAR",
+    "incidentSeal": "CLERY-SEAL-BDE205DD075EE41DA605EB50",
+    "resolvedAt": "2026-11-02T12:33:45.236Z"
+  },
+  {
+    "id": "EMRG-1793622827017-HLYO",
+    "institutionId": "inst-apex-01",
+    "category": "SEVERE_WEATHER_ALERT",
+    "severity": "HIGH_WARNING",
+    "headline": "Flash Thunderstorm Protocol: Secure Open Quads",
+    "instructions": "All laboratory windows must be latched. Ground floor classes move to upper auditoriums.",
+    "affectedLocations": [
+      "Central Academic Block",
+      "Sports Ground"
+    ],
+    "activatedByUserId": "usr-hr-security-01",
+    "activatorName": "Campus Incident Commander",
+    "channelsDispatched": [
+      "SMS",
+      "WHATSAPP",
+      "EMAIL",
+      "IN_APP_BANNER"
+    ],
+    "dispatchTimestamp": "2026-11-02T12:33:47.017Z",
+    "status": "ACTIVE",
+    "incidentSeal": "CLERY-SEAL-895AACFADED9338FD6208622"
+  },
+  {
+    "id": "EMRG-1793622884749-7V0S",
+    "institutionId": "inst-apex-01",
+    "category": "WEATHER",
+    "severity": "CRITICAL",
+    "headline": "FLASH FLOOD ALERT: Campus Evacuation Protocol",
+    "instructions": "Move to designated assembly points on higher ground immediately.",
+    "affectedLocations": [
+      "North Campus",
+      "Sports Complex",
+      "Block B"
+    ],
+    "activatedByUserId": "usr-admin-01",
+    "activatorName": "Elena Evans (SUPER_ADMIN)",
+    "channelsDispatched": [
+      "SMS",
+      "WHATSAPP",
+      "EMAIL",
+      "IN_APP_BANNER"
+    ],
+    "dispatchTimestamp": "2026-11-02T12:34:44.749Z",
+    "status": "ALL_CLEAR",
+    "incidentSeal": "CLERY-SEAL-448517B98A971187016F2974",
+    "resolvedAt": "2026-11-02T12:34:44.846Z"
+  },
+  {
+    "id": "EMRG-1793622887831-F72F",
+    "institutionId": "inst-apex-01",
+    "category": "SEVERE_WEATHER_ALERT",
+    "severity": "HIGH_WARNING",
+    "headline": "Flash Thunderstorm Protocol: Secure Open Quads",
+    "instructions": "All laboratory windows must be latched. Ground floor classes move to upper auditoriums.",
+    "affectedLocations": [
+      "Central Academic Block",
+      "Sports Ground"
+    ],
+    "activatedByUserId": "usr-hr-security-01",
+    "activatorName": "Campus Incident Commander",
+    "channelsDispatched": [
+      "SMS",
+      "WHATSAPP",
+      "EMAIL",
+      "IN_APP_BANNER"
+    ],
+    "dispatchTimestamp": "2026-11-02T12:34:47.831Z",
+    "status": "ACTIVE",
+    "incidentSeal": "CLERY-SEAL-9EA891018CB69B6BC8405EA5"
+  },
+  {
+    "id": "EMRG-1793622929301-8KH9",
+    "institutionId": "inst-apex-01",
+    "category": "WEATHER",
+    "severity": "CRITICAL",
+    "headline": "FLASH FLOOD ALERT: Campus Evacuation Protocol",
+    "instructions": "Move to designated assembly points on higher ground immediately.",
+    "affectedLocations": [
+      "North Campus",
+      "Sports Complex",
+      "Block B"
+    ],
+    "activatedByUserId": "usr-admin-01",
+    "activatorName": "Elena Evans (SUPER_ADMIN)",
+    "channelsDispatched": [
+      "SMS",
+      "WHATSAPP",
+      "EMAIL",
+      "IN_APP_BANNER"
+    ],
+    "dispatchTimestamp": "2026-11-02T12:35:29.301Z",
+    "status": "ALL_CLEAR",
+    "incidentSeal": "CLERY-SEAL-15C21E6CB2A50B5453C8A589",
+    "resolvedAt": "2026-11-02T12:35:29.356Z"
+  },
+  {
+    "id": "EMRG-1793622930419-KG6V",
+    "institutionId": "inst-apex-01",
+    "category": "SEVERE_WEATHER_ALERT",
+    "severity": "HIGH_WARNING",
+    "headline": "Flash Thunderstorm Protocol: Secure Open Quads",
+    "instructions": "All laboratory windows must be latched. Ground floor classes move to upper auditoriums.",
+    "affectedLocations": [
+      "Central Academic Block",
+      "Sports Ground"
+    ],
+    "activatedByUserId": "usr-hr-security-01",
+    "activatorName": "Campus Incident Commander",
+    "channelsDispatched": [
+      "SMS",
+      "WHATSAPP",
+      "EMAIL",
+      "IN_APP_BANNER"
+    ],
+    "dispatchTimestamp": "2026-11-02T12:35:30.419Z",
+    "status": "ACTIVE",
+    "incidentSeal": "CLERY-SEAL-8D70E4B58CA96DF9F053C062"
   }
 ]

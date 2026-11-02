@@ -8,7 +8,7 @@
       "calories": 380,
       "isVeg": true,
       "isGlutenFree": true,
-      "availableStock": 6,
+      "availableStock": 46,
       "prepTimeMins": 6,
       "description": "Traditional fermented crepe with spiced potato filling, lentil sambar, and fresh coconut chutney."
     },
@@ -113,13 +113,243 @@
       "userFullName": "Provost Elena Evans",
       "userRole": "SUPER_ADMIN",
       "rfidCardId": "RFID-APEX-100001",
-      "currentBalance": 3669.97,
+      "currentBalance": 5377.27,
       "dailySpendingLimit": 100,
       "autoRechargeThreshold": 20,
       "status": "ACTIVE"
     }
   },
   "orders": [
+    {
+      "orderId": "ord-1793622928918",
+      "orderToken": "#CAN-200",
+      "userId": "usr-admin-01",
+      "customerName": "provost.evans",
+      "items": [
+        {
+          "menuItemId": "dish-01",
+          "name": "Crisp Masala Dosa & Coconut Chutney",
+          "quantity": 1,
+          "unitPrice": 4.5,
+          "subtotal": 4.5,
+          "calories": 380
+        }
+      ],
+      "subtotalAmount": 4.5,
+      "discountApplied": 0.23,
+      "totalAmount": 4.27,
+      "paymentMethod": "MEAL_WALLET",
+      "status": "PREPARING",
+      "counterNo": 1,
+      "placedAt": "2026-11-02T12:35:28.918Z"
+    },
+    {
+      "orderId": "ord-1793622883243",
+      "orderToken": "#CAN-199",
+      "userId": "usr-admin-01",
+      "customerName": "provost.evans",
+      "items": [
+        {
+          "menuItemId": "dish-01",
+          "name": "Crisp Masala Dosa & Coconut Chutney",
+          "quantity": 1,
+          "unitPrice": 4.5,
+          "subtotal": 4.5,
+          "calories": 380
+        }
+      ],
+      "subtotalAmount": 4.5,
+      "discountApplied": 0.23,
+      "totalAmount": 4.27,
+      "paymentMethod": "MEAL_WALLET",
+      "status": "PREPARING",
+      "counterNo": 3,
+      "placedAt": "2026-11-02T12:34:43.243Z"
+    },
+    {
+      "orderId": "ord-1793622823964",
+      "orderToken": "#CAN-198",
+      "userId": "usr-admin-01",
+      "customerName": "provost.evans",
+      "items": [
+        {
+          "menuItemId": "dish-01",
+          "name": "Crisp Masala Dosa & Coconut Chutney",
+          "quantity": 1,
+          "unitPrice": 4.5,
+          "subtotal": 4.5,
+          "calories": 380
+        }
+      ],
+      "subtotalAmount": 4.5,
+      "discountApplied": 0.23,
+      "totalAmount": 4.27,
+      "paymentMethod": "MEAL_WALLET",
+      "status": "PREPARING",
+      "counterNo": 2,
+      "placedAt": "2026-11-02T12:33:43.964Z"
+    },
+    {
+      "orderId": "ord-1793622763994",
+      "orderToken": "#CAN-197",
+      "userId": "usr-admin-01",
+      "customerName": "provost.evans",
+      "items": [
+        {
+          "menuItemId": "dish-01",
+          "name": "Crisp Masala Dosa & Coconut Chutney",
+          "quantity": 1,
+          "unitPrice": 4.5,
+          "subtotal": 4.5,
+          "calories": 380
+        }
+      ],
+      "subtotalAmount": 4.5,
+      "discountApplied": 0.23,
+      "totalAmount": 4.27,
+      "paymentMethod": "MEAL_WALLET",
+      "status": "PREPARING",
+      "counterNo": 1,
+      "placedAt": "2026-11-02T12:32:43.994Z"
+    },
+    {
+      "orderId": "ord-1793622730073",
+      "orderToken": "#CAN-196",
+      "userId": "usr-admin-01",
+      "customerName": "provost.evans",
+      "items": [
+        {
+          "menuItemId": "dish-01",
+          "name": "Crisp Masala Dosa & Coconut Chutney",
+          "quantity": 1,
+          "unitPrice": 4.5,
+          "subtotal": 4.5,
+          "calories": 380
+        }
+      ],
+      "subtotalAmount": 4.5,
+      "discountApplied": 0.23,
+      "totalAmount": 4.27,
+      "paymentMethod": "MEAL_WALLET",
+      "status": "PREPARING",
+      "counterNo": 3,
+      "placedAt": "2026-11-02T12:32:10.073Z"
+    },
+    {
+      "orderId": "ord-1793622694714",
+      "orderToken": "#CAN-195",
+      "userId": "usr-admin-01",
+      "customerName": "provost.evans",
+      "items": [
+        {
+          "menuItemId": "dish-01",
+          "name": "Crisp Masala Dosa & Coconut Chutney",
+          "quantity": 1,
+          "unitPrice": 4.5,
+          "subtotal": 4.5,
+          "calories": 380
+        }
+      ],
+      "subtotalAmount": 4.5,
+      "discountApplied": 0.23,
+      "totalAmount": 4.27,
+      "paymentMethod": "MEAL_WALLET",
+      "status": "PREPARING",
+      "counterNo": 2,
+      "placedAt": "2026-11-02T12:31:34.714Z"
+    },
+    {
+      "orderId": "ord-1793622528332",
+      "orderToken": "#CAN-194",
+      "userId": "usr-admin-01",
+      "customerName": "provost.evans",
+      "items": [
+        {
+          "menuItemId": "dish-01",
+          "name": "Crisp Masala Dosa & Coconut Chutney",
+          "quantity": 1,
+          "unitPrice": 4.5,
+          "subtotal": 4.5,
+          "calories": 380
+        }
+      ],
+      "subtotalAmount": 4.5,
+      "discountApplied": 0.23,
+      "totalAmount": 4.27,
+      "paymentMethod": "MEAL_WALLET",
+      "status": "PREPARING",
+      "counterNo": 1,
+      "placedAt": "2026-11-02T12:28:48.332Z"
+    },
+    {
+      "orderId": "ord-1793622360543",
+      "orderToken": "#CAN-193",
+      "userId": "usr-admin-01",
+      "customerName": "provost.evans",
+      "items": [
+        {
+          "menuItemId": "dish-01",
+          "name": "Crisp Masala Dosa & Coconut Chutney",
+          "quantity": 1,
+          "unitPrice": 4.5,
+          "subtotal": 4.5,
+          "calories": 380
+        }
+      ],
+      "subtotalAmount": 4.5,
+      "discountApplied": 0.23,
+      "totalAmount": 4.27,
+      "paymentMethod": "MEAL_WALLET",
+      "status": "PREPARING",
+      "counterNo": 3,
+      "placedAt": "2026-11-02T12:26:00.543Z"
+    },
+    {
+      "orderId": "ord-1793621778774",
+      "orderToken": "#CAN-192",
+      "userId": "usr-admin-01",
+      "customerName": "provost.evans",
+      "items": [
+        {
+          "menuItemId": "dish-01",
+          "name": "Crisp Masala Dosa & Coconut Chutney",
+          "quantity": 1,
+          "unitPrice": 4.5,
+          "subtotal": 4.5,
+          "calories": 380
+        }
+      ],
+      "subtotalAmount": 4.5,
+      "discountApplied": 0.23,
+      "totalAmount": 4.27,
+      "paymentMethod": "MEAL_WALLET",
+      "status": "PREPARING",
+      "counterNo": 2,
+      "placedAt": "2026-11-02T12:16:18.774Z"
+    },
+    {
+      "orderId": "ord-1793621312968",
+      "orderToken": "#CAN-191",
+      "userId": "usr-admin-01",
+      "customerName": "provost.evans",
+      "items": [
+        {
+          "menuItemId": "dish-01",
+          "name": "Crisp Masala Dosa & Coconut Chutney",
+          "quantity": 1,
+          "unitPrice": 4.5,
+          "subtotal": 4.5,
+          "calories": 380
+        }
+      ],
+      "subtotalAmount": 4.5,
+      "discountApplied": 0.23,
+      "totalAmount": 4.27,
+      "paymentMethod": "MEAL_WALLET",
+      "status": "PREPARING",
+      "counterNo": 1,
+      "placedAt": "2026-11-02T12:08:32.968Z"
+    },
     {
       "orderId": "ord-1793609831853",
       "orderToken": "#CAN-190",
@@ -2201,6 +2431,276 @@
   ],
   "transactions": [
     {
+      "id": "tx-1793622930496",
+      "userId": "usr-admin-01",
+      "type": "CREDIT_TOPUP",
+      "amount": 150,
+      "balanceAfter": 5377.27,
+      "reference": "UPI-TEST-001",
+      "timestamp": "2026-11-02T12:35:30.496Z"
+    },
+    {
+      "id": "tx-1793622928918",
+      "userId": "usr-admin-01",
+      "type": "DEBIT_PURCHASE",
+      "amount": 4.27,
+      "balanceAfter": 5227.27,
+      "reference": "ORD-#CAN-200",
+      "timestamp": "2026-11-02T12:35:28.918Z"
+    },
+    {
+      "id": "tx-1793622928917",
+      "userId": "usr-admin-01",
+      "type": "CREDIT_TOPUP",
+      "amount": 25,
+      "balanceAfter": 5231.54,
+      "reference": "NET_BANKING_UPI_TEST",
+      "timestamp": "2026-11-02T12:35:28.917Z"
+    },
+    {
+      "id": "tx-1793622887949",
+      "userId": "usr-admin-01",
+      "type": "CREDIT_TOPUP",
+      "amount": 150,
+      "balanceAfter": 5206.54,
+      "reference": "UPI-TEST-001",
+      "timestamp": "2026-11-02T12:34:47.949Z"
+    },
+    {
+      "id": "tx-1793622883243",
+      "userId": "usr-admin-01",
+      "type": "DEBIT_PURCHASE",
+      "amount": 4.27,
+      "balanceAfter": 5056.54,
+      "reference": "ORD-#CAN-199",
+      "timestamp": "2026-11-02T12:34:43.243Z"
+    },
+    {
+      "id": "tx-1793622883227",
+      "userId": "usr-admin-01",
+      "type": "CREDIT_TOPUP",
+      "amount": 25,
+      "balanceAfter": 5060.81,
+      "reference": "NET_BANKING_UPI_TEST",
+      "timestamp": "2026-11-02T12:34:43.227Z"
+    },
+    {
+      "id": "tx-1793622827138",
+      "userId": "usr-admin-01",
+      "type": "CREDIT_TOPUP",
+      "amount": 150,
+      "balanceAfter": 5035.81,
+      "reference": "UPI-TEST-001",
+      "timestamp": "2026-11-02T12:33:47.138Z"
+    },
+    {
+      "id": "tx-1793622823964",
+      "userId": "usr-admin-01",
+      "type": "DEBIT_PURCHASE",
+      "amount": 4.27,
+      "balanceAfter": 4885.81,
+      "reference": "ORD-#CAN-198",
+      "timestamp": "2026-11-02T12:33:43.964Z"
+    },
+    {
+      "id": "tx-1793622823953",
+      "userId": "usr-admin-01",
+      "type": "CREDIT_TOPUP",
+      "amount": 25,
+      "balanceAfter": 4890.08,
+      "reference": "NET_BANKING_UPI_TEST",
+      "timestamp": "2026-11-02T12:33:43.953Z"
+    },
+    {
+      "id": "tx-1793622767103",
+      "userId": "usr-admin-01",
+      "type": "CREDIT_TOPUP",
+      "amount": 150,
+      "balanceAfter": 4865.08,
+      "reference": "UPI-TEST-001",
+      "timestamp": "2026-11-02T12:32:47.103Z"
+    },
+    {
+      "id": "tx-1793622763994",
+      "userId": "usr-admin-01",
+      "type": "DEBIT_PURCHASE",
+      "amount": 4.27,
+      "balanceAfter": 4715.08,
+      "reference": "ORD-#CAN-197",
+      "timestamp": "2026-11-02T12:32:43.994Z"
+    },
+    {
+      "id": "tx-1793622763985",
+      "userId": "usr-admin-01",
+      "type": "CREDIT_TOPUP",
+      "amount": 25,
+      "balanceAfter": 4719.35,
+      "reference": "NET_BANKING_UPI_TEST",
+      "timestamp": "2026-11-02T12:32:43.985Z"
+    },
+    {
+      "id": "tx-1793622733356",
+      "userId": "usr-admin-01",
+      "type": "CREDIT_TOPUP",
+      "amount": 150,
+      "balanceAfter": 4694.35,
+      "reference": "UPI-TEST-001",
+      "timestamp": "2026-11-02T12:32:13.356Z"
+    },
+    {
+      "id": "tx-1793622730073",
+      "userId": "usr-admin-01",
+      "type": "DEBIT_PURCHASE",
+      "amount": 4.27,
+      "balanceAfter": 4544.35,
+      "reference": "ORD-#CAN-196",
+      "timestamp": "2026-11-02T12:32:10.073Z"
+    },
+    {
+      "id": "tx-1793622730067",
+      "userId": "usr-admin-01",
+      "type": "CREDIT_TOPUP",
+      "amount": 25,
+      "balanceAfter": 4548.62,
+      "reference": "NET_BANKING_UPI_TEST",
+      "timestamp": "2026-11-02T12:32:10.067Z"
+    },
+    {
+      "id": "tx-1793622695967",
+      "userId": "usr-admin-01",
+      "type": "CREDIT_TOPUP",
+      "amount": 150,
+      "balanceAfter": 4523.62,
+      "reference": "UPI-TEST-001",
+      "timestamp": "2026-11-02T12:31:35.967Z"
+    },
+    {
+      "id": "tx-1793622694714",
+      "userId": "usr-admin-01",
+      "type": "DEBIT_PURCHASE",
+      "amount": 4.27,
+      "balanceAfter": 4373.62,
+      "reference": "ORD-#CAN-195",
+      "timestamp": "2026-11-02T12:31:34.714Z"
+    },
+    {
+      "id": "tx-1793622694711",
+      "userId": "usr-admin-01",
+      "type": "CREDIT_TOPUP",
+      "amount": 25,
+      "balanceAfter": 4377.89,
+      "reference": "NET_BANKING_UPI_TEST",
+      "timestamp": "2026-11-02T12:31:34.711Z"
+    },
+    {
+      "id": "tx-1793622531152",
+      "userId": "usr-admin-01",
+      "type": "CREDIT_TOPUP",
+      "amount": 150,
+      "balanceAfter": 4352.89,
+      "reference": "UPI-TEST-001",
+      "timestamp": "2026-11-02T12:28:51.152Z"
+    },
+    {
+      "id": "tx-1793622528332",
+      "userId": "usr-admin-01",
+      "type": "DEBIT_PURCHASE",
+      "amount": 4.27,
+      "balanceAfter": 4202.89,
+      "reference": "ORD-#CAN-194",
+      "timestamp": "2026-11-02T12:28:48.332Z"
+    },
+    {
+      "id": "tx-1793622528320",
+      "userId": "usr-admin-01",
+      "type": "CREDIT_TOPUP",
+      "amount": 25,
+      "balanceAfter": 4207.16,
+      "reference": "NET_BANKING_UPI_TEST",
+      "timestamp": "2026-11-02T12:28:48.320Z"
+    },
+    {
+      "id": "tx-1793622364170",
+      "userId": "usr-admin-01",
+      "type": "CREDIT_TOPUP",
+      "amount": 150,
+      "balanceAfter": 4182.16,
+      "reference": "UPI-TEST-001",
+      "timestamp": "2026-11-02T12:26:04.170Z"
+    },
+    {
+      "id": "tx-1793622360543",
+      "userId": "usr-admin-01",
+      "type": "DEBIT_PURCHASE",
+      "amount": 4.27,
+      "balanceAfter": 4032.16,
+      "reference": "ORD-#CAN-193",
+      "timestamp": "2026-11-02T12:26:00.543Z"
+    },
+    {
+      "id": "tx-1793622360530",
+      "userId": "usr-admin-01",
+      "type": "CREDIT_TOPUP",
+      "amount": 25,
+      "balanceAfter": 4036.43,
+      "reference": "NET_BANKING_UPI_TEST",
+      "timestamp": "2026-11-02T12:26:00.530Z"
+    },
+    {
+      "id": "tx-1793621781529",
+      "userId": "usr-admin-01",
+      "type": "CREDIT_TOPUP",
+      "amount": 150,
+      "balanceAfter": 4011.43,
+      "reference": "UPI-TEST-001",
+      "timestamp": "2026-11-02T12:16:21.529Z"
+    },
+    {
+      "id": "tx-1793621778773",
+      "userId": "usr-admin-01",
+      "type": "DEBIT_PURCHASE",
+      "amount": 4.27,
+      "balanceAfter": 3861.43,
+      "reference": "ORD-#CAN-192",
+      "timestamp": "2026-11-02T12:16:18.773Z"
+    },
+    {
+      "id": "tx-1793621778764",
+      "userId": "usr-admin-01",
+      "type": "CREDIT_TOPUP",
+      "amount": 25,
+      "balanceAfter": 3865.7,
+      "reference": "NET_BANKING_UPI_TEST",
+      "timestamp": "2026-11-02T12:16:18.764Z"
+    },
+    {
+      "id": "tx-1793621315934",
+      "userId": "usr-admin-01",
+      "type": "CREDIT_TOPUP",
+      "amount": 150,
+      "balanceAfter": 3840.7,
+      "reference": "UPI-TEST-001",
+      "timestamp": "2026-11-02T12:08:35.934Z"
+    },
+    {
+      "id": "tx-1793621312968",
+      "userId": "usr-admin-01",
+      "type": "DEBIT_PURCHASE",
+      "amount": 4.27,
+      "balanceAfter": 3690.7,
+      "reference": "ORD-#CAN-191",
+      "timestamp": "2026-11-02T12:08:32.968Z"
+    },
+    {
+      "id": "tx-1793621312956",
+      "userId": "usr-admin-01",
+      "type": "CREDIT_TOPUP",
+      "amount": 25,
+      "balanceAfter": 3694.97,
+      "reference": "NET_BANKING_UPI_TEST",
+      "timestamp": "2026-11-02T12:08:32.956Z"
+    },
+    {
       "id": "tx-1793609834568",
       "userId": "usr-admin-01",
       "type": "CREDIT_TOPUP",
@@ -3938,5 +4438,5 @@
       "timestamp": "2026-10-08T17:20:30.081Z"
     }
   ],
-  "orderCounter": 191
+  "orderCounter": 201
 }

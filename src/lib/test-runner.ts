@@ -12661,6 +12661,180 @@ By breaking down large monolithic systems into decoupled microservices, systems 
   assert(waitlistData.waitlistEntry.priorityScore === Math.min(100, Math.round(50 + 650 / 30)), "Priority score calculated correctly for outstation scholar");
   assert(waitlistData.waitlistEntry.status === "WAITLISTED", "Initial waitlist status is WAITLISTED");
 
+  // --- GROUP 90: Feedback Multi-Stakeholder Governance & Incubation Venture Acceleration ---
+  console.log("\n--- GROUP 90: Feedback Multi-Stakeholder Governance & Incubation Venture Acceleration ---");
+
+  // 1. Feedback Multi-Stakeholder Surveys Query
+  const multiSurveysReq = new NextRequest("http://localhost:3000/api/feedback?tab=multi-stakeholder", {
+    method: "GET",
+    headers: { Cookie: `classroom_session=${adminToken}` },
+  });
+  const multiSurveysRes = await handleFeedbackGet(multiSurveysReq);
+  assert(multiSurveysRes.status === 200, "GET /api/feedback?tab=multi-stakeholder returns 200 OK");
+  const multiSurveysData = await multiSurveysRes.json();
+  assert(Array.isArray(multiSurveysData.surveys), "Multi-stakeholder surveys returned as array");
+  assert(multiSurveysData.surveys.some((s: any) => s.surveyType === "EXIT_SURVEY_SENIORS"), "NBA Graduate Exit Survey present in registry");
+
+  // 2. Feedback Action Taken Report (NAAC Criterion 1.4.2)
+  const createAtrReq = new NextRequest("http://localhost:3000/api/feedback", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "CREATE_ACTION_REPORT",
+      targetType: "COURSE",
+      targetId: "CS-402",
+      targetName: "Advanced Deep Learning",
+      departmentCode: "CSE",
+      triggerReason: "Students requested more GPU workstation hours for PyTorch model training",
+      correctiveAction: "Procured 8 additional NVIDIA A100 GPU cluster pods and extended lab hours to 22:00",
+      assignedAuthority: "Dr. Elena Vance (HOD CSE)",
+      deadlineDate: "2026-12-15",
+      status: "ACTION_PLANNED",
+    }),
+  });
+  const createAtrRes = await handleFeedbackPost(createAtrReq);
+  assert(createAtrRes.status === 200, "POST /api/feedback (CREATE_ACTION_REPORT) returns 200 OK");
+  const createAtrData = await createAtrRes.json();
+  assert(createAtrData.report?.reportRef?.startsWith("ATR-"), "IQAC Action Taken Report generated with ATR- prefix");
+  assert(createAtrData.report.status === "ACTION_PLANNED", "Initial ATR status is ACTION_PLANNED");
+
+  // Update Action Taken Report Status
+  const updateAtrReq = new NextRequest("http://localhost:3000/api/feedback", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "UPDATE_ACTION_REPORT",
+      id: createAtrData.report.id,
+      status: "COMPLETED",
+      iqacRemarks: "Cluster installation certified by Central IT and ready for student workloads",
+    }),
+  });
+  const updateAtrRes = await handleFeedbackPost(updateAtrReq);
+  assert(updateAtrRes.status === 200, "POST /api/feedback (UPDATE_ACTION_REPORT) returns 200 OK");
+  const updateAtrData = await updateAtrRes.json();
+  assert(updateAtrData.report.status === "COMPLETED", "ATR successfully marked COMPLETED");
+
+  // 3. Feedback Survey Administration Cycles
+  const createCycleReq = new NextRequest("http://localhost:3000/api/feedback", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "CREATE_SURVEY_CYCLE",
+      title: "Fall 2026 Mid-Semester Faculty Appraisal",
+      academicTerm: "Fall 2026",
+      surveyType: "STUDENT_EVALUATION_OF_TEACHING",
+      startDate: "2026-10-01",
+      endDate: "2026-10-31",
+      eligibleStakeholders: "STUDENT",
+      targetResponses: 1200,
+    }),
+  });
+  const createCycleRes = await handleFeedbackPost(createCycleReq);
+  assert(createCycleRes.status === 200, "POST /api/feedback (CREATE_SURVEY_CYCLE) returns 200 OK");
+  const createCycleData = await createCycleRes.json();
+  assert(createCycleData.cycle?.cycleCode?.includes("CYC-"), "Survey cycle created with CYC- code");
+
+  // 4. Incubation Innovation Lab Desks Allocation & Deallocation
+  const desksReq = new NextRequest("http://localhost:3000/api/incubation?tab=desks", {
+    method: "GET",
+    headers: { Cookie: `classroom_session=${adminToken}` },
+  });
+  const desksRes = await handleIncubationGet(desksReq);
+  assert(desksRes.status === 200, "GET /api/incubation?tab=desks returns 200 OK");
+  const desksData = await desksRes.json();
+  assert(Array.isArray(desksData.desks) && desksData.desks.length >= 10, "Incubation desks list returned with at least 10 desks");
+
+  // Allocate Desk
+  const allocDeskReq = new NextRequest("http://localhost:3000/api/incubation", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "ALLOCATE_DESK",
+      deskCode: "POD-A-04",
+      startupId: "st-01",
+    }),
+  });
+  const allocDeskRes = await handleIncubationPost(allocDeskReq);
+  assert(allocDeskRes.status === 200, "POST /api/incubation (ALLOCATE_DESK) returns 200 OK");
+  const allocDeskData = await allocDeskRes.json();
+  assert(allocDeskData.desk.status === "OCCUPIED", "Desk status updated to OCCUPIED");
+
+  // Deallocate Desk
+  const deallocDeskReq = new NextRequest("http://localhost:3000/api/incubation", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "DEALLOCATE_DESK",
+      deskCode: "POD-A-04",
+    }),
+  });
+  const deallocDeskRes = await handleIncubationPost(deallocDeskReq);
+  assert(deallocDeskRes.status === 200, "POST /api/incubation (DEALLOCATE_DESK) returns 200 OK");
+  const deallocDeskData = await deallocDeskRes.json();
+  assert(deallocDeskData.desk.status === "VACANT", "Desk status restored to VACANT");
+
+  // 5. Incubation Seed Grant Tranche Disbursement
+  const grantReq = new NextRequest("http://localhost:3000/api/incubation", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "DISBURSE_GRANT",
+      startupId: "st-01",
+      trancheNumber: 2,
+      amount: 500000,
+      milestoneDescription: "Completed Edge-AI Prototype testing on RISC-V hardware",
+      sanctionOrderNumber: "ORD-APEX-2026-881",
+    }),
+  });
+  const grantRes = await handleIncubationPost(grantReq);
+  assert(grantRes.status === 200, "POST /api/incubation (DISBURSE_GRANT) returns 200 OK");
+  const grantData = await grantRes.json();
+  assert(grantData.tranche?.trancheRef?.startsWith("TR-"), "Seed grant tranche logged with TR- reference");
+  assert(grantData.tranche.amount === 500000, "Grant tranche amount recorded accurately");
+
+  // 6. Technology Transfer Office Patent Disclosure
+  const patentReq = new NextRequest("http://localhost:3000/api/incubation", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "FILE_PATENT",
+      startupId: "st-01",
+      inventionTitle: "Low-Power Quantized Neural Accelerators for Autonomous Aerial Vehicles",
+      inventors: ["Aarav Sharma", "Dr. Vikram Seth"],
+      status: "PROVISIONAL_FILED",
+      applicationNumber: "IN-PAT-2026-9921",
+      jurisdiction: "INDIAN_PATENT_OFFICE",
+      universitySharePercentage: 5.0,
+    }),
+  });
+  const patentRes = await handleIncubationPost(patentReq);
+  assert(patentRes.status === 200, "POST /api/incubation (FILE_PATENT) returns 200 OK");
+  const patentData = await patentRes.json();
+  assert(patentData.patent?.disclosureRef?.startsWith("PAT-"), "Patent disclosure registered with PAT- reference");
+  assert(patentData.patent.universitySharePercentage === 5.0, "University IP equity stake accurately recorded");
+
+  // 7. Quarterly Milestone Review
+  const reviewReq = new NextRequest("http://localhost:3000/api/incubation", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "RECORD_REVIEW",
+      startupId: "st-01",
+      quarter: "Q3 2026-27",
+      reviewerName: "Dr. Elena Vance",
+      overallRating: 5,
+      mrrAchieved: 180000,
+      prototypeStage: "WORKING_ALPHA",
+      mentorRemarks: "Onboarded 3 defense drone clients for hardware evaluation kits",
+      recommendedAction: "FAST_TRACK_ACCELERATION",
+    }),
+  });
+  const reviewRes = await handleIncubationPost(reviewReq);
+  assert(reviewRes.status === 200, "POST /api/incubation (RECORD_REVIEW) returns 200 OK");
+  const reviewData = await reviewRes.json();
+  assert(reviewData.review?.overallRating === 5, "Quarterly milestone velocity score recorded accurately");
+  assert(reviewData.review.recommendedAction === "FAST_TRACK_ACCELERATION", "Committee recommendation recorded accurately");
+
   console.log("\n=================================================");
   console.log(`🎉 ALL ${passedTests}/${totalTests} TESTS PASSED SUCCESSFULLY!`);
   console.log("=================================================\n");

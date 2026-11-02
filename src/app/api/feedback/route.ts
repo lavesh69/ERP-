@@ -38,6 +38,25 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ success: true, responses });
     }
 
+    if (tab === "action-reports") {
+      const status = searchParams.get("status") || undefined;
+      const dept = searchParams.get("department") || undefined;
+      const reports = feedbackStore.getActionReports(status, dept);
+      return NextResponse.json({ success: true, reports });
+    }
+
+    if (tab === "cycles") {
+      const status = searchParams.get("status") || undefined;
+      const cycles = feedbackStore.getSurveyCycles(status);
+      return NextResponse.json({ success: true, cycles });
+    }
+
+    if (tab === "multi-stakeholder") {
+      const surveyType = searchParams.get("surveyType") || undefined;
+      const surveys = feedbackStore.getMultiStakeholderSurveys(surveyType);
+      return NextResponse.json({ success: true, surveys });
+    }
+
     const summary = feedbackStore.getSummary();
     return NextResponse.json({ success: true, summary });
   } catch (error: any) {
@@ -95,6 +114,64 @@ export async function POST(request: NextRequest) {
         success: true,
         message: `Course evaluation submitted anonymously (${survey.surveyRef})`,
         survey,
+      });
+    }
+
+    if (action === "CREATE_ACTION_REPORT") {
+      const allowedRoles = ["SUPER_ADMIN", "INSTITUTION_ADMIN", "PRINCIPAL", "DEAN", "HOD"];
+      if (!allowedRoles.includes(session.role)) {
+        return NextResponse.json(
+          { error: "Forbidden: Only academic leadership can log Action Taken Reports." },
+          { status: 403 }
+        );
+      }
+      const report = feedbackStore.createActionReport({
+        targetType: body.targetType,
+        targetId: body.targetId,
+        targetName: body.targetName,
+        departmentCode: body.departmentCode,
+        triggerReason: body.triggerReason,
+        correctiveAction: body.correctiveAction,
+        assignedAuthority: body.assignedAuthority || session.fullName || "Department HOD",
+        deadlineDate: body.deadlineDate,
+        status: body.status || "ACTION_PLANNED",
+      });
+      return NextResponse.json({
+        success: true,
+        message: `Action Taken Report ${report.reportRef} recorded under NAAC Criterion 1.4.2`,
+        report,
+      });
+    }
+
+    if (action === "UPDATE_ACTION_REPORT") {
+      const allowedRoles = ["SUPER_ADMIN", "INSTITUTION_ADMIN", "PRINCIPAL", "DEAN", "HOD"];
+      if (!allowedRoles.includes(session.role)) {
+        return NextResponse.json(
+          { error: "Forbidden: Only leadership can update Action Reports." },
+          { status: 403 }
+        );
+      }
+      const updated = feedbackStore.updateActionReport(body.id, body.status, body.iqacRemarks);
+      return NextResponse.json({
+        success: true,
+        message: `Action Taken Report status transitioned to ${body.status}`,
+        report: updated,
+      });
+    }
+
+    if (action === "CREATE_SURVEY_CYCLE") {
+      const allowedRoles = ["SUPER_ADMIN", "INSTITUTION_ADMIN", "PRINCIPAL", "DEAN", "HOD"];
+      if (!allowedRoles.includes(session.role)) {
+        return NextResponse.json(
+          { error: "Forbidden: Only administrators can schedule survey cycles." },
+          { status: 403 }
+        );
+      }
+      const cycle = feedbackStore.createSurveyCycle(body);
+      return NextResponse.json({
+        success: true,
+        message: `Survey window ${cycle.cycleCode} launched successfully`,
+        cycle,
       });
     }
 

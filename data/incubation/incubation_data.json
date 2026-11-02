@@ -48,10 +48,10 @@
       "sector": "HEALTHTECH",
       "stage": "ACCELERATOR_GROWTH",
       "pitchDeckSummary": "Non-invasive neural interfaces for neuromuscular rehabilitation monitoring.",
-      "seedGrantDisbursed": 50000,
+      "seedGrantDisbursed": 1050000,
       "universityEquityPercentage": 3.5,
       "externalFundingRaised": 750000,
-      "patentsFiled": 2,
+      "patentsFiled": 3,
       "labDesksAllocated": 6,
       "mentorName": "Dr. Arvind Gupta (Angel Investor)",
       "status": "ACTIVE",
@@ -94,6 +94,300 @@
       "mentorName": "Dr. Evelyn Vance (Senior Partner)",
       "status": "ACTIVE",
       "incubatedDate": "2026-02-15T09:00:00.000Z"
+    }
+  ],
+  "desks": [
+    {
+      "id": "desk-01",
+      "deskCode": "POD-A-01",
+      "podName": "AI & DeepTech Bay",
+      "startupId": "st-01",
+      "startupName": "NeuroPulse BioTech",
+      "allocatedDate": "2025-06-15",
+      "status": "OCCUPIED"
+    },
+    {
+      "id": "desk-02",
+      "deskCode": "POD-A-02",
+      "podName": "AI & DeepTech Bay",
+      "startupId": "st-01",
+      "startupName": "NeuroPulse BioTech",
+      "allocatedDate": "2025-06-15",
+      "status": "OCCUPIED"
+    },
+    {
+      "id": "desk-03",
+      "deskCode": "POD-A-03",
+      "podName": "AI & DeepTech Bay",
+      "startupId": "st-01",
+      "startupName": "NeuroPulse BioTech",
+      "allocatedDate": "2025-06-15",
+      "status": "OCCUPIED"
+    },
+    {
+      "id": "desk-04",
+      "deskCode": "POD-A-04",
+      "podName": "AI & DeepTech Bay",
+      "startupId": null,
+      "startupName": null,
+      "allocatedDate": null,
+      "status": "VACANT"
+    },
+    {
+      "id": "desk-05",
+      "deskCode": "POD-B-01",
+      "podName": "Robotics & Hardware Bay",
+      "startupId": "st-02",
+      "startupName": "TerraCharge Robotics",
+      "allocatedDate": "2025-11-25",
+      "status": "OCCUPIED"
+    },
+    {
+      "id": "desk-06",
+      "deskCode": "POD-B-02",
+      "podName": "Robotics & Hardware Bay",
+      "startupId": "st-02",
+      "startupName": "TerraCharge Robotics",
+      "allocatedDate": "2025-11-25",
+      "status": "OCCUPIED"
+    },
+    {
+      "id": "desk-07",
+      "deskCode": "POD-B-03",
+      "podName": "Robotics & Hardware Bay",
+      "startupId": null,
+      "startupName": null,
+      "allocatedDate": null,
+      "status": "VACANT"
+    },
+    {
+      "id": "desk-08",
+      "deskCode": "POD-B-04",
+      "podName": "Robotics & Hardware Bay",
+      "startupId": null,
+      "startupName": null,
+      "allocatedDate": null,
+      "status": "VACANT"
+    },
+    {
+      "id": "desk-09",
+      "deskCode": "POD-C-01",
+      "podName": "FinTech & Cloud Computing",
+      "startupId": "st-03",
+      "startupName": "OmniLedger FinAI",
+      "allocatedDate": "2026-02-20",
+      "status": "OCCUPIED"
+    },
+    {
+      "id": "desk-10",
+      "deskCode": "POD-C-02",
+      "podName": "FinTech & Cloud Computing",
+      "startupId": "st-03",
+      "startupName": "OmniLedger FinAI",
+      "allocatedDate": "2026-02-20",
+      "status": "OCCUPIED"
+    },
+    {
+      "id": "desk-11",
+      "deskCode": "POD-C-03",
+      "podName": "FinTech & Cloud Computing",
+      "startupId": null,
+      "startupName": null,
+      "allocatedDate": null,
+      "status": "VACANT"
+    },
+    {
+      "id": "desk-12",
+      "deskCode": "POD-C-04",
+      "podName": "FinTech & Cloud Computing",
+      "startupId": null,
+      "startupName": null,
+      "allocatedDate": null,
+      "status": "VACANT"
+    }
+  ],
+  "tranches": [
+    {
+      "id": "tr-1793622930779",
+      "trancheRef": "TR-2026-978",
+      "startupId": "st-01",
+      "startupName": "NeuroPulse BioTech",
+      "trancheNumber": 2,
+      "amount": 500000,
+      "milestoneDescription": "Completed Edge-AI Prototype testing on RISC-V hardware",
+      "status": "DISBURSED",
+      "disbursedAt": "2026-11-02T12:35:30.779Z",
+      "sanctionOrderNumber": "ORD-APEX-2026-881"
+    },
+    {
+      "id": "tr-1793622888310",
+      "trancheRef": "TR-2026-372",
+      "startupId": "st-01",
+      "startupName": "NeuroPulse BioTech",
+      "trancheNumber": 2,
+      "amount": 500000,
+      "milestoneDescription": "Completed Edge-AI Prototype testing on RISC-V hardware",
+      "status": "DISBURSED",
+      "disbursedAt": "2026-11-02T12:34:48.310Z",
+      "sanctionOrderNumber": "ORD-APEX-2026-881"
+    },
+    {
+      "id": "tr-01",
+      "trancheRef": "TR-2026-001",
+      "startupId": "st-01",
+      "startupName": "NeuroPulse BioTech",
+      "trancheNumber": 1,
+      "amount": 25000,
+      "milestoneDescription": "Proof-of-concept neural interface headband telemetry with 95% latency reduction.",
+      "status": "DISBURSED",
+      "disbursedAt": "2025-07-01T10:00:00.000Z",
+      "sanctionOrderNumber": "SO-AIC-2025-081"
+    },
+    {
+      "id": "tr-02",
+      "trancheRef": "TR-2026-002",
+      "startupId": "st-01",
+      "startupName": "NeuroPulse BioTech",
+      "trancheNumber": 2,
+      "amount": 25000,
+      "milestoneDescription": "IRB human trials approval & clinical beta pilot on 10 patients.",
+      "status": "DISBURSED",
+      "disbursedAt": "2025-12-15T12:00:00.000Z",
+      "sanctionOrderNumber": "SO-AIC-2025-114"
+    },
+    {
+      "id": "tr-03",
+      "trancheRef": "TR-2026-003",
+      "startupId": "st-02",
+      "startupName": "TerraCharge Robotics",
+      "trancheNumber": 1,
+      "amount": 25000,
+      "milestoneDescription": "Working 50kW inductive power transfer prototype and dynamometer bench testing.",
+      "status": "DISBURSED",
+      "disbursedAt": "2025-12-05T09:30:00.000Z",
+      "sanctionOrderNumber": "SO-AIC-2025-099"
+    },
+    {
+      "id": "tr-04",
+      "trancheRef": "TR-2026-004",
+      "startupId": "st-03",
+      "startupName": "OmniLedger FinAI",
+      "trancheNumber": 1,
+      "amount": 10000,
+      "milestoneDescription": "Algorithmic cross-border clearing smart contract testnet deployment.",
+      "status": "DISBURSED",
+      "disbursedAt": "2026-03-01T11:00:00.000Z",
+      "sanctionOrderNumber": "SO-AIC-2026-022"
+    }
+  ],
+  "patents": [
+    {
+      "id": "pat-1793622930817",
+      "disclosureRef": "PAT-2026-959",
+      "startupId": "st-01",
+      "startupName": "NeuroPulse BioTech",
+      "inventionTitle": "Low-Power Quantized Neural Accelerators for Autonomous Aerial Vehicles",
+      "applicationNumber": "IN-PAT-2026-9921",
+      "jurisdiction": "INDIAN_PATENT_OFFICE",
+      "filingDate": "2026-11-02",
+      "status": "PROVISIONAL_FILED",
+      "universitySharePercentage": 5,
+      "inventors": [
+        "Aarav Sharma",
+        "Dr. Vikram Seth"
+      ]
+    },
+    {
+      "id": "pat-01",
+      "disclosureRef": "PAT-2026-001",
+      "startupId": "st-01",
+      "startupName": "NeuroPulse BioTech",
+      "inventionTitle": "Adaptive Neural Signal Filtering Apparatus for Wearable Myoelectric Sensor Nodes",
+      "applicationNumber": "IN-202541088921",
+      "jurisdiction": "INDIAN_PATENT_OFFICE",
+      "filingDate": "2025-08-14",
+      "status": "PUBLISHED",
+      "universitySharePercentage": 50,
+      "inventors": [
+        "Dr. Vikram Sethi",
+        "Alex Mercer"
+      ]
+    },
+    {
+      "id": "pat-02",
+      "disclosureRef": "PAT-2026-002",
+      "startupId": "st-01",
+      "startupName": "NeuroPulse BioTech",
+      "inventionTitle": "Ultra-Low Power Bidirectional Neural Transceiver Integrated Circuit",
+      "applicationNumber": "US-18/902,414",
+      "jurisdiction": "USPTO",
+      "filingDate": "2025-11-03",
+      "status": "PROVISIONAL_FILED",
+      "universitySharePercentage": 50,
+      "inventors": [
+        "Dr. Vikram Sethi",
+        "Alex Mercer"
+      ]
+    },
+    {
+      "id": "pat-03",
+      "disclosureRef": "PAT-2026-003",
+      "startupId": "st-02",
+      "startupName": "TerraCharge Robotics",
+      "inventionTitle": "Resonant Magnetic Coupling Inductive Charger with Dynamic Vehicle Alignment",
+      "applicationNumber": "IN-202541099112",
+      "jurisdiction": "INDIAN_PATENT_OFFICE",
+      "filingDate": "2025-12-18",
+      "status": "EXAMINATION_UNDERWAY",
+      "universitySharePercentage": 40,
+      "inventors": [
+        "Rohan Singhania",
+        "Prof. Priya Nambiar"
+      ]
+    }
+  ],
+  "milestoneReviews": [
+    {
+      "id": "rev-1793622930824",
+      "reviewRef": "REV-2026-977",
+      "startupId": "st-01",
+      "startupName": "NeuroPulse BioTech",
+      "quarter": "Q3 2026-27",
+      "reviewDate": "2026-11-02",
+      "reviewerName": "Dr. Elena Vance",
+      "mrrAchieved": 180000,
+      "prototypeStage": "WORKING_ALPHA",
+      "overallRating": 5,
+      "mentorRemarks": "Onboarded 3 defense drone clients for hardware evaluation kits",
+      "recommendedAction": "FAST_TRACK_ACCELERATION"
+    },
+    {
+      "id": "rev-01",
+      "reviewRef": "REV-2026-001",
+      "startupId": "st-01",
+      "startupName": "NeuroPulse BioTech",
+      "quarter": "Q2 2026-27",
+      "reviewDate": "2026-01-15",
+      "reviewerName": "Dr. Arvind Gupta (Angel Investor)",
+      "mrrAchieved": 8500,
+      "prototypeStage": "Clinical Beta Trial Completed",
+      "overallRating": 5,
+      "mentorRemarks": "Exceeded clinical testing milestones. Ready for Series A venture capital roadshow.",
+      "recommendedAction": "FAST_TRACK_ACCELERATION"
+    },
+    {
+      "id": "rev-02",
+      "reviewRef": "REV-2026-002",
+      "startupId": "st-02",
+      "startupName": "TerraCharge Robotics",
+      "quarter": "Q2 2026-27",
+      "reviewDate": "2026-01-20",
+      "reviewerName": "Prof. Priya Nambiar",
+      "mrrAchieved": 3200,
+      "prototypeStage": "Municipal Bus Depot Fleet Trial",
+      "overallRating": 4,
+      "mentorRemarks": "Field testing verified 92% inductive efficiency. Patent progressing through examination.",
+      "recommendedAction": "CONTINUE_INCUBATION"
     }
   ]
 }

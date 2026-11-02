@@ -1,5 +1,265 @@
 [
   {
+    "id": "IRB-2026-045",
+    "title": "Non-Invasive Optical Biosensing for Continuous Blood Glucose Monitoring",
+    "principalInvestigator": "Dr. Vikram Seth",
+    "piEmail": "v.seth@apex.edu",
+    "department": "Biomedical Engineering & Medicine",
+    "riskTier": "EXPEDITED",
+    "studyType": "HUMAN_SUBJECTS",
+    "vulnerablePopulationsInvolved": false,
+    "dataPrivacyProtocol": "De-identified optical PPG sensor streams stored with salt hash encryption",
+    "status": "APPROVED",
+    "submittedAt": "2026-11-02T12:35:29.621Z",
+    "boardVotes": [
+      {
+        "memberName": "Dr. Robert Vance, MD",
+        "role": "CHAIRPERSON",
+        "decision": "APPROVE",
+        "remarks": "Expedited protocol satisfies all clinical safety requirements.",
+        "votedAt": "2026-11-02T12:35:29.671Z"
+      }
+    ],
+    "adverseReportingOfficer": "Office of Research Safety & Human Subject Protection",
+    "reviewedAt": "2026-11-02T12:35:29.671Z",
+    "ethicsClearanceSeal": "APEX-IRB-SEAL-CD6C6516DA8CBEE0",
+    "validUntil": "2027-11-02T12:35:29.671Z"
+  },
+  {
+    "id": "IRB-2026-044",
+    "title": "Non-Invasive Optical Biosensing for Continuous Blood Glucose Monitoring",
+    "principalInvestigator": "Dr. Vikram Seth",
+    "piEmail": "v.seth@apex.edu",
+    "department": "Biomedical Engineering & Medicine",
+    "riskTier": "EXPEDITED",
+    "studyType": "HUMAN_SUBJECTS",
+    "vulnerablePopulationsInvolved": false,
+    "dataPrivacyProtocol": "De-identified optical PPG sensor streams stored with salt hash encryption",
+    "status": "APPROVED",
+    "submittedAt": "2026-11-02T12:34:45.737Z",
+    "boardVotes": [
+      {
+        "memberName": "Dr. Robert Vance, MD",
+        "role": "CHAIRPERSON",
+        "decision": "APPROVE",
+        "remarks": "Expedited protocol satisfies all clinical safety requirements.",
+        "votedAt": "2026-11-02T12:34:45.821Z"
+      }
+    ],
+    "adverseReportingOfficer": "Office of Research Safety & Human Subject Protection",
+    "reviewedAt": "2026-11-02T12:34:45.821Z",
+    "ethicsClearanceSeal": "APEX-IRB-SEAL-194258D1AFFF24B0",
+    "validUntil": "2027-11-02T12:34:45.821Z"
+  },
+  {
+    "id": "IRB-2026-043",
+    "title": "Non-Invasive Optical Biosensing for Continuous Blood Glucose Monitoring",
+    "principalInvestigator": "Dr. Vikram Seth",
+    "piEmail": "v.seth@apex.edu",
+    "department": "Biomedical Engineering & Medicine",
+    "riskTier": "EXPEDITED",
+    "studyType": "HUMAN_SUBJECTS",
+    "vulnerablePopulationsInvolved": false,
+    "dataPrivacyProtocol": "De-identified optical PPG sensor streams stored with salt hash encryption",
+    "status": "APPROVED",
+    "submittedAt": "2026-11-02T12:33:45.762Z",
+    "boardVotes": [
+      {
+        "memberName": "Dr. Robert Vance, MD",
+        "role": "CHAIRPERSON",
+        "decision": "APPROVE",
+        "remarks": "Expedited protocol satisfies all clinical safety requirements.",
+        "votedAt": "2026-11-02T12:33:45.795Z"
+      }
+    ],
+    "adverseReportingOfficer": "Office of Research Safety & Human Subject Protection",
+    "reviewedAt": "2026-11-02T12:33:45.795Z",
+    "ethicsClearanceSeal": "APEX-IRB-SEAL-1B7227BDDE1C2AE3",
+    "validUntil": "2027-11-02T12:33:45.795Z"
+  },
+  {
+    "id": "IRB-2026-042",
+    "title": "Non-Invasive Optical Biosensing for Continuous Blood Glucose Monitoring",
+    "principalInvestigator": "Dr. Vikram Seth",
+    "piEmail": "v.seth@apex.edu",
+    "department": "Biomedical Engineering & Medicine",
+    "riskTier": "EXPEDITED",
+    "studyType": "HUMAN_SUBJECTS",
+    "vulnerablePopulationsInvolved": false,
+    "dataPrivacyProtocol": "De-identified optical PPG sensor streams stored with salt hash encryption",
+    "status": "APPROVED",
+    "submittedAt": "2026-11-02T12:32:45.644Z",
+    "boardVotes": [
+      {
+        "memberName": "Dr. Robert Vance, MD",
+        "role": "CHAIRPERSON",
+        "decision": "APPROVE",
+        "remarks": "Expedited protocol satisfies all clinical safety requirements.",
+        "votedAt": "2026-11-02T12:32:45.674Z"
+      }
+    ],
+    "adverseReportingOfficer": "Office of Research Safety & Human Subject Protection",
+    "reviewedAt": "2026-11-02T12:32:45.674Z",
+    "ethicsClearanceSeal": "APEX-IRB-SEAL-DDD7A05D6078D5AE",
+    "validUntil": "2027-11-02T12:32:45.674Z"
+  },
+  {
+    "id": "IRB-2026-041",
+    "title": "Non-Invasive Optical Biosensing for Continuous Blood Glucose Monitoring",
+    "principalInvestigator": "Dr. Vikram Seth",
+    "piEmail": "v.seth@apex.edu",
+    "department": "Biomedical Engineering & Medicine",
+    "riskTier": "EXPEDITED",
+    "studyType": "HUMAN_SUBJECTS",
+    "vulnerablePopulationsInvolved": false,
+    "dataPrivacyProtocol": "De-identified optical PPG sensor streams stored with salt hash encryption",
+    "status": "APPROVED",
+    "submittedAt": "2026-11-02T12:32:11.933Z",
+    "boardVotes": [
+      {
+        "memberName": "Dr. Robert Vance, MD",
+        "role": "CHAIRPERSON",
+        "decision": "APPROVE",
+        "remarks": "Expedited protocol satisfies all clinical safety requirements.",
+        "votedAt": "2026-11-02T12:32:11.959Z"
+      }
+    ],
+    "adverseReportingOfficer": "Office of Research Safety & Human Subject Protection",
+    "reviewedAt": "2026-11-02T12:32:11.959Z",
+    "ethicsClearanceSeal": "APEX-IRB-SEAL-115B7E6AC3EF3C7E",
+    "validUntil": "2027-11-02T12:32:11.959Z"
+  },
+  {
+    "id": "IRB-2026-040",
+    "title": "Non-Invasive Optical Biosensing for Continuous Blood Glucose Monitoring",
+    "principalInvestigator": "Dr. Vikram Seth",
+    "piEmail": "v.seth@apex.edu",
+    "department": "Biomedical Engineering & Medicine",
+    "riskTier": "EXPEDITED",
+    "studyType": "HUMAN_SUBJECTS",
+    "vulnerablePopulationsInvolved": false,
+    "dataPrivacyProtocol": "De-identified optical PPG sensor streams stored with salt hash encryption",
+    "status": "APPROVED",
+    "submittedAt": "2026-11-02T12:31:35.328Z",
+    "boardVotes": [
+      {
+        "memberName": "Dr. Robert Vance, MD",
+        "role": "CHAIRPERSON",
+        "decision": "APPROVE",
+        "remarks": "Expedited protocol satisfies all clinical safety requirements.",
+        "votedAt": "2026-11-02T12:31:35.329Z"
+      }
+    ],
+    "adverseReportingOfficer": "Office of Research Safety & Human Subject Protection",
+    "reviewedAt": "2026-11-02T12:31:35.329Z",
+    "ethicsClearanceSeal": "APEX-IRB-SEAL-36FAE9CA04A6BCC5",
+    "validUntil": "2027-11-02T12:31:35.329Z"
+  },
+  {
+    "id": "IRB-2026-039",
+    "title": "Non-Invasive Optical Biosensing for Continuous Blood Glucose Monitoring",
+    "principalInvestigator": "Dr. Vikram Seth",
+    "piEmail": "v.seth@apex.edu",
+    "department": "Biomedical Engineering & Medicine",
+    "riskTier": "EXPEDITED",
+    "studyType": "HUMAN_SUBJECTS",
+    "vulnerablePopulationsInvolved": false,
+    "dataPrivacyProtocol": "De-identified optical PPG sensor streams stored with salt hash encryption",
+    "status": "APPROVED",
+    "submittedAt": "2026-11-02T12:28:49.885Z",
+    "boardVotes": [
+      {
+        "memberName": "Dr. Robert Vance, MD",
+        "role": "CHAIRPERSON",
+        "decision": "APPROVE",
+        "remarks": "Expedited protocol satisfies all clinical safety requirements.",
+        "votedAt": "2026-11-02T12:28:49.911Z"
+      }
+    ],
+    "adverseReportingOfficer": "Office of Research Safety & Human Subject Protection",
+    "reviewedAt": "2026-11-02T12:28:49.911Z",
+    "ethicsClearanceSeal": "APEX-IRB-SEAL-5C53AEB3AA53BB14",
+    "validUntil": "2027-11-02T12:28:49.911Z"
+  },
+  {
+    "id": "IRB-2026-038",
+    "title": "Non-Invasive Optical Biosensing for Continuous Blood Glucose Monitoring",
+    "principalInvestigator": "Dr. Vikram Seth",
+    "piEmail": "v.seth@apex.edu",
+    "department": "Biomedical Engineering & Medicine",
+    "riskTier": "EXPEDITED",
+    "studyType": "HUMAN_SUBJECTS",
+    "vulnerablePopulationsInvolved": false,
+    "dataPrivacyProtocol": "De-identified optical PPG sensor streams stored with salt hash encryption",
+    "status": "APPROVED",
+    "submittedAt": "2026-11-02T12:26:02.351Z",
+    "boardVotes": [
+      {
+        "memberName": "Dr. Robert Vance, MD",
+        "role": "CHAIRPERSON",
+        "decision": "APPROVE",
+        "remarks": "Expedited protocol satisfies all clinical safety requirements.",
+        "votedAt": "2026-11-02T12:26:02.379Z"
+      }
+    ],
+    "adverseReportingOfficer": "Office of Research Safety & Human Subject Protection",
+    "reviewedAt": "2026-11-02T12:26:02.379Z",
+    "ethicsClearanceSeal": "APEX-IRB-SEAL-327F8D2366ADFA5B",
+    "validUntil": "2027-11-02T12:26:02.379Z"
+  },
+  {
+    "id": "IRB-2026-037",
+    "title": "Non-Invasive Optical Biosensing for Continuous Blood Glucose Monitoring",
+    "principalInvestigator": "Dr. Vikram Seth",
+    "piEmail": "v.seth@apex.edu",
+    "department": "Biomedical Engineering & Medicine",
+    "riskTier": "EXPEDITED",
+    "studyType": "HUMAN_SUBJECTS",
+    "vulnerablePopulationsInvolved": false,
+    "dataPrivacyProtocol": "De-identified optical PPG sensor streams stored with salt hash encryption",
+    "status": "APPROVED",
+    "submittedAt": "2026-11-02T12:16:20.258Z",
+    "boardVotes": [
+      {
+        "memberName": "Dr. Robert Vance, MD",
+        "role": "CHAIRPERSON",
+        "decision": "APPROVE",
+        "remarks": "Expedited protocol satisfies all clinical safety requirements.",
+        "votedAt": "2026-11-02T12:16:20.284Z"
+      }
+    ],
+    "adverseReportingOfficer": "Office of Research Safety & Human Subject Protection",
+    "reviewedAt": "2026-11-02T12:16:20.284Z",
+    "ethicsClearanceSeal": "APEX-IRB-SEAL-DB96964DE5B9F454",
+    "validUntil": "2027-11-02T12:16:20.284Z"
+  },
+  {
+    "id": "IRB-2026-036",
+    "title": "Non-Invasive Optical Biosensing for Continuous Blood Glucose Monitoring",
+    "principalInvestigator": "Dr. Vikram Seth",
+    "piEmail": "v.seth@apex.edu",
+    "department": "Biomedical Engineering & Medicine",
+    "riskTier": "EXPEDITED",
+    "studyType": "HUMAN_SUBJECTS",
+    "vulnerablePopulationsInvolved": false,
+    "dataPrivacyProtocol": "De-identified optical PPG sensor streams stored with salt hash encryption",
+    "status": "APPROVED",
+    "submittedAt": "2026-11-02T12:08:34.484Z",
+    "boardVotes": [
+      {
+        "memberName": "Dr. Robert Vance, MD",
+        "role": "CHAIRPERSON",
+        "decision": "APPROVE",
+        "remarks": "Expedited protocol satisfies all clinical safety requirements.",
+        "votedAt": "2026-11-02T12:08:34.508Z"
+      }
+    ],
+    "adverseReportingOfficer": "Office of Research Safety & Human Subject Protection",
+    "reviewedAt": "2026-11-02T12:08:34.508Z",
+    "ethicsClearanceSeal": "APEX-IRB-SEAL-E73439CCA3662A9F",
+    "validUntil": "2027-11-02T12:08:34.508Z"
+  },
+  {
     "id": "IRB-2026-035",
     "title": "Non-Invasive Optical Biosensing for Continuous Blood Glucose Monitoring",
     "principalInvestigator": "Dr. Vikram Seth",

@@ -11,11 +11,11 @@
       "signature": "084fe82bc7491"
     },
     "errorMessage": "Connection timed out during banking settlement gateway webhook delivery (504 Gateway Timeout)",
-    "attemptsCount": 15,
+    "attemptsCount": 25,
     "maxRetries": 3,
     "status": "RESOLVED",
     "firstFailedAt": "2026-10-15T19:59:42.904Z",
-    "lastFailedAt": "2026-11-02T08:57:14.289Z",
+    "lastFailedAt": "2026-11-02T12:35:30.380Z",
     "nextRetryAt": "2026-10-15T21:29:42.904Z"
   },
   {

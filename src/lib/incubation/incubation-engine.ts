@@ -1,7 +1,8 @@
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Enterprise University Incubation Center & Startup Accelerator Engine
  * Manages venture lab cohorts, seed grants, university cap-table equity,
- * technology transfer patents, and milestone tracking.
+ * technology transfer patents, workspace desk allocations, and milestone tracking.
  */
 
 export type StartupSector =
@@ -51,6 +52,58 @@ export interface PortfolioMetrics {
   totalPatentsFiled: number;
   totalWorkspacesAllocated: number;
   estimatedPortfolioValuation: number;
+}
+
+export interface LabDeskAllocation {
+  id: string;
+  deskCode: string;
+  podName: string;
+  startupId: string | null;
+  startupName: string | null;
+  allocatedDate: string | null;
+  status: "VACANT" | "OCCUPIED" | "RESERVED";
+}
+
+export interface SeedGrantTranche {
+  id: string;
+  trancheRef: string;
+  startupId: string;
+  startupName: string;
+  trancheNumber: number;
+  amount: number;
+  milestoneDescription: string;
+  status: "APPROVED" | "DISBURSED" | "UNDER_REVIEW";
+  disbursedAt: string | null;
+  sanctionOrderNumber: string;
+}
+
+export interface PatentDisclosure {
+  id: string;
+  disclosureRef: string;
+  startupId: string;
+  startupName: string;
+  inventionTitle: string;
+  applicationNumber: string;
+  jurisdiction: "INDIAN_PATENT_OFFICE" | "USPTO" | "PCT_INTERNATIONAL";
+  filingDate: string;
+  status: "PROVISIONAL_FILED" | "PUBLISHED" | "EXAMINATION_UNDERWAY" | "GRANTED";
+  universitySharePercentage: number;
+  inventors: string[];
+}
+
+export interface QuarterlyMilestoneReview {
+  id: string;
+  reviewRef: string;
+  startupId: string;
+  startupName: string;
+  quarter: string;
+  reviewDate: string;
+  reviewerName: string;
+  mrrAchieved: number;
+  prototypeStage: string;
+  overallRating: number;
+  mentorRemarks: string;
+  recommendedAction: "CONTINUE_INCUBATION" | "FAST_TRACK_ACCELERATION" | "PROBATION_SUPPORT" | "GRADUATION_READY";
 }
 
 /**
@@ -195,4 +248,54 @@ export function calculateCapTableDilution(
     investorEquityPercentage: investorEquity,
     dilutedCapTable,
   };
+}
+
+/**
+ * Validates seed grant tranche sanction
+ */
+export function validateGrantTranche(data: Partial<SeedGrantTranche>): { isValid: boolean; errors: string[] } {
+  const errors: string[] = [];
+  if (!data.startupId) errors.push("Target venture ID is required.");
+  if (!data.amount || isNaN(Number(data.amount)) || Number(data.amount) <= 0) {
+    errors.push("Grant tranche amount must be greater than zero.");
+  }
+  if (!data.milestoneDescription || data.milestoneDescription.trim().length < 5) {
+    errors.push("Milestone description must be at least 5 characters.");
+  }
+  return { isValid: errors.length === 0, errors };
+}
+
+/**
+ * Validates invention patent disclosure
+ */
+export function validatePatentDisclosure(data: Partial<PatentDisclosure>): { isValid: boolean; errors: string[] } {
+  const errors: string[] = [];
+  if (!data.startupId) errors.push("Target venture ID is required.");
+  if (!data.inventionTitle || data.inventionTitle.trim().length < 5) {
+    errors.push("Invention title is required (min 5 characters).");
+  }
+  if (
+    data.universitySharePercentage !== undefined &&
+    (isNaN(Number(data.universitySharePercentage)) ||
+      Number(data.universitySharePercentage) < 0 ||
+      Number(data.universitySharePercentage) > 100)
+  ) {
+    errors.push("University share percentage must be between 0% and 100%.");
+  }
+  return { isValid: errors.length === 0, errors };
+}
+
+/**
+ * Validates quarterly venture milestone review
+ */
+export function validateMilestoneReview(data: Partial<QuarterlyMilestoneReview>): { isValid: boolean; errors: string[] } {
+  const errors: string[] = [];
+  if (!data.startupId) errors.push("Target venture ID is required.");
+  if (!data.quarter || data.quarter.trim().length === 0) {
+    errors.push("Quarter identifier is required (e.g. Q3 2026-27).");
+  }
+  if (data.overallRating !== undefined && (data.overallRating < 1 || data.overallRating > 5)) {
+    errors.push("Overall rating must be between 1 and 5.");
+  }
+  return { isValid: errors.length === 0, errors };
 }
