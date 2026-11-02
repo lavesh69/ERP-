@@ -30,6 +30,13 @@ import {
   Wrench,
   Receipt,
   X,
+  Download,
+  Printer,
+  FileText,
+  Trash2,
+  Eye,
+  LogOut,
+  ShieldCheck,
 } from "lucide-react";
 import { NightRollCallView } from "@/components/hostel/NightRollCallView";
 import HostelAssetAuditTab from "@/components/hostel/HostelAssetAuditTab";
@@ -145,11 +152,21 @@ export default function HostelPage() {
     }
   };
 
+  // Search & Filtering State
+  const [allocSearch, setAllocSearch] = useState("");
+  const [allocBlockFilter, setAllocBlockFilter] = useState("all");
+  const [allocFeeFilter, setAllocFeeFilter] = useState("all");
+  const [passSearch, setPassSearch] = useState("");
+  const [passStatusFilter, setPassStatusFilter] = useState("ALL");
+
+  // No-Dues Clearance Voucher Modal State
+  const [viewingNoDuesRecord, setViewingNoDuesRecord] = useState<{ room: any; bed: any } | null>(null);
+
   // New Gate Pass Form
   const [showPassModal, setShowPassModal] = useState(false);
   const [passForm, setPassForm] = useState({
     studentName: currentUser?.fullName || "",
-    studentRoll: "CS2026-001",
+    studentRoll: (currentUser as any)?.studentRollNumber || (currentUser as any)?.rollNo || "CS2026-001",
     roomNumber: "A-101",
     blockName: "Nelson Mandela Hall (Block A)",
     reason: "",
@@ -215,12 +232,13 @@ export default function HostelPage() {
   }, []);
 
   useEffect(() => {
-    const isAnyModalOpen = showPassModal || showAllocateModal;
+    const isAnyModalOpen = showPassModal || showAllocateModal || !!viewingNoDuesRecord;
     if (!isAnyModalOpen) return;
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         setShowPassModal(false);
         setShowAllocateModal(false);
+        setViewingNoDuesRecord(null);
       }
     };
     window.addEventListener("keydown", handleKeyDown);
@@ -230,7 +248,7 @@ export default function HostelPage() {
       window.removeEventListener("keydown", handleKeyDown);
       document.body.style.overflow = prevOverflow;
     };
-  }, [showPassModal, showAllocateModal]);
+  }, [showPassModal, showAllocateModal, viewingNoDuesRecord]);
 
   const handleCreatePass = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -293,6 +311,110 @@ export default function HostelPage() {
     } catch (err: any) {
       showToast(err.message, "error");
     }
+  };
+
+  const handleVacateBed = async (roomId: string, bedNumber: string, studentRoll?: string) => {
+    if (!confirm(`Are you sure you want to vacate Bed ${bedNumber} in this room? The resident will be checked out and the bed released to available inventory.`)) {
+      return;
+    }
+    try {
+      const res = await fetch("/api/hostel", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "VACATE_BED",
+          roomId,
+          bedNumber,
+          studentRoll,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to vacate bed");
+      showToast(data.message || `Bed ${bedNumber} vacated and released to available inventory!`, "success");
+      if (viewingNoDuesRecord) {
+        setViewingNoDuesRecord(null);
+      }
+      fetchData();
+    } catch (err: any) {
+      showToast(err.message || "Failed to vacate bed", "error");
+    }
+  };
+
+  const handleExportAllocationsCsv = () => {
+    const allocatedList = rooms.flatMap((r) =>
+      r.beds
+        .filter((b: any) => b.isOccupied)
+        .map((b: any) => ({
+          studentName: b.studentName || "",
+          studentRoll: b.studentRoll || "",
+          blockName: r.blockName || "",
+          roomNumber: r.roomNumber || "",
+          bedNumber: b.bedNumber || "",
+          branch: b.branch || "General Program",
+          allocatedDate: b.allocatedDate || "2026-08-01",
+          feeStatus: b.feeStatus || "PAID",
+        }))
+    );
+
+    if (allocatedList.length === 0) {
+      showToast("No active bed allocations to export.", "error");
+      return;
+    }
+
+    const headers = ["Student Name", "Roll Number", "Block", "Room", "Bed", "Academic Branch", "Allotted Date", "Fee Status"];
+    const rows = allocatedList.map((item) => [
+      `"${item.studentName.replace(/"/g, '""')}"`,
+      `"${item.studentRoll.replace(/"/g, '""')}"`,
+      `"${item.blockName.replace(/"/g, '""')}"`,
+      `"${item.roomNumber}"`,
+      `"${item.bedNumber}"`,
+      `"${item.branch.replace(/"/g, '""')}"`,
+      `"${item.allocatedDate}"`,
+      `"${item.feeStatus}"`,
+    ]);
+
+    const csvContent = "data:text/csv;charset=utf-8," + [headers.join(","), ...rows.map((e) => e.join(","))].join("\n");
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `hostel_bed_allocations_${new Date().toISOString().slice(0, 10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    showToast("Bed allocations registry exported to CSV.", "success");
+  };
+
+  const handleExportGatePassCsv = () => {
+    if (gatePasses.length === 0) {
+      showToast("No gate pass records to export.", "error");
+      return;
+    }
+
+    const headers = ["Pass Number", "Student Name", "Roll Number", "Block", "Room", "Destination", "Reason", "Departure Time", "Return Time", "Status", "Parent Consent Verified", "Emergency Contact"];
+    const rows = gatePasses.map((pass) => [
+      `"${pass.passNumber || ""}"`,
+      `"${(pass.studentName || "").replace(/"/g, '""')}"`,
+      `"${pass.studentRoll || ""}"`,
+      `"${(pass.blockName || "").replace(/"/g, '""')}"`,
+      `"${pass.roomNumber || ""}"`,
+      `"${(pass.destination || "").replace(/"/g, '""')}"`,
+      `"${(pass.reason || "").replace(/"/g, '""')}"`,
+      `"${pass.departureTime || ""}"`,
+      `"${pass.expectedReturnTime || ""}"`,
+      `"${pass.status || ""}"`,
+      `"${pass.parentConsentVerified ? "YES" : "NO"}"`,
+      `"${pass.emergencyContact || ""}"`,
+    ]);
+
+    const csvContent = "data:text/csv;charset=utf-8," + [headers.join(","), ...rows.map((e) => e.join(","))].join("\n");
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `hostel_gate_passes_${new Date().toISOString().slice(0, 10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    showToast("Gate passes log exported to CSV.", "success");
   };
 
   const handleSubscribeMess = async (planId: string) => {
@@ -630,9 +752,31 @@ export default function HostelPage() {
                             )}
                           </div>
                           {bed.isOccupied ? (
-                            <div className="mt-1">
-                              <p className="font-semibold truncate">{bed.studentName}</p>
-                              <p className="text-[10px] text-charcoal-500 dark:text-ivory-400">{bed.studentRoll}</p>
+                            <div className="mt-1 flex flex-col justify-between flex-1">
+                              <div>
+                                <p className="font-semibold truncate">{bed.studentName}</p>
+                                <p className="text-[10px] text-charcoal-500 dark:text-ivory-400">{bed.studentRoll}</p>
+                              </div>
+                              <div className="mt-2 pt-1.5 border-t border-border/50 dark:border-charcoal-700/60 flex items-center justify-between gap-1">
+                                <button
+                                  type="button"
+                                  onClick={() => setViewingNoDuesRecord({ room, bed })}
+                                  className="text-[10px] text-rose-primary dark:text-rose-light hover:underline font-semibold flex items-center gap-0.5"
+                                  title="View No Dues Clearance Voucher"
+                                >
+                                  <FileText className="w-3 h-3" />
+                                  Voucher
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleVacateBed(room.id, bed.bedNumber, bed.studentRoll)}
+                                  className="text-[10px] text-charcoal-500 hover:text-rose-600 dark:hover:text-rose-400 font-semibold transition-colors flex items-center gap-0.5"
+                                  title="Vacate Bed"
+                                >
+                                  <LogOut className="w-3 h-3" />
+                                  Vacate
+                                </button>
+                              </div>
                             </div>
                           ) : (
                             <button
@@ -674,223 +818,399 @@ export default function HostelPage() {
       )}
 
       {/* TAB 2: BED ALLOCATIONS REGISTRY */}
-      {activeTab === "allocations" && (
-        <div className="bg-white dark:bg-charcoal-900 rounded-xl border border-border dark:border-charcoal-800 shadow-sm overflow-hidden">
-          <div className="p-4 border-b border-border dark:border-charcoal-800 flex justify-between items-center">
-            <div>
-              <h2 className="text-base font-bold text-charcoal-900 dark:text-ivory-100">
-                Active Student Residence Allocations
-              </h2>
-              <p className="text-xs text-charcoal-500 dark:text-ivory-400">
-                Official institutional bed records with fee ledger reconciliation
-              </p>
-            </div>
-            <button
-              onClick={() => setShowAllocateModal(true)}
-              className="px-3.5 py-2 rounded-lg text-xs font-semibold bg-rose-primary text-white hover:bg-rose-accent transition-colors flex items-center gap-1.5"
-            >
-              <PlusCircle className="w-3.5 h-3.5" />
-              New Allocation
-            </button>
-          </div>
+      {activeTab === "allocations" && (() => {
+        const allAllocatedBeds = rooms.flatMap((r) =>
+          r.beds
+            .filter((b: any) => b.isOccupied)
+            .map((b: any) => ({ room: r, bed: b }))
+        );
 
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
-              <thead className="bg-ivory-50 dark:bg-charcoal-800 text-charcoal-600 dark:text-ivory-300 uppercase tracking-wider font-semibold border-b border-border dark:border-charcoal-700">
-                <tr>
-                  <th className="p-3.5">Student / Roll</th>
-                  <th className="p-3.5">Block / Room</th>
-                  <th className="p-3.5">Bed</th>
-                  <th className="p-3.5">Academic Branch</th>
-                  <th className="p-3.5">Allocated On</th>
-                  <th className="p-3.5">Fee Status</th>
-                  <th className="p-3.5 text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border dark:divide-charcoal-800">
-                {rooms.flatMap((r) => r.beds.filter((b: any) => b.isOccupied)).length === 0 ? (
+        const filteredAllocatedBeds = allAllocatedBeds.filter(({ room, bed }) => {
+          if (allocBlockFilter !== "all" && room.blockId !== allocBlockFilter) return false;
+          if (allocFeeFilter !== "all" && (bed.feeStatus || "PAID") !== allocFeeFilter) return false;
+          if (allocSearch.trim()) {
+            const q = allocSearch.toLowerCase();
+            const matchName = bed.studentName?.toLowerCase().includes(q);
+            const matchRoll = bed.studentRoll?.toLowerCase().includes(q);
+            const matchRoom = room.roomNumber?.toLowerCase().includes(q);
+            const matchBranch = bed.branch?.toLowerCase().includes(q);
+            if (!matchName && !matchRoll && !matchRoom && !matchBranch) return false;
+          }
+          return true;
+        });
+
+        return (
+          <div className="bg-white dark:bg-charcoal-900 rounded-2xl border border-border dark:border-charcoal-800 shadow-sm overflow-hidden">
+            <div className="p-4 sm:p-5 border-b border-border dark:border-charcoal-800 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+              <div>
+                <h2 className="text-base font-bold text-charcoal-900 dark:text-ivory-100">
+                  Active Student Residence Allocations
+                </h2>
+                <p className="text-xs text-charcoal-500 dark:text-ivory-400">
+                  Official institutional bed records with fee ledger reconciliation &amp; statutory vacate clearances
+                </p>
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  onClick={handleExportAllocationsCsv}
+                  className="px-3 py-2 rounded-xl text-xs font-semibold bg-ivory-100 dark:bg-charcoal-800 text-charcoal-700 dark:text-ivory-200 hover:bg-rose-container/50 border border-border dark:border-charcoal-700 transition-colors flex items-center gap-1.5"
+                >
+                  <Download className="w-3.5 h-3.5 text-rose-primary" />
+                  <span>Export (CSV)</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowAllocateModal(true)}
+                  className="btn-primary-glow px-3.5 py-2 rounded-xl text-xs font-semibold bg-rose-primary text-white hover:bg-rose-dark transition-all flex items-center gap-1.5 shadow-xs"
+                >
+                  <PlusCircle className="w-3.5 h-3.5" />
+                  <span>New Allocation</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Search & Filter Toolbar */}
+            <div className="p-4 bg-ivory-50/60 dark:bg-charcoal-850/40 border-b border-border dark:border-charcoal-800 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 text-xs">
+              <div className="relative flex-1 max-w-md">
+                <Search className="w-4 h-4 text-charcoal-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                <input
+                  type="text"
+                  value={allocSearch}
+                  onChange={(e) => setAllocSearch(e.target.value)}
+                  placeholder="Search by student name, roll number, room, or branch..."
+                  className="w-full pl-9 pr-3 py-2 bg-white dark:bg-charcoal-800 border border-border dark:border-charcoal-700 rounded-xl text-xs text-charcoal-900 dark:text-ivory-100 placeholder-charcoal-400 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-primary"
+                />
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                <div className="flex items-center gap-1.5 bg-white dark:bg-charcoal-800 px-3 py-1.5 rounded-xl border border-border dark:border-charcoal-700">
+                  <span className="text-[11px] text-charcoal-500 font-medium">Block:</span>
+                  <select
+                    value={allocBlockFilter}
+                    onChange={(e) => setAllocBlockFilter(e.target.value)}
+                    className="bg-transparent text-xs font-semibold text-charcoal-800 dark:text-ivory-200 focus:outline-none"
+                  >
+                    <option value="all">All Residence Blocks</option>
+                    {summary?.blocks.map((blk) => (
+                      <option key={blk.id} value={blk.id}>
+                        {blk.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="flex items-center gap-1.5 bg-white dark:bg-charcoal-800 px-3 py-1.5 rounded-xl border border-border dark:border-charcoal-700">
+                  <span className="text-[11px] text-charcoal-500 font-medium">Fee:</span>
+                  <select
+                    value={allocFeeFilter}
+                    onChange={(e) => setAllocFeeFilter(e.target.value)}
+                    className="bg-transparent text-xs font-semibold text-charcoal-800 dark:text-ivory-200 focus:outline-none"
+                  >
+                    <option value="all">All Fee Statuses</option>
+                    <option value="PAID">PAID</option>
+                    <option value="PENDING">PENDING</option>
+                    <option value="OVERDUE">OVERDUE</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead className="bg-ivory-50 dark:bg-charcoal-800 text-charcoal-600 dark:text-ivory-300 uppercase tracking-wider font-semibold border-b border-border dark:border-charcoal-700">
                   <tr>
-                    <td colSpan={7} className="p-8">
-                      <EmptyState
-                        icon={Bed}
-                        title="No Bed Allocations Found"
-                        description="There are currently no active room allocations recorded in the registry."
-                        actionLabel="Allocate Bed"
-                        onAction={() => setShowAllocateModal(true)}
-                      />
-                    </td>
+                    <th className="p-3.5">Student / Roll</th>
+                    <th className="p-3.5">Block / Room</th>
+                    <th className="p-3.5">Bed</th>
+                    <th className="p-3.5">Academic Branch</th>
+                    <th className="p-3.5">Allocated On</th>
+                    <th className="p-3.5">Fee Status</th>
+                    <th className="p-3.5 text-right">Actions</th>
                   </tr>
-                ) : (
-                  rooms.flatMap((r) =>
-                    r.beds
-                      .filter((b: any) => b.isOccupied)
-                      .map((bed: any) => (
-                        <tr key={bed.id} className="hover:bg-ivory-50/50 dark:hover:bg-charcoal-800/40 transition-colors">
-                          <td className="p-3.5">
-                            <p className="font-semibold text-charcoal-900 dark:text-ivory-100">{bed.studentName}</p>
-                            <p className="text-[11px] text-charcoal-500">{bed.studentRoll}</p>
-                          </td>
-                          <td className="p-3.5">
-                            <p className="font-medium text-charcoal-900 dark:text-ivory-200">{r.roomNumber}</p>
-                            <p className="text-[11px] text-charcoal-500">{r.blockName}</p>
-                          </td>
-                          <td className="p-3.5 font-bold text-rose-primary dark:text-rose-light">
-                            Bed {bed.bedNumber}
-                          </td>
-                          <td className="p-3.5 text-charcoal-600 dark:text-ivory-300">
-                            {bed.branch || "General Program"}
-                          </td>
-                          <td className="p-3.5 text-charcoal-500">
-                            {bed.allocatedDate || "2026-08-01"}
-                          </td>
-                          <td className="p-3.5">
-                            <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200">
-                              {bed.feeStatus || "PAID"}
-                            </span>
-                          </td>
-                          <td className="p-3.5 text-right">
+                </thead>
+                <tbody className="divide-y divide-border dark:divide-charcoal-800">
+                  {filteredAllocatedBeds.length === 0 ? (
+                    <tr>
+                      <td colSpan={7} className="p-8">
+                        <EmptyState
+                          icon={Bed}
+                          title="No Bed Allocations Found"
+                          description={
+                            allocSearch || allocBlockFilter !== "all" || allocFeeFilter !== "all"
+                              ? "No active room allocations match your search criteria."
+                              : "There are currently no active room allocations recorded in the registry."
+                          }
+                          actionLabel={allocSearch || allocBlockFilter !== "all" || allocFeeFilter !== "all" ? "Clear Filters" : "Allocate Bed"}
+                          onAction={() => {
+                            if (allocSearch || allocBlockFilter !== "all" || allocFeeFilter !== "all") {
+                              setAllocSearch("");
+                              setAllocBlockFilter("all");
+                              setAllocFeeFilter("all");
+                            } else {
+                              setShowAllocateModal(true);
+                            }
+                          }}
+                        />
+                      </td>
+                    </tr>
+                  ) : (
+                    filteredAllocatedBeds.map(({ room, bed }) => (
+                      <tr key={bed.id} className="hover:bg-ivory-50/50 dark:hover:bg-charcoal-800/40 transition-colors">
+                        <td className="p-3.5">
+                          <p className="font-semibold text-charcoal-900 dark:text-ivory-100">{bed.studentName}</p>
+                          <p className="text-[11px] text-charcoal-500">{bed.studentRoll}</p>
+                        </td>
+                        <td className="p-3.5">
+                          <p className="font-medium text-charcoal-900 dark:text-ivory-200">{room.roomNumber}</p>
+                          <p className="text-[11px] text-charcoal-500">{room.blockName}</p>
+                        </td>
+                        <td className="p-3.5 font-bold text-rose-primary dark:text-rose-light">
+                          Bed {bed.bedNumber}
+                        </td>
+                        <td className="p-3.5 text-charcoal-600 dark:text-ivory-300">
+                          {bed.branch || "General Program"}
+                        </td>
+                        <td className="p-3.5 text-charcoal-500">
+                          {bed.allocatedDate || "2026-08-01"}
+                        </td>
+                        <td className="p-3.5">
+                          <span
+                            className={`px-2 py-0.5 rounded-full text-[10px] font-semibold border ${
+                              (bed.feeStatus || "PAID") === "PAID"
+                                ? "bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border-emerald-200"
+                                : (bed.feeStatus || "PAID") === "PENDING"
+                                ? "bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border-amber-200"
+                                : "bg-rose-100 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 border-rose-200"
+                            }`}
+                          >
+                            {bed.feeStatus || "PAID"}
+                          </span>
+                        </td>
+                        <td className="p-3.5 text-right">
+                          <div className="flex items-center justify-end gap-1.5">
                             <button
-                              onClick={() => {
-                                showToast(`Room clearance pass printed for ${bed.studentName}`, "success");
-                              }}
-                              className="px-2 py-1 rounded text-[11px] font-medium text-rose-primary hover:bg-rose-50 dark:hover:bg-rose-950/50 border border-rose-200 dark:border-rose-900"
+                              type="button"
+                              onClick={() => setViewingNoDuesRecord({ room, bed })}
+                              className="px-2.5 py-1.5 rounded-lg text-[11px] font-semibold text-rose-primary hover:bg-rose-container/50 dark:hover:bg-rose-950/50 border border-rose-200 dark:border-rose-900/60 transition-colors flex items-center gap-1"
+                              title="View and print official No Dues Clearance Voucher"
                             >
-                              No Dues Clearance
+                              <FileText className="w-3.5 h-3.5" />
+                              <span>No Dues Voucher</span>
                             </button>
-                          </td>
-                        </tr>
-                      ))
-                  )
-                )}
-              </tbody>
-            </table>
+                            <button
+                              type="button"
+                              onClick={() => handleVacateBed(room.id, bed.bedNumber, bed.studentRoll)}
+                              className="px-2.5 py-1.5 rounded-lg text-[11px] font-semibold text-charcoal-700 dark:text-ivory-300 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-charcoal-800 border border-border dark:border-charcoal-700 transition-colors flex items-center gap-1"
+                              title="Vacate Bed and release occupancy"
+                            >
+                              <LogOut className="w-3.5 h-3.5" />
+                              <span>Vacate</span>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
 
       {/* TAB 3: GATE PASS & OUTPASS */}
-      {activeTab === "gatepass" && (
-        <div className="space-y-4">
-          <div className="flex justify-between items-center">
-            <div>
-              <h2 className="text-base font-bold text-charcoal-900 dark:text-ivory-100">
-                Warden Digital Outpass & Leave Gate
-              </h2>
-              <p className="text-xs text-charcoal-500 dark:text-ivory-400">
-                Real-time security check-in/out and parent verified emergency authorization
-              </p>
-            </div>
-            <button
-              onClick={() => setShowPassModal(true)}
-              className="px-4 py-2 bg-rose-primary text-white rounded-lg text-xs font-semibold hover:bg-rose-accent transition-colors flex items-center gap-1.5"
-            >
-              <Send className="w-3.5 h-3.5" />
-              Submit Outpass Request
-            </button>
-          </div>
+      {activeTab === "gatepass" && (() => {
+        const filteredGatePasses = gatePasses.filter((pass) => {
+          if (passStatusFilter !== "ALL" && pass.status !== passStatusFilter) return false;
+          if (passSearch.trim()) {
+            const q = passSearch.toLowerCase();
+            const matchName = pass.studentName?.toLowerCase().includes(q);
+            const matchRoll = pass.studentRoll?.toLowerCase().includes(q);
+            const matchDest = pass.destination?.toLowerCase().includes(q);
+            const matchReason = pass.reason?.toLowerCase().includes(q);
+            const matchPass = pass.passNumber?.toLowerCase().includes(q);
+            if (!matchName && !matchRoll && !matchDest && !matchReason && !matchPass) return false;
+          }
+          return true;
+        });
 
-          {gatePasses.length === 0 ? (
-            <EmptyState
-              icon={Clock}
-              title="No Outpass Records"
-              description="There are no gate passes or leave outpass requests currently in the queue."
-              actionLabel="Submit Outpass Request"
-              onAction={() => setShowPassModal(true)}
-            />
-          ) : (
-            <div className="grid grid-cols-1 gap-3">
-              {gatePasses.map((pass) => {
-              const statusPill =
-                pass.status === "APPROVED"
-                  ? "bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-200 border-emerald-300"
-                  : pass.status === "PENDING_WARDEN"
-                  ? "bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-200 border-amber-300"
-                  : pass.status === "CHECKED_OUT"
-                  ? "bg-blue-100 dark:bg-blue-950/60 text-blue-800 dark:text-blue-200 border-blue-300"
-                  : pass.status === "RETURNED"
-                  ? "bg-purple-100 dark:bg-purple-950/60 text-purple-800 dark:text-purple-200 border-purple-300"
-                  : "bg-rose-100 dark:bg-rose-950/60 text-rose-800 dark:text-rose-200 border-rose-300";
-
-              return (
-                <div
-                  key={pass.id}
-                  className="bg-white dark:bg-charcoal-900 p-5 rounded-xl border border-border dark:border-charcoal-800 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4"
+        return (
+          <div className="space-y-4">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white dark:bg-charcoal-900 p-5 rounded-2xl border border-border dark:border-charcoal-800 shadow-sm">
+              <div>
+                <h2 className="text-base font-bold text-charcoal-900 dark:text-ivory-100">
+                  Warden Digital Outpass &amp; Leave Gate
+                </h2>
+                <p className="text-xs text-charcoal-500 dark:text-ivory-400">
+                  Real-time security check-in/out, biometric turnstile authorization, and parental emergency consent
+                </p>
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  onClick={handleExportGatePassCsv}
+                  className="px-3.5 py-2 rounded-xl text-xs font-semibold bg-ivory-100 dark:bg-charcoal-800 text-charcoal-700 dark:text-ivory-200 hover:bg-rose-container/50 border border-border dark:border-charcoal-700 transition-colors flex items-center gap-1.5"
                 >
-                  <div className="space-y-1.5 max-w-xl">
-                    <div className="flex items-center gap-2">
-                      <span className="font-mono text-xs font-bold text-rose-primary dark:text-rose-light">
-                        {pass.passNumber}
-                      </span>
-                      <span className={`text-[10px] px-2.5 py-0.5 rounded-full font-bold border ${statusPill}`}>
-                        {pass.status.replace("_", " ")}
-                      </span>
-                      {pass.parentConsentVerified && (
-                        <span className="text-[10px] px-2 py-0.5 rounded bg-emerald-50 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 font-medium flex items-center gap-1">
-                          <Check className="w-3 h-3" /> Parent Consent Verified
-                        </span>
-                      )}
-                    </div>
-                    <h3 className="font-bold text-sm text-charcoal-900 dark:text-ivory-100">
-                      {pass.studentName} ({pass.studentRoll}) — Room {pass.roomNumber}, {pass.blockName}
-                    </h3>
-                    <p className="text-xs text-charcoal-600 dark:text-ivory-300 font-medium">
-                      <span className="text-charcoal-400">Destination:</span> {pass.destination} •{" "}
-                      <span className="text-charcoal-400">Reason:</span> {pass.reason}
-                    </p>
-                    <div className="text-[11px] text-charcoal-500 dark:text-ivory-400 flex flex-wrap gap-4 pt-1">
-                      <span>Departure: {new Date(pass.departureTime).toLocaleString()}</span>
-                      <span>Expected Return: {new Date(pass.expectedReturnTime).toLocaleString()}</span>
-                      <span>Emergency Tel: {pass.emergencyContact}</span>
-                    </div>
-                    {pass.remarks && (
-                      <p className="text-[11px] text-rose-600 dark:text-rose-400 italic">
-                        Warden Notes: {pass.remarks}
-                      </p>
-                    )}
-                  </div>
+                  <Download className="w-3.5 h-3.5 text-rose-primary" />
+                  <span>Export (CSV)</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowPassModal(true)}
+                  className="btn-primary-glow px-4 py-2 bg-rose-primary hover:bg-rose-dark active:scale-[0.98] text-white rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shadow-xs"
+                >
+                  <Send className="w-3.5 h-3.5" />
+                  <span>Request Outpass</span>
+                </button>
+              </div>
+            </div>
 
-                  {/* Action Buttons for Warden / Guard */}
-                  <div className="flex flex-wrap items-center gap-2">
-                    {pass.status === "PENDING_WARDEN" && (
-                      <>
-                        <button
-                          onClick={() => handleProcessPass(pass.id, "APPROVE")}
-                          className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600 text-white hover:bg-emerald-700 transition-colors flex items-center gap-1"
-                        >
-                          <CheckCircle2 className="w-3.5 h-3.5" /> Approve
-                        </button>
-                        <button
-                          onClick={() => handleProcessPass(pass.id, "REJECT")}
-                          className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-rose-600 text-white hover:bg-rose-700 transition-colors flex items-center gap-1"
-                        >
-                          <XCircle className="w-3.5 h-3.5" /> Reject
-                        </button>
-                      </>
-                    )}
-                    {pass.status === "APPROVED" && (
-                      <button
-                        onClick={() => handleProcessPass(pass.id, "CHECK_OUT")}
-                        className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-blue-600 text-white hover:bg-blue-700 transition-colors"
-                      >
-                        Guard Check-Out
-                      </button>
-                    )}
-                    {pass.status === "CHECKED_OUT" && (
-                      <button
-                        onClick={() => handleProcessPass(pass.id, "RETURN")}
-                        className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-purple-600 text-white hover:bg-purple-700 transition-colors"
-                      >
-                        Register Return
-                      </button>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
+            {/* Outpass Filters & Search Toolbar */}
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-white dark:bg-charcoal-900 p-4 rounded-xl border border-border dark:border-charcoal-800 text-xs">
+              <div className="relative flex-1 max-w-md">
+                <Search className="w-4 h-4 text-charcoal-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                <input
+                  type="text"
+                  value={passSearch}
+                  onChange={(e) => setPassSearch(e.target.value)}
+                  placeholder="Search outpasses by student, roll number, destination..."
+                  className="w-full pl-9 pr-3 py-2 bg-ivory-50/70 dark:bg-charcoal-800 border border-border dark:border-charcoal-700 rounded-xl text-xs text-charcoal-900 dark:text-ivory-100 placeholder-charcoal-400 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-primary"
+                />
+              </div>
+              <div className="flex items-center gap-1.5 bg-ivory-50/70 dark:bg-charcoal-800 px-3 py-1.5 rounded-xl border border-border dark:border-charcoal-700">
+                <span className="text-[11px] text-charcoal-500 font-medium">Status:</span>
+                <select
+                  value={passStatusFilter}
+                  onChange={(e) => setPassStatusFilter(e.target.value)}
+                  className="bg-transparent text-xs font-semibold text-charcoal-800 dark:text-ivory-200 focus:outline-none"
+                >
+                  <option value="ALL">All Outpass Statuses ({gatePasses.length})</option>
+                  <option value="PENDING_WARDEN">Pending Warden ({gatePasses.filter(p => p.status === "PENDING_WARDEN").length})</option>
+                  <option value="APPROVED">Approved / Ready ({gatePasses.filter(p => p.status === "APPROVED").length})</option>
+                  <option value="CHECKED_OUT">Checked Out ({gatePasses.filter(p => p.status === "CHECKED_OUT").length})</option>
+                  <option value="RETURNED">Returned ({gatePasses.filter(p => p.status === "RETURNED").length})</option>
+                  <option value="REJECTED">Rejected ({gatePasses.filter(p => p.status === "REJECTED").length})</option>
+                </select>
+              </div>
+            </div>
+
+            {filteredGatePasses.length === 0 ? (
+              <EmptyState
+                icon={Clock}
+                title="No Outpass Records Found"
+                description={
+                  passSearch || passStatusFilter !== "ALL"
+                    ? "No gate pass applications match your search query."
+                    : "There are no gate passes or leave outpass requests currently in the queue."
+                }
+                actionLabel={passSearch || passStatusFilter !== "ALL" ? "Clear Filters" : "Submit Outpass Request"}
+                onAction={() => {
+                  if (passSearch || passStatusFilter !== "ALL") {
+                    setPassSearch("");
+                    setPassStatusFilter("ALL");
+                  } else {
+                    setShowPassModal(true);
+                  }
+                }}
+              />
+            ) : (
+              <div className="grid grid-cols-1 gap-3">
+                {filteredGatePasses.map((pass) => {
+                  const statusPill =
+                    pass.status === "APPROVED"
+                      ? "bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-200 border-emerald-300"
+                      : pass.status === "PENDING_WARDEN"
+                      ? "bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-200 border-amber-300"
+                      : pass.status === "CHECKED_OUT"
+                      ? "bg-blue-100 dark:bg-blue-950/60 text-blue-800 dark:text-blue-200 border-blue-300"
+                      : pass.status === "RETURNED"
+                      ? "bg-purple-100 dark:bg-purple-950/60 text-purple-800 dark:text-purple-200 border-purple-300"
+                      : "bg-rose-100 dark:bg-rose-950/60 text-rose-800 dark:text-rose-200 border-rose-300";
+
+                  return (
+                    <div
+                      key={pass.id}
+                      className="bg-white dark:bg-charcoal-900 p-5 rounded-2xl border border-border dark:border-charcoal-800 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4 transition-all hover:border-rose-primary/30"
+                    >
+                      <div className="space-y-1.5 max-w-xl">
+                        <div className="flex items-center gap-2">
+                          <span className="font-mono text-xs font-bold text-rose-primary dark:text-rose-light">
+                            {pass.passNumber}
+                          </span>
+                          <span className={`text-[10px] px-2.5 py-0.5 rounded-full font-bold border ${statusPill}`}>
+                            {pass.status.replace("_", " ")}
+                          </span>
+                          {pass.parentConsentVerified && (
+                            <span className="text-[10px] px-2 py-0.5 rounded bg-emerald-50 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 font-medium flex items-center gap-1">
+                              <Check className="w-3 h-3" /> Parent Consent Verified
+                            </span>
+                          )}
+                        </div>
+                        <h3 className="font-bold text-sm text-charcoal-900 dark:text-ivory-100">
+                          {pass.studentName} ({pass.studentRoll}) — Room {pass.roomNumber}, {pass.blockName}
+                        </h3>
+                        <p className="text-xs text-charcoal-600 dark:text-ivory-300 font-medium">
+                          <span className="text-charcoal-400">Destination:</span> {pass.destination} •{" "}
+                          <span className="text-charcoal-400">Reason:</span> {pass.reason}
+                        </p>
+                        <div className="text-[11px] text-charcoal-500 dark:text-ivory-400 flex flex-wrap gap-4 pt-1">
+                          <span>Departure: {new Date(pass.departureTime).toLocaleString()}</span>
+                          <span>Expected Return: {new Date(pass.expectedReturnTime).toLocaleString()}</span>
+                          <span>Emergency Tel: {pass.emergencyContact}</span>
+                        </div>
+                        {pass.remarks && (
+                          <p className="text-[11px] text-rose-600 dark:text-rose-400 italic">
+                            Warden Notes: {pass.remarks}
+                          </p>
+                        )}
+                      </div>
+
+                      {/* Action Buttons for Warden / Guard */}
+                      <div className="flex flex-wrap items-center gap-2 shrink-0">
+                        {pass.status === "PENDING_WARDEN" && (
+                          <>
+                            <button
+                              type="button"
+                              onClick={() => handleProcessPass(pass.id, "APPROVE")}
+                              className="px-3 py-1.5 rounded-xl text-xs font-semibold bg-emerald-600 text-white hover:bg-emerald-700 transition-colors flex items-center gap-1 shadow-xs"
+                            >
+                              <CheckCircle2 className="w-3.5 h-3.5" /> Approve
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleProcessPass(pass.id, "REJECT")}
+                              className="px-3 py-1.5 rounded-xl text-xs font-semibold bg-rose-600 text-white hover:bg-rose-700 transition-colors flex items-center gap-1 shadow-xs"
+                            >
+                              <XCircle className="w-3.5 h-3.5" /> Reject
+                            </button>
+                          </>
+                        )}
+                        {pass.status === "APPROVED" && (
+                          <button
+                            type="button"
+                            onClick={() => handleProcessPass(pass.id, "CHECK_OUT")}
+                            className="px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-blue-600 text-white hover:bg-blue-700 transition-colors shadow-xs"
+                          >
+                            Guard Check-Out
+                          </button>
+                        )}
+                        {pass.status === "CHECKED_OUT" && (
+                          <button
+                            type="button"
+                            onClick={() => handleProcessPass(pass.id, "RETURN")}
+                            className="px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-purple-600 text-white hover:bg-purple-700 transition-colors shadow-xs"
+                          >
+                            Register Return
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
-          )}
-        </div>
-      )}
+        );
+      })()}
 
       {/* TAB 4: DINING & MESS MANAGEMENT */}
       {activeTab === "mess" && (
@@ -1401,23 +1721,203 @@ export default function HostelPage() {
       )}
 
       {/* MODAL: Allocate Bed */}
-      {showAllocateModal && (
+      {showAllocateModal && (() => {
+        const selectedRoomObj = rooms.find((rm) => rm.id === allocateForm.roomId);
+        const vacantBeds = selectedRoomObj?.beds?.filter((b: any) => !b.isOccupied) || [];
+        const isRoomFull = selectedRoomObj && vacantBeds.length === 0;
+
+        return (
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-label="Allocate Bed to Student"
+            onClick={(e) => {
+              if (e.target === e.currentTarget) setShowAllocateModal(false);
+            }}
+            className="fixed inset-0 z-50 bg-charcoal-950/70 backdrop-blur-sm flex items-center justify-center p-4"
+          >
+            <div className="bg-white dark:bg-charcoal-900 rounded-2xl max-w-lg w-full p-6 border border-border dark:border-charcoal-800 shadow-2xl animate-in zoom-in-95 duration-200">
+              <div className="flex items-center justify-between pb-3 border-b border-border dark:border-charcoal-800">
+                <div>
+                  <h3 className="font-bold text-base text-charcoal-900 dark:text-ivory-100">
+                    Allocate Bed to Student
+                  </h3>
+                  <p className="text-xs text-charcoal-500 dark:text-ivory-400">
+                    Assign student to verified vacant bed in institutional residence hall
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowAllocateModal(false)}
+                  className="p-1.5 text-charcoal-400 hover:text-charcoal-700 dark:hover:text-ivory-200 hover:bg-ivory-100 dark:hover:bg-charcoal-800 rounded-lg transition-colors"
+                  aria-label="Close modal"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <form onSubmit={handleAllocateBed} className="space-y-3.5 mt-4 text-xs">
+                <div>
+                  <label className="block font-medium text-charcoal-700 dark:text-ivory-300 mb-1">
+                    Select Residence Room
+                  </label>
+                  <select
+                    required
+                    value={allocateForm.roomId}
+                    onChange={(e) => {
+                      const rId = e.target.value;
+                      const targetRm = rooms.find((r) => r.id === rId);
+                      const vBeds = targetRm?.beds?.filter((b: any) => !b.isOccupied) || [];
+                      setAllocateForm({
+                        ...allocateForm,
+                        roomId: rId,
+                        bedNumber: vBeds.length > 0 ? vBeds[0].bedNumber : "",
+                      });
+                    }}
+                    className="w-full p-2 bg-ivory-50 dark:bg-charcoal-800 border border-border dark:border-charcoal-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-500/20"
+                  >
+                    <option value="">-- Choose Room --</option>
+                    {rooms.map((rm) => (
+                      <option key={rm.id} value={rm.id}>
+                        {rm.roomNumber} ({rm.blockName}) — {rm.occupiedCount}/{rm.capacity} Occupied {rm.occupiedCount >= rm.capacity ? "[FULL]" : `[${rm.capacity - rm.occupiedCount} Bed(s) Available]`}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block font-medium text-charcoal-700 dark:text-ivory-300 mb-1">
+                    Select Vacant Bed Letter
+                  </label>
+                  <select
+                    required
+                    disabled={!allocateForm.roomId || isRoomFull}
+                    value={allocateForm.bedNumber}
+                    onChange={(e) => setAllocateForm({ ...allocateForm, bedNumber: e.target.value })}
+                    className="w-full p-2 bg-ivory-50 dark:bg-charcoal-800 border border-border dark:border-charcoal-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-500/20 disabled:opacity-50"
+                  >
+                    {!allocateForm.roomId ? (
+                      <option value="">-- First Select a Room Above --</option>
+                    ) : isRoomFull ? (
+                      <option value="">No vacant beds available in this room</option>
+                    ) : (
+                      vacantBeds.map((b: any) => (
+                        <option key={b.id || b.bedNumber} value={b.bedNumber}>
+                          Bed {b.bedNumber} (Vacant &amp; Sanitized)
+                        </option>
+                      ))
+                    )}
+                  </select>
+                  {isRoomFull && (
+                    <p className="text-[11px] text-rose-600 dark:text-rose-400 font-semibold mt-1">
+                      ⚠️ This room is at full capacity ({selectedRoomObj?.capacity}/{selectedRoomObj?.capacity} Occupied). Please select a different room.
+                    </p>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="block font-medium text-charcoal-700 dark:text-ivory-300 mb-1">
+                      Student Full Name
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={allocateForm.studentName}
+                      onChange={(e) => setAllocateForm({ ...allocateForm, studentName: e.target.value })}
+                      className="w-full p-2 bg-ivory-50 dark:bg-charcoal-800 border border-border dark:border-charcoal-700 rounded-lg"
+                      placeholder="e.g. Jordan Lee"
+                    />
+                  </div>
+                  <div>
+                    <label className="block font-medium text-charcoal-700 dark:text-ivory-300 mb-1">
+                      Roll / Registration No
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={allocateForm.studentRoll}
+                      onChange={(e) => setAllocateForm({ ...allocateForm, studentRoll: e.target.value })}
+                      className="w-full p-2 bg-ivory-50 dark:bg-charcoal-800 border border-border dark:border-charcoal-700 rounded-lg"
+                      placeholder="e.g. CS2026-044"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block font-medium text-charcoal-700 dark:text-ivory-300 mb-1">
+                    Department / Academic Branch
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={allocateForm.branch}
+                    onChange={(e) => setAllocateForm({ ...allocateForm, branch: e.target.value })}
+                    className="w-full p-2 bg-ivory-50 dark:bg-charcoal-800 border border-border dark:border-charcoal-700 rounded-lg"
+                    placeholder="e.g. B.Tech Computer Science & Engineering"
+                  />
+                </div>
+
+                <div className="pt-2 flex justify-end gap-2 border-t border-border dark:border-charcoal-800">
+                  <button
+                    type="button"
+                    onClick={() => setShowAllocateModal(false)}
+                    className="px-3.5 py-2 rounded-xl font-medium bg-ivory-100 dark:bg-charcoal-800 hover:bg-ivory-200 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={!allocateForm.roomId || isRoomFull || !allocateForm.bedNumber}
+                    className="btn-primary-glow px-4 py-2 rounded-xl font-semibold bg-rose-primary text-white hover:bg-rose-dark disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-xs"
+                  >
+                    Confirm Allocation
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* MODAL: Official Hostel No-Dues & Caution Deposit Settlement Voucher */}
+      {viewingNoDuesRecord && (
         <div
           role="dialog"
           aria-modal="true"
-          aria-label="Allocate Bed to Student"
+          aria-label="Hostel No-Dues Clearance & Caution Deposit Settlement Voucher"
           onClick={(e) => {
-            if (e.target === e.currentTarget) setShowAllocateModal(false);
+            if (e.target === e.currentTarget) setViewingNoDuesRecord(null);
           }}
-          className="fixed inset-0 z-50 bg-charcoal-950/70 backdrop-blur-sm flex items-center justify-center p-4"
+          className="fixed inset-0 z-50 bg-charcoal-950/70 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto"
         >
-          <div className="bg-white dark:bg-charcoal-900 rounded-2xl max-w-lg w-full p-6 border border-border dark:border-charcoal-800 shadow-2xl animate-in zoom-in-95 duration-200">
-            <div className="flex items-center justify-between pb-3 border-b border-border dark:border-charcoal-800">
-              <h3 className="font-bold text-base text-charcoal-900 dark:text-ivory-100">
-                Allocate Bed to Student
-              </h3>
+          <div className="bg-white dark:bg-charcoal-900 rounded-2xl max-w-2xl w-full p-6 sm:p-7 border border-border dark:border-charcoal-800 shadow-2xl animate-in zoom-in-95 duration-200 my-auto">
+            {/* Header */}
+            <div className="flex items-start justify-between pb-4 border-b border-border dark:border-charcoal-800">
+              <div className="flex items-center gap-3">
+                <div className="h-12 w-12 rounded-xl bg-rose-primary text-white flex items-center justify-center shadow-md shadow-rose-primary/20 shrink-0">
+                  <ShieldCheck className="h-6 w-6" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2 mb-0.5">
+                    <span className="badge-subtle bg-rose-container/60 dark:bg-rose-dark/30 text-rose-primary dark:text-rose-accent text-[10px]">
+                      Official Institutional Certificate
+                    </span>
+                    <span className="badge-subtle bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 text-[10px]">
+                      Voucher Ref: HST-ND-{viewingNoDuesRecord.bed.studentRoll}-{new Date().getFullYear()}
+                    </span>
+                  </div>
+                  <h3 className="text-lg font-display font-bold text-charcoal-900 dark:text-ivory-100">
+                    Hostel No-Dues &amp; Caution Deposit Settlement Voucher
+                  </h3>
+                  <p className="text-xs text-charcoal-500 dark:text-charcoal-400">
+                    Apex Institute of Science &amp; Technology • Directorate of Residence Life &amp; Student Housing
+                  </p>
+                </div>
+              </div>
               <button
-                onClick={() => setShowAllocateModal(false)}
+                type="button"
+                onClick={() => setViewingNoDuesRecord(null)}
                 className="p-1.5 text-charcoal-400 hover:text-charcoal-700 dark:hover:text-ivory-200 hover:bg-ivory-100 dark:hover:bg-charcoal-800 rounded-lg transition-colors"
                 aria-label="Close modal"
               >
@@ -1425,101 +1925,143 @@ export default function HostelPage() {
               </button>
             </div>
 
-            <form onSubmit={handleAllocateBed} className="space-y-3.5 mt-4 text-xs">
+            {/* Resident Dossier Summary Grid */}
+            <div className="mt-4 p-4 rounded-xl bg-ivory-50 dark:bg-charcoal-850 border border-border dark:border-charcoal-750 grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
               <div>
-                <label className="block font-medium text-charcoal-700 dark:text-ivory-300 mb-1">
-                  Select Room
-                </label>
-                <select
-                  required
-                  value={allocateForm.roomId}
-                  onChange={(e) => setAllocateForm({ ...allocateForm, roomId: e.target.value })}
-                  className="w-full p-2 bg-ivory-50 dark:bg-charcoal-800 border rounded-lg"
-                >
-                  <option value="">-- Choose Room --</option>
-                  {rooms.map((rm) => (
-                    <option key={rm.id} value={rm.id}>
-                      {rm.roomNumber} ({rm.blockName}) - {rm.occupiedCount}/{rm.capacity} Occupied
-                    </option>
-                  ))}
-                </select>
+                <span className="text-charcoal-500 block text-[10px] uppercase font-semibold">Student Resident</span>
+                <span className="font-bold text-charcoal-900 dark:text-ivory-100">{viewingNoDuesRecord.bed.studentName}</span>
               </div>
-
               <div>
-                <label className="block font-medium text-charcoal-700 dark:text-ivory-300 mb-1">
-                  Bed Letter
-                </label>
-                <select
-                  value={allocateForm.bedNumber}
-                  onChange={(e) => setAllocateForm({ ...allocateForm, bedNumber: e.target.value })}
-                  className="w-full p-2 bg-ivory-50 dark:bg-charcoal-800 border rounded-lg"
-                >
-                  <option value="A">Bed A</option>
-                  <option value="B">Bed B</option>
-                  <option value="C">Bed C</option>
-                  <option value="D">Bed D</option>
-                </select>
+                <span className="text-charcoal-500 block text-[10px] uppercase font-semibold">Roll Number</span>
+                <span className="font-mono font-bold text-rose-primary dark:text-rose-accent">{viewingNoDuesRecord.bed.studentRoll}</span>
               </div>
+              <div>
+                <span className="text-charcoal-500 block text-[10px] uppercase font-semibold">Residence Hall</span>
+                <span className="font-semibold text-charcoal-800 dark:text-ivory-200">{viewingNoDuesRecord.room.blockName}</span>
+              </div>
+              <div>
+                <span className="text-charcoal-500 block text-[10px] uppercase font-semibold">Allocated Room &amp; Bed</span>
+                <span className="font-bold text-charcoal-900 dark:text-ivory-100">Room {viewingNoDuesRecord.room.roomNumber} • Bed {viewingNoDuesRecord.bed.bedNumber}</span>
+              </div>
+              <div>
+                <span className="text-charcoal-500 block text-[10px] uppercase font-semibold">Academic Branch</span>
+                <span className="text-charcoal-700 dark:text-ivory-300">{viewingNoDuesRecord.bed.branch || "General Program"}</span>
+              </div>
+              <div>
+                <span className="text-charcoal-500 block text-[10px] uppercase font-semibold">Allotment Date</span>
+                <span className="text-charcoal-700 dark:text-ivory-300">{viewingNoDuesRecord.bed.allocatedDate || "2026-08-01"}</span>
+              </div>
+              <div>
+                <span className="text-charcoal-500 block text-[10px] uppercase font-semibold">Fee Reconciliation</span>
+                <span className="font-bold text-emerald-600 dark:text-emerald-400">{viewingNoDuesRecord.bed.feeStatus || "PAID"}</span>
+              </div>
+              <div>
+                <span className="text-charcoal-500 block text-[10px] uppercase font-semibold">Clearance Date</span>
+                <span className="text-charcoal-700 dark:text-ivory-300">{new Date().toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" })}</span>
+              </div>
+            </div>
 
-              <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <label className="block font-medium text-charcoal-700 dark:text-ivory-300 mb-1">
-                    Student Full Name
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={allocateForm.studentName}
-                    onChange={(e) => setAllocateForm({ ...allocateForm, studentName: e.target.value })}
-                    className="w-full p-2 bg-ivory-50 dark:bg-charcoal-800 border rounded-lg"
-                    placeholder="e.g. Jordan Lee"
-                  />
+            {/* Statutory Clearance Inspection Audit */}
+            <div className="mt-4 space-y-2">
+              <h4 className="text-xs font-bold text-charcoal-700 dark:text-ivory-300 uppercase tracking-wider flex items-center gap-1.5">
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                Residence Clearance Audit Checklist
+              </h4>
+              <div className="divide-y divide-border/60 dark:divide-charcoal-800 border border-border dark:border-charcoal-800 rounded-xl overflow-hidden text-xs">
+                <div className="p-2.5 bg-white dark:bg-charcoal-900 flex items-center justify-between">
+                  <div>
+                    <p className="font-semibold text-charcoal-900 dark:text-ivory-100">Room Furniture &amp; Fixture Inspection</p>
+                    <p className="text-[11px] text-charcoal-500">Study desk, chair, wardrobe, and bed frame in satisfactory condition.</p>
+                  </div>
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300">
+                    INSPECTED &amp; PASSED
+                  </span>
                 </div>
-                <div>
-                  <label className="block font-medium text-charcoal-700 dark:text-ivory-300 mb-1">
-                    Roll / Registration No
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={allocateForm.studentRoll}
-                    onChange={(e) => setAllocateForm({ ...allocateForm, studentRoll: e.target.value })}
-                    className="w-full p-2 bg-ivory-50 dark:bg-charcoal-800 border rounded-lg"
-                    placeholder="e.g. CS2026-044"
-                  />
+                <div className="p-2.5 bg-white dark:bg-charcoal-900 flex items-center justify-between">
+                  <div>
+                    <p className="font-semibold text-charcoal-900 dark:text-ivory-100">Electrical &amp; Utility Assets</p>
+                    <p className="text-[11px] text-charcoal-500">Ceiling fan, switchboards, lighting, and air conditioning unit intact.</p>
+                  </div>
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300">
+                    NO DAMAGE
+                  </span>
+                </div>
+                <div className="p-2.5 bg-white dark:bg-charcoal-900 flex items-center justify-between">
+                  <div>
+                    <p className="font-semibold text-charcoal-900 dark:text-ivory-100">Room Keys Handover</p>
+                    <p className="text-[11px] text-charcoal-500">All original room lock and wardrobe keys returned to hostel superintendent.</p>
+                  </div>
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300">
+                    KEYS RECEIVED
+                  </span>
+                </div>
+                <div className="p-2.5 bg-white dark:bg-charcoal-900 flex items-center justify-between">
+                  <div>
+                    <p className="font-semibold text-charcoal-900 dark:text-ivory-100">Mess &amp; Dining Account Reconciliation</p>
+                    <p className="text-[11px] text-charcoal-500">All dining billing cycles reconciled. Zero pending mess arrears.</p>
+                  </div>
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300">
+                    NIL ARREARS
+                  </span>
                 </div>
               </div>
+            </div>
 
-              <div>
-                <label className="block font-medium text-charcoal-700 dark:text-ivory-300 mb-1">
-                  Department / Branch
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={allocateForm.branch}
-                  onChange={(e) => setAllocateForm({ ...allocateForm, branch: e.target.value })}
-                  className="w-full p-2 bg-ivory-50 dark:bg-charcoal-800 border rounded-lg"
-                  placeholder="e.g. B.Tech Computer Science"
-                />
+            {/* Caution Deposit Settlement Financial Table */}
+            <div className="mt-4 p-3.5 rounded-xl bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800/40 text-xs">
+              <div className="flex items-center justify-between font-semibold text-emerald-900 dark:text-emerald-200 mb-2">
+                <span className="flex items-center gap-1.5 font-bold">
+                  <Receipt className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                  Caution Deposit Settlement Ledger
+                </span>
+                <span className="text-[11px] font-mono font-bold bg-emerald-100 dark:bg-emerald-900/60 px-2 py-0.5 rounded">
+                  Status: REFUNDABLE
+                </span>
               </div>
+              <div className="space-y-1 text-charcoal-700 dark:text-ivory-300 text-[11px]">
+                <div className="flex justify-between">
+                  <span>Original Caution Money Deposited at Admission:</span>
+                  <span className="font-bold text-charcoal-900 dark:text-ivory-100">₹10,000.00</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Assessed Breakage / Maintenance Penalty Deductions:</span>
+                  <span className="font-bold text-emerald-600 dark:text-emerald-400">₹0.00</span>
+                </div>
+                <div className="flex justify-between border-t border-emerald-200 dark:border-emerald-800/60 pt-1 text-xs font-bold text-charcoal-900 dark:text-ivory-100">
+                  <span>Net Refundable Amount to Student Bank Account:</span>
+                  <span className="text-emerald-700 dark:text-emerald-300 font-mono text-sm">₹10,000.00</span>
+                </div>
+              </div>
+            </div>
 
-              <div className="pt-2 flex justify-end gap-2 border-t border-border dark:border-charcoal-800">
+            {/* Modal Footer Controls */}
+            <div className="mt-5 pt-4 border-t border-border dark:border-charcoal-800 flex flex-wrap items-center justify-between gap-3">
+              <button
+                type="button"
+                onClick={() => window.print()}
+                className="px-3.5 py-2 rounded-xl text-xs font-semibold bg-ivory-100 dark:bg-charcoal-800 text-charcoal-800 dark:text-ivory-200 hover:bg-ivory-200 dark:hover:bg-charcoal-700 border border-border dark:border-charcoal-700 transition-colors flex items-center gap-1.5"
+              >
+                <Printer className="w-4 h-4" />
+                <span>Print Certificate</span>
+              </button>
+              <div className="flex items-center gap-2">
                 <button
                   type="button"
-                  onClick={() => setShowAllocateModal(false)}
-                  className="px-3.5 py-2 rounded-lg font-medium bg-ivory-100 dark:bg-charcoal-800 hover:bg-ivory-200"
+                  onClick={() => setViewingNoDuesRecord(null)}
+                  className="px-3.5 py-2 rounded-xl text-xs font-medium bg-ivory-100 dark:bg-charcoal-800 text-charcoal-700 dark:text-ivory-300 hover:bg-ivory-200 transition-colors"
                 >
-                  Cancel
+                  Close
                 </button>
                 <button
-                  type="submit"
-                  className="px-4 py-2 rounded-lg font-semibold bg-rose-primary text-white hover:bg-rose-accent"
+                  type="button"
+                  onClick={() => handleVacateBed(viewingNoDuesRecord.room.id, viewingNoDuesRecord.bed.bedNumber, viewingNoDuesRecord.bed.studentRoll)}
+                  className="btn-primary-glow px-4 py-2 rounded-xl text-xs font-bold bg-rose-primary hover:bg-rose-dark active:scale-[0.98] text-white shadow-sm transition-all flex items-center gap-1.5"
                 >
-                  Confirm Allocation
+                  <LogOut className="w-4 h-4" />
+                  <span>Vacate Bed &amp; Release Occupancy</span>
                 </button>
               </div>
-            </form>
+            </div>
           </div>
         </div>
       )}

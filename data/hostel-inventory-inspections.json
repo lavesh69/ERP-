@@ -8,10 +8,10 @@
     "blockName": "Mandela International House",
     "academicYear": "2025-2026",
     "cautionDepositAmount": 500,
-    "totalDamageDeductions": 0,
-    "refundableAmount": 500,
+    "totalDamageDeductions": 25,
+    "refundableAmount": 475,
     "moveInDate": "2025-08-10",
-    "moveOutDate": "2026-05-20",
+    "moveOutDate": "2026-11-02",
     "inspectionStatus": "CLEARED_REFUND_APPROVED",
     "assets": [
       {
@@ -25,8 +25,9 @@
         "itemName": "Ergonomic Mesh Chair",
         "category": "FURNITURE",
         "moveInStatus": "PRISTINE",
-        "moveOutStatus": "GOOD",
-        "damageCharge": 0
+        "moveOutStatus": "DAMAGED",
+        "damageCharge": 25,
+        "notes": "Mesh torn"
       },
       {
         "itemName": "Single Bed Frame & Mattress",
@@ -50,10 +51,12 @@
         "damageCharge": 0
       }
     ],
-    "clearanceSeal": "APEX-HOSTEL-CLEAR-91F2C40A7B2011DE",
+    "clearanceSeal": "APEX-HOSTEL-CLEAR-2F1DD7199863D2BE",
     "wardenSignoff": "Chief Warden Dr. H. C. Verma",
-    "clearedAt": "2026-05-20T11:00:00.000Z",
-    "wardenNotes": "All assets in pristine condition. Zero deductions. Full caution deposit release authorized."
+    "clearedAt": "2026-11-02T08:30:46.958Z",
+    "wardenNotes": "Move-out audit finalized with $25 chair mesh damage deduction.",
+    "financeRefundVoucherNo": "RFND-2026-5354",
+    "damageDeductionNotes": "Damage fee deduction of $25 deducted from caution deposit"
   },
   {
     "id": "INSP-2026-082",
@@ -165,9 +168,11 @@
       }
     ],
     "wardenNotes": "Vacate audit completed. $20 key replacement charged. Net $480 caution refund released.",
-    "moveOutDate": "2026-10-15",
+    "moveOutDate": "2026-11-02",
     "wardenSignoff": "Chief Warden Dr. H. C. Verma",
-    "clearedAt": "2026-10-15T05:39:36.096Z",
-    "clearanceSeal": "APEX-HOSTEL-CLEAR-997E930B7EEEA1C8"
+    "clearedAt": "2026-11-02T08:30:45.907Z",
+    "clearanceSeal": "APEX-HOSTEL-CLEAR-A31C45DA2DF95CF4",
+    "financeRefundVoucherNo": "RFND-2026-1217",
+    "damageDeductionNotes": "Damage fee deduction of $20 deducted from caution deposit"
   }
 ]

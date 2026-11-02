@@ -391,6 +391,70 @@
         "id": "pub-1792042775844-557",
         "apiPointsAwarded": 28,
         "verified": true
+      },
+      {
+        "facultyId": "fac-demo-01",
+        "facultyName": "Dr. Rajesh K. Sharma",
+        "title": "Zero-Trust Resilient Microservices in Distributed Clouds",
+        "journalName": "IEEE Transactions on Services Computing",
+        "issnOrIsbn": "N/A",
+        "indexing": "IEEE_XPLORE",
+        "impactFactor": 4.8,
+        "authorshipRole": "FIRST_AUTHOR",
+        "totalAuthors": 2,
+        "doi": "10.1109/TSC.2026.991203",
+        "publicationYear": 2026,
+        "id": "pub-1793607338005-381",
+        "apiPointsAwarded": 28,
+        "verified": true
+      },
+      {
+        "facultyId": "fac-demo-01",
+        "facultyName": "Dr. Rajesh K. Sharma",
+        "title": "Zero-Trust Resilient Microservices in Distributed Clouds",
+        "journalName": "IEEE Transactions on Services Computing",
+        "issnOrIsbn": "N/A",
+        "indexing": "IEEE_XPLORE",
+        "impactFactor": 4.8,
+        "authorshipRole": "FIRST_AUTHOR",
+        "totalAuthors": 2,
+        "doi": "10.1109/TSC.2026.991203",
+        "publicationYear": 2026,
+        "id": "pub-1793607906108-817",
+        "apiPointsAwarded": 28,
+        "verified": true
+      },
+      {
+        "facultyId": "fac-demo-01",
+        "facultyName": "Dr. Rajesh K. Sharma",
+        "title": "Zero-Trust Resilient Microservices in Distributed Clouds",
+        "journalName": "IEEE Transactions on Services Computing",
+        "issnOrIsbn": "N/A",
+        "indexing": "IEEE_XPLORE",
+        "impactFactor": 4.8,
+        "authorshipRole": "FIRST_AUTHOR",
+        "totalAuthors": 2,
+        "doi": "10.1109/TSC.2026.991203",
+        "publicationYear": 2026,
+        "id": "pub-1793608024440-304",
+        "apiPointsAwarded": 28,
+        "verified": true
+      },
+      {
+        "facultyId": "fac-demo-01",
+        "facultyName": "Dr. Rajesh K. Sharma",
+        "title": "Zero-Trust Resilient Microservices in Distributed Clouds",
+        "journalName": "IEEE Transactions on Services Computing",
+        "issnOrIsbn": "N/A",
+        "indexing": "IEEE_XPLORE",
+        "impactFactor": 4.8,
+        "authorshipRole": "FIRST_AUTHOR",
+        "totalAuthors": 2,
+        "doi": "10.1109/TSC.2026.991203",
+        "publicationYear": 2026,
+        "id": "pub-1793608245769-515",
+        "apiPointsAwarded": 28,
+        "verified": true
       }
     ],
     "grants": [
@@ -441,15 +505,15 @@
       }
     ],
     "ugcApiSummary": {
-      "category1PublicationsScore": 675.5,
+      "category1PublicationsScore": 787.5,
       "category2GrantsScore": 10,
       "category3PatentsPolicyScore": 7,
       "category4ConsultancyScore": 4,
-      "totalUgcResearchScore": 696.5,
+      "totalUgcResearchScore": 808.5,
       "eligibleForProfessorCas": true,
       "eligibleForAssociateProfessorCas": true
     },
-    "integrityVerificationSeal": "UGC-RESEARCH-SEAL-A5114679A33CD1F0DD9B64F9",
-    "lastUpdated": "2026-10-15T05:39:35.845Z"
+    "integrityVerificationSeal": "UGC-RESEARCH-SEAL-0C19AEA740E16CDF27139A68",
+    "lastUpdated": "2026-11-02T08:30:45.769Z"
   }
 }

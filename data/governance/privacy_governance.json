@@ -1,6 +1,54 @@
 {
   "corrections": [
     {
+      "id": "CORR-2026-773",
+      "requesterUserId": "usr-stu-01",
+      "requesterRole": "STUDENT",
+      "fieldName": "FULL_NAME",
+      "currentValue": "Alex Mercer",
+      "proposedValue": "Alexander Mercer",
+      "reason": "Legal alignment with Indian Passport and Aadhaar card",
+      "status": "PENDING_VERIFICATION",
+      "createdAt": "2026-11-02T08:30:46.880Z",
+      "updatedAt": "2026-11-02T08:30:46.880Z"
+    },
+    {
+      "id": "CORR-2026-391",
+      "requesterUserId": "usr-stu-01",
+      "requesterRole": "STUDENT",
+      "fieldName": "FULL_NAME",
+      "currentValue": "Alex Mercer",
+      "proposedValue": "Alexander Mercer",
+      "reason": "Legal alignment with Indian Passport and Aadhaar card",
+      "status": "PENDING_VERIFICATION",
+      "createdAt": "2026-11-02T08:27:05.623Z",
+      "updatedAt": "2026-11-02T08:27:05.623Z"
+    },
+    {
+      "id": "CORR-2026-873",
+      "requesterUserId": "usr-stu-01",
+      "requesterRole": "STUDENT",
+      "fieldName": "FULL_NAME",
+      "currentValue": "Alex Mercer",
+      "proposedValue": "Alexander Mercer",
+      "reason": "Legal alignment with Indian Passport and Aadhaar card",
+      "status": "PENDING_VERIFICATION",
+      "createdAt": "2026-11-02T08:25:07.150Z",
+      "updatedAt": "2026-11-02T08:25:07.150Z"
+    },
+    {
+      "id": "CORR-2026-518",
+      "requesterUserId": "usr-stu-01",
+      "requesterRole": "STUDENT",
+      "fieldName": "FULL_NAME",
+      "currentValue": "Alex Mercer",
+      "proposedValue": "Alexander Mercer",
+      "reason": "Legal alignment with Indian Passport and Aadhaar card",
+      "status": "PENDING_VERIFICATION",
+      "createdAt": "2026-11-02T08:15:38.869Z",
+      "updatedAt": "2026-11-02T08:15:38.869Z"
+    },
+    {
       "id": "CORR-2026-370",
       "requesterUserId": "usr-stu-01",
       "requesterRole": "STUDENT",
@@ -28,12 +76,12 @@
   ],
   "consents": [
     {
-      "id": "CNS-mva0wsws",
+      "id": "CNS-mvz01gme",
       "userId": "usr-stu-01",
       "userRole": "STUDENT",
       "purpose": "BIOMETRIC_ATTENDANCE",
       "granted": true,
-      "grantedAt": "2026-10-15T21:00:54.748Z",
+      "grantedAt": "2026-11-02T08:30:46.886Z",
       "ipAddress": "127.0.0.1"
     }
   ]

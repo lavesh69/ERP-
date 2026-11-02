@@ -431,6 +431,19 @@ function writeStore(data: HostelStoreSchema) {
 }
 
 export const hostelStore = {
+  resetStore() {
+    writeStore({
+      blocks: JSON.parse(JSON.stringify(DEFAULT_BLOCKS)),
+      rooms: JSON.parse(JSON.stringify(DEFAULT_ROOMS)),
+      gatePasses: JSON.parse(JSON.stringify(DEFAULT_GATE_PASSES)),
+      messPlans: JSON.parse(JSON.stringify(DEFAULT_MESS_PLANS)),
+      subscriptions: JSON.parse(JSON.stringify(DEFAULT_SUBSCRIPTIONS)),
+      nightRollCalls: [],
+      punchedMeals: [],
+      wasteLogs: [],
+    });
+  },
+
   getSummary() {
     const store = readStore();
     const totalBeds = store.blocks.reduce((acc, b) => acc + b.totalBeds, 0);

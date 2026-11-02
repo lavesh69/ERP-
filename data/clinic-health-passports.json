@@ -93,12 +93,12 @@
       }
     ],
     "immunizationComplianceStatus": "COMPLIANT",
-    "fitnessCategory": "FIT_FOR_ALL",
-    "medicalClearanceSeal": "APEX-MED-FIT-SEAL-8B12E094AA51F028",
-    "certifiedBy": "Dr. Arvind Swaminathan, MD (Chief Medical Officer)",
-    "certifiedAt": "2026-01-15T11:30:00.000Z",
-    "validUntil": "2027-01-15T23:59:59.000Z",
-    "physicianNotes": "Hostel cafeteria alerted to peanut anaphylaxis protocol. EpiPen auto-injector registered in dorm EMR."
+    "fitnessCategory": "MEDICAL_HOLD",
+    "medicalClearanceSeal": "APEX-MED-FIT-SEAL-BBFE6437C43D4375",
+    "certifiedBy": "Dr. Arvind Swaminathan, MD",
+    "certifiedAt": "2026-11-02T08:30:47.036Z",
+    "validUntil": "2027-11-02T08:30:47.036Z",
+    "physicianNotes": "Severe anaphylaxis precaution; pending dormitory epinephrine kit verification."
   },
   {
     "studentId": "STU-2026-003",
@@ -135,7 +135,7 @@
       },
       {
         "vaccineName": "Meningococcal (MenACWY)",
-        "dosesReceived": 20,
+        "dosesReceived": 24,
         "dosesRequired": 1,
         "lastDoseDate": "2026-03-15",
         "compliant": true
@@ -145,9 +145,9 @@
     "fitnessCategory": "FIT_FOR_ALL",
     "physicianNotes": "Hostel residency clearance granted following completion of residential immunization booster.",
     "certifiedBy": "Dr. Arvind Swaminathan, MD",
-    "certifiedAt": "2026-10-15T05:39:36.083Z",
-    "validUntil": "2027-10-15T05:39:36.083Z",
-    "medicalClearanceSeal": "APEX-MED-FIT-SEAL-D9BC5AB1898A8608"
+    "certifiedAt": "2026-11-02T08:30:45.894Z",
+    "validUntil": "2027-11-02T08:30:45.894Z",
+    "medicalClearanceSeal": "APEX-MED-FIT-SEAL-6444B10D92FF7ACC"
   },
   {
     "studentId": "STU-2026-004",

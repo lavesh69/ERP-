@@ -10,7 +10,7 @@
     "driverLicenseExpiry": "2027-09-14",
     "driverMedicalFitnessValid": true,
     "fitnessCertificateNumber": "FC-RTO-2025-90112",
-    "fitnessExpiryDate": "2026-11-30",
+    "fitnessExpiryDate": "2027-11-02",
     "pucCertificateNumber": "PUC-EMISS-8819",
     "pucExpiryDate": "2027-10-14",
     "insurancePolicyNumber": "POL-COMM-CHUBB-99218",
@@ -21,10 +21,10 @@
     "firstAidKitInspected": true,
     "complianceStatus": "FULLY_COMPLIANT_FIT",
     "certifiedBy": "Transport Safety Director Major K. S. Rao",
-    "certifiedAt": "2026-10-15T05:39:36.107Z",
-    "validUntil": "2026-11-30",
+    "certifiedAt": "2026-11-02T08:30:45.929Z",
+    "validUntil": "2027-11-02",
     "safetyOfficerNotes": "Annual physical roadworthiness inspection cleared. Speed governor verified.",
-    "complianceSeal": "APEX-BUS-FIT-SEAL-0620273233488552"
+    "complianceSeal": "APEX-BUS-FIT-SEAL-EF50135E0CCA3918"
   },
   {
     "vehicleId": "BUS-02",

@@ -1,6 +1,167 @@
 {
   "applicants": [
     {
+      "id": "app-1793608247170",
+      "applicationNo": "ADM-2026-337",
+      "fullName": "Scholar Integration Test 1793608247169",
+      "email": "scholar.integ.1793608247169@classroom.edu",
+      "phone": "+15559876543",
+      "programCode": "prog-cs-01",
+      "programName": "Undergraduate Degree",
+      "highSchoolGpa": 94.5,
+      "entranceExamScore": 1450,
+      "meritRank": 45,
+      "stage": "SEAT_CONFIRMED",
+      "documentsStatus": {
+        "transcriptsVerified": false,
+        "identityProofVerified": false,
+        "recommendationLettersVerified": false
+      },
+      "seatDepositPaid": true,
+      "depositAmount": 1500,
+      "assignedCounselor": "Admissions Central Desk",
+      "source": "WEBSITE",
+      "appliedDate": "2026-11-02T08:30:47.170Z"
+    },
+    {
+      "id": "app-1793608244359",
+      "applicationNo": "ADM-2026-544",
+      "fullName": "Linus Torvalds Jr.",
+      "email": "linus.jr@test-admissions.edu",
+      "phone": "+1 (555) 019-2834",
+      "programCode": "BTECH-CSE",
+      "programName": "B.Tech Computer Science & Engineering",
+      "highSchoolGpa": 4,
+      "entranceExamScore": 1560,
+      "meritRank": 60,
+      "stage": "OFFER_EXTENDED",
+      "documentsStatus": {
+        "transcriptsVerified": false,
+        "identityProofVerified": false,
+        "recommendationLettersVerified": false
+      },
+      "seatDepositPaid": false,
+      "depositAmount": 0,
+      "assignedCounselor": "Admissions Central Desk",
+      "source": "PORTAL_DIRECT",
+      "appliedDate": "2026-11-02T08:30:44.359Z"
+    },
+    {
+      "id": "app-1793608022780",
+      "applicationNo": "ADM-2026-657",
+      "fullName": "Linus Torvalds Jr.",
+      "email": "linus.jr@test-admissions.edu",
+      "phone": "+1 (555) 019-2834",
+      "programCode": "BTECH-CSE",
+      "programName": "B.Tech Computer Science & Engineering",
+      "highSchoolGpa": 4,
+      "entranceExamScore": 1560,
+      "meritRank": 63,
+      "stage": "OFFER_EXTENDED",
+      "documentsStatus": {
+        "transcriptsVerified": false,
+        "identityProofVerified": false,
+        "recommendationLettersVerified": false
+      },
+      "seatDepositPaid": false,
+      "depositAmount": 0,
+      "assignedCounselor": "Admissions Central Desk",
+      "source": "PORTAL_DIRECT",
+      "appliedDate": "2026-11-02T08:27:02.780Z"
+    },
+    {
+      "id": "app-1793607904571",
+      "applicationNo": "ADM-2026-796",
+      "fullName": "Linus Torvalds Jr.",
+      "email": "linus.jr@test-admissions.edu",
+      "phone": "+1 (555) 019-2834",
+      "programCode": "BTECH-CSE",
+      "programName": "B.Tech Computer Science & Engineering",
+      "highSchoolGpa": 4,
+      "entranceExamScore": 1560,
+      "meritRank": 86,
+      "stage": "OFFER_EXTENDED",
+      "documentsStatus": {
+        "transcriptsVerified": false,
+        "identityProofVerified": false,
+        "recommendationLettersVerified": false
+      },
+      "seatDepositPaid": false,
+      "depositAmount": 0,
+      "assignedCounselor": "Admissions Central Desk",
+      "source": "PORTAL_DIRECT",
+      "appliedDate": "2026-11-02T08:25:04.571Z"
+    },
+    {
+      "id": "app-1793607761118",
+      "applicationNo": "ADM-2026-281",
+      "fullName": "Linus Torvalds Jr.",
+      "email": "linus.jr@test-admissions.edu",
+      "phone": "+1 (555) 019-2834",
+      "programCode": "BTECH-CSE",
+      "programName": "B.Tech Computer Science & Engineering",
+      "highSchoolGpa": 4,
+      "entranceExamScore": 1560,
+      "meritRank": 92,
+      "stage": "OFFER_EXTENDED",
+      "documentsStatus": {
+        "transcriptsVerified": false,
+        "identityProofVerified": false,
+        "recommendationLettersVerified": false
+      },
+      "seatDepositPaid": false,
+      "depositAmount": 0,
+      "assignedCounselor": "Admissions Central Desk",
+      "source": "PORTAL_DIRECT",
+      "appliedDate": "2026-11-02T08:22:41.118Z"
+    },
+    {
+      "id": "app-1793607339131",
+      "applicationNo": "ADM-2026-657",
+      "fullName": "Scholar Integration Test 1793607339130",
+      "email": "scholar.integ.1793607339130@classroom.edu",
+      "phone": "+15559876543",
+      "programCode": "prog-cs-01",
+      "programName": "Undergraduate Degree",
+      "highSchoolGpa": 94.5,
+      "entranceExamScore": 1450,
+      "meritRank": 22,
+      "stage": "SEAT_CONFIRMED",
+      "documentsStatus": {
+        "transcriptsVerified": false,
+        "identityProofVerified": false,
+        "recommendationLettersVerified": false
+      },
+      "seatDepositPaid": true,
+      "depositAmount": 1500,
+      "assignedCounselor": "Admissions Central Desk",
+      "source": "WEBSITE",
+      "appliedDate": "2026-11-02T08:15:39.131Z"
+    },
+    {
+      "id": "app-1793607336548",
+      "applicationNo": "ADM-2026-674",
+      "fullName": "Linus Torvalds Jr.",
+      "email": "linus.jr@test-admissions.edu",
+      "phone": "+1 (555) 019-2834",
+      "programCode": "BTECH-CSE",
+      "programName": "B.Tech Computer Science & Engineering",
+      "highSchoolGpa": 4,
+      "entranceExamScore": 1560,
+      "meritRank": 25,
+      "stage": "OFFER_EXTENDED",
+      "documentsStatus": {
+        "transcriptsVerified": false,
+        "identityProofVerified": false,
+        "recommendationLettersVerified": false
+      },
+      "seatDepositPaid": false,
+      "depositAmount": 0,
+      "assignedCounselor": "Admissions Central Desk",
+      "source": "PORTAL_DIRECT",
+      "appliedDate": "2026-11-02T08:15:36.548Z"
+    },
+    {
       "id": "app-1792042774436",
       "applicationNo": "ADM-2026-996",
       "fullName": "Linus Torvalds Jr.",
@@ -2328,9 +2489,9 @@
     {
       "programCode": "BTECH-CSE",
       "programName": "B.Tech Computer Science & Engineering",
-      "totalSeats": 120,
+      "totalSeats": 140,
       "confirmedSeats": 104,
-      "cutoffScore": 82,
+      "cutoffScore": 82.5,
       "applicationFee": 75
     },
     {
@@ -2356,6 +2517,13 @@
       "confirmedSeats": 48,
       "cutoffScore": 78,
       "applicationFee": 90
+    },
+    {
+      "programCode": "AI_DS",
+      "programName": "AI & Data Science",
+      "totalSeats": 120,
+      "managementSeats": 15,
+      "meritSeats": 105
     }
   ]
 }

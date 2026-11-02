@@ -63,6 +63,342 @@
   ],
   "workOrders": [
     {
+      "id": "wo-1793608246980",
+      "workOrderNumber": "APEX-ESTATE-WO-2026-2895",
+      "discipline": "ELECTRICAL",
+      "priority": "HIGH_PRIORITY",
+      "slaHours": 6,
+      "location": "Physics Nano-Lab C-201",
+      "issueTitle": "Unstable Power Distribution Busbar",
+      "issueDescription": "Unstable Power Distribution Busbar",
+      "requesterId": "staff-phys-01",
+      "requesterName": "Dr. C. V. Raman",
+      "requesterDepartment": "Department of Physics",
+      "status": "COMPLETED",
+      "createdAt": "2026-11-02T08:30:46.980Z",
+      "updatedAt": "2026-11-02T08:30:47.015Z",
+      "materialsBOQ": [
+        {
+          "materialName": "Industrial 3D Printing Filament (PLA+ 1.75mm)",
+          "quantity": 2,
+          "cost": 56
+        },
+        {
+          "materialName": "Shielded Cat6 Gigabit Patch Cables (3 Meter)",
+          "quantity": 3,
+          "cost": 105
+        }
+      ],
+      "completionDetails": {
+        "completedAt": "2026-11-02T08:30:47.015Z",
+        "actualCost": 161,
+        "engineerNotes": "Busbar cabling replaced using Cat6 and custom 3D printed insulation shrouds.",
+        "completionCertificateNumber": "APEX-ESTATE-CERT-2026-1033",
+        "cryptographicSeal": "b3c6b440bf559fb966c5783bbe242ea5dee525598c7634ecacc5da56485f2f53",
+        "inventoryStockReconciled": true
+      }
+    },
+    {
+      "id": "wo-1793608246518",
+      "workOrderNumber": "APEX-ESTATE-WO-2026-7495",
+      "discipline": "ELECTRICAL",
+      "priority": "CRITICAL_EMERGENCY",
+      "slaHours": 2,
+      "location": "Server Room B - High Performance Computing Cluster",
+      "issueTitle": "Precision AC Compressor Power Feed Tripping Breaker",
+      "issueDescription": "Server room ambient temperature rising rapidly due to cooling power failure.",
+      "requesterId": "sys-admin-01",
+      "requesterName": "Er. Amitava Sen",
+      "requesterDepartment": "Central Computing Center",
+      "status": "CLOSED",
+      "createdAt": "2026-11-02T08:30:46.518Z",
+      "updatedAt": "2026-11-02T08:30:46.572Z",
+      "assignedEngineer": {
+        "engineerName": "Er. Pradeep Nair (JE Electrical)",
+        "engineerRole": "Junior Engineer (Electrical & Substations)",
+        "assignedAt": "2026-11-02T08:30:46.526Z",
+        "targetResolutionDate": "2026-11-02T10:30:46.526Z",
+        "estimatedMaterialCost": 4000
+      },
+      "materialsBOQ": [
+        {
+          "materialName": "63A 3-Phase MCCB Breaker",
+          "quantity": 1,
+          "cost": 2800
+        },
+        {
+          "materialName": "Copper Busbar Clamp",
+          "quantity": 2,
+          "cost": 700
+        }
+      ],
+      "completionDetails": {
+        "completedAt": "2026-11-02T08:30:46.565Z",
+        "actualCost": 3500,
+        "engineerNotes": "Replaced 63A breaker and tightened busbar connection. Temperature stabilized at 19C.",
+        "completionCertificateNumber": "APEX-ESTATE-CERT-2026-2823",
+        "cryptographicSeal": "b87c4e38d320a6e72a4cb78843d54a74a61af9bba7c8a12b2eb5d6c35741df61",
+        "inventoryStockReconciled": true
+      },
+      "userClosureRating": {
+        "ratingStars": 5,
+        "satisfactionFeedback": "Fast response within SLA. Prevented server cluster thermal shutdown.",
+        "closedAt": "2026-11-02T08:30:46.572Z"
+      }
+    },
+    {
+      "id": "wo-1793608025713",
+      "workOrderNumber": "APEX-ESTATE-WO-2026-4371",
+      "discipline": "ELECTRICAL",
+      "priority": "HIGH_PRIORITY",
+      "slaHours": 6,
+      "location": "Physics Nano-Lab C-201",
+      "issueTitle": "Unstable Power Distribution Busbar",
+      "issueDescription": "Unstable Power Distribution Busbar",
+      "requesterId": "staff-phys-01",
+      "requesterName": "Dr. C. V. Raman",
+      "requesterDepartment": "Department of Physics",
+      "status": "COMPLETED",
+      "createdAt": "2026-11-02T08:27:05.713Z",
+      "updatedAt": "2026-11-02T08:27:05.749Z",
+      "materialsBOQ": [
+        {
+          "materialName": "Industrial 3D Printing Filament (PLA+ 1.75mm)",
+          "quantity": 2,
+          "cost": 56
+        },
+        {
+          "materialName": "Shielded Cat6 Gigabit Patch Cables (3 Meter)",
+          "quantity": 3,
+          "cost": 105
+        }
+      ],
+      "completionDetails": {
+        "completedAt": "2026-11-02T08:27:05.749Z",
+        "actualCost": 161,
+        "engineerNotes": "Busbar cabling replaced using Cat6 and custom 3D printed insulation shrouds.",
+        "completionCertificateNumber": "APEX-ESTATE-CERT-2026-8052",
+        "cryptographicSeal": "b61eb648030c0c0c775291b3d3acc88e834cc5b5371f6654c5857d61dc4b44e6",
+        "inventoryStockReconciled": true
+      }
+    },
+    {
+      "id": "wo-1793608025260",
+      "workOrderNumber": "APEX-ESTATE-WO-2026-7770",
+      "discipline": "ELECTRICAL",
+      "priority": "CRITICAL_EMERGENCY",
+      "slaHours": 2,
+      "location": "Server Room B - High Performance Computing Cluster",
+      "issueTitle": "Precision AC Compressor Power Feed Tripping Breaker",
+      "issueDescription": "Server room ambient temperature rising rapidly due to cooling power failure.",
+      "requesterId": "sys-admin-01",
+      "requesterName": "Er. Amitava Sen",
+      "requesterDepartment": "Central Computing Center",
+      "status": "CLOSED",
+      "createdAt": "2026-11-02T08:27:05.260Z",
+      "updatedAt": "2026-11-02T08:27:05.319Z",
+      "assignedEngineer": {
+        "engineerName": "Er. Pradeep Nair (JE Electrical)",
+        "engineerRole": "Junior Engineer (Electrical & Substations)",
+        "assignedAt": "2026-11-02T08:27:05.267Z",
+        "targetResolutionDate": "2026-11-02T10:27:05.267Z",
+        "estimatedMaterialCost": 4000
+      },
+      "materialsBOQ": [
+        {
+          "materialName": "63A 3-Phase MCCB Breaker",
+          "quantity": 1,
+          "cost": 2800
+        },
+        {
+          "materialName": "Copper Busbar Clamp",
+          "quantity": 2,
+          "cost": 700
+        }
+      ],
+      "completionDetails": {
+        "completedAt": "2026-11-02T08:27:05.305Z",
+        "actualCost": 3500,
+        "engineerNotes": "Replaced 63A breaker and tightened busbar connection. Temperature stabilized at 19C.",
+        "completionCertificateNumber": "APEX-ESTATE-CERT-2026-3228",
+        "cryptographicSeal": "d61b853182de6e99ee137890e0c01ab7dcb80d0d008bb16c2100b69f91e28163",
+        "inventoryStockReconciled": true
+      },
+      "userClosureRating": {
+        "ratingStars": 5,
+        "satisfactionFeedback": "Fast response within SLA. Prevented server cluster thermal shutdown.",
+        "closedAt": "2026-11-02T08:27:05.319Z"
+      }
+    },
+    {
+      "id": "wo-1793607907255",
+      "workOrderNumber": "APEX-ESTATE-WO-2026-8346",
+      "discipline": "ELECTRICAL",
+      "priority": "HIGH_PRIORITY",
+      "slaHours": 6,
+      "location": "Physics Nano-Lab C-201",
+      "issueTitle": "Unstable Power Distribution Busbar",
+      "issueDescription": "Unstable Power Distribution Busbar",
+      "requesterId": "staff-phys-01",
+      "requesterName": "Dr. C. V. Raman",
+      "requesterDepartment": "Department of Physics",
+      "status": "COMPLETED",
+      "createdAt": "2026-11-02T08:25:07.255Z",
+      "updatedAt": "2026-11-02T08:25:07.287Z",
+      "materialsBOQ": [
+        {
+          "materialName": "Industrial 3D Printing Filament (PLA+ 1.75mm)",
+          "quantity": 2,
+          "cost": 56
+        },
+        {
+          "materialName": "Shielded Cat6 Gigabit Patch Cables (3 Meter)",
+          "quantity": 3,
+          "cost": 105
+        }
+      ],
+      "completionDetails": {
+        "completedAt": "2026-11-02T08:25:07.287Z",
+        "actualCost": 161,
+        "engineerNotes": "Busbar cabling replaced using Cat6 and custom 3D printed insulation shrouds.",
+        "completionCertificateNumber": "APEX-ESTATE-CERT-2026-5507",
+        "cryptographicSeal": "5851368801295b39e625b181048fe7800f29788588bf2fee237a8ca8f15d450b",
+        "inventoryStockReconciled": true
+      }
+    },
+    {
+      "id": "wo-1793607906747",
+      "workOrderNumber": "APEX-ESTATE-WO-2026-9812",
+      "discipline": "ELECTRICAL",
+      "priority": "CRITICAL_EMERGENCY",
+      "slaHours": 2,
+      "location": "Server Room B - High Performance Computing Cluster",
+      "issueTitle": "Precision AC Compressor Power Feed Tripping Breaker",
+      "issueDescription": "Server room ambient temperature rising rapidly due to cooling power failure.",
+      "requesterId": "sys-admin-01",
+      "requesterName": "Er. Amitava Sen",
+      "requesterDepartment": "Central Computing Center",
+      "status": "CLOSED",
+      "createdAt": "2026-11-02T08:25:06.747Z",
+      "updatedAt": "2026-11-02T08:25:06.797Z",
+      "assignedEngineer": {
+        "engineerName": "Er. Pradeep Nair (JE Electrical)",
+        "engineerRole": "Junior Engineer (Electrical & Substations)",
+        "assignedAt": "2026-11-02T08:25:06.755Z",
+        "targetResolutionDate": "2026-11-02T10:25:06.755Z",
+        "estimatedMaterialCost": 4000
+      },
+      "materialsBOQ": [
+        {
+          "materialName": "63A 3-Phase MCCB Breaker",
+          "quantity": 1,
+          "cost": 2800
+        },
+        {
+          "materialName": "Copper Busbar Clamp",
+          "quantity": 2,
+          "cost": 700
+        }
+      ],
+      "completionDetails": {
+        "completedAt": "2026-11-02T08:25:06.791Z",
+        "actualCost": 3500,
+        "engineerNotes": "Replaced 63A breaker and tightened busbar connection. Temperature stabilized at 19C.",
+        "completionCertificateNumber": "APEX-ESTATE-CERT-2026-8852",
+        "cryptographicSeal": "319d837425de01547dc89dbb8954731dd802a3a008b866c59681331014c32651",
+        "inventoryStockReconciled": true
+      },
+      "userClosureRating": {
+        "ratingStars": 5,
+        "satisfactionFeedback": "Fast response within SLA. Prevented server cluster thermal shutdown.",
+        "closedAt": "2026-11-02T08:25:06.797Z"
+      }
+    },
+    {
+      "id": "wo-1793607338953",
+      "workOrderNumber": "APEX-ESTATE-WO-2026-3942",
+      "discipline": "ELECTRICAL",
+      "priority": "HIGH_PRIORITY",
+      "slaHours": 6,
+      "location": "Physics Nano-Lab C-201",
+      "issueTitle": "Unstable Power Distribution Busbar",
+      "issueDescription": "Unstable Power Distribution Busbar",
+      "requesterId": "staff-phys-01",
+      "requesterName": "Dr. C. V. Raman",
+      "requesterDepartment": "Department of Physics",
+      "status": "COMPLETED",
+      "createdAt": "2026-11-02T08:15:38.953Z",
+      "updatedAt": "2026-11-02T08:15:38.985Z",
+      "materialsBOQ": [
+        {
+          "materialName": "Industrial 3D Printing Filament (PLA+ 1.75mm)",
+          "quantity": 2,
+          "cost": 56
+        },
+        {
+          "materialName": "Shielded Cat6 Gigabit Patch Cables (3 Meter)",
+          "quantity": 3,
+          "cost": 105
+        }
+      ],
+      "completionDetails": {
+        "completedAt": "2026-11-02T08:15:38.985Z",
+        "actualCost": 161,
+        "engineerNotes": "Busbar cabling replaced using Cat6 and custom 3D printed insulation shrouds.",
+        "completionCertificateNumber": "APEX-ESTATE-CERT-2026-7855",
+        "cryptographicSeal": "e711cd2b99d487c43bc1b747386cda4d079aec6d5050e555a6403b1f270cf8ac",
+        "inventoryStockReconciled": true
+      }
+    },
+    {
+      "id": "wo-1793607338584",
+      "workOrderNumber": "APEX-ESTATE-WO-2026-3991",
+      "discipline": "ELECTRICAL",
+      "priority": "CRITICAL_EMERGENCY",
+      "slaHours": 2,
+      "location": "Server Room B - High Performance Computing Cluster",
+      "issueTitle": "Precision AC Compressor Power Feed Tripping Breaker",
+      "issueDescription": "Server room ambient temperature rising rapidly due to cooling power failure.",
+      "requesterId": "sys-admin-01",
+      "requesterName": "Er. Amitava Sen",
+      "requesterDepartment": "Central Computing Center",
+      "status": "CLOSED",
+      "createdAt": "2026-11-02T08:15:38.584Z",
+      "updatedAt": "2026-11-02T08:15:38.626Z",
+      "assignedEngineer": {
+        "engineerName": "Er. Pradeep Nair (JE Electrical)",
+        "engineerRole": "Junior Engineer (Electrical & Substations)",
+        "assignedAt": "2026-11-02T08:15:38.589Z",
+        "targetResolutionDate": "2026-11-02T10:15:38.589Z",
+        "estimatedMaterialCost": 4000
+      },
+      "materialsBOQ": [
+        {
+          "materialName": "63A 3-Phase MCCB Breaker",
+          "quantity": 1,
+          "cost": 2800
+        },
+        {
+          "materialName": "Copper Busbar Clamp",
+          "quantity": 2,
+          "cost": 700
+        }
+      ],
+      "completionDetails": {
+        "completedAt": "2026-11-02T08:15:38.621Z",
+        "actualCost": 3500,
+        "engineerNotes": "Replaced 63A breaker and tightened busbar connection. Temperature stabilized at 19C.",
+        "completionCertificateNumber": "APEX-ESTATE-CERT-2026-2752",
+        "cryptographicSeal": "34dc4260a5963e6b9eb5cabec65619224102fb7aabdea2e2d0178fdc774684a0",
+        "inventoryStockReconciled": true
+      },
+      "userClosureRating": {
+        "ratingStars": 5,
+        "satisfactionFeedback": "Fast response within SLA. Prevented server cluster thermal shutdown.",
+        "closedAt": "2026-11-02T08:15:38.626Z"
+      }
+    },
+    {
       "id": "wo-1792042776558",
       "workOrderNumber": "APEX-ESTATE-WO-2026-1224",
       "discipline": "ELECTRICAL",

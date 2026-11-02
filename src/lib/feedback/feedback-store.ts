@@ -166,6 +166,10 @@ export const feedbackStore = {
     return indices.sort((a, b) => b.overallFPI - a.overallFPI);
   },
 
+  resetStore() {
+    writeStore({ responses: [...DEFAULT_RESPONSES] });
+  },
+
   submitSurvey(payload: Partial<SurveyResponse>): SurveyResponse {
     const validation = validateSurveySubmission(payload);
     if (!validation.isValid) {

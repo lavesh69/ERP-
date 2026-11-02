@@ -1,6 +1,6 @@
 [
   {
-    "id": "pr-774470",
+    "id": "pr-244406",
     "payPeriod": "October 2026",
     "totalEmployees": 5,
     "totalGross": 619776,
@@ -9,7 +9,7 @@
     "totalPf": 51648,
     "totalLop": 3456,
     "status": "DISBURSED",
-    "processedAt": "2026-10-15T05:39:34.470Z",
+    "processedAt": "2026-11-02T08:30:44.406Z",
     "slips": [
       {
         "staffId": "fac-01",
@@ -157,7 +157,7 @@
         "loanEmiDeduction": 0
       }
     ],
-    "disbursedAt": "2026-10-15T05:39:34.478Z",
+    "disbursedAt": "2026-11-02T08:30:44.417Z",
     "disbursedBy": "provost.evans@classroom.edu"
   }
 ]

@@ -1,6 +1,134 @@
 {
   "alerts": [
     {
+      "id": "al-1793608247134",
+      "alertCode": "EMG-2026-750",
+      "category": "DRILL_SIMULATION",
+      "severity": "CAMPUS_ALL_CLEAR",
+      "headline": "Scheduled Annual Earthquake Evacuation Exercise",
+      "instructions": "Drop, cover, and hold on. Proceed to designated outdoor muster zones when bells chime. | [ALL CLEAR]: Earthquake drill completed with 100% headcount verified.",
+      "affectedZones": [
+        "Central Academic Block"
+      ],
+      "dispatchedChannels": [
+        "CAMPUS_SIRENS",
+        "MOBILE_APP_PUSH"
+      ],
+      "initiatedBy": "Chief Safety Warden",
+      "initiatedAt": "2026-11-02T08:30:47.134Z",
+      "isActive": false,
+      "cryptographicBroadcastSeal": "EOC-ALERT-D20C27582DE7D5BC",
+      "resolvedAt": "2026-11-02T08:30:47.142Z"
+    },
+    {
+      "id": "al-1793608244599",
+      "alertCode": "EMG-2026-804",
+      "category": "SEVERE_WEATHER_ALERT",
+      "severity": "CAMPUS_ALL_CLEAR",
+      "headline": "Flash Flood & Storm Warning on East Campus",
+      "instructions": "All students and staff in Basement labs must immediately proceed to Ground floor muster points. | [ALL CLEAR]: Weather services have downgraded warning; facilities team confirmed safe building egress.",
+      "affectedZones": [
+        "Engineering Block A",
+        "Central Library"
+      ],
+      "dispatchedChannels": [
+        "SMS_GATEWAY",
+        "CAMPUS_SIRENS",
+        "MOBILE_APP_PUSH"
+      ],
+      "initiatedBy": "Incident Commander",
+      "initiatedAt": "2026-11-02T08:30:44.599Z",
+      "isActive": false,
+      "cryptographicBroadcastSeal": "EOC-ALERT-86763FDCA4D54394",
+      "resolvedAt": "2026-11-02T08:30:44.608Z"
+    },
+    {
+      "id": "al-1793608023016",
+      "alertCode": "EMG-2026-998",
+      "category": "SEVERE_WEATHER_ALERT",
+      "severity": "CAMPUS_ALL_CLEAR",
+      "headline": "Flash Flood & Storm Warning on East Campus",
+      "instructions": "All students and staff in Basement labs must immediately proceed to Ground floor muster points. | [ALL CLEAR]: Weather services have downgraded warning; facilities team confirmed safe building egress.",
+      "affectedZones": [
+        "Engineering Block A",
+        "Central Library"
+      ],
+      "dispatchedChannels": [
+        "SMS_GATEWAY",
+        "CAMPUS_SIRENS",
+        "MOBILE_APP_PUSH"
+      ],
+      "initiatedBy": "Incident Commander",
+      "initiatedAt": "2026-11-02T08:27:03.016Z",
+      "isActive": false,
+      "cryptographicBroadcastSeal": "EOC-ALERT-97BDD7E4FE1673E3",
+      "resolvedAt": "2026-11-02T08:27:03.025Z"
+    },
+    {
+      "id": "al-1793607904808",
+      "alertCode": "EMG-2026-535",
+      "category": "SEVERE_WEATHER_ALERT",
+      "severity": "CAMPUS_ALL_CLEAR",
+      "headline": "Flash Flood & Storm Warning on East Campus",
+      "instructions": "All students and staff in Basement labs must immediately proceed to Ground floor muster points. | [ALL CLEAR]: Weather services have downgraded warning; facilities team confirmed safe building egress.",
+      "affectedZones": [
+        "Engineering Block A",
+        "Central Library"
+      ],
+      "dispatchedChannels": [
+        "SMS_GATEWAY",
+        "CAMPUS_SIRENS",
+        "MOBILE_APP_PUSH"
+      ],
+      "initiatedBy": "Incident Commander",
+      "initiatedAt": "2026-11-02T08:25:04.808Z",
+      "isActive": false,
+      "cryptographicBroadcastSeal": "EOC-ALERT-EAE783D80A6233BF",
+      "resolvedAt": "2026-11-02T08:25:04.817Z"
+    },
+    {
+      "id": "al-1793607339098",
+      "alertCode": "EMG-2026-685",
+      "category": "DRILL_SIMULATION",
+      "severity": "CAMPUS_ALL_CLEAR",
+      "headline": "Scheduled Annual Earthquake Evacuation Exercise",
+      "instructions": "Drop, cover, and hold on. Proceed to designated outdoor muster zones when bells chime. | [ALL CLEAR]: Earthquake drill completed with 100% headcount verified.",
+      "affectedZones": [
+        "Central Academic Block"
+      ],
+      "dispatchedChannels": [
+        "CAMPUS_SIRENS",
+        "MOBILE_APP_PUSH"
+      ],
+      "initiatedBy": "Chief Safety Warden",
+      "initiatedAt": "2026-11-02T08:15:39.098Z",
+      "isActive": false,
+      "cryptographicBroadcastSeal": "EOC-ALERT-94F7B81CF70DFA0B",
+      "resolvedAt": "2026-11-02T08:15:39.105Z"
+    },
+    {
+      "id": "al-1793607336778",
+      "alertCode": "EMG-2026-285",
+      "category": "SEVERE_WEATHER_ALERT",
+      "severity": "CAMPUS_ALL_CLEAR",
+      "headline": "Flash Flood & Storm Warning on East Campus",
+      "instructions": "All students and staff in Basement labs must immediately proceed to Ground floor muster points. | [ALL CLEAR]: Weather services have downgraded warning; facilities team confirmed safe building egress.",
+      "affectedZones": [
+        "Engineering Block A",
+        "Central Library"
+      ],
+      "dispatchedChannels": [
+        "SMS_GATEWAY",
+        "CAMPUS_SIRENS",
+        "MOBILE_APP_PUSH"
+      ],
+      "initiatedBy": "Incident Commander",
+      "initiatedAt": "2026-11-02T08:15:36.777Z",
+      "isActive": false,
+      "cryptographicBroadcastSeal": "EOC-ALERT-6696426F4B66CE27",
+      "resolvedAt": "2026-11-02T08:15:36.786Z"
+    },
+    {
       "id": "al-1792042774667",
       "alertCode": "EMG-2026-268",
       "category": "SEVERE_WEATHER_ALERT",
@@ -1790,7 +1918,7 @@
       "name": "Central Sports Ground Pavilion Assembly",
       "zone": "North Academic & Science Quad",
       "capacity": 2500,
-      "currentEvacueesCount": 840,
+      "currentEvacueesCount": 920,
       "assignedWarden": "Chief Safety Officer Col. Rathore",
       "wardenPhone": "+1 (555) 911-0021",
       "status": "SAFE_ASSEMBLED"

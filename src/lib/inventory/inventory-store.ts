@@ -170,6 +170,14 @@ function writeStore(data: InventoryStoreSchema) {
 }
 
 export const inventoryStore = {
+  resetStore() {
+    writeStore({
+      assets: JSON.parse(JSON.stringify(DEFAULT_ASSETS)),
+      consumables: JSON.parse(JSON.stringify(DEFAULT_CONSUMABLES)),
+      workOrders: JSON.parse(JSON.stringify(DEFAULT_WORK_ORDERS)),
+    });
+  },
+
   getSummary() {
     const store = readStore();
     const totalAssets = store.assets.length;

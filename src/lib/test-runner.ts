@@ -6454,6 +6454,7 @@ By breaking down large monolithic systems into decoupled microservices, systems 
   const feedbackSummaryData = await feedbackSummaryRes.json();
   assert(feedbackSummaryData.summary.totalResponses > 0, "Feedback portal tracks existing evaluation submissions");
 
+  feedbackStore.resetStore();
   const feedbackFacultyReq = new NextRequest("http://localhost:3000/api/feedback?tab=faculty", {
     headers: { Cookie: `classroom_session=${adminToken}` },
   });
@@ -11841,6 +11842,7 @@ By breaking down large monolithic systems into decoupled microservices, systems 
   assert(studentFeedbackRes.status === 403, "Student caller attempting to access faculty performance indices is barred (403 Forbidden)");
 
   // 86.2 Module 2: Hostel & Dormitory Management
+  hostelStore.resetStore();
   // Dual Bed Allocation Conflict Detection
   let bedConflictThrew = false;
   try {
@@ -12013,6 +12015,7 @@ By breaking down large monolithic systems into decoupled microservices, systems 
   }
   assert(zeroCostAssetThrew === true, "Asset registration strictly requires positive purchase cost (> 0)");
 
+  inventoryStore.resetStore();
   const newAsset = inventoryStore.addAsset({
     name: "Oscilloscope 100MHz Dual Channel",
     category: "LAB_INSTRUMENTATION",
