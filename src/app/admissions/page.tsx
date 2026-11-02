@@ -32,6 +32,8 @@ import {
   X,
 } from "lucide-react";
 import AdmissionsCounselingTab from "@/components/admissions/AdmissionsCounselingTab";
+import AdmissionsEnquiriesTab from "@/components/admissions/AdmissionsEnquiriesTab";
+import AdmissionsEligibilityTab from "@/components/admissions/AdmissionsEligibilityTab";
 import { SkeletonCard } from "@/components/common/SkeletonLoader";
 import { EmptyState } from "@/components/common/EmptyState";
 
@@ -46,7 +48,7 @@ interface AdmissionsSummary {
 
 export default function AdmissionsPage() {
   const { currentUser, showToast } = useApp();
-  const [activeTab, setActiveTab] = useState<"pipeline" | "register" | "quotas" | "analytics" | "counseling">("pipeline");
+  const [activeTab, setActiveTab] = useState<"pipeline" | "register" | "quotas" | "analytics" | "counseling" | "enquiries" | "eligibility">("pipeline");
   const [loading, setLoading] = useState(true);
   const [summary, setSummary] = useState<AdmissionsSummary | null>(null);
   const [applicants, setApplicants] = useState<any[]>([]);
@@ -505,6 +507,8 @@ export default function AdmissionsPage() {
       <div className="flex items-center gap-1.5 p-1.5 rounded-2xl bg-surface-soft/60 dark:bg-charcoal-900 border border-border/80 dark:border-charcoal-800 overflow-x-auto no-scrollbar">
         {[
           { id: "pipeline", label: "Applicant Pipeline", icon: UserPlus, count: summary?.totalApplicants },
+          { id: "enquiries", label: "Prospective Leads & Inquiries", icon: Mail },
+          { id: "eligibility", label: "Eligibility & Merit Calculator", icon: CheckCircle2 },
           { id: "quotas", label: "Program Quotas & Cutoffs", icon: GraduationCap },
           { id: "counseling", label: "Merit & Counseling Allotment", icon: Award },
           { id: "analytics", label: "Enrollment Funnel Analytics", icon: TrendingUp },
@@ -995,6 +999,25 @@ export default function AdmissionsPage() {
 
       {/* TAB: STATUTORY MERIT & COUNSELING ALLOTMENT */}
       {activeTab === "counseling" && <AdmissionsCounselingTab />}
+
+      {/* TAB: PROSPECTIVE INQUIRIES & LEADS CRM */}
+      {activeTab === "enquiries" && (
+        <AdmissionsEnquiriesTab
+          onPromoteSuccess={() => {
+            fetchData();
+          }}
+        />
+      )}
+
+      {/* TAB: LIVE ELIGIBILITY & MERIT SCHOLARSHIP CALCULATOR */}
+      {activeTab === "eligibility" && (
+        <AdmissionsEligibilityTab
+          onSelectProgram={(_progCode) => {
+            setActiveTab("pipeline");
+            setShowAppModal(true);
+          }}
+        />
+      )}
 
       {/* MODAL: New Applicant */}
       {showAppModal && (

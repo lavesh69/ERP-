@@ -1,0 +1,67 @@
+[
+  {
+    "id": "lead-1793628276668",
+    "applicantName": "Siddharth Nambiar",
+    "email": "walkin.lead.1793628276667@apex-prospective.edu",
+    "phone": "+91-9871198711",
+    "targetProgram": "B.Tech Computer Science & Engineering",
+    "twelfthPercentage": 94.6,
+    "entranceExamScore": "JEE Main 98.4 Percentile",
+    "city": "Kochi",
+    "status": "ADMITTED",
+    "submittedAt": "2026-11-02T14:04:36.668Z",
+    "counselorNotes": "Candidate counseled for AI specialization. High scholarship prospect. | Converted to formal applicant (ADM-2026-704)"
+  },
+  {
+    "id": "lead-1793628178357",
+    "applicantName": "Siddharth Nambiar",
+    "email": "walkin.lead.1793628178357@apex-prospective.edu",
+    "phone": "+91-9871198711",
+    "targetProgram": "B.Tech Computer Science & Engineering",
+    "twelfthPercentage": 94.6,
+    "entranceExamScore": "JEE Main 98.4 Percentile",
+    "city": "Kochi",
+    "status": "ADMITTED",
+    "submittedAt": "2026-11-02T14:02:58.357Z",
+    "counselorNotes": "Candidate counseled for AI specialization. High scholarship prospect. | Converted to formal applicant (ADM-2026-995)"
+  },
+  {
+    "id": "lead-01",
+    "applicantName": "Aarav Sharma",
+    "email": "aarav.sharma@example.com",
+    "phone": "+91-9876501234",
+    "targetProgram": "B.Tech in Computer Science",
+    "twelfthPercentage": 92.4,
+    "entranceExamScore": "JEE Main: 98.2 Percentile",
+    "city": "New Delhi",
+    "status": "NEW_ENQUIRY",
+    "counselorNotes": "Interested in AI & Systems minor. Follow-up scheduled.",
+    "submittedAt": "2026-10-02T14:30:00Z"
+  },
+  {
+    "id": "lead-02",
+    "applicantName": "Diya Sengupta",
+    "email": "diya.sengupta@example.com",
+    "phone": "+91-9876505678",
+    "targetProgram": "B.Tech in Artificial Intelligence & Robotics",
+    "twelfthPercentage": 95,
+    "entranceExamScore": "SAT 1490",
+    "city": "Bengaluru",
+    "status": "COUNSELED",
+    "counselorNotes": "Counseled by Dr. Evelyn. Eligible for merit scholarship waiver.",
+    "submittedAt": "2026-10-10T11:15:00Z"
+  },
+  {
+    "id": "lead-03",
+    "applicantName": "Kabir Malhotra",
+    "email": "kabir.malhotra@example.com",
+    "phone": "+91-9876509988",
+    "targetProgram": "B.Tech Electronics & Communication",
+    "twelfthPercentage": 84.2,
+    "entranceExamScore": "State CET Rank 1420",
+    "city": "Pune",
+    "status": "CONTACTED",
+    "counselorNotes": "Parent requested hostel accommodation details and fee schedule.",
+    "submittedAt": "2026-10-18T09:40:00Z"
+  }
+]

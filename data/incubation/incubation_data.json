@@ -1,6 +1,63 @@
 {
   "startups": [
     {
+      "id": "st-1793628276597",
+      "companyRef": "VENT-2026-591",
+      "startupName": "QuantumSense Magnetometry 1793628276584",
+      "founderName": "Pooja Deshmukh",
+      "founderRollOrStaffId": "STUDENT-PHY-6597",
+      "founderRole": "STUDENT",
+      "sector": "AI_ML",
+      "stage": "INCUBATED_PROTOTYPE",
+      "pitchDeckSummary": "Sub-surface geomagnetic navigation requires bulky cryogenic sensors. — Room-temperature nitrogen-vacancy diamond quantum magnetometers on a silicon chip.",
+      "seedGrantDisbursed": 0,
+      "universityEquityPercentage": 3,
+      "externalFundingRaised": 0,
+      "patentsFiled": 0,
+      "labDesksAllocated": 2,
+      "mentorName": "Vikramaditya Bose",
+      "status": "ACTIVE",
+      "incubatedDate": "2026-11-02T14:04:36.597Z"
+    },
+    {
+      "id": "st-1793628178273",
+      "companyRef": "VENT-2026-363",
+      "startupName": "QuantumSense Magnetometry 1793628178236",
+      "founderName": "Pooja Deshmukh",
+      "founderRollOrStaffId": "STUDENT-PHY-8273",
+      "founderRole": "STUDENT",
+      "sector": "AI_ML",
+      "stage": "INCUBATED_PROTOTYPE",
+      "pitchDeckSummary": "Sub-surface geomagnetic navigation requires bulky cryogenic sensors. — Room-temperature nitrogen-vacancy diamond quantum magnetometers on a silicon chip.",
+      "seedGrantDisbursed": 0,
+      "universityEquityPercentage": 3,
+      "externalFundingRaised": 0,
+      "patentsFiled": 0,
+      "labDesksAllocated": 2,
+      "mentorName": "Vikramaditya Bose",
+      "status": "ACTIVE",
+      "incubatedDate": "2026-11-02T14:02:58.273Z"
+    },
+    {
+      "id": "st-1793628010763",
+      "companyRef": "VENT-2026-155",
+      "startupName": "QuantumSense Magnetometry 1793628010747",
+      "founderName": "Pooja Deshmukh",
+      "founderRollOrStaffId": "STUDENT-PHY-0763",
+      "founderRole": "STUDENT",
+      "sector": "AI_ML",
+      "stage": "INCUBATED_PROTOTYPE",
+      "pitchDeckSummary": "Sub-surface geomagnetic navigation requires bulky cryogenic sensors. — Room-temperature nitrogen-vacancy diamond quantum magnetometers on a silicon chip.",
+      "seedGrantDisbursed": 0,
+      "universityEquityPercentage": 3,
+      "externalFundingRaised": 0,
+      "patentsFiled": 0,
+      "labDesksAllocated": 2,
+      "mentorName": "Vikramaditya Bose",
+      "status": "ACTIVE",
+      "incubatedDate": "2026-11-02T14:00:10.763Z"
+    },
+    {
       "id": "st-1793626860779",
       "companyRef": "VENT-2026-580",
       "startupName": "QuantumSense Magnetometry 1793626860752",
@@ -124,10 +181,10 @@
       "sector": "HEALTHTECH",
       "stage": "ACCELERATOR_GROWTH",
       "pitchDeckSummary": "Non-invasive neural interfaces for neuromuscular rehabilitation monitoring.",
-      "seedGrantDisbursed": 3550000,
+      "seedGrantDisbursed": 5050000,
       "universityEquityPercentage": 3.5,
       "externalFundingRaised": 750000,
-      "patentsFiled": 8,
+      "patentsFiled": 11,
       "labDesksAllocated": 6,
       "mentorName": "Dr. Arvind Gupta (Angel Investor)",
       "status": "ACTIVE",
@@ -284,6 +341,42 @@
   ],
   "tranches": [
     {
+      "id": "tr-1793628276564",
+      "trancheRef": "TR-2026-403",
+      "startupId": "st-01",
+      "startupName": "NeuroPulse BioTech",
+      "trancheNumber": 2,
+      "amount": 500000,
+      "milestoneDescription": "Completed Edge-AI Prototype testing on RISC-V hardware",
+      "status": "DISBURSED",
+      "disbursedAt": "2026-11-02T14:04:36.564Z",
+      "sanctionOrderNumber": "ORD-APEX-2026-881"
+    },
+    {
+      "id": "tr-1793628178212",
+      "trancheRef": "TR-2026-818",
+      "startupId": "st-01",
+      "startupName": "NeuroPulse BioTech",
+      "trancheNumber": 2,
+      "amount": 500000,
+      "milestoneDescription": "Completed Edge-AI Prototype testing on RISC-V hardware",
+      "status": "DISBURSED",
+      "disbursedAt": "2026-11-02T14:02:58.213Z",
+      "sanctionOrderNumber": "ORD-APEX-2026-881"
+    },
+    {
+      "id": "tr-1793628010726",
+      "trancheRef": "TR-2026-484",
+      "startupId": "st-01",
+      "startupName": "NeuroPulse BioTech",
+      "trancheNumber": 2,
+      "amount": 500000,
+      "milestoneDescription": "Completed Edge-AI Prototype testing on RISC-V hardware",
+      "status": "DISBURSED",
+      "disbursedAt": "2026-11-02T14:00:10.726Z",
+      "sanctionOrderNumber": "ORD-APEX-2026-881"
+    },
+    {
       "id": "tr-1793626860715",
       "trancheRef": "TR-2026-462",
       "startupId": "st-01",
@@ -417,6 +510,54 @@
     }
   ],
   "patents": [
+    {
+      "id": "pat-1793628276573",
+      "disclosureRef": "PAT-2026-441",
+      "startupId": "st-01",
+      "startupName": "NeuroPulse BioTech",
+      "inventionTitle": "Low-Power Quantized Neural Accelerators for Autonomous Aerial Vehicles",
+      "applicationNumber": "IN-PAT-2026-9921",
+      "jurisdiction": "INDIAN_PATENT_OFFICE",
+      "filingDate": "2026-11-02",
+      "status": "PROVISIONAL_FILED",
+      "universitySharePercentage": 5,
+      "inventors": [
+        "Aarav Sharma",
+        "Dr. Vikram Seth"
+      ]
+    },
+    {
+      "id": "pat-1793628178221",
+      "disclosureRef": "PAT-2026-564",
+      "startupId": "st-01",
+      "startupName": "NeuroPulse BioTech",
+      "inventionTitle": "Low-Power Quantized Neural Accelerators for Autonomous Aerial Vehicles",
+      "applicationNumber": "IN-PAT-2026-9921",
+      "jurisdiction": "INDIAN_PATENT_OFFICE",
+      "filingDate": "2026-11-02",
+      "status": "PROVISIONAL_FILED",
+      "universitySharePercentage": 5,
+      "inventors": [
+        "Aarav Sharma",
+        "Dr. Vikram Seth"
+      ]
+    },
+    {
+      "id": "pat-1793628010733",
+      "disclosureRef": "PAT-2026-393",
+      "startupId": "st-01",
+      "startupName": "NeuroPulse BioTech",
+      "inventionTitle": "Low-Power Quantized Neural Accelerators for Autonomous Aerial Vehicles",
+      "applicationNumber": "IN-PAT-2026-9921",
+      "jurisdiction": "INDIAN_PATENT_OFFICE",
+      "filingDate": "2026-11-02",
+      "status": "PROVISIONAL_FILED",
+      "universitySharePercentage": 5,
+      "inventors": [
+        "Aarav Sharma",
+        "Dr. Vikram Seth"
+      ]
+    },
     {
       "id": "pat-1793626860733",
       "disclosureRef": "PAT-2026-946",
@@ -564,6 +705,48 @@
   ],
   "milestoneReviews": [
     {
+      "id": "rev-1793628276579",
+      "reviewRef": "REV-2026-352",
+      "startupId": "st-01",
+      "startupName": "NeuroPulse BioTech",
+      "quarter": "Q3 2026-27",
+      "reviewDate": "2026-11-02",
+      "reviewerName": "Dr. Elena Vance",
+      "mrrAchieved": 180000,
+      "prototypeStage": "WORKING_ALPHA",
+      "overallRating": 5,
+      "mentorRemarks": "Onboarded 3 defense drone clients for hardware evaluation kits",
+      "recommendedAction": "FAST_TRACK_ACCELERATION"
+    },
+    {
+      "id": "rev-1793628178230",
+      "reviewRef": "REV-2026-206",
+      "startupId": "st-01",
+      "startupName": "NeuroPulse BioTech",
+      "quarter": "Q3 2026-27",
+      "reviewDate": "2026-11-02",
+      "reviewerName": "Dr. Elena Vance",
+      "mrrAchieved": 180000,
+      "prototypeStage": "WORKING_ALPHA",
+      "overallRating": 5,
+      "mentorRemarks": "Onboarded 3 defense drone clients for hardware evaluation kits",
+      "recommendedAction": "FAST_TRACK_ACCELERATION"
+    },
+    {
+      "id": "rev-1793628010741",
+      "reviewRef": "REV-2026-562",
+      "startupId": "st-01",
+      "startupName": "NeuroPulse BioTech",
+      "quarter": "Q3 2026-27",
+      "reviewDate": "2026-11-02",
+      "reviewerName": "Dr. Elena Vance",
+      "mrrAchieved": 180000,
+      "prototypeStage": "WORKING_ALPHA",
+      "overallRating": 5,
+      "mentorRemarks": "Onboarded 3 defense drone clients for hardware evaluation kits",
+      "recommendedAction": "FAST_TRACK_ACCELERATION"
+    },
+    {
       "id": "rev-1793626860744",
       "reviewRef": "REV-2026-990",
       "startupId": "st-01",
@@ -677,6 +860,69 @@
     }
   ],
   "applications": [
+    {
+      "id": "app-1793628276585",
+      "applicationRef": "APP-2026-556",
+      "startupName": "QuantumSense Magnetometry 1793628276584",
+      "applicantName": "Pooja Deshmukh",
+      "applicantEmail": "pooja.deshmukh@students.apex.edu",
+      "applicantPhone": "+91 99999 00000",
+      "applicantRole": "STUDENT",
+      "department": "Physics & Nanotechnology",
+      "sector": "AI_ML",
+      "problemStatement": "Sub-surface geomagnetic navigation requires bulky cryogenic sensors.",
+      "proposedSolution": "Room-temperature nitrogen-vacancy diamond quantum magnetometers on a silicon chip.",
+      "prototypeUrl": "",
+      "requestedGrant": 750000,
+      "requestedDesks": 2,
+      "status": "APPROVED",
+      "committeeScore": 95,
+      "committeeNotes": "Exceptional diamond NV-center bench results. Approved for immediate admission.",
+      "submittedAt": "2026-11-02T14:04:36.585Z",
+      "evaluatedAt": "2026-11-02T14:04:36.591Z"
+    },
+    {
+      "id": "app-1793628178238",
+      "applicationRef": "APP-2026-674",
+      "startupName": "QuantumSense Magnetometry 1793628178236",
+      "applicantName": "Pooja Deshmukh",
+      "applicantEmail": "pooja.deshmukh@students.apex.edu",
+      "applicantPhone": "+91 99999 00000",
+      "applicantRole": "STUDENT",
+      "department": "Physics & Nanotechnology",
+      "sector": "AI_ML",
+      "problemStatement": "Sub-surface geomagnetic navigation requires bulky cryogenic sensors.",
+      "proposedSolution": "Room-temperature nitrogen-vacancy diamond quantum magnetometers on a silicon chip.",
+      "prototypeUrl": "",
+      "requestedGrant": 750000,
+      "requestedDesks": 2,
+      "status": "APPROVED",
+      "committeeScore": 95,
+      "committeeNotes": "Exceptional diamond NV-center bench results. Approved for immediate admission.",
+      "submittedAt": "2026-11-02T14:02:58.238Z",
+      "evaluatedAt": "2026-11-02T14:02:58.253Z"
+    },
+    {
+      "id": "app-1793628010748",
+      "applicationRef": "APP-2026-497",
+      "startupName": "QuantumSense Magnetometry 1793628010747",
+      "applicantName": "Pooja Deshmukh",
+      "applicantEmail": "pooja.deshmukh@students.apex.edu",
+      "applicantPhone": "+91 99999 00000",
+      "applicantRole": "STUDENT",
+      "department": "Physics & Nanotechnology",
+      "sector": "AI_ML",
+      "problemStatement": "Sub-surface geomagnetic navigation requires bulky cryogenic sensors.",
+      "proposedSolution": "Room-temperature nitrogen-vacancy diamond quantum magnetometers on a silicon chip.",
+      "prototypeUrl": "",
+      "requestedGrant": 750000,
+      "requestedDesks": 2,
+      "status": "APPROVED",
+      "committeeScore": 95,
+      "committeeNotes": "Exceptional diamond NV-center bench results. Approved for immediate admission.",
+      "submittedAt": "2026-11-02T14:00:10.748Z",
+      "evaluatedAt": "2026-11-02T14:00:10.755Z"
+    },
     {
       "id": "app-1793626860753",
       "applicationRef": "APP-2026-738",
@@ -846,6 +1092,54 @@
   ],
   "mentors": [
     {
+      "id": "men-1793628276605",
+      "mentorName": "Rajeev Chandrasekharan",
+      "title": "Founding Partner & EIR",
+      "organization": "DeepTech Horizon Ventures",
+      "expertise": [
+        "Quantum Computing",
+        "IP Licensing",
+        "Venture Valuation"
+      ],
+      "email": "rajeev@horizon.vc",
+      "phone": "+91 99887 76655",
+      "totalSessionsConducted": 1,
+      "rating": 5,
+      "availabilityStatus": "AVAILABLE"
+    },
+    {
+      "id": "men-1793628178289",
+      "mentorName": "Rajeev Chandrasekharan",
+      "title": "Founding Partner & EIR",
+      "organization": "DeepTech Horizon Ventures",
+      "expertise": [
+        "Quantum Computing",
+        "IP Licensing",
+        "Venture Valuation"
+      ],
+      "email": "rajeev@horizon.vc",
+      "phone": "+91 99887 76655",
+      "totalSessionsConducted": 1,
+      "rating": 5,
+      "availabilityStatus": "AVAILABLE"
+    },
+    {
+      "id": "men-1793628010770",
+      "mentorName": "Rajeev Chandrasekharan",
+      "title": "Founding Partner & EIR",
+      "organization": "DeepTech Horizon Ventures",
+      "expertise": [
+        "Quantum Computing",
+        "IP Licensing",
+        "Venture Valuation"
+      ],
+      "email": "rajeev@horizon.vc",
+      "phone": "+91 99887 76655",
+      "totalSessionsConducted": 1,
+      "rating": 5,
+      "availabilityStatus": "AVAILABLE"
+    },
+    {
       "id": "men-1793626860787",
       "mentorName": "Rajeev Chandrasekharan",
       "title": "Founding Partner & EIR",
@@ -979,6 +1273,48 @@
     }
   ],
   "mentorSessions": [
+    {
+      "id": "ses-1793628276618",
+      "sessionRef": "SES-2026-171",
+      "mentorId": "men-1793628276605",
+      "mentorName": "Rajeev Chandrasekharan",
+      "startupId": "st-1793628276597",
+      "startupName": "QuantumSense Magnetometry 1793628276584",
+      "scheduledDate": "2026-11-04T14:04:36.617Z",
+      "durationMinutes": 60,
+      "discussionTopic": "Quantum Chip Foundry Tape-out & Cleanroom Access",
+      "keyTakeaways": "Agreed to route test wafers through SCL Chandigarh cleanroom facility.",
+      "actionItems": "Finalize GDS-II layout by end of month.",
+      "status": "COMPLETED"
+    },
+    {
+      "id": "ses-1793628178308",
+      "sessionRef": "SES-2026-777",
+      "mentorId": "men-1793628178289",
+      "mentorName": "Rajeev Chandrasekharan",
+      "startupId": "st-1793628178273",
+      "startupName": "QuantumSense Magnetometry 1793628178236",
+      "scheduledDate": "2026-11-04T14:02:58.307Z",
+      "durationMinutes": 60,
+      "discussionTopic": "Quantum Chip Foundry Tape-out & Cleanroom Access",
+      "keyTakeaways": "Agreed to route test wafers through SCL Chandigarh cleanroom facility.",
+      "actionItems": "Finalize GDS-II layout by end of month.",
+      "status": "COMPLETED"
+    },
+    {
+      "id": "ses-1793628010777",
+      "sessionRef": "SES-2026-804",
+      "mentorId": "men-1793628010770",
+      "mentorName": "Rajeev Chandrasekharan",
+      "startupId": "st-1793628010763",
+      "startupName": "QuantumSense Magnetometry 1793628010747",
+      "scheduledDate": "2026-11-04T14:00:10.776Z",
+      "durationMinutes": 60,
+      "discussionTopic": "Quantum Chip Foundry Tape-out & Cleanroom Access",
+      "keyTakeaways": "Agreed to route test wafers through SCL Chandigarh cleanroom facility.",
+      "actionItems": "Finalize GDS-II layout by end of month.",
+      "status": "COMPLETED"
+    },
     {
       "id": "ses-1793626860795",
       "sessionRef": "SES-2026-472",
@@ -1125,6 +1461,48 @@
     }
   ],
   "investorEOIs": [
+    {
+      "id": "eoi-1793628276636",
+      "eoiRef": "EOI-2026-371",
+      "startupId": "st-1793628276597",
+      "startupName": "QuantumSense Magnetometry 1793628276584",
+      "investorFirm": "Matrix Partners India",
+      "partnerName": "Avnish Bajaj",
+      "contactEmail": "avnish@matrixpartners.in",
+      "indicatedChequeAmount": 25000000,
+      "proposedValuationCap": 250000000,
+      "stageInterest": "SEED",
+      "dueDiligenceStatus": "DATA_ROOM_OPENED",
+      "submittedAt": "2026-11-02T14:04:36.636Z"
+    },
+    {
+      "id": "eoi-1793628178331",
+      "eoiRef": "EOI-2026-529",
+      "startupId": "st-1793628178273",
+      "startupName": "QuantumSense Magnetometry 1793628178236",
+      "investorFirm": "Matrix Partners India",
+      "partnerName": "Avnish Bajaj",
+      "contactEmail": "avnish@matrixpartners.in",
+      "indicatedChequeAmount": 25000000,
+      "proposedValuationCap": 250000000,
+      "stageInterest": "SEED",
+      "dueDiligenceStatus": "DATA_ROOM_OPENED",
+      "submittedAt": "2026-11-02T14:02:58.331Z"
+    },
+    {
+      "id": "eoi-1793628010793",
+      "eoiRef": "EOI-2026-578",
+      "startupId": "st-1793628010763",
+      "startupName": "QuantumSense Magnetometry 1793628010747",
+      "investorFirm": "Matrix Partners India",
+      "partnerName": "Avnish Bajaj",
+      "contactEmail": "avnish@matrixpartners.in",
+      "indicatedChequeAmount": 25000000,
+      "proposedValuationCap": 250000000,
+      "stageInterest": "SEED",
+      "dueDiligenceStatus": "DATA_ROOM_OPENED",
+      "submittedAt": "2026-11-02T14:00:10.793Z"
+    },
     {
       "id": "eoi-1793626860812",
       "eoiRef": "EOI-2026-431",

@@ -398,6 +398,13 @@ import {
   GET as handleAdmissionsCounselingGet,
   POST as handleAdmissionsCounselingPost,
 } from "@/app/api/admissions/counseling/route";
+import {
+  GET as handleAdmissionsEnquiryGet,
+  POST as handleAdmissionsEnquiryPost,
+} from "@/app/api/admissions/enquiry/route";
+import {
+  POST as handleAdmissionsEligibilityPost,
+} from "@/app/api/admissions/eligibility/route";
 
 import {
   getAllRepositoryItems,
@@ -12421,14 +12428,15 @@ By breaking down large monolithic systems into decoupled microservices, systems 
   }
 
   // 2. Transport: Fleet Registration & Passenger Overcapacity Defense
-  const testRegNum = `MA-TEST-${Date.now().toString().slice(-4)}`;
+  const uniqueSuffix = `${Date.now()}-${Math.floor(Math.random() * 10000)}`;
+  const testRegNum = `MA-TEST-${uniqueSuffix}`;
   const regVehReq = new NextRequest("http://localhost:3000/api/transport", {
     method: "POST",
     headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
     body: JSON.stringify({
       action: "REGISTER_VEHICLE",
       registrationNumber: testRegNum,
-      vehicleCode: `BUS-T${Date.now().toString().slice(-3)}`,
+      vehicleCode: `BUS-T${uniqueSuffix}`,
       capacity: 40,
       fuelType: "ELECTRIC",
       driverName: "Chief Driver Anderson",
@@ -13133,6 +13141,90 @@ By breaking down large monolithic systems into decoupled microservices, systems 
   assert(updateEoiRes.status === 200, "POST /api/incubation (UPDATE_INVESTOR_EOI) returns 200 OK");
   const updateEoiData = await updateEoiRes.json();
   assert(updateEoiData.eoi.dueDiligenceStatus === "DATA_ROOM_OPENED", "EOI status transitioned to DATA_ROOM_OPENED");
+
+  // --- GROUP 91: Admissions Prospective Enquiries CRM & Cutoff Eligibility Calculator ---
+  console.log("\n--- GROUP 91: Admissions Prospective Enquiries CRM & Cutoff Eligibility Calculator ---");
+
+  // 1. Query Prospective Admission Enquiries
+  const getEnquiriesReq = new NextRequest("http://localhost:3000/api/admissions/enquiry", {
+    method: "GET",
+  });
+  const getEnquiriesRes = await handleAdmissionsEnquiryGet(getEnquiriesReq);
+  assert(getEnquiriesRes.status === 200, "GET /api/admissions/enquiry returns 200 OK");
+  const getEnquiriesData = await getEnquiriesRes.json();
+  assert(Array.isArray(getEnquiriesData.leads) && getEnquiriesData.leads.length >= 1, "Enquiries endpoint returns leads list");
+
+  // 2. Submit Walk-In Prospective Enquiry
+  const uniqueEnquiryEmail = `walkin.lead.${Date.now()}@apex-prospective.edu`;
+  const postEnquiryReq = new NextRequest("http://localhost:3000/api/admissions/enquiry", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      applicantName: "Siddharth Nambiar",
+      email: uniqueEnquiryEmail,
+      phone: "+91-9871198711",
+      targetProgram: "B.Tech Computer Science & Engineering",
+      twelfthPercentage: 94.6,
+      entranceExamScore: "JEE Main 98.4 Percentile",
+      city: "Kochi",
+    }),
+  });
+  const postEnquiryRes = await handleAdmissionsEnquiryPost(postEnquiryReq);
+  assert(postEnquiryRes.status === 201, "POST /api/admissions/enquiry records prospective enquiry with 201 Created");
+  const postEnquiryData = await postEnquiryRes.json();
+  assert(postEnquiryData.lead?.status === "NEW_ENQUIRY", "Initial lead status is NEW_ENQUIRY");
+
+  // 3. Update Lead Status & Counselor Notes
+  const updateEnquiryReq = new NextRequest("http://localhost:3000/api/admissions/enquiry", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "UPDATE_STATUS",
+      enquiryId: postEnquiryData.lead.id,
+      status: "COUNSELED",
+      counselorNotes: "Candidate counseled for AI specialization. High scholarship prospect.",
+    }),
+  });
+  const updateEnquiryRes = await handleAdmissionsEnquiryPost(updateEnquiryReq);
+  assert(updateEnquiryRes.status === 200, "POST /api/admissions/enquiry (UPDATE_STATUS) returns 200 OK");
+  const updateEnquiryData = await updateEnquiryRes.json();
+  assert(updateEnquiryData.lead?.status === "COUNSELED", "Lead status updated to COUNSELED");
+  assert(updateEnquiryData.lead?.counselorNotes.includes("specialization"), "Counselor qualitative notes persisted");
+
+  // 4. Promote Lead to Formal Applicant
+  const convertEnquiryReq = new NextRequest("http://localhost:3000/api/admissions/enquiry", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Cookie: `classroom_session=${adminToken}` },
+    body: JSON.stringify({
+      action: "CONVERT_TO_APPLICANT",
+      enquiryId: postEnquiryData.lead.id,
+      programCode: "BTECH-CSE",
+    }),
+  });
+  const convertEnquiryRes = await handleAdmissionsEnquiryPost(convertEnquiryReq);
+  assert(convertEnquiryRes.status === 200, "POST /api/admissions/enquiry (CONVERT_TO_APPLICANT) returns 200 OK");
+  const convertEnquiryData = await convertEnquiryRes.json();
+  assert(convertEnquiryData.applicant?.applicationNo.startsWith("ADM-2026"), "Lead converted to formal applicant with ADM-2026 number");
+  assert(convertEnquiryData.lead?.status === "ADMITTED", "Lead record status transitioned to ADMITTED");
+
+  // 5. Calculate Live Eligibility & Merit Scholarship Waivers
+  const eligibilityReq = new NextRequest("http://localhost:3000/api/admissions/eligibility", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      twelfthPercentage: 92.5,
+      category: "GENERAL",
+      entranceExamScore: "JEE_MAIN: 96.5 Percentile",
+    }),
+  });
+  const eligibilityRes = await handleAdmissionsEligibilityPost(eligibilityReq);
+  assert(eligibilityRes.status === 200, "POST /api/admissions/eligibility returns 200 OK");
+  const eligibilityData = await eligibilityRes.json();
+  assert(Array.isArray(eligibilityData.eligiblePrograms), "Eligibility engine returns evaluated eligible programs array");
+  const cseEval = eligibilityData.eligiblePrograms.find((e: any) => e.programCode === "BTECH-CSE");
+  assert(cseEval != null, "High scoring applicant meets B.Tech CSE cutoff");
+  assert(cseEval.isScholarshipGranted === true, "Score >= 90% qualifies for merit scholarship waiver");
+  assert(cseEval.effectiveNetTuition !== cseEval.standardTuition, "Net tuition lower than standard fee");
 
   console.log("\n=================================================");
   console.log(`🎉 ALL ${passedTests}/${totalTests} TESTS PASSED SUCCESSFULLY!`);

@@ -1,16 +1,39 @@
 {
   "applicants": [
     {
-      "id": "app-1793626860452",
-      "applicationNo": "ADM-2026-593",
-      "fullName": "Scholar Integration Test 1793626860452",
-      "email": "scholar.integ.1793626860452@classroom.edu",
+      "id": "app-1793628276692",
+      "applicationNo": "ADM-2026-704",
+      "fullName": "Siddharth Nambiar",
+      "email": "walkin.lead.1793628276667@apex-prospective.edu",
+      "phone": "+91-9871198711",
+      "programCode": "BTECH-CSE",
+      "programName": "B.Tech Computer Science & Engineering",
+      "highSchoolGpa": 3.78,
+      "entranceExamScore": 1350,
+      "meritRank": 64,
+      "stage": "MERIT_SHORTLISTED",
+      "documentsStatus": {
+        "transcriptsVerified": false,
+        "identityProofVerified": false,
+        "recommendationLettersVerified": false
+      },
+      "seatDepositPaid": false,
+      "depositAmount": 0,
+      "assignedCounselor": "Admissions Central Desk",
+      "source": "WALK_IN",
+      "appliedDate": "2026-11-02T14:04:36.692Z"
+    },
+    {
+      "id": "app-1793628276275",
+      "applicationNo": "ADM-2026-253",
+      "fullName": "Scholar Integration Test 1793628276274",
+      "email": "scholar.integ.1793628276274@classroom.edu",
       "phone": "+15559876543",
       "programCode": "prog-cs-01",
       "programName": "Undergraduate Degree",
       "highSchoolGpa": 94.5,
       "entranceExamScore": 1450,
-      "meritRank": 14,
+      "meritRank": 74,
       "stage": "SEAT_CONFIRMED",
       "documentsStatus": {
         "transcriptsVerified": false,
@@ -21,11 +44,11 @@
       "depositAmount": 1500,
       "assignedCounselor": "Admissions Central Desk",
       "source": "WEBSITE",
-      "appliedDate": "2026-11-02T13:41:00.452Z"
+      "appliedDate": "2026-11-02T14:04:36.275Z"
     },
     {
-      "id": "app-1793626856055",
-      "applicationNo": "ADM-2026-494",
+      "id": "app-1793628271768",
+      "applicationNo": "ADM-2026-740",
       "fullName": "Linus Torvalds Jr.",
       "email": "linus.jr@test-admissions.edu",
       "phone": "+1 (555) 019-2834",
@@ -33,7 +56,7 @@
       "programName": "B.Tech Computer Science & Engineering",
       "highSchoolGpa": 4,
       "entranceExamScore": 1560,
-      "meritRank": 96,
+      "meritRank": 60,
       "stage": "OFFER_EXTENDED",
       "documentsStatus": {
         "transcriptsVerified": true,
@@ -44,7 +67,7 @@
       "depositAmount": 0,
       "assignedCounselor": "Admissions Central Desk",
       "source": "PORTAL_DIRECT",
-      "appliedDate": "2026-11-02T13:40:56.055Z"
+      "appliedDate": "2026-11-02T14:04:31.768Z"
     },
     {
       "id": "app-01",
